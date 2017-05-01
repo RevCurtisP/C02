@@ -41,16 +41,20 @@ int enccmp(char c)
  * Args: comparator - Encoded Comparison Operator     *
  * Uses: term - Term Being Compared Against           *
  *       label - Branch Target if Comparison is FALSE */
-void prccmp(int cmprtr) 
+void prccmp() 
 {
   DEBUG("Processing comparison operator %d\n", cmprtr);
+  DEBUG("Expression signedness is %d\n", expsgn);
   switch(cmprtr) {
+    case 0: // Raw Expression (Skip)
+      asmlin("BEQ", curlbl);
+      break;
     case 1: // = or ==
       asmlin("CMP", term);
       asmlin("BNE", curlbl);
       break;
     case 2: // <
-      if (cmpsgn) {
+      if (expsgn) {
         asmlin("CMP", term);
         asmlin("BPL", curlbl);
       }
@@ -60,7 +64,7 @@ void prccmp(int cmprtr)
       }
       break;
     case 3: // <= or =<
-      if (cmpsgn) {
+      if (expsgn) {
         asmlin("CMP", term);
         asmlin("BPL", curlbl);
         asmlin("BNE", curlbl);
@@ -72,7 +76,7 @@ void prccmp(int cmprtr)
       }
       break;
     case 4: // >
-      if (cmpsgn) {
+      if (expsgn) {
         asmlin("CMP", term);
         asmlin("BMI", curlbl);
         asmlin("BEQ", curlbl);
@@ -84,7 +88,7 @@ void prccmp(int cmprtr)
       }
       break;
     case 5: // >= or =>
-      if (cmpsgn) {
+      if (expsgn) {
         asmlin("CMP", term);
         asmlin("BMI", curlbl);
       }
@@ -97,6 +101,9 @@ void prccmp(int cmprtr)
       asmlin("CMP", term);
       asmlin("BEQ", curlbl);
       break;
+    case 7: // Raw Expression (Normal)
+      asmlin("BNE", curlbl);
+      break;
     default:
       printf("Unsupported comparison operator index %d\n", cmprtr);
       exterr(EXIT_FAILURE);
@@ -104,13 +111,13 @@ void prccmp(int cmprtr)
 }
 
 /* Parse Comparison Operator                      *
- * Sets: comparitor - Encoded Comparison Operator */
+ * Sets: cmprtr - Encoded Comparison Operator */
 int prscmp() 
 {
   cmpenc = enccmp(nxtchr);      //Encode Comparison Character
-  if (cmpenc == 0) 
-    expctd("comparison operator");
   cmprtr = cmpenc;              //Set Encoded Comparator 
+  if (cmprtr == 0)              //No Comparison
+    return;
   cmpenc = enccmp(nxtchr);      //Encode Next Comparison Character
   if (cmpenc != 0)
     cmprtr = cmprtr | cmpenc;   //Combine Encoded Comparator
@@ -120,15 +127,17 @@ int prscmp()
 
 /* Parse and Compile Conditional Expression     *
  * Condition = <expression> <comparator> <term> */
-void prscnd(char trmntr) 
+void prscnd(char trmntr, int revrse) 
 {
   DEBUG("Parsing condition\n", 0);
   prsxpr(0);
   skpspc();
   prscmp();
-  prstrm();
+  if (cmprtr)
+    prstrm();
+  cmprtr = cmprtr ^ revrse & 7;
+  prccmp();
   CCMNT(trmntr);
-  prccmp(cmprtr);
   expect(trmntr);
 }
 

@@ -15,22 +15,22 @@
 char opstr[2]; //Operator as a String
 
 /* Various tests against nxtchr */
-int match(char c) {return (nxtchr == c);}
-int inbtwn(char mn, char mx) {return nxtchr >= mn && nxtchr <= mx;}
+int match(char c) {return TF(nxtchr == c);}
+int inbtwn(char mn, char mx) {return TF(nxtchr >= mn && nxtchr <= mx);}
 int isprnt() {return isprint(nxtchr);}
 int isalph() {return isalpha(nxtchr);}
 int isanum() {return isalnum(nxtchr);}
 int isdec()  {return inbtwn('0', '9');}
-int ishexd() {return isdec() || inbtwn('A', 'Z');}
+int ishexd() {return TF(isdec() || inbtwn('A', 'Z'));}
 int isbin()  {return inbtwn('0', '1');}
-int isnl()   {return match('\n') || match('\r');}
+int isnl()   {return TF(match('\n') || match('\r'));}
 int isspc()  {return isspace(nxtchr);}
-int isnpre() {return isdec() || match('$') || match('%');}
+int isnpre() {return TF(isdec() || match('$') || match('%'));}
 int isapos() {return match('\'');}
-int iscpre() {return isnpre() || isapos();}
-int isvpre() {return isalph() || iscpre();}
-int isoper() {return (strchr("+-&|^", nxtchr)) ? TRUE : FALSE;}
-int ispopr() {return (strchr("+-<>", nxtchr)) ? TRUE : FALSE;}
+int iscpre() {return TF(isnpre() || isapos());}
+int isvpre() {return TF(isalph() || iscpre());}
+int isoper() {return TF(strchr("+-&|^", nxtchr));}
+int ispopr() {return TF(strchr("+-<>", nxtchr));}
 
 /* if Word is s then return TRUE else return FALSE*/
 int wordis(char *s)
@@ -182,29 +182,37 @@ void expdef()
 
 char escape(char c) 
 {
+  DEBUG("Escaping character '%c'\n", c);
   switch (c) {
     case 'r': return 0x0d;
     default: return c;
   }
 }
 
-void get_string() {
-  char str_del, tmp_char;
-  int wrdlen = 0, esc_next = FALSE;
+/* Get String */
+
+void getstr() {
+  char strdel, tmpchr;
+  int wrdlen = 0, escnxt = FALSE;
   DEBUG("Parsing string\n", 0);
-  str_del = getnxt();
-  while(!match(str_del)) {
-    if (esc_next)
+  strdel = getnxt();  //Get String Delimiter
+  CCMNT(strdel);
+  while(match(strdel) == escnxt) {
+    CCMNT(nxtchr);
+    if (escnxt) {
       word[wrdlen++] = escape(getnxt());
+      escnxt = FALSE;    
+    }
     else {
       if (match('\\')) 
-        esc_next = TRUE;
+        escnxt = TRUE;
       else
         word[wrdlen++] = nxtchr;
       skpchr();
     }  
   }
-  skpchr();
+  skpchr(); //Skip End Delimiter
+  CCMNT(strdel);
   word[wrdlen++] = 0;
 }
 
@@ -343,15 +351,18 @@ int prsnum(int maxval)
  *       valtyp - value type (CONSTANT)   */
 void prscon(int maxval) 
 {
-  int constant = prsnum(maxval);
+  cnstnt = prsnum(maxval);
   valtyp = CONSTANT;
   if (maxval > 255)
-    sprintf(value, "#$%04X", constant);
+    sprintf(value, "#$%04X", cnstnt);
   else
-    sprintf(value, "#$%02X", constant);
+    sprintf(value, "#$%02X", cnstnt);
   DEBUG("Generated constant '%s'\n", value);
 }
-int get_vartyp()
+
+
+/* Get Value Type */
+int gettyp()
 {
   if (match('(')) return FUNCTION;
   else if (match('[')) return ARRAY;
@@ -364,7 +375,7 @@ int get_vartyp()
 void prsvar() 
 {
   getwrd();
-  valtyp = get_vartyp();
+  valtyp = gettyp();
   if (valtyp != FUNCTION) chksym(word);
   strcpy(value, word);
   DEBUG("Parsed variable '%s'\n", value);

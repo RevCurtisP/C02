@@ -11,7 +11,15 @@
 #include "asm.h"
 #include "parse.h"
 #include "vars.h"
+#include "label.h"
 #include "expr.h"
+
+/* Set Expession Signedness */
+setsgn(int sgndns)
+{
+  expsgn = sgndns;
+  DEBUG("Set Expression Signedness to %d\n", expsgn);
+}
 
 /* Parse value (constant or identifier)  *
  * Sets: value - the value (as a string) *
@@ -22,8 +30,11 @@ void prsval()
   //expdef();      //Check for and expand define -- BROKEN!
   if (iscpre())
     prscon(0xff); //Parse Constant
-  else if (isalph())
+  else if (isalph()) {
     prsvar();     //Parse Variable
+    DEBUG("Checking type of variable '%s'\n", value);
+    if (vartyp[lookup(value)] == VTBYTE) setsgn(TRUE);  
+  }
   else
     expctd("constant or variable");
   skpspc();
@@ -41,7 +52,7 @@ void prsidx()
   expect(']');
 }
 
-/* Parse term in expression            *
+/* Parse term in  expression            *
  * Sets: term - the term (as a string) * 
  *       trmtxt - type of term      */
 void prstrm()
@@ -62,39 +73,80 @@ void prstrm()
   skpspc();
 }
 
-/* Parse and Compile Pointer Dereference */
-void prsadr(char dlmtr)
+/* Compile Address Reference */
+void prcadr(char* symbol)
 {
-  prsvar();
-  DEBUG("Dereferencing variable '%s'\n", value);
-  ACMNT(value);
   strcpy(word,"#<");
-  strcat(word,value);
+  strcat(word,symbol);
   asmlin("LDX", word);
   strcpy(word,"#>");
-  strcat(word,value);
+  strcat(word,symbol);
   asmlin("LDY", word);
-  if (dlmtr) expect(dlmtr);
+} 
+
+/* Parse and Compile Address of Operator */
+void prsadr()
+{
+  prsvar();
+  DEBUG("Parsing address of variable '%s'\n", value);
+  ACMNT(value);
+  prcadr(value);  //Compile Address Reference
 }
 
-
-/* Parse function call in first term of expression *
- * Function call may include term as an argument   */
-void prsxfn() 
+/* Parse and Create Anonymous String */
+void prsstr()
 {
-  char fnname[255]; /*Function name*/ 
-  DEBUG("Processing expression function call '%s'...\n", term);
-  strcpy(fnname, term);
+  DEBUG("Parsing anonymous string\n", 0);
+  strcpy(tmplbl, curlbl);//Save Current Label
+  newlbl();              //Generate Label Name
+  strcpy(word, curlbl);  //and Use as Variable Name
+  value[0] = 0;          //Use Variable Size 0
+  setvar(VTCHAR);        //Set Variable Name, Type, and Size
+  prsdts();              //Parse Data String
+  setdat();              //Set Variable Data
+  varcnt++;              //Increment Variable Counter
+  prcadr(curlbl);        //Compile Address Reference
+  strcpy(curlbl, tmplbl);//Restore Current Label
+}
+
+/* Parse Additional Function Parameters */
+void prsfnp() 
+{
+  if (look(',')) {
+    if (look('&'))
+      prsadr();
+    else if (match('"'))
+      prsstr();
+    else {
+      prstrm();
+      asmlin("LDY", term);
+      if (look(',')) {
+        prsval();
+        asmlin("LDX", value);
+      }  
+    }
+  }
+}
+
+/* Parse function call */
+void prsfnc() 
+{
+  DEBUG("Processing Function Call '%s'...\n", term);
+  if (fnscnt >= MAXFNS)
+    ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE);
+  strcpy(fnstck[fnscnt++], term);
   skpchr(); //skip open paren
   CCMNT('(');
   if (look('&'))
-    prsadr(0);
+    prsadr();
+  else if (match('"'))
+    prsstr();
   else if (isvpre()) {
-    prstrm();
-    asmlin("LDA", term);
-  }
+    prsxpr(0);
+    prsfnp();
+  }  
   expect(')');
-  asmlin("JSR", fnname);
+  asmlin("JSR", fnstck[--fnscnt]);
   skpspc();
 }
 
@@ -107,7 +159,7 @@ void prsftm()
   strcpy(term, value);
   trmtxt = valtyp;
   if (trmtxt == FUNCTION) {
-     prsxfn(); //Parse Expression Function
+     prsfnc(); //Parse Expression Function
      return;
   }
   if (trmtxt == ARRAY) {
@@ -153,8 +205,12 @@ void prsxpr(char trmntr)
 {
   DEBUG("Parsing expression\n", 0);
   skpspc();
-  if (match('-')) 
-    asmlin("LDA", "#$00");  //Handle Unary Minus
+  setsgn(FALSE); //Default Expression to Unsigned
+  if (match('-')) {
+    DEBUG("Processing unary minus", 0);
+    asmlin("LDA", "#$00");  //Handle Unary Minus  
+    setsgn(TRUE); //Expression is Signed
+  } 
   else 
     prsftm(); //Parse First Term
   while (isoper())

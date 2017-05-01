@@ -45,7 +45,6 @@ void chksym(char *name)
     ERROR("Undeclared variable '%s' encountered\n", word, EXIT_FAILURE);
 }
 
-
 /* Check for Array specifier and get size *
  * Sets: value - array size (as string)   *
  *               "" if not an array       */
@@ -76,36 +75,64 @@ void prsdtc()
 void prsdts()
 {
   dtype = DTSTR;
-  get_string();
+  getstr();
   strcpy(value, word);
   DEBUG("Parsed Data String '%s'\n", value);
 }
 
-/* Parse and store variable data    *
+/* Store variable data              *
+ * Uses: value    - Data to store   *
  * Sets: datvar[] - Variable Data   *
  *       datlen[] - Data Length     */
+void setdat()
+{
+  int i;
+  if (dtype == DTBYTE) {
+    DEBUG("Setting variable data to '%d'\n", cnstnt);
+    dlen = 1;
+    datvar[dsize++] = cnstnt;
+  }
+  else {
+    DEBUG("Setting variable data to '%s'\n", value);
+    dlen = strlen(value);
+    for (i=0; i<dlen; i++) 
+      datvar[dsize++] = value[i];   
+  } 
+  datlen[varcnt] = dlen;
+  dattyp[varcnt] = dtype;  
+}
+
+/* Parse and store variable data */
 void prsdat()
 {
   DEBUG("Checking for variable data\n", 0);
-  int i;
   if (!look('=')) {
     datlen[varcnt] = 0;
     return;
   }
   skpspc();
   if (isnpre())
-    prsdtc(0xff);
+    prsdtc(0xff);   //Parse Data Constant
   else if (match('"'))
-    prsdts();
-  dlen = strlen(value);
-  datlen[varcnt] = dlen;
-  dattyp[varcnt] = dtype;
-  DEBUG("Setting variable data to '%s'\n", value);
-  for (i=0; i<dlen; i++) 
-    datvar[dsize++] = value[i]; 
+    prsdts();       //Parse Data String
+  else
+    expctd("numeric or string constant");
+  setdat();   //Store Data Value
 }
 
 /* Add Variable to Variable table *
+ * Uses: word - variable name     *
+ *       value - variable size    */
+void setvar(int t) 
+{
+  DEBUG("Adding variable '%s'\n", word);
+  strncpy(varnam[varcnt], word, VARLEN);
+  vartyp[varcnt] = t;
+  strncpy(varsiz[varcnt], value, 3);
+  DEBUG("Added at index %d\n", varcnt);
+}
+
+/* Parse and Compile Variable Declaration *
  * Uses: word - variable name     */
 void addvar(int t) 
 {
@@ -113,14 +140,10 @@ void addvar(int t)
     ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE);
   if (t == VTVOID)
     ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
-  DEBUG("Adding variable '%s'\n", word);
-  strncpy(varnam[varcnt], word, VARLEN);
-  vartyp[varcnt] = t;
-  pvarsz();
-  strncpy(varsiz[varcnt], value, 3);
-  DEBUG("Added at index %d\n", varcnt);
-  prsdat(); //Parse Variable Data
-  varcnt++;
+  pvarsz();   //Check for Array Declaration and Get Size
+  setvar(t);  //Add to Variable Table  
+  prsdat();   //Parse Variable Data
+  varcnt++;   //Increment Variable Counter
 }
 
 void addfnc()
@@ -155,7 +178,7 @@ void vardat(int i)
   value[0] = 0;
   for (j=0; j<datlen[i]; j++) {
     if (j) strcat(value,",");
-    sprintf(word, "$%02X", datvar[dlen++]);
+    sprintf(word, "$%hhX", datvar[dlen++]);
     strcat(value, word);  
   }
   if (dattyp[i] == DTSTR) strcat(value, ",$00");
@@ -191,10 +214,10 @@ void vartbl()
 void logvar()
 {
   int i;
-  fprintf(logfil, "\n%-31s %s %s\n", "Variable", "Type", "Size");
+  fprintf(logfil, "\n%-31s %s %s %s\n", "Variable", "Type", "Size", "Data");
   for (i=0; i<varcnt; i++)
   {
-    fprintf(logfil, "%-31s %4d %s\n", varnam[i], vartyp[i], varsiz[i]);
+    fprintf(logfil, "%-31s %4d %4s %1d-%d\n", varnam[i], vartyp[i], varsiz[i], dattyp[i], datlen[i]);
   }
 }
 

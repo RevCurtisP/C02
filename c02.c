@@ -37,6 +37,7 @@ void init()
   inpfil = srcfil;
   strcpy(inpnam, srcnam);
   alcvar = TRUE;
+  inblck = FALSE;
   nxtwrd[0] = 0;
   nxtptr = 0;
 }
@@ -45,7 +46,7 @@ void init()
 pword()
 {
   getwrd();
-  SCMNT(word);
+  ACMNT(word);
   DEBUG("Parsing Word '%s'\n", word);
   if (wordis("byte")) 
     pdecl(VTBYTE);   //Parse 'byte' declaration
@@ -88,17 +89,16 @@ void compile()
     //DEBUG("Checking next character '%c'\n", nxtchr);
     if (match(EOF)) 
       break;
+    else if (match('}'))
+      endblk(TRUE);  //End Multi-Line Program Block
     else if (match('#'))
-      pdrctv(); //Process Directive
+      pdrctv();      //Parse Directive
     else if (match('/')) 
-      skpcmt();
+      skpcmt();      //Skip Comment
     else if (isalph()) 
-      pword();
+      pword();       //Parse Word
     else
-	  {
-      printf("Unexpected character '%c'\n", nxtchr);	 
-		  exterr(EXIT_FAILURE);
-	  }
+      ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE);
   }    
   epilog();
 }

@@ -4,5 +4,5 @@
 
 int cmpsgn;  // Comparison contains signed operands
 
-void prscnd(char trmntr); //Parse Conditional Expression 
+void prscnd(char trmntr, int revrse); //Parse Conditional Expression 
 

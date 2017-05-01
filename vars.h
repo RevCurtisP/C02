@@ -8,6 +8,10 @@ char vartyp[MAXVAR+1];             //Variable Type
 char varsiz[MAXVAR+1][4];          //Variable Array
 int  varcnt;                       //Number of Variables in Table
 
+/*
+int varidx; //Index into Variable Table
+int vrtype; //Variable Type
+*/
 enum vtypes {VTVOID, VTBYTE, VTCHAR};    //Variable Types
 
 char datvar[DATASPC+1];            //Variable Data Storage
@@ -22,6 +26,9 @@ enum dtypes {DTBYTE, DTSTR};       //Variable Data Types
 int symdef(char *name);   //Is Variable defined (TRUE or FALSE)
 void chksym(char *name);  //Error if Variable not defined
 
-void pdecl(int t); //Parse Variable Declaration
+void prsdts();       //Parse Data String
+void setdat();       //Set Variable Data
+void setvar(int t);  //Set Variable Name and Size
+void pdecl(int t);   //Parse Variable Declaration
 
 void vartbl();      //Create Variable Table

@@ -8,7 +8,8 @@
 #define MAXDEF 255        //Maximum Number of Definitions
 #define VARLEN 6          //Maximum Variable Length
 #define MAXVAR 255        //Maximum Number of Variables
-#define DATASPC 2048      //Space to Allocate for 
+#define MAXFNS 16         //Maximum Functions in Stack
+#define DATASPC 2048      //Space to Allocate for Variable Data
 #define LABLEN 6          //Maximum Label Length
 #define LABFMT "L_%04d"   //Label Format
 #define LABSFX ":"        //Label Suffix
