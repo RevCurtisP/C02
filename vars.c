@@ -126,7 +126,7 @@ void prsdat()
 void setvar(int t) 
 {
   DEBUG("Adding variable '%s'\n", word);
-  strncpy(varnam[varcnt], word, VARLEN);
+  strncpy(varnam[varcnt], vrname, VARLEN);
   vartyp[varcnt] = t;
   strncpy(varsiz[varcnt], value, 3);
   DEBUG("Added at index %d\n", varcnt);
@@ -136,7 +136,8 @@ void setvar(int t)
  * Uses: word - variable name     */
 void addvar(int t) 
 {
-  if (symdef(word))
+  strcpy(vrname, word); //Save Variable Name
+  if (symdef(vrname))
     ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE);
   if (t == VTVOID)
     ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);

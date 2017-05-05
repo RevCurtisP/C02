@@ -17,8 +17,8 @@
 /* Set Expession Signedness */
 setsgn(int sgndns)
 {
-  expsgn = sgndns;
-  DEBUG("Set Expression Signedness to %d\n", expsgn);
+  xprsgn = sgndns;
+  DEBUG("Set Expression Signedness to %d\n", xprsgn);
 }
 
 /* Parse value (constant or identifier)  *
@@ -38,7 +38,6 @@ void prsval()
   else
     expctd("constant or variable");
   skpspc();
-  ACMNT(word);
 }
 
 /* Parse array index                  *
@@ -89,7 +88,6 @@ void prsadr()
 {
   prsvar();
   DEBUG("Parsing address of variable '%s'\n", value);
-  ACMNT(value);
   prcadr(value);  //Compile Address Reference
 }
 
@@ -99,7 +97,7 @@ void prsstr()
   DEBUG("Parsing anonymous string\n", 0);
   strcpy(tmplbl, curlbl);//Save Current Label
   newlbl();              //Generate Label Name
-  strcpy(word, curlbl);  //and Use as Variable Name
+  strcpy(vrname, curlbl);  //and Use as Variable Name
   value[0] = 0;          //Use Variable Size 0
   setvar(VTCHAR);        //Set Variable Name, Type, and Size
   prsdts();              //Parse Data String

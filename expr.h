@@ -5,7 +5,7 @@
 char term[255];   /*Term parsed from equation*/
 int  trmtxt;      /*Term Type*/
 
-int expsgn; //Expression Contains Signed Term
+int xprsgn; //Expression Contains Signed Term
 
 char fnstck[MAXFNS][VARLEN+1];   //Function Call Stack
 int  fnscnt;                     //Number of Functions in Stack

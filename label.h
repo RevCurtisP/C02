@@ -16,11 +16,11 @@ int  lblcnt;                       //Number of Labels in stack
 int  lblnxt;                       //Sequence of next label to be generated
 char lbltmp[LABLEN+1];             //Label Temporary Storage
 
-enum ltypes {LTIF, LTLOOP, LTEND, LTDO}; //Label Types
+enum ltypes {LTIF, LTLOOP, LTEND, LTDO, LTCASE}; //Label Types
 
-int lstlbl(int lbtype); //Find Last Label of Specified Type
-void prslbl();          //Parse Label From Code
-void newlbl();          //Generate New Block Label
-int poplbl();          //Pull Last Label and Emit on Next Line
-void setlbl();          //Emit word as Label on Next Line
+int lstlbl(int lbtype);    //Find Last Label of Specified Type
+void prslbl();              //Parse Label From Code
+void newlbl(); //Generate New Block Label
+int poplbl();               //Pull Last Label and Emit on Next Line
+void setlbl();             //Emit word as Label on Next Line
 

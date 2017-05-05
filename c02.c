@@ -1,7 +1,7 @@
 /**************************************************************
  * C02 Compiler - (C) 2013 Curtis F Kaylor                    *
  *                                                            *
- * C02 is a modified C-like language designed for the 6502    *
+ * C02 is a simpified C-like language designed for the 6502   *
  *                                                            * 
  * This Compiler generates crasm compatible assembly language *
  *                                                            *
@@ -38,6 +38,7 @@ void init()
   strcpy(inpnam, srcnam);
   alcvar = TRUE;
   inblck = FALSE;
+  xstmnt[0] = 0;
   nxtwrd[0] = 0;
   nxtptr = 0;
 }
@@ -48,6 +49,11 @@ pword()
   getwrd();
   ACMNT(word);
   DEBUG("Parsing Word '%s'\n", word);
+  if (xstmnt[0])
+    if (wordis(xstmnt))
+      xstmnt[0] = 0;
+    else
+      ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE);
   if (wordis("byte")) 
     pdecl(VTBYTE);   //Parse 'byte' declaration
   else if (wordis("char")) 

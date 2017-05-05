@@ -3,10 +3,11 @@
  *************************************/
 
 /* Variable Table */
-char varnam[MAXVAR+1][VARLEN+1];   //Variable Name
+char varnam[MAXVAR+1][VARLEN+1];   //Variable Name Table
 char vartyp[MAXVAR+1];             //Variable Type
 char varsiz[MAXVAR+1][4];          //Variable Array
 int  varcnt;                       //Number of Variables in Table
+char vrname[MAXVAR+1];             //Variable Name
 
 /*
 int varidx; //Index into Variable Table

@@ -41,7 +41,7 @@ void setblk(int blkflg)
  * to word                    */
 void setlbl(char *lblset)
 {
-  DEBUG("Setting Label '%s''\n", lblset);
+  DEBUG("Setting Label '%s'\n", lblset);
   if (strlen(lblasm) > 0)
     asmlin("",""); //Emit Block End Label on it's own line
   if (strlen(lblset) > LABLEN) 
@@ -84,6 +84,7 @@ int poplbl()
  * Uses: curlbl - Label to push */
 void pshlbl(int lbtype) 
 {
+  DEBUG("Pushing label type %d\n", lbtype);
   strcpy(lblnam[lblcnt], curlbl);
   lbltyp[lblcnt] = lbtype;
   lblblk[lblcnt++] = FALSE;

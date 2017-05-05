@@ -23,6 +23,7 @@ int  cmpenc;    //Encoded Comparator Character
 int enccmp(char c) 
 {
   int e;
+  DEBUG("Encoding Comparison Character '%c'\n", c);
   switch(c)
   {
     case '=': e = 1; break;
@@ -32,8 +33,9 @@ int enccmp(char c)
   }
   if (e) {
     CCMNT(c);
-    skpchr();  
+    skpchr();
   }
+  DEBUG("Encoded as %d\n", e);
   return e;
 }
 
@@ -44,7 +46,7 @@ int enccmp(char c)
 void prccmp() 
 {
   DEBUG("Processing comparison operator %d\n", cmprtr);
-  DEBUG("Expression signedness is %d\n", expsgn);
+  DEBUG("Expression signedness is %d\n", xprsgn);
   switch(cmprtr) {
     case 0: // Raw Expression (Skip)
       asmlin("BEQ", curlbl);
@@ -54,7 +56,7 @@ void prccmp()
       asmlin("BNE", curlbl);
       break;
     case 2: // <
-      if (expsgn) {
+      if (xprsgn) {
         asmlin("CMP", term);
         asmlin("BPL", curlbl);
       }
@@ -64,8 +66,11 @@ void prccmp()
       }
       break;
     case 3: // <= or =<
-      if (expsgn) {
-        asmlin("CMP", term);
+      if (xprsgn) {
+        asmlin("SEC", "");
+        asmlin("SBC", term);
+        asmlin("BVC", "+4");
+        asmlin("EOR", "#$80");
         asmlin("BPL", curlbl);
         asmlin("BNE", curlbl);
       }
@@ -76,7 +81,7 @@ void prccmp()
       }
       break;
     case 4: // >
-      if (expsgn) {
+      if (xprsgn) {
         asmlin("CMP", term);
         asmlin("BMI", curlbl);
         asmlin("BEQ", curlbl);
@@ -88,7 +93,7 @@ void prccmp()
       }
       break;
     case 5: // >= or =>
-      if (expsgn) {
+      if (xprsgn) {
         asmlin("CMP", term);
         asmlin("BMI", curlbl);
       }
@@ -116,11 +121,11 @@ int prscmp()
 {
   cmpenc = enccmp(nxtchr);      //Encode Comparison Character
   cmprtr = cmpenc;              //Set Encoded Comparator 
-  if (cmprtr == 0)              //No Comparison
-    return;
-  cmpenc = enccmp(nxtchr);      //Encode Next Comparison Character
-  if (cmpenc != 0)
-    cmprtr = cmprtr | cmpenc;   //Combine Encoded Comparator
+  if (cmprtr) {
+    cmpenc = enccmp(nxtchr);    //Encode Next Comparison Character
+    if (cmpenc != 0)
+      cmprtr = cmprtr | cmpenc; //Combine Encoded Comparator
+  }
   skpspc();
   DEBUG("Parsed comparator %d\n", cmprtr);
 }
@@ -129,7 +134,11 @@ int prscmp()
  * Condition = <expression> <comparator> <term> */
 void prscnd(char trmntr, int revrse) 
 {
-  DEBUG("Parsing condition\n", 0);
+  DEBUG("Parsing condition with revrse=%d\n", revrse);
+  if (look('!')) {
+    revrse = (revrse) ? FALSE: TRUE;
+    DEBUG("Set revrse to %d\n", revrse);      
+  }
   prsxpr(0);
   skpspc();
   prscmp();

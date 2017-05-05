@@ -60,7 +60,7 @@ char getnxt()
 /* Advance Input File to next printable character */
 void skpspc() 
 {
-  DEBUG("Skipping Spaces\n", 0);
+  //DEBUG("Skipping Spaces\n", 0);
   while (isspc()) 
     getnxt();
 }
@@ -358,6 +358,7 @@ void prscon(int maxval)
   else
     sprintf(value, "#$%02X", cnstnt);
   DEBUG("Generated constant '%s'\n", value);
+  ACMNT(word);
 }
 
 
@@ -379,6 +380,7 @@ void prsvar()
   if (valtyp != FUNCTION) chksym(word);
   strcpy(value, word);
   DEBUG("Parsed variable '%s'\n", value);
+  ACMNT(word);
 }
 
 /* Parse arithmetic or bitwise operator */

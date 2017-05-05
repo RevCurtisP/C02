@@ -13,7 +13,7 @@ int  nxtptr;          //Pointer to next character in nxtwrd
 char value[LINELEN];  //Term parsed from equation
 int  valtyp;          //Value Type
 char oper;            //Arithmetic or Bitwise Operator
-int cnstnt;           //Value of Parsed Constant
+int  cnstnt;          //Value of Parsed Constant
 
 char defnam[MAXDEF+1][VARLEN+1]; //Definition Name Table
 char deftxt[MAXDEF+1][DEFLEN+1]; //Definition Text Table

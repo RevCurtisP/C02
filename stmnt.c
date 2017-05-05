@@ -15,7 +15,6 @@
 #include "expr.h"
 #include "stmnt.h"
 
-
 /* Process Assignment */
 void prcasn(char trmntr)
 {
@@ -83,10 +82,16 @@ void prcvar(char trmntr)
 }
 
 /* Begin Program Block */
-void bgnblk()
+void bgnblk(int blkflg)
 {
   DEBUG("Begining program block\n", 0);
-  inblck = look('{');  
+  if (blkflg) {
+    expect('{');
+    inblck = TRUE;
+  }
+  else
+    inblck = look('{');
+  DEBUG("Set inblck to %d\n", inblck);
   setblk(inblck);
 }
 
@@ -114,7 +119,7 @@ void pdo() {
   newlbl();                //Create Do Loop Label
   pshlbl(LTDO);            //Push onto Stack
   setlbl(curlbl);          //Set Label to Emit on Next Line
-  bgnblk();                //Check For and Begin Block
+  bgnblk(FALSE);           //Check For and Begin Block
 }
 
 /* parse and compile 'while' after 'do' statement */
@@ -155,7 +160,7 @@ void pfor() {
   prsasn(')');            //Parse Increment Assignment
   asmlin("JMP", tmplbl);  //Jump to Conditional
   setlbl(skplbl);         //Emit Label at Start of Loop  
-  bgnblk();               //Check For and Begin Block
+  bgnblk(FALSE);          //Check For and Begin Block
 }
 
 /* parse and compile if statement */
@@ -165,19 +170,19 @@ void pif() {
   newlbl();            //Create New Label
   pshlbl(LTIF);        //Push Onto Stack
   prscnd(')', FALSE);  //Parse Conditional Expession
-  bgnblk();            //Check For and Begin Block
+  bgnblk(FALSE);       //Check For and Begin Block
 }
 
 /* parse and compile else statement */
 void pelse() {
   DEBUG("Parsing ELSE statement '%c'\n", nxtchr);
-  strcpy(lbltmp, lblasm);
+  strcpy(lbltmp, lblasm);  
   lblasm[0] = 0;
-  newlbl();      //Create New Label
-  pshlbl(LTIF);  //Push Onto Stack
+  newlbl();                 //Create New Label
+  pshlbl(LTIF);             //Push Onto Stack
   asmlin("JMP", curlbl);
   strcpy(lblasm, lbltmp);
-  bgnblk();                //Check For and Begin Block
+  bgnblk(FALSE);           //Check For and Begin Block
 }
 
 /* parse and compile if statement */
@@ -189,13 +194,44 @@ void pgoto() {
   expect(';');  
 }
 
-/* parse and compile if statement */
+/* parse and compile return statement */
 void pretrn() {
   DEBUG("Parsing RETURN statement\n", 0);
   if (!look(';'))
     prsxpr(';');
   asmlin("RTS", "");
 }
+
+/* parse and compile switch statement */
+void pswtch() {
+  DEBUG("Parsing SWITCH statement\n", 0);
+  expect('(');
+  prsxpr(')');
+  newlbl();                
+  pshlbl(LTEND);           
+  bgnblk(TRUE);
+  strcpy(xstmnt,"case");
+}
+
+/* parse and compile case statement */
+void pcase() {
+  DEBUG("Parsing CASE statement\n", 0);
+  prscon(0xff);         //Parse Constant
+  asmlin("CMP", value); 
+  newlbl();
+  pshlbl(LTCASE);
+  asmlin("BNE", curlbl);
+  expect(':');
+}
+
+void pdeflt() {
+  DEBUG("Parsing DEFAULT statement\n", 0);
+  expect(':');
+  if (poplbl() != LTCASE) 
+    ERROR("Encountered default without case\n", 0, EXIT_FAILURE);
+  
+}
+
 
 /* parse and compile while statement */
 void pwhile() {
@@ -211,7 +247,7 @@ void pwhile() {
   prscnd(')', TRUE);       //Parse Conditional Expession
   asmlin("JMP", endlbl);   //Emit Jump to End of Loop
   setlbl(curlbl);          //and Set Label to Emit on Next Line
-  bgnblk();                //Check For and Begin Block
+  bgnblk(FALSE);                //Check For and Begin Block
 }
 
 /* generate unimplemented statement error */
@@ -244,12 +280,16 @@ void prssym()
  * Args: blkflg: End of Multiline Block */
 void endblk(int blkflg)
 {
+  int lbtype;
   DEBUG("Ending program block with flag %d\n", blkflg);
   skpchr();  //Skip '}';
   DEBUG("Found inblck set to %d\n", inblck);
   if (inblck != blkflg)
-    ERROR("Encountered '}' without matching '{'\n",0,EXIT_FAILURE);
-  if (poplbl() == LTDO)
+    ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE);
+  lbtype = poplbl();
+  if (lbtype == LTCASE)
+    ERROR("Ended switch without default\n", 0, EXIT_FAILURE);
+  if (lbtype == LTDO)
     pdowhl(); //Parse While at End of Do Loop
 }
 
@@ -257,31 +297,43 @@ void endblk(int blkflg)
 void pstmnt()
 {
   DEBUG("Parsing statement '%s'\n", word);
-  if(match(':')) {
-    prslbl();  //Parse Label
-    return;
-  }
   if (wordis("do")) {
     pdo();
-    return;
-  }
-  if (wordis("if")) {
-    pif();
     return;
   }
   if (wordis("else")) {
     pelse();
     return;
   }
-  if (wordis("while")) {
-    pwhile();
-    return;  
-  }
   if (wordis("for")) {
     pfor();
     return;  
   }
-  else if (wordis("break"))
+  if (wordis("if")) {
+    pif();
+    return;
+  }
+  if (wordis("switch")) {
+    punimp();
+    return;  
+  }
+  if (wordis("case")) {
+    punimp();
+    return;  
+  }
+  if (wordis("default")) {
+    punimp();
+    return;  
+  }
+  if (wordis("while")) {
+    pwhile();
+    return;  
+  }
+  if(match(':')) {
+    prslbl();  //Parse Label
+    return;
+  }
+  if (wordis("break"))
     pbrcnt(LTEND);
   else if (wordis("continue"))
     pbrcnt(LTLOOP);
