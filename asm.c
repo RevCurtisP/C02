@@ -36,6 +36,7 @@ void chrcmt(char c)
   cmtasm[i] = 0;
 }
 
+/* Process comment */
 void prccmt()
 {
   if (strlen(cmtasm)) {

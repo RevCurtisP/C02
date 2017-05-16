@@ -12,6 +12,7 @@
 #include "files.h"
 #include "asm.h"
 #include "parse.h"
+#include "label.h"
 #include "vars.h"
 
 /* Lookup variable name in variable table   *
@@ -44,6 +45,16 @@ void chksym(char *name)
   if (!symdef(name))
     ERROR("Undeclared variable '%s' encountered\n", word, EXIT_FAILURE);
 }
+
+
+/* Parse Variable Name                      *
+ * Generates error if not a simple variable */
+void reqvar()
+{
+  prsvar();
+  if (valtyp != VARIABLE) 
+    expctd("Variable");
+} 
 
 /* Check for Array specifier and get size *
  * Sets: value - array size (as string)   *
@@ -147,11 +158,40 @@ void addvar(int t)
   varcnt++;   //Increment Variable Counter
 }
 
+/* Add Function Definition */
 void addfnc()
 {
+  strcpy(fncnam, word);   //Save Function Name
+  prmcnt = 0;             //Set Number of Parameters
+  skpspc();               //Skip Spaces
+  if (isalph()) {         //Parse Parameters
+    reqvar();             //Get First Parameter
+    strcpy(prmtra, value);
+    prmcnt++;     
+    if (look(',')) {
+      reqvar();           //Get Second Parameter
+      strcpy(prmtry, value);
+      prmcnt++;     
+      if (look(',')) {
+        reqvar();         //Third Parameter
+        strcpy(prmtrx, value);
+        prmcnt++;     
+      }
+    }
+  }
   expect(')');
-  if (alcvar)
-    setlbl(word); 
+  if (look(';'))          //Forward Definition
+    return;
+  setlbl(fncnam);         //Set Function Entry Point
+  if (prmcnt > 0)       
+    asmlin("STA", prmtra); //Store First Parameter
+  if (prmcnt > 1)
+    asmlin("STY", prmtry); //Store Second Parameter
+  if (prmcnt > 2)
+    asmlin("STX", prmtrx); //Store Third Parameter
+  endlbl[0] = 0;          //Create Dummy End Label
+  pshlbl(LTFUNC, endlbl); //and Push onto Stack
+  bgnblk(TRUE);           //Start Program Block
 }
 
 /* (Check For and) Parse Variable Declaration*/
@@ -161,8 +201,8 @@ void pdecl(int t)
   while(TRUE) {
     getwrd();
     if (look('(')) {
-      addfnc();
-      break;
+      addfnc();  //Add Function Call
+      return;
     }  
     addvar(t);
     if (!look(','))

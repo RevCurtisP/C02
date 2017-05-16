@@ -14,13 +14,6 @@
 #include "label.h"
 #include "expr.h"
 
-/* Set Expession Signedness */
-setsgn(int sgndns)
-{
-  xprsgn = sgndns;
-  DEBUG("Set Expression Signedness to %d\n", xprsgn);
-}
-
 /* Parse value (constant or identifier)  *
  * Sets: value - the value (as a string) *
  *       valtyp - value type           */
@@ -32,8 +25,6 @@ void prsval()
     prscon(0xff); //Parse Constant
   else if (isalph()) {
     prsvar();     //Parse Variable
-    DEBUG("Checking type of variable '%s'\n", value);
-    if (vartyp[lookup(value)] == VTBYTE) setsgn(TRUE);  
   }
   else
     expctd("constant or variable");
@@ -95,16 +86,13 @@ void prsadr()
 void prsstr()
 {
   DEBUG("Parsing anonymous string\n", 0);
-  strcpy(tmplbl, curlbl);//Save Current Label
-  newlbl();              //Generate Label Name
-  strcpy(vrname, curlbl);  //and Use as Variable Name
+  newlbl(vrname);        //Generate Variable Name
   value[0] = 0;          //Use Variable Size 0
   setvar(VTCHAR);        //Set Variable Name, Type, and Size
   prsdts();              //Parse Data String
   setdat();              //Set Variable Data
   varcnt++;              //Increment Variable Counter
-  prcadr(curlbl);        //Compile Address Reference
-  strcpy(curlbl, tmplbl);//Restore Current Label
+  prcadr(vrname);        //Compile Address Reference
 }
 
 /* Parse Additional Function Parameters */
@@ -187,9 +175,10 @@ void prcopr()
       asmlin("AND", term);
       break;
     case '|':
+    case '!': //For systems that don't have pipe in character set
       asmlin("ORA", term);
       break;
-    case '^':
+    case '^': //Looks like an up-arrow in some character sets
       asmlin("EOR", term);
       break;
     default:
@@ -203,11 +192,9 @@ void prsxpr(char trmntr)
 {
   DEBUG("Parsing expression\n", 0);
   skpspc();
-  setsgn(FALSE); //Default Expression to Unsigned
   if (match('-')) {
     DEBUG("Processing unary minus", 0);
     asmlin("LDA", "#$00");  //Handle Unary Minus  
-    setsgn(TRUE); //Expression is Signed
   } 
   else 
     prsftm(); //Parse First Term

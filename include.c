@@ -74,8 +74,6 @@ void phdwrd() {
   getwrd();
   if (wordis("void")) 
     pdecl(VTVOID);
-  else if (wordis("byte")) 
-    pdecl(VTBYTE);
   else if (wordis("char")) 
     pdecl(VTCHAR);
   else {

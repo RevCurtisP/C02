@@ -20,8 +20,20 @@ void prcasn(char trmntr)
 {
   DEBUG("Processing assignment of variable '%s'\n", asnvar);
   expect('=');
-  prsxpr(trmntr);
-  if (strlen(asnidx)) {
+  if (look('(')) {          //Parse Shortcut If 
+    newlbl(cndlbl);         //Create Label for "if FALSE" expression
+    prscnd(')', FALSE);     //Parse Condition
+    expect('?');          
+    prsxpr(':');            //Parse "if TRUE" expression
+    newlbl(tmplbl);         //Create End of Expression Label
+    asmlin("JMP", tmplbl);  //Jump over "if FALSE" expression
+    setlbl(cndlbl);         //Emit "if FALSE" label
+    prsxpr(trmntr);         //Parse "if FALSE" expression
+    setlbl(tmplbl);         //Emit End of Expression Label
+  }
+  else
+    prsxpr(trmntr);
+  if (strlen(asnidx)) { 
     asmlin("LDX", asnidx);
     strcat(asnvar,",X");
   }
@@ -116,9 +128,9 @@ void pbrcnt(int lbtype) {
 /* parse and compile 'do' statement */
 void pdo() {
   DEBUG("Parsing DO statement '%c'\n", nxtchr);
-  newlbl();                //Create Do Loop Label
-  pshlbl(LTDO);            //Push onto Stack
-  setlbl(curlbl);          //Set Label to Emit on Next Line
+  newlbl(loplbl);          //Create Do Loop Label
+  pshlbl(LTDO, loplbl);    //Push onto Stack
+  setlbl(loplbl);          //Set Label to Emit on Next Line
   bgnblk(FALSE);           //Check For and Begin Block
 }
 
@@ -130,10 +142,10 @@ void pdowhl() {
   if (!wordis("while"))
      expctd("while statement");
   expect('(');
-  newlbl();                //Create Skip Label
+  newlbl(cndlbl);           //Create Skip Label
   prscnd(')', FALSE);      //Parse Conditional Expession
   asmlin("JMP", loplbl);   //Emit Jump to Beginning of Loop
-  setlbl(curlbl);          //and Set Label to Emit on Next Line
+  setlbl(cndlbl);          //and Set Label to Emit on Next Line
   expect(';');             //Check for End of Statement
 }
 
@@ -143,23 +155,19 @@ void pfor() {
   DEBUG("Parsing FOR statement '%c'\n", nxtchr);
   expect('(');
   prsasn(';');            //Process Initial Assignment     
-  newlbl();               //Create Temporary Label
-  setlbl(curlbl);         //Set to Emit on Next Line
-  strcpy(tmplbl, curlbl); //and Save it
-  newlbl();               //Create End Label
-  pshlbl(LTEND);          //and Push onto Stack
-  strcpy(endlbl, curlbl); //and Save it
-  newlbl();               //Create Loop Label
-  strcpy(loplbl, curlbl); //and Save it
-  pshlbl(LTLOOP);         //and Push onto Stack
-  newlbl();               //Create Skip Increment Label
-  strcpy(skplbl, curlbl); //and Save it
-  prscnd(';', TRUE);     //Parse Conditional Expession
+  newlbl(forlbl);         //Create For Loop Conditional Label
+  setlbl(forlbl);         //and Set to Emit on Next Line
+  newlbl(endlbl);         //Create End Label
+  pshlbl(LTEND, endlbl);  //and Push onto Stack
+  newlbl(loplbl);         //Create Loop Label
+  pshlbl(LTLOOP, loplbl); //and Push onto Stack
+  newlbl(cndlbl);         //Create Conditional Label
+  prscnd(';', TRUE);      //Parse Conditional Expession
   asmlin("JMP", endlbl);  //Jump over Increment
   setlbl(loplbl);         //Set to Emit on Next Line
   prsasn(')');            //Parse Increment Assignment
-  asmlin("JMP", tmplbl);  //Jump to Conditional
-  setlbl(skplbl);         //Emit Label at Start of Loop  
+  asmlin("JMP", forlbl);  //Jump to Conditional
+  setlbl(cndlbl);         //Emit Label at Start of Loop  
   bgnblk(FALSE);          //Check For and Begin Block
 }
 
@@ -167,8 +175,8 @@ void pfor() {
 void pif() {
   DEBUG("Parsing IF statement '%c'\n", nxtchr);
   expect('(');
-  newlbl();            //Create New Label
-  pshlbl(LTIF);        //Push Onto Stack
+  newlbl(cndlbl);      //Create New Label
+  pshlbl(LTIF,cndlbl); //Push Onto Stack
   prscnd(')', FALSE);  //Parse Conditional Expession
   bgnblk(FALSE);       //Check For and Begin Block
 }
@@ -176,13 +184,13 @@ void pif() {
 /* parse and compile else statement */
 void pelse() {
   DEBUG("Parsing ELSE statement '%c'\n", nxtchr);
-  strcpy(lbltmp, lblasm);  
-  lblasm[0] = 0;
-  newlbl();                 //Create New Label
-  pshlbl(LTIF);             //Push Onto Stack
-  asmlin("JMP", curlbl);
-  strcpy(lblasm, lbltmp);
-  bgnblk(FALSE);           //Check For and Begin Block
+  strcpy(lbltmp, lblasm);   //Save Line Label
+  lblasm[0] = 0;            //and Clear It
+  newlbl(skplbl);           //Create Skip Label
+  pshlbl(LTIF, skplbl);     //Push Onto Stack
+  asmlin("JMP", skplbl);    //Emit Jump over Block Code
+  strcpy(lblasm, lbltmp);   //Restore Line Label
+  bgnblk(FALSE);            //Check For and Begin Block
 }
 
 /* parse and compile if statement */
@@ -200,6 +208,7 @@ void pretrn() {
   if (!look(';'))
     prsxpr(';');
   asmlin("RTS", "");
+  lsrtrn = TRUE;  //Set RETURN flag
 }
 
 /* parse and compile switch statement */
@@ -207,8 +216,8 @@ void pswtch() {
   DEBUG("Parsing SWITCH statement\n", 0);
   expect('(');
   prsxpr(')');
-  newlbl();                
-  pshlbl(LTEND);           
+  newlbl(endlbl);                
+  pshlbl(LTEND, endlbl);           
   bgnblk(TRUE);
   strcpy(xstmnt,"case");
 }
@@ -218,9 +227,9 @@ void pcase() {
   DEBUG("Parsing CASE statement\n", 0);
   prscon(0xff);         //Parse Constant
   asmlin("CMP", value); 
-  newlbl();
-  pshlbl(LTCASE);
-  asmlin("BNE", curlbl);
+  newlbl(skplbl);
+  pshlbl(LTCASE, skplbl);
+  asmlin("BNE", skplbl);
   expect(':');
 }
 
@@ -237,17 +246,16 @@ void pdeflt() {
 void pwhile() {
   DEBUG("Parsing WHILE statement '%c'\n", nxtchr);
   expect('(');
-  newlbl();                //Create End Label
-  pshlbl(LTEND);           //Push onto Stack
-  strcpy(endlbl, curlbl);  //and Save it
-  newlbl();                //create Loop Label
-  setlbl(curlbl);          //Set to Emit on Next Line
-  pshlbl(LTLOOP);          //Push onto Stack
-  newlbl();                //Create Conditional Skip Label
+  newlbl(endlbl);          //Create End Label
+  pshlbl(LTEND, endlbl);   //and Push onto Stack
+  newlbl(loplbl);          //create Loop Label
+  setlbl(loplbl);          //Set to Emit on Next Line
+  pshlbl(LTLOOP, loplbl);  //Push onto Stack
+  newlbl(cndlbl);          //Create Conditional Skip Label
   prscnd(')', TRUE);       //Parse Conditional Expession
   asmlin("JMP", endlbl);   //Emit Jump to End of Loop
-  setlbl(curlbl);          //and Set Label to Emit on Next Line
-  bgnblk(FALSE);                //Check For and Begin Block
+  setlbl(cndlbl);          //and Set Label to Emit on Next Line
+  bgnblk(FALSE);           //Check For and Begin Block
 }
 
 /* generate unimplemented statement error */
@@ -282,7 +290,7 @@ void endblk(int blkflg)
 {
   int lbtype;
   DEBUG("Ending program block with flag %d\n", blkflg);
-  skpchr();  //Skip '}';
+  expect('}'); //Block End Character
   DEBUG("Found inblck set to %d\n", inblck);
   if (inblck != blkflg)
     ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE);
@@ -344,8 +352,8 @@ void pstmnt()
   else
     prssym();
   if (lblcnt && !inblck) {
-  if (poplbl() == LTDO)
-    pdowhl(); //Parse While at End of Do Loop
+    if (poplbl() == LTDO)
+      pdowhl(); //Parse While at End of Do Loop
   }
 }
 

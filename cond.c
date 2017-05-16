@@ -46,68 +46,38 @@ int enccmp(char c)
 void prccmp() 
 {
   DEBUG("Processing comparison operator %d\n", cmprtr);
-  DEBUG("Expression signedness is %d\n", xprsgn);
   switch(cmprtr) {
     case 0: // Raw Expression (Skip)
-      asmlin("BEQ", curlbl);
+      asmlin("BEQ", cndlbl);
       break;
     case 1: // = or ==
       asmlin("CMP", term);
-      asmlin("BNE", curlbl);
+      asmlin("BNE", cndlbl);
       break;
     case 2: // <
-      if (xprsgn) {
-        asmlin("CMP", term);
-        asmlin("BPL", curlbl);
-      }
-      else {
-        asmlin("CMP", term);
-        asmlin("BCS", curlbl);
-      }
+      asmlin("CMP", term);
+      asmlin("BCS", cndlbl);
       break;
     case 3: // <= or =<
-      if (xprsgn) {
-        asmlin("SEC", "");
-        asmlin("SBC", term);
-        asmlin("BVC", "+4");
-        asmlin("EOR", "#$80");
-        asmlin("BPL", curlbl);
-        asmlin("BNE", curlbl);
-      }
-      else {
-        asmlin("CLC", "");
-        asmlin("SBC", term);
-        asmlin("BCS", curlbl);
-      }
+      asmlin("CLC", "");
+      asmlin("SBC", term);
+      asmlin("BCS", cndlbl);
       break;
     case 4: // >
-      if (xprsgn) {
-        asmlin("CMP", term);
-        asmlin("BMI", curlbl);
-        asmlin("BEQ", curlbl);
-      }
-      else {
-        asmlin("CLC", "");
-        asmlin("SBC", term);
-        asmlin("BCC", curlbl);
-      }
+      asmlin("CLC", "");
+      asmlin("SBC", term);
+      asmlin("BCC", cndlbl);
       break;
     case 5: // >= or =>
-      if (xprsgn) {
-        asmlin("CMP", term);
-        asmlin("BMI", curlbl);
-      }
-      else {
-        asmlin("CMP", term);
-        asmlin("BCC", curlbl);
-      }
+      asmlin("CMP", term);
+      asmlin("BCC", cndlbl);
       break;
     case 6: // <> or ><
       asmlin("CMP", term);
-      asmlin("BEQ", curlbl);
+      asmlin("BEQ", cndlbl);
       break;
     case 7: // Raw Expression (Normal)
-      asmlin("BNE", curlbl);
+      asmlin("BNE", cndlbl);
       break;
     default:
       printf("Unsupported comparison operator index %d\n", cmprtr);
@@ -115,10 +85,10 @@ void prccmp()
   }
 }
 
-/* Parse Comparison Operator                      *
- * Sets: cmprtr - Encoded Comparison Operator */
-int prscmp() 
+/* Parse Comparison */
+int prscmp(revrse) 
 {
+  skpspc();
   cmpenc = enccmp(nxtchr);      //Encode Comparison Character
   cmprtr = cmpenc;              //Set Encoded Comparator 
   if (cmprtr) {
@@ -127,7 +97,29 @@ int prscmp()
       cmprtr = cmprtr | cmpenc; //Combine Encoded Comparator
   }
   skpspc();
+  if (cmprtr)
+    prstrm();
+  cmprtr = cmprtr ^ revrse & 7;
+  prccmp();
   DEBUG("Parsed comparator %d\n", cmprtr);
+}
+
+/* Parse Flag Operator */
+void prsflg(int revrse)
+{
+  DEBUG("Parsing Flag Operator '%c'\n", nxtchr);
+  if (match('+')) 
+    cmprtr = 0;
+  else if (match('-'))
+    cmprtr = 1;
+  else
+    expctd("Flag operator");
+  skpchr();
+  cmprtr = cmprtr ^ revrse & 1;
+  if (cmprtr)
+    asmlin("BPL", cndlbl);
+  else
+    asmlin("BMI", cndlbl);
 }
 
 /* Parse and Compile Conditional Expression     *
@@ -140,12 +132,10 @@ void prscnd(char trmntr, int revrse)
     DEBUG("Set revrse to %d\n", revrse);      
   }
   prsxpr(0);
-  skpspc();
-  prscmp();
-  if (cmprtr)
-    prstrm();
-  cmprtr = cmprtr ^ revrse & 7;
-  prccmp();
+  if (look(':'))
+    prsflg(revrse);  //Parse Flag Operator
+  else
+    prscmp(revrse);  //Parse Comparison Operator
   CCMNT(trmntr);
   expect(trmntr);
 }

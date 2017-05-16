@@ -58,10 +58,10 @@ void prslbl()
 }
 
 /* generate new label */
-void newlbl() 
+void newlbl(char* lbname) 
 {
-  sprintf(curlbl, LABFMT, lblnxt++);
-  DEBUG("Generated new label '%s'\n", curlbl);
+  sprintf(lbname, LABFMT, lblnxt++);
+  DEBUG("Generated new label '%s'\n", lbname);
 }
 
 /* Pop Label from Stack and Emit on Next Line */
@@ -71,7 +71,10 @@ int poplbl()
   DEBUG("Popped label type %d\n", lbtype);
   if (lbtype == LTLOOP)
     asmlin("JMP", lblnam[lblcnt--]); //Jump to Beginning of Loop   
-  if (lbtype == LTDO)
+  if (lbtype == LTFUNC) {
+    if (!lsrtrn) asmlin("RTS", "");  //Return From Subroutine
+  }
+  else if (lbtype == LTDO)
     strcpy(loplbl, lblnam[lblcnt]);
   else
     setlbl(lblnam[lblcnt]);
@@ -82,12 +85,12 @@ int poplbl()
 /* Push Label onto Stack        *
  * Args: lbltyp - Label type    *
  * Uses: curlbl - Label to push */
-void pshlbl(int lbtype) 
+void pshlbl(int lbtype, char* lbname) 
 {
   DEBUG("Pushing label type %d\n", lbtype);
-  strcpy(lblnam[lblcnt], curlbl);
+  strcpy(lblnam[lblcnt], lbname);
   lbltyp[lblcnt] = lbtype;
   lblblk[lblcnt++] = FALSE;
-  DEBUG("Pushed label '%s' onto stack\n", curlbl);
+  DEBUG("Pushed label '%s' onto stack\n", lbname);
 }
 

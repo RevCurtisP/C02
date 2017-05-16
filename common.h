@@ -2,6 +2,10 @@
  * C02 Common Definitions & Routines *
  *************************************/
 
+#ifndef COMMON_H
+
+#define COMMON_H          //Define Guard
+
 #define FNAMLEN 255       //Maximum File Name Length
 #define LINELEN 255       //Maximum Input/Output Line Length
 #define DEFLEN 9          //Maximum Definition Text Length
@@ -47,8 +51,11 @@ char inpnam[FNAMLEN]; //Include File Name
 
 int alcvar; //Allocate Variables Flag
 
+int lsrtrn; //Last Statement was a Return
+
 void exterr(int errnum); //Print current file name & position and exit
 void expctd(char *expected); //Print Expected message and exit
 
 void prtpos(); //Print current file name and position
 
+#endif

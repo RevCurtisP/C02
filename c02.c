@@ -46,6 +46,7 @@ void init()
 /* Reads and parses the next Word in Source File */
 pword()
 {
+  lsrtrn = FALSE; //Clear RETURN flag
   getwrd();
   ACMNT(word);
   DEBUG("Parsing Word '%s'\n", word);
@@ -54,8 +55,8 @@ pword()
       xstmnt[0] = 0;
     else
       ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE);
-  if (wordis("byte")) 
-    pdecl(VTBYTE);   //Parse 'byte' declaration
+  if (wordis("void")) 
+    pdecl(VTVOID);   //Parse 'void' declaration
   else if (wordis("char")) 
     pdecl(VTCHAR);   //Parse 'char' declaration
   else 
