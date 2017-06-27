@@ -8,7 +8,7 @@
 
 #define FNAMLEN 255       //Maximum File Name Length
 #define LINELEN 255       //Maximum Input/Output Line Length
-#define DEFLEN 9          //Maximum Definition Text Length
+#define DEFLEN 6          //Maximum Definition Text Length
 #define MAXDEF 255        //Maximum Number of Definitions
 #define VARLEN 6          //Maximum Variable Length
 #define MAXVAR 255        //Maximum Number of Variables
@@ -21,6 +21,7 @@
 
 #define CPUOP  "PROCESSOR" //Target CPU Pseudo-Operator 
 #define CPUARG "6502"      //Target CPU Operand
+#define ORGOP  "ORG"       //Equate Pseudo-Op
 #define EQUOP  "EQU"       //Equate Pseudo-Op
 #define BYTEOP "DC"        //Define Byte Pseudo-Op
 #define STROP  "DS"        //Define String Pseudo-Op

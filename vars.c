@@ -18,7 +18,7 @@
 /* Lookup variable name in variable table   *
  * Returns index into varnam array        *
  *         FALSE if variable was not found  */
-int lookup(char *name) 
+int fndvar(char *name) 
 {
   int i;
   DEBUG("Looking up variable '%s'\n", word);
@@ -32,28 +32,36 @@ int lookup(char *name)
 /* Check if variable has been defined */
 int symdef(char *name) 
 {
-  if (lookup(name) < 0)
-    return FALSE;
-  else
+  if (fndvar(name) > -1)
     return TRUE;
+  else
+    return FALSE;
 }  
 
 /* Check for variable                       *
- * Generates error if variable is undefined */
-void chksym(char *name) 
+ * Generates error if variable is undefined *
+ * Args: alwreg - allow register name       *
+ *       name - variable name               */
+void chksym(int alwreg, char *name) 
 {
+  if (strlen(name) == 1 && strchr("AXY", name[0])) {
+    if (alwreg) return;
+    else ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE);
+  }
   if (!symdef(name))
-    ERROR("Undeclared variable '%s' encountered\n", word, EXIT_FAILURE);
+    ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE);
 }
 
 
-/* Parse Variable Name                      *
- * Generates error if not a simple variable */
-void reqvar()
+/* Parse Variable Name                         *
+ * Parameters: alwary - Allow Array Reference *
+ * Sets: vrname - operand for LDA/STA/LDY/STY */
+void reqvar(int alwary)
 {
-  prsvar();
-  if (valtyp != VARIABLE) 
-    expctd("Variable");
+  prsvar(FALSE);
+  if (!alwary)
+    if (valtyp != VARIABLE) 
+      expctd("Variable");
 } 
 
 /* Check for Array specifier and get size *
@@ -67,7 +75,7 @@ void pvarsz()
     skpchr();
     if (alcvar) {
       DEBUG("Parsing array size\n", 0);
-      prsnum(0xFF);
+      sprintf(value, "%d", prsnum(0xFF) + 1);
     }
     expect(']');
   }
@@ -79,7 +87,22 @@ void pvarsz()
 void prsdtc()
 {
   dtype = DTBYTE;
-  prscon(0xff);
+  prscon();
+}
+
+/* Parse Data Array */
+void prsdta()
+{
+  dtype = DTARRY;
+  expect('{');
+  dlen = 0;
+  while (TRUE) {
+    prscon();
+    dattmp[dlen++] = cnstnt;
+    if (!look(',')) 
+      break;  
+  }
+  expect('}');
 }
 
 /* Parse Data String */
@@ -103,6 +126,11 @@ void setdat()
     dlen = 1;
     datvar[dsize++] = cnstnt;
   }
+  else if (dtype == DTARRY) {
+    DEBUG("Setting variable data to array of length %d\n", dlen);
+    for (i=0; i<dlen; i++) 
+      datvar[dsize++] = dattmp[i];   
+  }
   else {
     DEBUG("Setting variable data to '%s'\n", value);
     dlen = strlen(value);
@@ -122,10 +150,12 @@ void prsdat()
     return;
   }
   skpspc();
-  if (isnpre())
-    prsdtc(0xff);   //Parse Data Constant
+  if (iscpre())
+    prsdtc();   //Parse Data Constant
   else if (match('"'))
     prsdts();       //Parse Data String
+  else if (match('{'))
+    prsdta();       //Parse Data Array
   else
     expctd("numeric or string constant");
   setdat();   //Store Data Value
@@ -145,35 +175,45 @@ void setvar(int t)
 
 /* Parse and Compile Variable Declaration *
  * Uses: word - variable name     */
-void addvar(int t) 
+void addvar(int m, int t) 
 {
   strcpy(vrname, word); //Save Variable Name
   if (symdef(vrname))
     ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE);
   if (t == VTVOID)
     ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
-  pvarsz();   //Check for Array Declaration and Get Size
+  if (m == MTZP) {
+    setlbl(vrname);
+    sprintf(word, "$%hhX", zpaddr++);
+    asmlin(EQUOP, word);
+    strcpy(value, "*"); //Set Variable Type to Zero Page  
+  }
+  else
+    pvarsz();   //Check for Array Declaration and Get Size
   setvar(t);  //Add to Variable Table  
-  prsdat();   //Parse Variable Data
+  if (m != MTZP)
+    prsdat();   //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 
 /* Add Function Definition */
 void addfnc()
 {
+  ACMNT(word);
+  expect('(');
   strcpy(fncnam, word);   //Save Function Name
   prmcnt = 0;             //Set Number of Parameters
   skpspc();               //Skip Spaces
   if (isalph()) {         //Parse Parameters
-    reqvar();             //Get First Parameter
+    reqvar(FALSE);        //Get First Parameter
     strcpy(prmtra, value);
     prmcnt++;     
     if (look(',')) {
-      reqvar();           //Get Second Parameter
+      reqvar(FALSE);      //Get Second Parameter
       strcpy(prmtry, value);
       prmcnt++;     
       if (look(',')) {
-        reqvar();         //Third Parameter
+        reqvar(FALSE);    //Third Parameter
         strcpy(prmtrx, value);
         prmcnt++;     
       }
@@ -195,20 +235,50 @@ void addfnc()
 }
 
 /* (Check For and) Parse Variable Declaration*/
-void pdecl(int t)
+void pdecl(int m, int t)
 {
   DEBUG("Processing variable declarations(s) of type %d\n", t);
   while(TRUE) {
     getwrd();
-    if (look('(')) {
+    if (match('(')) {
+      if (m != MTNONE) {
+        ERROR("Illegal Modifier %d in Function Definion", m, EXIT_FAILURE);
+      }
       addfnc();  //Add Function Call
       return;
     }  
-    addvar(t);
+    addvar(m, t);
     if (!look(','))
       break;
   }    
   expect(';');
+}
+
+/* Check for and Parse Type Keyword */
+int ptype(int m) 
+{
+  int result = TRUE;
+  if (wordis("VOID"))
+    pdecl(m, VTVOID);   //Parse 'void' declaration
+  else if (wordis("CHAR"))
+    pdecl(m, VTCHAR);   //Parse 'char' declaration
+  else
+    result = FALSE;
+  return result;
+}
+
+/* Check for and Parse Modifier */
+int pmodfr() 
+{
+  DEBUG("Parsing modifier '%s'\n", word);
+  int result = TRUE;
+  if (wordis("ZEROPAGE")) {
+    getwrd();
+    ptype(MTZP);  
+  }
+  else
+    result = FALSE;
+  return result;
 }
 
 /* Write Variable Data */
@@ -238,7 +308,7 @@ void vartbl()
     DEBUG("Set Label to '%s'\n", lblasm);
     if (strcmp(varsiz[i], "*") == 0)
       continue;
-    else if (datlen[i])
+    if (datlen[i])
       vardat(i);  //Write Variable Data
     else if (strlen(varsiz[i]) > 0) {
       DEBUG("Allocating array '%s'\n", varnam[i]);
@@ -249,6 +319,7 @@ void vartbl()
       asmlin(BYTEOP, "0");
     }
   }
+  vrwrtn = TRUE;
 }
 
 /* Print Variable Table to Log File */

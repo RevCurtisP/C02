@@ -15,80 +15,97 @@
 #include "expr.h"
 #include "stmnt.h"
 
+/* Parse Shortcut If */
+void prssif(char trmntr) {
+  newlbl(cndlbl);         //Create Label for "if FALSE" expression
+  prscnd(')', FALSE);     //Parse Condition
+  expect('?');          
+  prsxpr(':');            //Parse "if TRUE" expression
+  newlbl(tmplbl);         //Create End of Expression Label
+  asmlin("JMP", tmplbl);  //Jump over "if FALSE" expression
+  setlbl(cndlbl);         //Emit "if FALSE" label
+  prsxpr(trmntr);         //Parse "if FALSE" expression
+  setlbl(tmplbl);         //Emit End of Expression Label
+}
+
+
 /* Process Assignment */
 void prcasn(char trmntr)
 {
-  DEBUG("Processing assignment of variable '%s'\n", asnvar);
   expect('=');
-  if (look('(')) {          //Parse Shortcut If 
-    newlbl(cndlbl);         //Create Label for "if FALSE" expression
-    prscnd(')', FALSE);     //Parse Condition
-    expect('?');          
-    prsxpr(':');            //Parse "if TRUE" expression
-    newlbl(tmplbl);         //Create End of Expression Label
-    asmlin("JMP", tmplbl);  //Jump over "if FALSE" expression
-    setlbl(cndlbl);         //Emit "if FALSE" label
-    prsxpr(trmntr);         //Parse "if FALSE" expression
-    setlbl(tmplbl);         //Emit End of Expression Label
-  }
-  else
-    prsxpr(trmntr);
-  if (strlen(asnidx)) { 
-    asmlin("LDX", asnidx);
-    strcat(asnvar,",X");
-  }
-  asmlin("STA", asnvar);
-}
-
-void prcpop() {
-  DEBUG("Processing post operation '%c'\n", oper);
-  switch(oper)
-  {
-    case '+': 
-      asmlin("INC", asnvar);
-      break;
-    case '-':
-      asmlin("DEC", asnvar);
-      break;
-    case '<':
-      asmlin("ASL", asnvar);
-      break;
-    case '>':
-      asmlin("LSR", asnvar);
-      break;
-    default:
-      printf("Unrecognized post operator '%c'\n", oper);
-      exterr(EXIT_FAILURE);
-  }
-}
-
-/* Parse Post Operator */
-void prspop(char trmntr) {
-  oper = getnxt();
-  CCMNT(oper); CCMNT(oper);
-  DEBUG("Checking for post operation '%c'\n", oper);
-  if (nxtchr == oper) {
-    skpchr();
-    prcpop();  //Process Post-Op
+  if (strlen(asnvar) == 1 && strchr("XY", asnvar[0])) {
+    DEBUG("Processing assignment of register '%s'\n", asnvar);    
+    prsval(TRUE); //Get value to assign
     expect(trmntr);
+    if (strlen(value) == 1 && strchr("XY", value[0])) {
+      ERROR("Illegal Reference to Register %s\n", value, EXIT_FAILURE);
+    }
+    if (asnvar[0] == 'X') {
+      if (strcmp(value, "A") == 0)
+        asmlin("TAX", "");
+      else
+        asmlin("LDX", value);
+    }  
+    else {
+      if (strcmp(value, "A") == 0)
+        asmlin("TAY", "");
+      else
+        asmlin("LDY", value);    
+    }
+    return;
   }
+  DEBUG("Processing assignment of variable '%s'\n", asnvar);
+  if (look('(')) 
+    prssif(trmntr); //Parse Shortcut If 
   else
-    expctd("post operator"); 
+    prsxpr(trmntr); //Parse Expression
+  /* if (strcmp(asnvar, "X")==0)
+    asmlin("TAX", "");
+  else if (strcmp(asnvar, "Y")==0)
+    asmlin("TAY", "");
+  else */
+  if ((strcmp(asnvar, "A")!=0))
+  {
+    if (strlen(asnidx)) { 
+      if (asnivt == CONSTANT) {
+        strcat(asnvar, "+");
+        strcat(asnvar, asnidx);
+      }
+      else {
+        asmlin("LDX", asnidx);
+        strcat(asnvar,",X");
+      }
+    }
+    asmlin("STA", asnvar);
+  }
+}
+
+void poperr() 
+{
+  printf("Illegal post-operation %c%c on register %s\n", oper, oper, asnvar);
+  exterr(EXIT_FAILURE);
 }
 
 /* Process Variable at Beginning of Statement */
 void prcvar(char trmntr)
 {
-  chksym(word);
+  chksym(TRUE, word);
   strcpy(asnvar, word);  //sav variable to assign to
+  if (valtyp == VARIABLE && look(';')) {
+    asmlin("STA", asnvar);
+    return;
+  }
   if (valtyp == ARRAY) {
     prsidx();  //Parse Array Index
+    asnivt = valtyp;
     strncpy(asnidx, value, VARLEN);
   }
   else
     asnidx[0] = 0;
-  if (ispopr(nxtchr))
-    prspop(trmntr);  //Parse Post Operator
+  if (ispopr()) {
+    if (prspst(trmntr, asnvar)) //Parse Post Operator
+      expctd("post operator");
+  }
   else
     prcasn(trmntr);
 }
@@ -107,6 +124,31 @@ void bgnblk(int blkflg)
   setblk(inblck);
 }
 
+/* Parse 'asm' String Parameter */
+void pasmst(char trmntr)
+{
+  skpspc(); //Skip Spaces
+  if (!match('"')) 
+    expctd("string");
+  getstr();
+  skpspc();
+  expect(trmntr);
+}
+
+/* Parse and Compile 'asm' statement */
+void pasm()
+{
+  char opcode[LINELEN];
+  expect('(');
+  pasmst(',');    
+  if (strlen(word)) setlbl(word);
+  pasmst(',');
+  strcpy(opcode, word);
+  pasmst(')');
+  expect(';');
+  asmlin(opcode, word);
+}
+
 /* Parse and Compile and Assignment */
 void prsasn(char trmntr) 
 {
@@ -116,9 +158,10 @@ void prsasn(char trmntr)
 }
 
 /* parse and compile 'break'/'continue' statement */
-void pbrcnt(int lbtype) {
+void pbrcnt(int lbtyp1, int lbtyp2) 
+{
   DEBUG("Parsing BREAK/CONTINUE statement\n", 0);
-  if (lstlbl(lbtype) < 0)
+  if (lstlbl(lbtyp1, lbtyp2) < 0)
     ERROR("Break/continue statement outside of loop\n", 0, EXIT_FAILURE);
   DEBUG("Found Label '%s'\n", tmplbl);
   asmlin("JMP", tmplbl);
@@ -126,11 +169,15 @@ void pbrcnt(int lbtype) {
 }
 
 /* parse and compile 'do' statement */
-void pdo() {
+void pdo() 
+{
   DEBUG("Parsing DO statement '%c'\n", nxtchr);
-  newlbl(loplbl);          //Create Do Loop Label
+  newlbl(endlbl);          //Create End Label
+  pshlbl(LTDWHL, endlbl);   //and Push onto Stack
+  reqlbl(loplbl);          //Get or Create/Set Loop Label
+  //newlbl(loplbl);          //Create Do Loop Label
+  //setlbl(loplbl);          //Set Label to Emit on Next Line
   pshlbl(LTDO, loplbl);    //Push onto Stack
-  setlbl(loplbl);          //Set Label to Emit on Next Line
   bgnblk(FALSE);           //Check For and Begin Block
 }
 
@@ -139,14 +186,17 @@ void pdowhl() {
   DEBUG("Parsing WHILE after DO '%c'\n", nxtchr);
   getwrd();                //Check for While
   ACMNT(word);
-  if (!wordis("while"))
+  if (!wordis("WHILE"))
      expctd("while statement");
   expect('(');
-  newlbl(cndlbl);           //Create Skip Label
-  prscnd(')', FALSE);      //Parse Conditional Expession
-  asmlin("JMP", loplbl);   //Emit Jump to Beginning of Loop
-  setlbl(cndlbl);          //and Set Label to Emit on Next Line
-  expect(';');             //Check for End of Statement
+  //poplbl();               //Pop While Conditional Label
+  strcpy(cndlbl, loplbl);   //Set Conditional Label to Loop Label
+  prscnd(')', TRUE);       //Parse Conditional Expession
+  //asmlin("JMP", loplbl); //Emit Jump to Beginning of Loop
+  //setlbl(cndlbl);         //and Set Label to Emit on Next Line
+  poplbl();               //Pop While Conditional Label
+  setlbl(endlbl);         //and Set Label to Emit on Next Line
+  expect(';');              //Check for End of Statement
 }
 
 
@@ -198,8 +248,72 @@ void pgoto() {
   DEBUG("Parsing GOTO statement\n", 0);
   getwrd();
   ACMNT(word);
-  asmlin("JMP", word);
   expect(';');  
+  asmlin("JMP", word);
+}
+
+/* parse and compile inline statement */
+void pinlne()
+{
+  DEBUG("Parsing INLINE statement\n", 0);
+  do { 
+    DEBUG("Parsing inline parameter\n", 0);
+    if (look('&')) {
+      reqvar(FALSE); //Get Variable Name
+      strcpy(word, "<");
+      strcat(word, value);
+      strcat(word, ", >");
+      strcat(word, value);
+      asmlin(BYTEOP, word);
+    }
+    else if (look('"')) {
+      value[0] = 0;
+      while (!match('"')) {
+        CCMNT(nxtchr);
+        sprintf(word, "$%hhX,", getnxt());
+        strcat(value, word);
+      }
+      strcat(value,"0");
+      CCMNT(nxtchr);
+      skpchr(); //Skip Terminating Quote
+      asmlin(BYTEOP, value);
+    }
+    else {
+      prscon(0xFF);
+      sprintf(word, "$%hhX", cnstnt); //not needed?
+      asmlin(BYTEOP, value);
+    }
+  } while (look(','));
+  expect(';');
+}
+
+/* parse and compile pop statement */
+void ppop()
+{
+  DEBUG("Parsing POP statement\n", 0);
+  do {  
+    asmlin("PLA", "");     //Pop Value off Stack
+    if (!look('*')) {
+      reqvar(TRUE);
+      strcpy(term, value);
+      chkidx();
+      asmlin("STA", term);
+    } 
+  } while (look(','));
+  expect(';');  
+}
+
+/* parse and compile push statement */
+void ppush()
+{
+  DEBUG("Parsing PUSH statement\n", 0);
+  do { 
+    if (!chkadr(1)) {
+      prsxpr(0);        //Parse Expression
+      asmlin("PHA",""); //Push Result on Stack
+    }
+  } while (look(','));
+  expect(';');
 }
 
 /* parse and compile return statement */
@@ -211,50 +325,22 @@ void pretrn() {
   lsrtrn = TRUE;  //Set RETURN flag
 }
 
-/* parse and compile switch statement */
-void pswtch() {
-  DEBUG("Parsing SWITCH statement\n", 0);
-  expect('(');
-  prsxpr(')');
-  newlbl(endlbl);                
-  pshlbl(LTEND, endlbl);           
-  bgnblk(TRUE);
-  strcpy(xstmnt,"case");
-}
-
-/* parse and compile case statement */
-void pcase() {
-  DEBUG("Parsing CASE statement\n", 0);
-  prscon(0xff);         //Parse Constant
-  asmlin("CMP", value); 
-  newlbl(skplbl);
-  pshlbl(LTCASE, skplbl);
-  asmlin("BNE", skplbl);
-  expect(':');
-}
-
-void pdeflt() {
-  DEBUG("Parsing DEFAULT statement\n", 0);
-  expect(':');
-  if (poplbl() != LTCASE) 
-    ERROR("Encountered default without case\n", 0, EXIT_FAILURE);
-  
-}
-
-
 /* parse and compile while statement */
 void pwhile() {
   DEBUG("Parsing WHILE statement '%c'\n", nxtchr);
   expect('(');
   newlbl(endlbl);          //Create End Label
   pshlbl(LTEND, endlbl);   //and Push onto Stack
-  newlbl(loplbl);          //create Loop Label
-  setlbl(loplbl);          //Set to Emit on Next Line
+  reqlbl(loplbl);           //Get or Create/Set Loop Label
+  //newlbl(loplbl);          //create Loop Label
+  //setlbl(loplbl);          //Set to Emit on Next Line
   pshlbl(LTLOOP, loplbl);  //Push onto Stack
-  newlbl(cndlbl);          //Create Conditional Skip Label
-  prscnd(')', TRUE);       //Parse Conditional Expession
-  asmlin("JMP", endlbl);   //Emit Jump to End of Loop
-  setlbl(cndlbl);          //and Set Label to Emit on Next Line
+  if (!look(')')) {  
+    newlbl(cndlbl);          //Create Conditional Skip Label
+    prscnd(')', TRUE);       //Parse Conditional Expession
+    asmlin("JMP", endlbl);   //Emit Jump to End of Loop
+    setlbl(cndlbl);          //and Set Label to Emit on Next Line
+  }
   bgnblk(FALSE);           //Check For and Begin Block
 }
 
@@ -263,13 +349,11 @@ void punimp() {
   ERROR("Unimplemented statement '%s' encountered\n", word, EXIT_FAILURE);  
 }
 
-
 /* Parse Function Call as Statement */
 void prsfns()
 {
   strcpy(term, word);  //Copy Function Name
-  prsfnc();            //Parse Function Call
-  expect(';');
+  prsfnc(';');            //Parse Function Call
   return;
 }
 
@@ -295,8 +379,6 @@ void endblk(int blkflg)
   if (inblck != blkflg)
     ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE);
   lbtype = poplbl();
-  if (lbtype == LTCASE)
-    ERROR("Ended switch without default\n", 0, EXIT_FAILURE);
   if (lbtype == LTDO)
     pdowhl(); //Parse While at End of Do Loop
 }
@@ -305,35 +387,35 @@ void endblk(int blkflg)
 void pstmnt()
 {
   DEBUG("Parsing statement '%s'\n", word);
-  if (wordis("do")) {
+  if (wordis("DO")) {
     pdo();
     return;
   }
-  if (wordis("else")) {
+  if (wordis("ELSE")) {
     pelse();
     return;
   }
-  if (wordis("for")) {
+  if (wordis("FOR")) {
     pfor();
     return;  
   }
-  if (wordis("if")) {
+  if (wordis("IF")) {
     pif();
     return;
   }
-  if (wordis("switch")) {
+  if (wordis("SWITCH")) {
     punimp();
     return;  
   }
-  if (wordis("case")) {
+  if (wordis("CASE")) {
     punimp();
     return;  
   }
-  if (wordis("default")) {
+  if (wordis("DEFAULT")) {
     punimp();
     return;  
   }
-  if (wordis("while")) {
+  if (wordis("WHILE")) {
     pwhile();
     return;  
   }
@@ -341,13 +423,21 @@ void pstmnt()
     prslbl();  //Parse Label
     return;
   }
-  if (wordis("break"))
-    pbrcnt(LTEND);
-  else if (wordis("continue"))
-    pbrcnt(LTLOOP);
-  else if (wordis("goto"))
+  if (wordis("ASM"))
+    pasm();
+  else if (wordis("BREAK"))
+    pbrcnt(LTEND, LTDWHL);
+  else if (wordis("CONTINUE"))
+    pbrcnt(LTLOOP, LTDO);
+  else if (wordis("GOTO"))
     pgoto();
-  else if (wordis("return"))
+  else if (wordis("INLINE"))
+    pinlne();
+  else if (wordis("POP"))
+    ppop();
+  else if (wordis("PUSH"))
+    ppush();
+  else if (wordis("RETURN"))
     pretrn();
   else
     prssym();

@@ -55,14 +55,68 @@ void incasm() {
   clsinc();
 }
 
+/* Process define directive */
+void pdefin() 
+{
+  getwrd(); //get defined identifier
+  DEBUG("Defining '%s'\n", word);
+  strncpy(defnam[defcnt], word, VARLEN);
+  setlbl(word); //Set label Assembler Line
+  expect('=');
+  defval[defcnt++] = prsbyt(); //Get Value
+  asmlin(EQUOP, value); //Write Definition
+  DEBUG("Defined as '%s'\n", value);
+}
+
+/* Parse Origin Subdirective */
+void porign()
+{
+  prsnum(0xFFFF); //Get Origin Address
+  asmlin(ORGOP, value); //Emit Origin Instruction
+  DEBUG("Set origin to %s\n", value);
+}
+
+/* Parse Origin Subdirective */
+void prszpg()
+{
+  zpaddr = prsnum(0xFF); //Set Zero Page Address to Constant
+  DEBUG("Set zero page address to %d\n", zpaddr);
+}
+
+/* Process Vartable Subdirective */
+void pvrtbl()
+{
+  if (vrwrtn) {
+    ERROR("Variable table already written", 0, EXIT_FAILURE);
+  }
+  vartbl(); //Write Variable Table
+}
+
+/* Parse Pragma Directive */
+void pprgma()
+{
+  getwrd(); //Get Pragma Subdirective
+  DEBUG("Parsing pragma directive '%s'\n", word);
+  if (wordis("ORIGIN"))
+    porign(); //Parse Origin
+  else if (wordis("VARTABLE"))
+    pvrtbl(); //Parse Vartable
+  else if (wordis("ZEROPAGE"))
+    prszpg(); //Parse Origin
+  else 
+    ERROR("Illegal pragma subdirective '%s'\n", word, EXIT_FAILURE);
+}
+
 /* Process Include File Directive */
 void pincdr()
 {
   skpchr();            //skip '#'
   getwrd();            //read directive into word
   DEBUG("Processing include file directive '%s'\n", word);
-  if (wordis("define")) 
-    prsdef();
+  if (wordis("DEFINE")) 
+    pdefin();
+  if (wordis("PRAGMA")) 
+    pprgma();
   else {
     printf("Unrecognized directive '%s'\n", word);
     exterr(EXIT_FAILURE);
@@ -72,11 +126,7 @@ void pincdr()
 /* Parse Header Word */
 void phdwrd() {
   getwrd();
-  if (wordis("void")) 
-    pdecl(VTVOID);
-  else if (wordis("char")) 
-    pdecl(VTCHAR);
-  else {
+  if (!ptype(MTNONE)) {
     printf("Unexpected word '%s' in header\n", word);
     exterr(EXIT_FAILURE); 
   }
@@ -151,13 +201,15 @@ void pincfl()
     printf("Invalid include file name '%sn", incnam);
     exterr(EXIT_FAILURE);  
   }
+  if (strcmp(dot, ".a02") == 0) 
+    incasm();
   if (strcmp(dot, ".asm") == 0) 
     incasm();
   else if (strcmp(dot, ".h") == 0) 
     include_hfil();
   else if (strcmp(dot, ".h02") == 0) { 
     inchdr();  //Process Header File
-    strcpy(dot, ".asm");
+    strcpy(dot, ".a02");
     incasm();  //Process Assembly File with Same Name
   }
   else {
@@ -165,4 +217,16 @@ void pincfl()
     exterr(EXIT_FAILURE);
   }   
 }
+
+/* Print Definition Table to Log File */
+void logdef()
+{
+  int i;
+  fprintf(logfil, "\n%-31s %5s\n", "Definition", "Value");
+  for (i=0; i<defcnt; i++)
+  {
+    fprintf(logfil, "%-31s %5d\n", defnam[i], defval[i]);
+  }
+}
+
 

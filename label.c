@@ -13,17 +13,21 @@
 #include "parse.h"
 #include "label.h"
 
-/* Find Last Label of Specified Type *
- * Args: lbtype: Label type          *
- * Sets: tmplbl - Label name         *
- * Returns: Index into label table   *
- *          (-1 if not found)        */
-int lstlbl(int lbtype)
+/* Find Last Label of Specified Types *
+ * Args: lbtyp1: First label type     *
+ *       lbtyp2: Second label type    *
+ * Sets: tmplbl - Label name          *
+ * Returns: Index into label table    *
+ *          (-1 if not found)         */
+int lstlbl(int lbtyp1, int lbtyp2)
 {
   int i;
-  DEBUG("Searching for label type %d\n", lbtype);
-  for (i = lblcnt - 1; i>-1; i--) 
-    if (lbltyp[i] == lbtype) break;
+  DEBUG("Searching for label type %d ", lbtyp1);
+  DEBUG("and label type %d\n",lbtyp2);
+  for (i = lblcnt - 1; i>-1; i--) {
+    if (lbltyp[i] == lbtyp1) break;
+    if (lbltyp[i] == lbtyp2) break;
+  }
   DEBUG("Search produced label index %d\n", i);
   if (i>=0) 
     strcpy(tmplbl, lblnam[i]);
@@ -42,8 +46,10 @@ void setblk(int blkflg)
 void setlbl(char *lblset)
 {
   DEBUG("Setting Label '%s'\n", lblset);
-  if (strlen(lblasm) > 0)
+  if (strlen(lblasm) > 0) {
+    DEBUG("Emitting Label '%s'\n'", lblasm);
     asmlin("",""); //Emit Block End Label on it's own line
+  }
   if (strlen(lblset) > LABLEN) 
     ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE);
   strcpy(lblasm, lblset);
@@ -53,6 +59,7 @@ void setlbl(char *lblset)
 void prslbl()
 {
   DEBUG("Parsing Label '%s''\n", word);
+  CCMNT(nxtchr);
   skpchr(); //skip ':'
   setlbl(word);
 }
@@ -63,6 +70,22 @@ void newlbl(char* lbname)
   sprintf(lbname, LABFMT, lblnxt++);
   DEBUG("Generated new label '%s'\n", lbname);
 }
+
+/* require label                               *
+ * if label is already set, returns that label *
+ * else generates new label and sets it        */
+void reqlbl(char* lbname) 
+{
+  if (lblasm[0])
+    strcpy(lbname, lblasm);
+  else {
+    newlbl(lbname);
+    setlbl(lbname);
+  }
+    
+}
+
+
 
 /* Pop Label from Stack and Emit on Next Line */
 int poplbl() 
@@ -76,6 +99,9 @@ int poplbl()
   }
   else if (lbtype == LTDO)
     strcpy(loplbl, lblnam[lblcnt]);
+  else if (lbtype == LTDWHL)
+    strcpy(endlbl, lblnam[lblcnt]);
+    //strcpy(cndlbl, lblnam[lblcnt]);
   else
     setlbl(lblnam[lblcnt]);
   inblck = lblblk[lblcnt-1];

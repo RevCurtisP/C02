@@ -4,20 +4,22 @@
 
 #define TF(x) (x) ? TRUE : FALSE;
 
-enum trmtxts {CONSTANT, VARIABLE, ARRAY, FUNCTION};
-enum etypes {ETDEF, ETMAC};      //Definition Types
+enum stypes {CONSTANT, VARIABLE, ARRAY, FUNCTION};  //Symbol Types
+enum etypes {ETDEF, ETMAC};                         //Definition Types
 
 char word[LINELEN];   //Word parsed from source file
+char uword[LINELEN];  //Word converted too uppercase
 char nxtwrd[LINELEN]; //Next Word (from DEFINE lookup)
 int  nxtptr;          //Pointer to next character in nxtwrd
 char value[LINELEN];  //Term parsed from equation
 int  valtyp;          //Value Type
 char oper;            //Arithmetic or Bitwise Operator
-int  cnstnt;          //Value of Parsed Constant
+int  cnstnt;          //Value of Parsed Constant  
 
 char defnam[MAXDEF+1][VARLEN+1]; //Definition Name Table
-char deftxt[MAXDEF+1][DEFLEN+1]; //Definition Text Table
+int  defval[MAXDEF+1];           //Definition Value Table
 int  defcnt;                     //Number of Definitions Defined
+int  defidx;                     //Index into Definition Tables
 
 int match(char c);             //Does Next Character match c
 int inbtwn(char mn, char mx); //Is Next Character in Range ()mn - mx)
@@ -48,10 +50,9 @@ void skpcmt();                 //Skip to End of Comment
 
 void getwrd();                 //Get Next Word
 
-void expdef();  //Check for and Expand Definition
-
 int prsdec();                  //Get Decimal Number 
 
-void prscon(int maxval);       //Parse a Constant
+void prscon();                 //Parse a Constant
 void prsopr();                 //Parse Arithmetic Operator
-void prsvar();                 //Parse Variable
+void prsvar(int alwreg);       //Parse Variable
+

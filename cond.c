@@ -86,7 +86,7 @@ void prccmp()
 }
 
 /* Parse Comparison */
-int prscmp(revrse) 
+int prscmp(int revrse) 
 {
   skpspc();
   cmpenc = enccmp(nxtchr);      //Encode Comparison Character
@@ -131,12 +131,12 @@ void prscnd(char trmntr, int revrse)
     revrse = (revrse) ? FALSE: TRUE;
     DEBUG("Set revrse to %d\n", revrse);      
   }
-  prsxpr(0);
+  if (!look('*'))
+    prsxpr(0);
   if (look(':'))
     prsflg(revrse);  //Parse Flag Operator
   else
     prscmp(revrse);  //Parse Comparison Operator
-  CCMNT(trmntr);
   expect(trmntr);
 }
 

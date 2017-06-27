@@ -41,7 +41,11 @@ void init()
   xstmnt[0] = 0;
   nxtwrd[0] = 0;
   nxtptr = 0;
+  vrwrtn = FALSE;
+  zpaddr = 0;
 }
+
+
 
 /* Reads and parses the next Word in Source File */
 pword()
@@ -55,11 +59,7 @@ pword()
       xstmnt[0] = 0;
     else
       ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE);
-  if (wordis("void")) 
-    pdecl(VTVOID);   //Parse 'void' declaration
-  else if (wordis("char")) 
-    pdecl(VTCHAR);   //Parse 'char' declaration
-  else 
+  if (!pmodfr() && !ptype(MTNONE))
     pstmnt();     //Parse Statement
 }
 
@@ -69,17 +69,22 @@ void pdrctv()
   skpchr();            //skip '#'
   getwrd();           //read directive into word
   DEBUG("Processing directive '%s'\n", word);
-  if (wordis("define"))
-    prsdef();  //Parse Define
-  if (wordis("include"))
+  if (wordis("DEFINE"))
+    pdefin();  //Parse Define
+  else if (wordis("INCLUDE"))
     pincfl();  //Parse Include File
-  else if (wordis("error"))
+  else if (wordis("ERROR")) {
     ERROR("Error \n", 0, EXIT_FAILURE);
+  }
+  else if (wordis("PRAGMA"))
+    pprgma();
+  else
+    ERROR("Illegal directive %s encountered\n", word, EXIT_FAILURE);
 }
 
 void epilog()
 {
-  vartbl();  //Write Variable Table
+  if (!vrwrtn) vartbl();  //Write Variable Table
 }
 
 /* Compile Source Code*/
@@ -117,19 +122,44 @@ void usage()
   exit(EXIT_FAILURE);      
 }
 
+/* Parse Command Line Argument */
+int popt(int arg, int argc, char *argv[])
+{
+  char opt; //Option
+  char optarg[32]; //Option Argument
+  opt = argv[arg][1];
+  //if strchr(opt, "i") {
+  //if (strlen(argv[arg] > 2)
+  //}
+  ERROR("Illegal option -%c\n", opt, EXIT_FAILURE);
+}
+
 /* Parse Command Line Arguments                                 *   
  *  Sets: srcnam - Source File Name (from first arg)           *
  *        outnam - Output File Name (from optional second arg) */
 void pargs(int argc, char *argv[])
 { 
- DEBUG("Parsing %d Arguments\n", argc);
- if (argc < 2) usage(); //at least one argument is required
- strcpy(srcnam, argv[1]); //set Source File Name to first arg
- DEBUG("srcnam set to '%s'\n", srcnam);
- if (argc > 2) //if second argument exists
-   strcpy(outnam, argv[2]); //set Out File Name to second arg
- else strcpy(outnam, ""); //else set to null string
- DEBUG("outnam set to '%s'\n", outnam);
+  int arg;
+  srcnam[0] = 0;
+  outnam[0] = 0;
+  DEBUG("Parsing %d arguments\n", argc);
+  if (argc == 0) usage(); //at least one argument is required
+  for (arg = 1; arg<argc; arg++) {
+    DEBUG("Parsing argument %d\n", arg);
+    if (argv[arg][0] == '-') {
+      arg = popt(arg, argc, argv);
+    }
+    else if (srcnam[0] == 0) {
+      strcpy(srcnam, argv[arg]); //set Source File Name to first arg
+      DEBUG("srcnam set to '%s'\n", srcnam);
+    }
+    else if (outnam[0] == 0) {
+       strcpy(outnam, argv[arg]); //set Out File Name to second arg
+       DEBUG("outnam set to '%s'\n", outnam);
+    }
+    else
+      ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE);
+  }
 }
 
 int main(int argc, char *argv[])
@@ -147,6 +177,7 @@ int main(int argc, char *argv[])
 
   compile();
 
+  logdef();
   logvar();
 
   clssrc();  //Close Source File
