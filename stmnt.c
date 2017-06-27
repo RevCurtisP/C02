@@ -33,6 +33,7 @@ void prssif(char trmntr) {
 void prcasn(char trmntr)
 {
   expect('=');
+/*    
   if (strlen(asnvar) == 1 && strchr("XY", asnvar[0])) {
     DEBUG("Processing assignment of register '%s'\n", asnvar);    
     prsval(TRUE); //Get value to assign
@@ -54,17 +55,17 @@ void prcasn(char trmntr)
     }
     return;
   }
+*/
   DEBUG("Processing assignment of variable '%s'\n", asnvar);
   if (look('(')) 
     prssif(trmntr); //Parse Shortcut If 
   else
     prsxpr(trmntr); //Parse Expression
-  /* if (strcmp(asnvar, "X")==0)
+  if (strcmp(asnvar, "X")==0)
     asmlin("TAX", "");
   else if (strcmp(asnvar, "Y")==0)
     asmlin("TAY", "");
-  else */
-  if ((strcmp(asnvar, "A")!=0))
+  else if ((strcmp(asnvar, "A")!=0))
   {
     if (strlen(asnidx)) { 
       if (asnivt == CONSTANT) {
