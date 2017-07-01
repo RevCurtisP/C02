@@ -1,0 +1,100 @@
+;k2line.a02 - Two Line Kernal Assembly Language File for C02
+;Requires ConSTAnts KNLLNS, P0HGHT and P1HGHT
+
+P0DRAW  EQU $D0   ;Player 0 Draw Counter
+P1DRAW  EQU $D1   ;Player 1 Draw Counter
+P0PTRL  EQU $D2   ;Player 0 Graphics Pointer
+P0PTRH  EQU $D3
+P1PTRL  EQU $D4   ;Player 0 Graphics Pointer
+P1PTRH  EQU $D5
+
+;p0prep() - Prepare Player 0 for Display
+;Args: A - Y-Position
+;      X,Y - Address of Graphics Data
+;Uses:  KNLLNS, P0HGHT
+;Sets:  TEMP0 - Y-Position
+;Affects; A,C,N,Z
+P0PREP: STA TEMP0       ;Save Y Position
+        LDA #KNLLNS     ;Draw = Lines + Height - Y Position
+        CLC
+        ADC #P0HGHT 
+        SEC
+        SBC TEMP0
+        STA P0DRAW
+        TXA              ;Pointer = GfxAddr + Height - 1 - Y Position
+        CLC
+        ADC #P0HGHT-1
+        TAX
+        TYA
+        ADC #0
+        TAY
+        TXA
+        SEC
+        SBC TEMP0
+        STA P0PTRL
+        TYA
+        SBC #0
+        STA P0PTRH
+        RTS
+
+;p1prep() - Prepare Player 1 for Display
+;Args: A - Y-Position
+;      X,Y - Address of Graphics Data
+;Uses:  KNLLNS, P1HGHT
+;Sets:  TEMP1 - Y-Position
+;Affects; A,C,N,Z
+P1PREP: STA TEMP1       ;Save Y Position
+        LDA #KNLLNS     ;Draw = Lines + Height - Y Position
+        CLC
+        ADC #P1HGHT 
+        SEC
+        SBC TEMP1
+        STA P1DRAW
+        TXA              ;Pointer = GfxAddr + Height - 1 - Y Position
+        CLC
+        ADC #P1HGHT-1
+        TAX
+        TYA
+        ADC #0
+        TAY
+        TXA
+        SEC
+        SBC TEMP1
+        STA P1PTRL
+        TYA
+        SBC #0
+        STA P1PTRH
+        RTS
+
+;dsplns() - Kernel Display Routine
+;Args: None
+;Uses: KNLLNS, P0HGHT, P1HGHT, P0PTRL, P1PTRL
+;Affects: A,X,Y,C,N,Z
+DSPLNS: LDA #5          
+        STA WSYNC       ;      - Beginning of Line
+        STA HMOVE       ; 3  3 - Position Objects
+DSPLNA: LDY #KNLLNS     ; 2 11 - Number of Kernal Lines (Scanlines / 2)
+DSPLNL: LDA #P0HGHT-1   ; 2 15 - Player 1 Height minus 1 due to STArting with 0
+        DCP P0DRAW      ; 5 20 - Decrement P0DRAW and compare with height
+        BCS DSPLN0      ; 2 22 - If Player 0 not on Current Scanline
+        LDA #0          ; 2 24 -   Load 0 (No Graphics)
+        BYTE $2C        ; 4 28 - Else (BIT trick)
+DSPLN0: LDA (P0PTRL),Y  ; 5 28 -   Load Player 0 Graphics Line
+        STA WSYNC       ; 3 31 - STArt Line 2
+        STA GRP0        ; 3  3 - Set Player 0 Graphics Data
+        LDX #%11111111  ; 2  5 - Set Playfield Pattern for 
+        STX PF0         ; 3  8 -   Vertical Alignment Testing
+        LDA #P1HGHT-1   ; 2 10 - Player 1 Height minus 1 due to STArting with 0
+        DCP P1DRAW      ; 5 15 -   Load 0 (No Graphics)
+        BCS DPSLN1      ; 2 17 - If Player 1 not on Current Scanline
+        LDA #0          ; 2 19 -   Load 0 (No Graphics)
+        BYTE $2C        ; 4 23 - Else (BIT trick)
+DPSLN1: LDA (P1PTRL),Y  ; 5 23 -   Load Player 1 Graphics Line
+        STA WSYNC       ; 3 26 - STArt Line 2
+        STA GRP1        ; 3  3 - Set Player 1 Graphics Data
+        LDX #0          ; 2  5 - Set Playfield Pattern for 
+        STX PF0         ; 3  8 -   Vertical Alignment Testing
+        DEY             ; 2 10 - Decrement Loop Counter
+        BPL DSPLNL      ; 2 12 - and Loop if >= 0
+        RTS
+
