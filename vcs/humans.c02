@@ -2,10 +2,19 @@
 
 #pragma origin $F800    //4k Cartridge
 #include <vcshead.h02>  //TIA and RIOT Registers
-#include <vcsstub.h02>  //Initialize VCS
+#include <vcsstub.h02>  //VCS Program Stub
 #include <vcslib.h02>   //VCS Library Routines
 #include <k2line.h02>   //Two Line Game Kernel
 
+//TIA Register Bit Masks
+#define CLEAR = 0
+#define SET = $0B
+
+//Console Switch Bit Masks
+#define P1DIFF = $80  //Player 1 Difficulty 
+#define P0DIFF = $40  //Player 0 Difficulty
+
+//Constants Required by k2line.h02
 #define KNLLNS = 96     //Kernal Lines (Scanlines/2)
 #define P0HGHT = 10     //Player 0 Height
 #define P1HGHT = 10     //Player 1 Height
@@ -20,15 +29,16 @@ char human = {%00011100, %00011000, %00011000, %00011000, %01011010,
 /* Setup Code */
 void setup() {
   setclr(&colors); //Set Color Table
-  VDELP0 = 1;
 }
 
 /* Vertical Blank Code */
 void vrtblk() {
   posobj(0,0);          //Set P0 X-Position
-  p0prep(96, &human);   //Set P0 Y-Position & Graphics Pointer
+  p0prep(90, &human);   //Set P0 Y-Position & Graphics Pointer
   posobj(8,1);          //Set P1 X-Position
-  p1prep(96, &human);   //Set P1 Y-Position & Graphics Pointer
+  p1prep(90, &human);   //Set P1 Y-Position & Graphics Pointer
+  VDELP0 = (SWCHB & #P0DIFF) ? #SET : #CLEAR;
+  VDELP1 = (SWCHB & #P1DIFF) ? #SET : #CLEAR;
 }
 
 /* Execute Kernel Code */
