@@ -1,0 +1,45 @@
+/* Atari VCS 2 Line Kernel Test` */
+
+#pragma origin $F800    //4k Cartridge
+#include <vcshead.h02>  //TIA and RIOT Registers
+#include <vcsstub.h02>  //Initialize VCS
+#include <vcslib.h02>   //VCS Library Routines
+#include <k2line.h02>   //Two Line Game Kernel
+
+#define KNLLNS = 96     //Kernal Lines (Scanlines/2)
+#define P0HGHT = 10     //Player 0 Height
+#define P1HGHT = 10     //Player 1 Height
+
+//Color Table
+char colors = {$86, $C6, $46, $00, $0E, $06, $0A, $00};
+
+//Human Shaped Player Graphics
+char human = {%00011100, %00011000, %00011000, %00011000, %01011010,
+              %01011010, %00111100, %00000000, %00011000, %00011000};
+
+/* Setup Code */
+void setup() {
+  setclr(&colors); //Set Color Table
+  VDELP0 = 1;
+}
+
+/* Vertical Blank Code */
+void vrtblk() {
+  posobj(0,0);          //Set P0 X-Position
+  p0prep(96, &human);   //Set P0 Y-Position & Graphics Pointer
+  posobj(8,1);          //Set P1 X-Position
+  p1prep(96, &human);   //Set P1 Y-Position & Graphics Pointer
+}
+
+/* Execute Kernel Code */
+void kernel() {	
+  dsplns();      //Display Playfield and Objects
+}
+
+/* Execute Overscan Code */
+void ovrscn() {
+}
+
+#include <digits.h02>   //Digit Graphics
+#include <vcsfoot.h02>  //Finalization Code
+
