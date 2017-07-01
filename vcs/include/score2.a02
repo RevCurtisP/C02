@@ -1,0 +1,77 @@
+;Atari 2600 Two Player Score Kernel
+
+;Score Routine Variables
+SCORE0  EQU $E8 ;Player One Score
+SCORE1  EQU $E9 ;Player Two Score
+SC0ONE  EQU $EA ;One Score Ones Digit Offset
+SC1ONE  EQU $EB ;Player Ten Score Ones Digit Offset
+SC0TEN  EQU $EC ;Player One Score Ones Digit Offset
+SC1TEN  EQU $ED ;Player Ten Score Ones Digit Offset
+SC0GFX  EQU $EE ;Player One Score Graphics Data 
+SC1GFX  EQU $EF ;Player Two Score Graphics Data 
+
+
+;Prep Scores For Diplay
+SCRPRP: LDX #1          ;Offset into SCORE0/SCORE1
+SCRPRL: LDA SCORE0,X    ;Get SCORE1 (First Pass) or SCORE0 (Second Pass) 
+        AND #$0F        ;Remove Tens Digit
+        STA TEMP0       ;And Save It
+        ASL             ;Multiply By 4
+        ASL             ;(Carry will be Clear because of AND/ASL)
+        ADC TEMP0       ;Add To Original Value for Multiply by 5
+        STA SC0ONE,X    ;Store in SC0ONE (First Pass) or SC1ONE (Second Pass)
+        LDA SCORE0,X    ;Get SCORE1 (First Pass) or SCORE0 (Second Pass) 
+        AND #$F0        ;Remove Ones Digit
+        LSR             ;Divide by 4
+        LSR             ;
+        STA TEMP0       ;And Save It
+        LSR             ;Divide by 4 Again
+        LSR             ;(Leaving Carry Clear)
+        ADC TEMP0       ;Add Saved Value, Resulting in Digit / 16 * 5
+        STA SC0TEN,X    ;Store in SC0TEN (First Pass) or SC1TEN (Second Pass)
+        DEX             ;Point to SCORE 1
+        BPL SCRPRL      ;AND Loop if >0
+        RTS             ;Return
+
+;Display Score Kernel - Uses 12 Lines Total
+SCRDSP: LDA #2          ;      - Use Player Colors
+        STA CTRLPF      ;      - Set Playfield Control Register
+        LDX #5          ;   43 - cycle after looping
+SCRDSL: LDY SC0TEN      ; 3 46 - get the tens digit offset for the Score
+        LDA DGTGFX,Y    ; 5 51 -   use it to load the digit graphics
+        AND #$F0        ; 2 53 -   remove the graphics for the ones digit
+        STA SC0GFX      ; 3 56 -   AND save it
+        LDY SC0ONE      ; 3 59 - get the ones digit offset for the Score
+        LDA DGTGFX,Y    ; 5 64 -   use it to load the digit graphics
+        AND #$0F        ; 2 66 -   remove the graphics for the tens digit
+        ORA SC0GFX      ; 3 69 -   merge with the tens digit graphics
+        STA SC0GFX      ; 3 72 -   AND save it
+        STA WSYNC       ; 3 75 -   wait for end of scanline
+        STA PF1         ; 3  3 - @66-28, update playfield for Score dislay
+        LDY SC1TEN      ; 3  6 - get the left digit offset for the Timer
+        LDA DGTGFX,Y    ; 5 11 -   use it to load the digit graphics
+        AND #$F0        ; 2 13 -   remove the graphics for the ones digit
+        STA SC1GFX      ; 3 16 -   AND save it
+        LDY SC1ONE      ; 3 19 - get the ones digit offset for the Timer
+        LDA DGTGFX,Y    ; 5 24 -   use it to load the digit graphics
+        AND #$0F        ; 2 26 -   remove the graphics for the tens digit
+        ORA SC1GFX      ; 3 29 -   merge with the tens digit graphics
+        STA SC1GFX      ; 3 32 -   AND save it
+        JSR SCRDSR      ;12 44 - waste 12 cycles
+        STA PF1         ; 3 47 - @39-54, update playfield for Timer display
+        LDY SC0GFX      ; 3 50 - preload for next scanline 
+        STA WSYNC       ; 3 53 - wait for end of scanline
+        STY PF1         ; 3  3 - @66-28, update playfield for the Score display
+        INC SC0TEN      ; 5  8 - advance for the next line of graphic data
+        INC SC1TEN      ; 5 13 - advance for the next line of graphic data
+        INC SC0ONE      ; 5 18 - advance for the next line of graphic data
+        INC SC1ONE      ; 5 23 - advance for the next line of graphic data
+        JSR SCRDSR      ;12 35 - waste 12 cycles
+        DEX             ; 2 37 - decrease the loop counter
+        STA PF1         ; 3 40 - @39-54, update playfield for the Timer display
+        BNE SCRDSL      ; 2 42 - (3 43) if dex != 0 then branch to ScoreLoop
+        STA WSYNC       ; 3 45 - wait for end of scanline
+        STX PF1         ; 3  3 - x = 0, so this blanks out playfield        
+        STA WSYNC       ; 3  6 - wait for end of scanline
+SCRDSR: RTS             ; 6 12 - Return
+

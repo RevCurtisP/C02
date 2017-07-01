@@ -81,6 +81,8 @@ P1PREP: CLC             ;Add 1 to Y-Position
 ;Uses: KNLLNS, P0HGHT, P1HGHT, P0PTRL, P1PTRL
 ;Affects: A,X,Y,C,N,Z
 DSPLNS: LDY #KNLLNS     ;      - Number of Kernal Lines (Scanlines / 2)
+        LDA #1          ;      - Reflect Playfield
+        STA CTRLPF      ;      - Set Playfield Control Register
         LDA #P1HGHT-1   ;      - Preset GRP1 if Player 1 on Top Line
         DCP P1DRAW      ;  
         BCS DSPLN0      ;

@@ -1,0 +1,13 @@
+/* Atari 2600 Two-Player Score Kernel */
+
+char score1; //Player One Score
+char score2; //Player Two Score
+
+char sc1one; //Player One Score Ones Digit Offset
+char sc1ten; //Player One Score Ones Digit Offset
+char sc2one; //Player Ten Score Ones Digit Offset
+char sc2ten; //Player Ten Score Ones Digit Offset
+
+char sc1gfx; //Player One Score Graphics Data 
+char sc2gfx; //Player Two Score Graphics Data 
+
