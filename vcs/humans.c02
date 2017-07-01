@@ -34,11 +34,11 @@ void setup() {
 /* Vertical Blank Code */
 void vrtblk() {
   posobj(0,0);          //Set P0 X-Position
-  p0prep(90, &human);   //Set P0 Y-Position & Graphics Pointer
+  p0prep(191, &human);   //Set P0 Y-Position & Graphics Pointer
   posobj(8,1);          //Set P1 X-Position
-  p1prep(90, &human);   //Set P1 Y-Position & Graphics Pointer
-  VDELP0 = (SWCHB & #P0DIFF) ? #SET : #CLEAR;
-  VDELP1 = (SWCHB & #P1DIFF) ? #SET : #CLEAR;
+  p1prep(191, &human);   //Set P1 Y-Position & Graphics Pointer
+  //VDELP0 = (SWCHB & #P0DIFF) ? #SET : #CLEAR;
+  //VDELP1 = (SWCHB & #P1DIFF) ? #SET : #CLEAR;
 }
 
 /* Execute Kernel Code */

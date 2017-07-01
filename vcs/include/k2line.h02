@@ -1,11 +1,6 @@
-/* k2line.a02 - Two Line Kernal Functions for C02 */
+/* k2line.a02 - Atari 2600 Two Line Kernal */
 
-char scnlns;    //Number of Scanlines to Display
-
-void setpl0();  //Set Player 0 Data
-void setpl1();  //Set Player 1 Data
-
-void prppl0();  //Prep Player 0
-void prppl1();  //Prep Player 1
+void p0prep();  //Prepare Player 0 for Display
+void p1prep();  //Prepare Player 1 for Display
 
 void dsplns();  //Display Lines

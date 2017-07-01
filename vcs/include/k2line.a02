@@ -14,8 +14,12 @@ P1PTRH  EQU $D5
 ;Uses:  KNLLNS, P0HGHT
 ;Sets:  TEMP0 - Y-Position
 ;Affects; A,C,N,Z
-P0PREP: STA TEMP0       ;Save Y Position
-        LDA #KNLLNS     ;Draw = Lines + Height - Y Position
+P0PREP: LSR             ;Divide by 2 for Two-line Position
+        STA TEMP0       ;Save Y Position
+        ROL             ;Rotate Carry into Bit 1
+        EOR #1          ;Reverse It
+        STA VDELP0      ;and Store in Vertical Delay Register
+        LDA #KNLLNS-1   ;Draw = Top Line + Height - Y Position
         CLC
         ADC #P0HGHT 
         SEC
@@ -43,10 +47,16 @@ P0PREP: STA TEMP0       ;Save Y Position
 ;Uses:  KNLLNS, P1HGHT
 ;Sets:  TEMP1 - Y-Position
 ;Affects; A,C,N,Z
-P1PREP: STA TEMP1       ;Save Y Position
-        LDA #KNLLNS     ;Draw = Lines + Height - Y Position
+P1PREP: CLC             ;Add 1 to Y-Position
+        ADC #1          ;to Compensate for GRP1 Priming
+        LSR             ;Divide by 2 for Two-line Position
+        STA TEMP1       ;Save Y Position
+        ROL             ;Rotate Carry into Bit 1
+        EOR #1          ;Reverse It
+        STA VDELP1      ;and Store in Vertical Delay Register
+        LDA #KNLLNS-1   ;Draw = Top Line + Height - Y Position + 1
         CLC
-        ADC #P1HGHT 
+        ADC #P1HGHT+1
         SEC
         SBC TEMP1
         STA P1DRAW
@@ -70,26 +80,34 @@ P1PREP: STA TEMP1       ;Save Y Position
 ;Args: None
 ;Uses: KNLLNS, P0HGHT, P1HGHT, P0PTRL, P1PTRL
 ;Affects: A,X,Y,C,N,Z
-DSPLNS: LDA #5          
+DSPLNS: LDY #KNLLNS     ;      - Number of Kernal Lines (Scanlines / 2)
+        LDA #P1HGHT-1   ;      - Preset GRP1 if Player 1 on Top Line
+        DCP P1DRAW      ;  
+        BCS DSPLN0      ;
+        LDA #0          ;
+        BYTE $2C        ;
+DSPLN0: LDA (P1PTRL),Y  ;
         STA WSYNC       ;      - Beginning of Line
         STA HMOVE       ; 3  3 - Position Objects
-DSPLNA: LDY #KNLLNS     ; 2 11 - Number of Kernal Lines (Scanlines / 2)
+        STA GRP1        ; 3  6
+        DEY             ; 2  8        
+        AND ($FF),Y     ; 5 13 - Waste 5 Cycles to Match Line 2 Loop
 DSPLNL: LDA #P0HGHT-1   ; 2 15 - Player 1 Height minus 1 due to STArting with 0
         DCP P0DRAW      ; 5 20 - Decrement P0DRAW and compare with height
-        BCS DSPLN0      ; 2 22 - If Player 0 not on Current Scanline
+        BCS DSPLN1      ; 2 22 - If Player 0 not on Current Scanline
         LDA #0          ; 2 24 -   Load 0 (No Graphics)
         BYTE $2C        ; 4 28 - Else (BIT trick)
-DSPLN0: LDA (P0PTRL),Y  ; 5 28 -   Load Player 0 Graphics Line
+DSPLN1: LDA (P0PTRL),Y  ;(5 28)-   Load Player 0 Graphics Line
         STA WSYNC       ; 3 31 - STArt Line 2
         STA GRP0        ; 3  3 - Set Player 0 Graphics Data
         LDX #%11111111  ; 2  5 - Set Playfield Pattern for 
         STX PF0         ; 3  8 -   Vertical Alignment Testing
         LDA #P1HGHT-1   ; 2 10 - Player 1 Height minus 1 due to STArting with 0
         DCP P1DRAW      ; 5 15 -   Load 0 (No Graphics)
-        BCS DPSLN1      ; 2 17 - If Player 1 not on Current Scanline
+        BCS DPSLN2      ; 2 17 - If Player 1 not on Current Scanline
         LDA #0          ; 2 19 -   Load 0 (No Graphics)
         BYTE $2C        ; 4 23 - Else (BIT trick)
-DPSLN1: LDA (P1PTRL),Y  ; 5 23 -   Load Player 1 Graphics Line
+DPSLN2: LDA (P1PTRL),Y  ;(5 23)-   Load Player 1 Graphics Line
         STA WSYNC       ; 3 26 - STArt Line 2
         STA GRP1        ; 3  3 - Set Player 1 Graphics Data
         LDX #0          ; 2  5 - Set Playfield Pattern for 
