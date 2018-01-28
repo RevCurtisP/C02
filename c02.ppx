@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings version="1.0">
+	<category name="expr.h" />
+	<category name="cond.h" />
+	<category name="asm.h" />
+	<category name="c02.c" />
+	<category name="stmnt.c">
+		<category name="Window">
+			<property name="Left" type="integer">-8</property>
+			<property name="Top" type="integer">-31</property>
+			<property name="Right" type="integer">952</property>
+			<property name="Bottom" type="integer">422</property>
+			<property name="Maximized" type="integer">1</property>
+			<property name="Active" type="integer">1</property>
+		</category>
+	</category>
+	<category name="asm.c" />
+	<category name="vars.c" />
+	<category name="parse.c">
+		<category name="Window">
+			<property name="Left" type="integer">52</property>
+			<property name="Top" type="integer">52</property>
+			<property name="Right" type="integer">760</property>
+			<property name="Bottom" type="integer">362</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="include.c" />
+	<category name="expr.c">
+		<category name="Window">
+			<property name="Left" type="integer">78</property>
+			<property name="Top" type="integer">78</property>
+			<property name="Right" type="integer">786</property>
+			<property name="Bottom" type="integer">388</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="parse.h" />
+	<category name="common.h" />
+	<category name="files.c" />
+</settings>
