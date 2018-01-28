@@ -1,0 +1,8 @@
+/* Test C02 define directive */
+
+#define TRUE = $FF
+#define FALSE = 0
+
+char b;
+
+b = #TRUE;

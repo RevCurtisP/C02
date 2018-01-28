@@ -1,0 +1,14 @@
+;6502 Assembly Language File for DASM Macro Assembler
+
+        ORG $0200      ;Set Origin
+        
+start:  JMP main       ;Jump to Beginning of Program        
+
+;Dummy Functions
+testfn: RTS            ;Generic Test Function
+getkey: RTS            ;Get Character from Keyboard
+prchr:  RTS            ;Print Character to Screen
+putstr: RTS            ;Print String to Screen
+strlen: RTS            ;Return Length of String
+exit:   BRK            ;Return to Monitor
+

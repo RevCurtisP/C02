@@ -1,0 +1,12 @@
+/* Test If/Then/Else */
+
+#pragma origin $0200
+
+char b,c,d,e;
+
+if (b:-) b=c;
+else if (!b) b=d;
+else b=e;
+goto exit;
+
+

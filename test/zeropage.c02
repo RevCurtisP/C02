@@ -1,0 +1,6 @@
+/* Test Zero Page Modifier */
+
+#pragma origin $F000
+#pragma zeropage $80
+
+zeropage char zp80;

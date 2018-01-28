@@ -1,0 +1,173 @@
+/********************************************
+ * C02 - C-like language for 6502 processor *
+ * Test file for Compiler                   *
+ ********************************************/
+
+#include "testhdr.h02"
+
+//#define CR $0D -- DEFINE needs to be reimplimented
+
+/* Variable Types */
+char b , i;  //byte type has been removed
+char c,d,f;  //a char is an unsigned 8 bit number
+char r[15];  //reserves dimension bytes
+char z[15];
+char t = {1, 2, 3, 4, 5};  //Not Implemented?
+char s = "This is a string.";
+char aa,xx,yy ; //Function parameter variables
+char STROBE; //Strobe Register
+
+/* Function Declaration */
+char myfunc();
+  return b-c-d;
+  return;
+
+main:
+
+/* Register Assignments */
+b = A;
+c = X + 1;
+d = Y - 1;
+A = 'A';
+A = c - 1;
+A = strlen(s);
+X = 0;
+Y = 'Y';
+X = c;
+
+/* Variable Assignments */
+b=-1+2-3;
+c='@' & 5;
+d = b|c^$FF;
+f = %10100101;
+
+/* Write to Strobe Register */
+STROBE;
+
+/* Variable Post-Operators */
+d++;
+d--;
+b<<;
+c>>;
+
+/* Register Post-Operators */
+X++;
+Y++;
+X--;
+Y--;
+A>>;
+A<<;
+
+i = 0;
+r[i] = i;
+r[i]++;
+z[i]=r[i];
+b=z[A]+z[X]+z[Y]+z[0]+z[i];
+
+funcx:
+f = testfn(b);           //Simple Variable
+f = testfn(r[i]);        //Array Element
+f = testfn(r[i],b);      //Two Parameters
+f = testfn(r[1],r[2]);   //Two Array Elements
+f = testfn(r[1],r[2],b); //Three Parameters
+f = testfn(&s);          //Pointer
+f = testfn(b,&s);        //Byte and Pointer
+f = testfn(r[i],&s);     //Array Element and Pointer
+f = testfn(r[1],&s);     //Array Element and Pointer
+f = testfn(b+c+d,&s);    //Expression in Function Call 
+f = testfn(getkey(b)+c); //Nested Function Call 
+
+funcs:
+prchr(b+c+d);
+testfn(prchr(b));
+testfn(b,c,d);
+testfn(b+c+d,r[i],f);
+testfn(&s); //Print a String
+dofn(*,yy);
+dofn(*,yy,xx);
+dofn(aa,*,xx);
+dofn(*,*,XX);
+
+/*
+defs:
+c = CR;
+echo(CR);
+#error
+*/
+
+flwctl:
+if (d<>f) i = b + c;
+
+if (i=0) 
+  i++; 
+else
+  i--;
+
+here: if (getkey() & $7F == $1B) goto exit;  
+
+there: goto flwctl;
+
+i = 0;
+while (i < 10) {
+  i++;
+}
+while (i:+) {
+  i--;
+}
+
+
+
+do {
+  c = rdkey();
+} while (c=0);
+
+do {
+  c = rdkey();
+  if (c=0) continue;
+  if (c=27) break;
+} while (c<>13);
+
+
+for (i=1; i<9; i++)
+  prchr(i);
+ 
+if (d<f) i=b; else i=c; //Regular IF
+i = (d<f) ? b : c;      //Shortcut IF
+
+char tstfnc() {
+  r[0] = 0;
+  z[0] = 0;  
+  return i;
+}
+
+void vdfnc1(aa) { 
+  aa = aa + 1;
+}
+
+void vdfnc2(aa, yy) { 
+  aa = aa + yy;
+}
+
+void vdfnc3(aa, yy, xx) { 
+  aa = aa + yy + xx;
+}
+
+push &s, b+c+d, r[i];
+stkfnc(); //Push/Pop Parameters
+pop d, *, z[f];
+
+
+iprint(); inline "Hello World";
+irect(); inline 10,10,100,100;
+isort(); inline &r;
+
+blkbgn(&$C000);
+blkend(&$C400);
+
+while () { 
+  i++;
+  break;
+}
+
+exit();
+

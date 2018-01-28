@@ -1,0 +1,7 @@
+/* Generic 6502 header file */
+
+char  getchr();
+void  putchr();
+char  putstr();
+char  strlen();
+  
