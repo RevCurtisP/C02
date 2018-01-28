@@ -1,0 +1,6 @@
+;Atari VCS Supercharger Assembly Language Routines
+
+SCCTL   EQU $FFF8   ;Supercharger Control Register
+SCAUD  EQU  $FFF9   ;Supercharger Audio Data
+
+

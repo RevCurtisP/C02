@@ -1,6 +1,12 @@
 ;k2line.a02 - Two Line Kernal Assembly Language File for C02
 ;Requires ConSTAnts KNLLNS, P0HGHT and P1HGHT
 
+;Set Kernel Top Line
+;;TODO - Adjust for Extra WSYNC in DSPLNS
+;;  Need to Execute a second WSYNC if KNLLNS is Even
+
+KNLTOP  EQU KNLLNS/2-1  ;Kernel Lines / 2 Scanlines - 1 (Zero Based)
+
 P0DRAW  EQU $D0   ;Player 0 Draw Counter
 P1DRAW  EQU $D1   ;Player 1 Draw Counter
 P0PTRL  EQU $D2   ;Player 0 Graphics Pointer
@@ -19,7 +25,7 @@ P0PREP: LSR             ;Divide by 2 for Two-line Position
         ROL             ;Rotate Carry into Bit 1
         EOR #1          ;Reverse It
         STA VDELP0      ;and Store in Vertical Delay Register
-        LDA #KNLLNS-1   ;Draw = Top Line + Height - Y Position
+        LDA #KNLTOP     ;Draw = Top Line + Height - Y Position
         CLC
         ADC #P0HGHT 
         SEC
@@ -54,7 +60,7 @@ P1PREP: CLC             ;Add 1 to Y-Position
         ROL             ;Rotate Carry into Bit 1
         EOR #1          ;Reverse It
         STA VDELP1      ;and Store in Vertical Delay Register
-        LDA #KNLLNS-1   ;Draw = Top Line + Height - Y Position + 1
+        LDA #KNLTOP     ;Draw = Top Line + Height - Y Position + 1
         CLC
         ADC #P1HGHT+1
         SEC
@@ -80,7 +86,7 @@ P1PREP: CLC             ;Add 1 to Y-Position
 ;Args: None
 ;Uses: KNLLNS, P0HGHT, P1HGHT, P0PTRL, P1PTRL
 ;Affects: A,X,Y,C,N,Z
-DSPLNS: LDY #KNLLNS     ;      - Number of Kernal Lines (Scanlines / 2)
+DSPLNS: LDY #KNLTOP+1   ;      - Number of Kernal Lines (Scanlines / 2)
         LDA #1          ;      - Reflect Playfield
         STA CTRLPF      ;      - Set Playfield Control Register
         LDA #P1HGHT-1   ;      - Preset GRP1 if Player 1 on Top Line
@@ -89,8 +95,6 @@ DSPLNS: LDY #KNLLNS     ;      - Number of Kernal Lines (Scanlines / 2)
         LDA #0          ;
         BYTE $2C        ;
 DSPLN0: LDA (P1PTRL),Y  ;
-        STA WSYNC       ;      - Beginning of Line
-        STA HMOVE       ; 3  3 - Position Objects
         STA GRP1        ; 3  6
         DEY             ; 2  8        
         AND ($FF),Y     ; 5 13 - Waste 5 Cycles to Match Line 2 Loop

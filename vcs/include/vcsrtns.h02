@@ -1,0 +1,8 @@
+/* vcsrtns.h02 - Common Atari 2600 Function for C02 *
+ * Usage:                                           *
+ *   #include <vcsrtns.h02>                         *
+ * Requires the following zero page variables:      *
+ *  TEMP0                                           *
+ *                                                  */
+
+

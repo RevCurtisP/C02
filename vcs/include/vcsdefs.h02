@@ -1,0 +1,55 @@
+/* VCS Definitions Header */
+
+//Boolean True and False
+#define TRUE = $FF
+#define FALSE = $0
+
+//Set/Clear Various Registers
+//ENAM0, ENAM1, ENABL - Enable/Disable Missiles, Ball
+//REFP0, REFP01 - Enable/Disable Player Reflection
+//RESPMO, RESPM1 - Disable/Enable Missiles
+//VDELP0, VDELP1, VDELBL - Delay Players, Ball
+#define CLEAR = 0
+#define SET = $0B
+
+//VBLANK Latches
+#define TRGL = $40  //Enable Joystick Trigger Latch
+#define DPDL = $80  //Dump Paddle Potentiometers
+
+//NUSIZ0 and NUSIZ1 Missile Bit Masks
+#define MS1CLK = 0  //1 Clock Wide Missile
+#define MS2CLK = 1  //2 Clock Wide Missile
+#define MS4CLK = 2  //4 Clock Wide Missile
+#define MS8CLK = 3  //8 Clock Wide Missile
+
+//NUSIZ0 and NUSIZ1 Player Bit Masks
+#define PL1SNG = 0  //Single Sized Player
+#define PL1DBL = 5  //Double Sized Player
+#define PL1QUD = 7  //Quadruple Sized Player
+#define PL2CLS = 1  //Two Close Copies of Player
+#define PL2MED = 2  //Two Medium Copies of Player
+#define PL2WID = 4  //Two Wide Copies of Player
+#define PL3CLS = 3  //Three Close Copies of Player
+#define PL3MED = 6  //Three Medium Copies of Player
+
+//AUDC0 and AUDC1 Audio Control Registers
+#define D02PUR = $04  //Divide by 2, Pure Tone
+#define D06PUR = $0C  //Divide by 6, Pure Tone
+#define D32PUR = $06  //Divide by 31, Pure Tone
+#define D93PUR = $0E  //Divide by 93, Pure Tone
+#define D00PL4 = $01  //No Divide, 4 Bit Polynomial
+#define D00PL5 = $09  //No Divide, 5 Bit Polynomial
+#define D00PL9 = $08  //No Divide, 9 Bit Polynomial
+#define D15PL4 = $02  //Divide by 15 -> 4 Bit Polynomial
+#define PL5PL4 = $03  //5 Bit Polynomial -> 4 Bit Polynomial
+#define PL5D06 = $0F  //5 Bit Polynomial -> Divide by 6
+#define PL4502 = $07  //6 Bit Polynomial -> Divide by 2
+
+//SWCHB Console Switch Bit Masks
+#define P1DIFF = $80  //Player 1 Difficulty 
+#define P0DIFF = $40  //Player 0 Difficulty
+#define CLRBW  = $08  //Color/Black & White
+#define SELECT = $02  //Game Select
+#define RESET  = $01  //Game Reset
+
+

@@ -1,0 +1,71 @@
+;Atari 2600 Timer Bar Kernel
+
+;Timer Variables
+TMRPF0  EQU $F0 ;Timer Playfield Leftmost Byte
+TMRPF1  EQU $F1
+TMRPF2  EQU $F2
+TMRPF3  EQU $F3
+TMRPF4  EQU $F4
+TMRPF5  EQU $F5 ;Timer Playfield Rightmost Byte
+
+;tmprep() - Prepare Timer Bar
+TMPREP: LDA #%11111111
+        STA TMRPF0
+        STA TMRPF1
+        STA TMRPF2
+        STA TMRPF3
+        STA TMRPF4
+        STA TMRPF5
+        RTS
+
+;tmtick() - Tick Down Timer Bar
+;Returns: A=$FF If Timer has Not Expired
+;           $00 If Timer has Expired
+TMTICK: LDA TMRPF0    ;Check Leftmost Nybble of Timer Bar
+        AND #$F0      ;If 0
+        BEQ TMTICX    ;  Return FALSE
+        LSR TMRPF5    ;PF2 right side, reversed bits so shift right
+        ROL TMRPF4    ;PF1 right side, normal bits so shift left
+        ROR TMRPF3    ;PF0 right side, reversed bits so shift right
+        LDA TMRPF3    ;only upper nybble used, so we need to put bit 3 into C
+        LSR
+        LSR
+        LSR
+        LSR
+        ROR TMRPF2    ;PF2 left side, reversed bits so shift right
+        ROL TMRPF1    ;PF1 left side, normal bits so shift left
+        ROR TMRPF0    ;PF0 left side, reversed bits so shift right
+        LDA #$FF      ;Return TRUE 
+TMTICX: RTS
+
+;tmdisp() - Display Timer Bar
+;Args: A = Timer Bar Color
+TMDISP: STA COLUPF      ;      - Set Playfield Color
+        LDX #0          ;      - Offset for Writes
+        STX CTRLPF      ;      - Set Playfield to Defaults    
+        LDY #1          ;      - Use Two Scanlines        
+TMDISL: STA WSYNC       ;      - Wait for Beginning of Line
+        LDA TMRPF0,X    ; 4  4 - Copy Data to Playfield Left
+        STA PF0,X       ; 5  9 - Indexed Mode Uses Extra Cycles
+        LDA TMRPF1,X    ; 4 13
+        STA PF1,X       ; 5 18
+        LDA TMRPF2,X    ; 4 22
+        STA PF2,X       ; 5 27
+        JSR TMDISX      ;12 39 - Wait 12 Cycles
+        LDA TMRPF3      ; 3 42 - Copy Data To Playfield Right
+        STA PF0         ; 3 45
+        LDA TMRPF4      ; 3 50
+        STA PF1         ; 3 53
+        LDA TMRPF5      ; 3 56
+        STA PF2         ; 3 59
+        DEY             ; 2 62
+        BPL TMDISL      ; 2 64 (3 65)
+        STA WSYNC       ; 3 67
+        LDA #0          ; 2  2
+        STA PF0         ; 3  5
+        STA PF1         ; 3  8
+        STA PF2         ; 3 11
+        STA COLUPF      ; 3 14
+        STA WSYNC       ; 3 20 - Gap between timer and Arena
+TMDISX: RTS
+

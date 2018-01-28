@@ -1,0 +1,10 @@
+/* vcsstub.h02 - Atari 2600 Program Stub              *
+ * Usage:                                             *
+ *   #include <vcsstub.h>                             *
+ * Contains the start label required by vcsfoot.h02   *
+ * Program must contain the following functions       *
+ *   setup() - Program Startup Code                 
+ *   vrtblk() - Code to Execute During Vertical Blank *
+ *   kernel() - Kernel Code - Draws Screen            *
+ *   ovrscn() - Code to Execute During Overscan       */
+

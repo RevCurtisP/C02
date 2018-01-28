@@ -1,0 +1,11 @@
+;Bank Switching Registers
+BANK0   EQU $1FF4 ;Select Bank 0 (32K) 
+BANK1   EQU $1FF5 ;Select Bank 1 (32K) 
+BANK2   EQU $1FF6 ;Select Bank 2 (32K) Bank 0 (16K) Switch Banks (8K)
+BANK3   EQU $1FF7 ;Select Bank 3 (32K) Bank 1 (16K) Switch Banks (8K)
+BANK4   EQU $1FF8 ;Select Bank 4 (32K) Bank 2 (16K)
+BANK5   EQU $1FF9 ;Select Bank 5 (32K) Bank 3 (16K)
+BANK6   EQU $1FFA ;Select Bank 6 (32K)
+BANK7   EQU $1FFB ;Select Bank 7 (32K)
+
+

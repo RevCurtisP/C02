@@ -1,0 +1,131 @@
+;k2line.a02 - Two Line Kernal Assembly Language File for C02
+;Requires Constants PLYR0H and PLYR1H,
+;Variables PLYR0D and PLYR1D, and Pointers PLYR0P and PLYR1P
+
+PLYR0H  EQU $D0 ;Player 0 Height
+PLYR1H  EQU $D1 ;Player 1 Height
+PLYR0D  EQU $D2 ;Player 0 Draw Counter 
+PLYR1D  EQU $D3 ;Player 1 Draw Pointer
+PLYR0P  EQU $D4 ;Player 0 Graphics Pointer
+PLYR1P  EQU $D6 ;Player 1 Graphics Pointer
+PLYR0T  EQU $D8 ;Player 0 Pointer Offset
+PLYR1T  EQU $DA ;Player 1 Pointer Offset
+SCNLNS  EQU $DF ;Number of Scanlines
+
+;setpl0() - Set Player 0 Data
+;Args: A = Player 0 Height
+;      Y,X = Pointer to Player 0 Graphics Data
+SETPL0: STA PLYR0H    ;Save Player 0 Height
+        DEC PLYR0H    ;and Decrement
+        STX PLYR0P    ;Save Player 0 Pointer
+        STY PLYR0P+1
+        RTS
+
+;setpl1() - Set Player 1 Data
+;Args: A = Player 1 Height
+;      Y,X = Pointer to Player 1 Graphics Data
+SETPL1: STA PLYR1H    ;Save Player 1 Height
+        DEC PLYR1H    ;and Decrement
+        STX PLYR1P    ;Save Player 1 Pointer
+        STY PLYR1P+1
+        RTS
+
+;prppl0() - Prep Player Variables
+;Args:  A = Player 0 Y-Position
+PRPPL0: LDX #1        ;Divide Y-Position by 2
+        SEC
+        SBC #1
+        LSR           ;and Set Vertical Delay if No Remainder
+        STA TEMP0 
+        BCS PRPPN0
+        STX VDELP0
+PRPPN0: LDA SCNLNS    ;PLYR0D = SCNLNS + PLYR0H - PLYR0Y
+        CLC
+        ADC PLYR0H
+        SEC
+        SBC TEMP0
+        STA PLYR0D
+        LDA PLYR0P    ;PLYR0T = PLYR0P + PLYR0H - PLYR0Y - 1
+        CLC
+        ADC PLYR0H
+        SEC
+        SBC TEMP0
+        STA PLYR0T
+        LDA PLYR0P+1
+        SBC #0
+        STA PLYR0T+1
+        RTS
+
+;prppl1() - Prep Player 1 Variables
+;Args:  A = Player 1 Y Position
+PRPPL1: LDX #1
+        CLC           ;Increment Y-Position
+        ADC #1        ;  to compensate for priming of GRP1
+        LSR           ;Divide by 2 
+        STA TEMP1     ;  and set Vertical Delay if No Remainder
+        BCS PRPPN1
+        STX VDELP1
+PRPPN1: LDA SCNLNS    ;PLYR1D = SCNLNS + PLYR1H - PLYR1Y
+        CLC
+        ADC #1
+        ADC PLYR1H
+        SEC
+        SBC TEMP1
+        STA PLYR1D
+        LDA PLYR1P    ;PLYR1T = PLYR1P + PLYR1H - PLYR1Y - 1
+        CLC
+        ADC PLYR1H
+        SEC
+        SBC TEMP1
+        STA PLYR1T
+        LDA PLYR1P+1
+        SBC #
+        STA PLYR1T+1
+        RTS
+
+;prpdsp() - Prep Display
+PRPDSP: LDA #0
+        STA WSYNC     ;Wait for Horizontal Sync
+        STA HMOVE     ;Move Objects
+        STA VDELP0    ;Clear Player 0 Vertical Delay
+        STA VDELP1    ;Clear Player 0 Vertical Delay
+        RTS
+
+;dsplns() - Display Two Line Kernal
+DSPLNS: LDY SCNLNS     ; (13)  Set Number of Lines to Draw
+        LDA PLYR1H     ; 2  9 - Get Player 1 Height
+        DCP PLYR1D     ; 5 14 - Decrement counter and compare with height
+        BCS DSPLNP     ; 2 16 - (3 18) If not on current scanline
+        LDA #0         ; 2 18 -   Load Blank Line  
+        BYTE $2C       ; 4 22 - Else (BIT trick)
+DSPLNP: LDA (PLYR1T),Y ; 5 22 -   Load Player 0 Graphics Line
+        STA GRP1       ; 3 25 - Set Player 0 Graphics Data
+        DEY
+DSPLNL: LDA PLYR0H     ;2 21 - Height of Player 0 (Zero Based)
+        DCP PLYR0D     ;5 26 - Decrement counter and compare with height
+        BCS DSPLN0     ;2 28 - (3 23) If Player 0 not on Current Scanline
+        LDA #0         ;2 30 -   Load Blank Line  
+        BYTE $2C       ;4 34 - Else (BIT trick)
+DSPLN0: LDA (PLYR0T),Y ;5 49 -   Load Player 0 Graphics Line
+        STA WSYNC      ;3 52 - End of Line 2
+        STA GRP0       ;3  3 - Set Player 0 Graphics Data
+        LDX #%11111111 ;2  5 - Load Playfield Pattern
+        STX PF0        ;3  8 - and Store 
+        STX PF1        ;3 11
+        STX PF2        ;3 14
+        LDA PLYR1H     ;2 16 - Get Player 1 Height
+        DCP PLYR1D     ;5 21 - Decrement counter and compare with height
+        BCS DSPLN1     ;2 23 - (3 18) If not on current scanline
+        LDA #0         ;2 25 -   Load Blank Line  
+        BYTE $2C       ;4 29 - - Else (BIT trick)
+DSPLN1  LDA (PLYR1T),Y ;5 34 - Load Player 1 Graphics Line
+        STA WSYNC      ;3 37 - End of Line 1
+        STA GRP1       ;3  3 - Set Player 0 Graphics Data
+        LDX #0         ;2  5 - Load Playfield Pattern
+        STX PF0        ;3  8 - and Store
+        STX PF1        ;3 11
+        STX PF2        ;3 14 
+        DEY            ;2 16 - decrease the 2LK loop counter
+        BPL DSPLNL     ;2 18 - (3 21) Branch if more lines to draw
+        RTS
+

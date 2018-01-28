@@ -1,0 +1,9 @@
+;vcsfoot.a02 - C02 Assembly Language Footer File for Atari 2600
+;Created by Curtis F Kaylor - June 18, 2017
+
+        ORG  $FFF4   ;Control and Interrupt Registers
+        DS   8       ;$FFF4-$FFF9 Bank Switch Registers
+        DC.W START   ;$FFFC Reset Vector
+        DC.W IRQBRK  ;$FFFE Interrupt Vector
+
+

@@ -1,0 +1,71 @@
+;Atart 2600 Program Stub - C02 Assembly Language File
+
+;Preset Total Number of Kernal Lines
+KNLLNS  SET 192   ;192 Lines on NTSC Television
+
+;Variables Used By Other Libraries
+TEMP0   EQU $E0   ;Temporary Storage
+TEMP1   EQU $E1
+TEMP2   EQU $E2
+TEMP3   EQU $E3
+
+;Initialization Code
+; From CLEAN_START macro by Andrew Davie
+; Standardised STArt-up code, clears STAck, all TIA registers and RAM to 0
+; Sets STAck pointer to $FF, and all registers to 0
+; Sets decimal mode off, sets interrupt flag (kind of un-necessary)
+; Use as very first section of code on boot (ie: at reset)
+; Code written to minimise total ROM usage - uses weird 6502 knowledge :)
+START:  SEI
+        CLD
+        LDX #0
+        TXA
+        TAY
+STARTC: DEX
+        TXS
+        PHA
+        BNE STARTC
+
+        JSR SETUP   ;Execute Setup Code
+
+MAIN:   LDA #2      ;Vertical Sync On Bit Mask
+        LDX #49     ;41 scanlines * 76 cycles / 64
+        STA WSYNC   ;Wait for SYNC (halts CPU until end of scanline)
+        STA VSYNC   ;Turn On Vertical Sync
+        STX TIM64T  ;Set timer to go off in 41 scanlines 
+        STA WSYNC   ;First Scanline of VSYNC
+        STA WSYNC   ;Second Scanline of VSYNC
+        LDA #0      ;Vertical Sync Off Bit Mask
+        STA WSYNC   ;Third  Scanline of VSYNC
+        STA VSYNC   ;Turn Off Vertical Sync
+        JSR VRTBLK  ;Execute Vertical Blank Code
+        STA WSYNC   ;Wait For Horizontal Sync
+        STA HMOVE   ;Execute Horizontal Moves
+        JSR CLRHMX  ;Clear Horizontal Move Registers
+WTVBLK: STA WSYNC   ;Wait for End of Vertical Blank
+        LDA INTIM   ;Check Timer
+        BNE WTVBLK  ;Loop If Not Zero
+        STA VBLANK  ;Turn off Vertical Blank
+        JSR KERNEL  ;Execute Kernel Code
+        STA WSYNC   ;Wait for End of Scanline
+        LDA #2      ;Vertical Blank On Bit Mask
+        STA VBLANK  ;Turn on Vertical Blank
+        LDA #32     ;27 scanlines * 76 cycles / 64
+        STA TIM64T  ;Set Timer for 27 scanlines
+        JSR OVRSCN  ;Execute Overscan Code
+WTOSCN: STA WSYNC   ;Wait for End of Overscan
+        LDA INTIM   ;Check Time
+        BNE WTOSCN  ;Loop If Not Zero
+        BEQ MAIN    ;Loop Back to Vertical Sync
+
+IRQBRK: RTI         ;Catch 6502 Break Instructions
+
+CLRHMR: NOP         ; 2  8 (+6 for calling JSR) 
+        JSR CLRHMX  ;12 20
+        LDA #0      ; 2 22 - Clear Horizontal Move Registers
+        LDX #4      ; 2 24
+CLRHML  STA HMP0,X  ;      - Safe to Clear 24 Cycles after HMOVE
+        DEX
+        BPL CLRHML
+CLRHMX: RTS
+

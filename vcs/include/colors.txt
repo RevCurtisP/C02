@@ -1,0 +1,20 @@
+vcslib - Atari 2600 Library Functions for C02
+
+This library contains commonly used functions for the Atari VCS.
+
+  setclr(&tbl);               Sets all four system colors from array tbl,
+                              based on the position of the Color/B&W 
+                              awitch.
+                              
+                              The array consists of 8 bytes of TIA
+                              Color/Luminance values, as follows:
+                                Player 0 (Color Mode)
+                                Player 1 (Color Mode)
+                                Playfield (Color Mode)
+                                Background (Color Mode)
+                                Player 0 (B&W Mode)
+                                Player 1 (B&W Mode)
+                                Playfield (B&W Mode)
+                                Background (B&W Mode)
+
+

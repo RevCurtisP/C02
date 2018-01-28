@@ -1,0 +1,31 @@
+sticks - Atari 2600 Joystick Functions for C02
+
+This library contains a function for reading the joysticks:
+
+  res = getstk(cntrlr);       Reads the state of the specified joystick.
+                              
+                              The joystick to be read is specified by
+                              the argument cntrlr:
+                                0 = Left Joystick  
+                                1 = Right Joystick
+                              
+                              Returns a byte comprised of the bits:
+                                Bit Hex Dec  Control
+                                 0  $01   1  Up         
+                                 1  $02   2  Down
+                                 2  $03   4  Left
+                                 3  $04   8  Right
+                                 7  $05 128  Trigger
+                              
+                              A 1 in a bit means that the direction
+                              or trigger is pressed, so the function
+                              will return 0 if they joystick is 
+                              centered and the trigger is not pressed.
+                              This is the reverse of the raw bits from
+                              the hardware ports.
+                              
+                              Note: The raw bits for the left joystick 
+                              are stored in TEMP0, while the raw bits
+                              for the right joystick are stored in TEMP1.
+
+

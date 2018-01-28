@@ -1,0 +1,9 @@
+/* vcsfoot.h02 - C02 Footer File for Atari 2600                        *
+ * The last line of the program must be                                *
+ *   #include <vcsfoot.h>                                              *
+ * The following two labels must be present in the program             *
+ *   irqbrk:  subroutine to call when a BRK instruction is encountered *
+ *   start:   program start on power up                                */
+
+#pragma vartable //Write Variable Table
+

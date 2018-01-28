@@ -1,0 +1,5 @@
+/* Atari 2600 Library Functions for C02 */
+
+void getclr();  //Select Color based on Color/B&W Switch
+void setclr();  //Set Colors from Color Table
+

@@ -1,0 +1,10 @@
+/* Two Line Kernal Arena Kernal for Atari 2600   *
+ * Requires the following equates be set:        *
+ *   ARNLNS - Number of Scanlines to Display     *
+ *   P0HGHT - Height of Player 0 in Kernel Lines *
+ *   P1HGHT - Height of Player 1 in Kernel Lines */
+
+void p0prep();  //Prepare Player 0 for Display
+void p1prep();  //Prepare Player 1 for Display
+
+void ardisp();  //Display Arena

@@ -1,0 +1,7 @@
+/* vcsinit.h02 - Initialize Atari 2600              *
+ * Usage:                                           *
+ *   #include <vcsfoot.h>                           *
+ * Contains the start label required by vcsfoot.h02 *
+ * Program must contain the following label         *
+ *   main:  program code                            */
+

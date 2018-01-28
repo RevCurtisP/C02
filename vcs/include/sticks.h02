@@ -1,0 +1,10 @@
+/* Atari 2600 Joystick Functions for C02 */
+
+//Joystick Directions
+//#define STKUP = 1   //Joystick Up
+//#define STKDN = 2   //Joystick Down
+//#define STKLF = 4   //Joystick Left
+//#define STKRT = 8   //Joystick Right
+
+char getstk();  //Read Joystick
+

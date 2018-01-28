@@ -1,0 +1,45 @@
+;colors.a02 - Atari 2600 Color/BW Assembly Language Routines
+
+;getclr(mask, clr, bw) - Get Color Based on Color B&W Switch Position
+;Args: A - Mask for Color Cycling (0=None)
+;      Y - Color/Luminance to use in Color Mode
+;      X - Color/Luminance to use in B&W Mode
+;Returns: Color to Use
+GETCLR: STA TEMP2       ;Save Color Cycling Mask
+        LDA SWCHB       ;Read Console Switches
+        AND #%00001000  ;Test TV Type Switch
+        BNE GETCLC      ;If Off
+        TXA             ;  Load B&W Mode Color/Luminance
+        EOR TEMP2       ;  Apply Mask
+        AND #$0F        ;  and Strip High Nybble 
+        RTS             ;Else
+GETCLC: TYA             ;  Load Color Mode Color/Luminance
+        EOR TEMP2       ;  and Apply Apply Mask
+        RTS             ;Return Selected Color
+
+;setclr(mask, &clrtbl) - Set Object Colors
+;Args: X,Y = Pointer to 8-Byte Color Table Color Table
+;            Player0, Player1, Playfield, Background (Color)
+;            Player0, Player1, Playfield, Background (B&W)
+;Sets: TEMP0,TEMP1 = Pointer to Color Table
+;Affects: A,X,Y,N,Z
+SETCLR: STY TEMP1       ;Save Pointer to Color Table
+        STX TEMP0
+        STA TEMP2       ;Save Color Cycling Mask
+        LDX #3          ;Setting 4 colors (0-3)
+        LDY #3          ;Refault to the color entries in the table (0-3)
+        LDA SWCHB       ;Read Console Switches
+        AND #%00001000  ;Test TV Type Switch
+        BNE SETCLL      ;If On
+        LDA #$0F        ;  Use Color Entries
+        AND TEMP2       ;Else
+        STA TEMP2       ;  Strip High Nybble from Mask
+        LDY #7          ;  and Use B&W Entries
+SETCLL: LDA (TEMP0),Y   ;Get Color/B&W Value
+        EOR TEMP2       ;Apply Color Cycling Mask
+        STA COLUP0,x    ;and Set Object Color
+        DEY             ;Decrement Table Pointer
+        DEX             ;Decrement Register Pointer
+        BPL SETCLL      ;If >0, Loop
+        RTS             ;Return
+

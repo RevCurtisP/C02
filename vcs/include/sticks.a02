@@ -1,0 +1,27 @@
+;C02 VCS Library - Joystick Assembly Language Subroutines 
+
+;getstk(cntrlr) - Read Joystick
+;Args: A = Controller Number, 0=Left, 1=Right
+;Sets: TEMP0 = Left Joystick Raw Directional Bits
+;      TEMP1 = Right Joystick Raw Directional Bits
+;      X = Controller Number
+;Returns: A = Joystick Bits (1 if Pressed)
+;             0=Up, 1=Down, 2=Left, 3=Right, 7=Trigger
+;         N = Set if Trigger Pressed
+;         Z = Set if No Buttons or Trigger Pressed
+GETSTK: TAX             ;Save Stick Number in Index
+        LDA SWCHA       ;Read Joystick Register
+        LSR             ;Shift High Nybble into Low Nybble
+        LSR
+        LSR
+        LSR
+        STA TEMP0       ;Save Left Joystick Raw Bits
+        LDA SWCHA       ;Read Joystick Register
+        AND #$0F        ;Strip High Nybble
+        STA TEMP1       ;Save Right Joystick Raw Bits
+        LDA INPT4,X     ;Read Joystick Trigger
+        AND #$80        ;Strip Bits 1-6
+        ORA TEMP0,X     ;Combine with Directional Bits
+        EOR #$8F        ;Reverse Bits
+        RTS
+

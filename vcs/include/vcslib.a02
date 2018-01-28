@@ -1,0 +1,37 @@
+;C02 VCS Library - Assembly Language Subroutines 
+
+;addbcd(addend, &varble) - Add Number to BCD variable
+;adcbcd(addend, &varble) - Add Number w/Carry to BCD variable
+;Args:  A = Number to Add
+;       X,Y = Pointer to Variable to Add To
+;Sets: TEMP0,TEMP1 = Pointer to Color Table
+;Affects: A,Y,C,N,Z
+;Updates: Variable Pointed to by X,Y
+;Returns: A = Result of Addition
+ADDBCD: CLC             ;Clear Carry - Regular Add
+ADCBCD: STX TEMP0       ;Save Pointer to Variable
+        STY TEMP1
+        LDY #0
+        SED             ;Set Decimal Mode
+        ADC (TEMP0),Y   ;Add Accumulator to Variable
+        STA (TEMP0),Y   ;Store Result in Variable
+        CLD             ;Clear Decimal Mode
+        RTS             ;Return
+
+;posobj(hrzpos, object) - Position Object
+;Args: A = Horizontal Position
+;      Y = Object (0=Player0, 1=Player1, 2=Missile0, 3=Missle1, 4=Ball)
+;Affects: A,C,Z
+POSOBJ: SEC
+        STA WSYNC      ;Wait for Beginning of Scanline
+POSOBL: SBC #15        ;2  2 - each time thru this loop takes 5 cycles, which is 
+        BCS POSOBL     ;2  4 - the same amount of time it takes to draw 15 pixels
+        EOR #7         ;2  6 - The EOR & ASL statements convert the remainder
+        ASL            ;2  8 - of position/15 to the value needed to fine tune
+        ASL            ;2 10 - the X position
+        ASL            ;2 12
+        ASL            ;2 14
+        STA.WY HMP0,Y  ;5 19 - store fine tuning of X
+        STA RESP0,Y    ;4 23 - set coarse X position of object
+        RTS            ;6 29
+

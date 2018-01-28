@@ -1,0 +1,80 @@
+//vcshead.h02 - C02 Header file for Atari 2600
+
+//TIA Registers - Write
+char VSYNC;    //Vertical Sync
+char VBLANK;   //Vertical Blank 
+char WSYNC;    //Wait for Horizontal Blank
+char RSYNC;    //Reset Horizontal Sync Counter
+char NUSIZ0;   //Number-Size Player/Missile 0
+char NUSIZ1;   //Number-Size Player/Missile 1
+char COLUP0;   //Color-Luminance Player 0
+char COLUP1;   //Color-Luminance Player 1
+char COLUPF;   //Color-Luminance Playfield
+char COLUBK;   //Color-Luminance Background
+char CTRLPF;   //Control Playfield, Ball, Collisions
+char REFP0;    //Reflection Player 0
+char REFP1;    //Reflection Player 1
+char PF0;      //Playfield Register Byte 0
+char PF1;      //Playfield Register Byte 1
+char PF2;      //Playfield Register Byte 2
+char RESP0;    //Reset Player 0
+char RESP1;    //Reset Player 1
+char RESM0;    //Reset Missle 0
+char RESM1;    //Reset Missle 1
+char RESBL;    //Reset Ball
+char AUDC0;    //Audio Control 0
+char AUDC1;    //Audio Control 1
+char AUDF0;    //Audio Frequency 0
+char AUDF1;    //Audio Frequency 1
+char AUDV0;    //Audio Volume 0
+char AUDV1;    //Audio Volume 1
+char GRP0;     //Graphics Register Player 0
+char GRP1;     //Graphics Register Player 1
+char ENAM0;    //0000 00x0   Graphics Enable Missle 0
+char ENAM1;    //0000 00x0   Graphics Enable Missle 1
+char ENABL;    //0000 00x0   Graphics Enable Ball
+char HMP0;     //Horizontal Motion Player 0
+char HMP1;     //Horizontal Motion Player 1
+char HMM0;     //Horizontal Motion Missle 0
+char HMM1;     //Horizontal Motion Missle 1
+char HMBL;     //Horizontal Motion Ball
+char VDELP0;   //0000 000x   Vertical Delay Player 0
+char VDELP1;   //0000 000x   Vertical Delay Player 1
+char VDELBL;   //0000 000x   Vertical Delay Ball
+char RESMP0;   //0000 00x0   Reset Missle 0 to Player 0
+char RESMP1;   //0000 00x0   Reset Missle 1 to Player 1
+char HMOVE;    //Apply Horizontal Motion
+char HMCLR;    //Clear Horizontal Move Registers
+char CXCLR;    //Clear Collision Latches
+
+//TIA Registers - Read          bit 7   bit 6
+char CXM0P;    //Read Collision  M0-P1   M0-P0
+char CXM1P;    //                M1-P0   M1-P1
+char CXP0FB;   //                P0-PF   P0-BL
+char CXP1FB;   //                P1-PF   P1-BL
+char CXM0FB;   //                M0-PF   M0-BL
+char CXM1FB;   //                M1-PF   M1-BL
+char CXBLPF;   //                BL-PF 
+char CXPPMM;   //                P0-P1   M0-M1
+char INPT0;    //Read Pot Port 0
+char INPT1;    //Read Pot Port 1
+char INPT2;    //Read Pot Port 2
+
+char INPT3;    //Read Pot Port 3
+char INPT4;    //Read Input (Trigger) 0
+char INPT5;    //Read Input (Trigger) 1
+
+//RIOT Registers
+char SWCHA;    //Port A data register for joysticks:
+               //Bits 4-7 for Player 1.  Bits 0-3 for Player 2.
+char SWACNT;   //Port A data direction register (DDR)
+char SWCHB;    //Port B data (console switches)
+char SWBCNT;   //Port B DDR
+char INTIM;    //Timer output
+char TIM1T;    //set 1 clock interval
+char TIM8T;    //set 8 clock interval
+char TIM64T;   //set 64 clock interval
+char T1024T;   //set 1024 clock interval
+
+#pragma zeropage $80 //Zero Page RAM Base Address
+

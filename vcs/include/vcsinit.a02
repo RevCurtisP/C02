@@ -1,0 +1,19 @@
+;Atari 2600 Initialization Code - C02 Assembly Language File
+; From CLEAN_START macro by Andrew Davie
+; Standardised start-up code, clears stack, all TIA registers and RAM to 0
+; Sets stack pointer to $FF, and all registers to 0
+; Sets decimal mode off, sets interrupt flag (kind of un-necessary)
+; Use as very first section of code on boot (ie: at reset)
+; Code written to minimise total ROM usage - uses weird 6502 knowledge :)
+
+START:  SEI
+        CLD
+        LDX #0
+        TXA
+        TAY
+STARTC: DEX
+        TXS
+        PHA
+        BNE STARTC
+        JMP MAIN
+        

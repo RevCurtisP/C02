@@ -1,19 +1,18 @@
 ;Atari 2600 Two Player Score Kernel
 
 ;Score Routine Variables
-SCORE0  EQU $E8 ;Player One Score
-SCORE1  EQU $E9 ;Player Two Score
-SC0ONE  EQU $EA ;One Score Ones Digit Offset
-SC1ONE  EQU $EB ;Player Ten Score Ones Digit Offset
-SC0TEN  EQU $EC ;Player One Score Ones Digit Offset
-SC1TEN  EQU $ED ;Player Ten Score Ones Digit Offset
-SC0GFX  EQU $EE ;Player One Score Graphics Data 
-SC1GFX  EQU $EF ;Player Two Score Graphics Data 
-
+SCORE0  EQU $E8         ;Player One Score
+SCORE1  EQU $E9         ;Player Two Score
+SC0ONE  EQU $EA         ;One Score Ones Digit Offset
+SC1ONE  EQU $EB         ;Player Ten Score Ones Digit Offset
+SC0TEN  EQU $EC         ;Player One Score Ones Digit Offset
+SC1TEN  EQU $ED         ;Player Ten Score Ones Digit Offset
+SC0GFX  EQU $EE         ;Player One Score Graphics Data 
+SC1GFX  EQU $EF         ;Player Two Score Graphics Data 
 
 ;Prep Scores For Diplay
-SCRPRP: LDX #1          ;Offset into SCORE0/SCORE1
-SCRPRL: LDA SCORE0,X    ;Get SCORE1 (First Pass) or SCORE0 (Second Pass) 
+SCPREP: LDX #1          ;Offset into SCORE0/SCORE1
+SCPREL: LDA SCORE0,X    ;Get SCORE1 (First Pass) or SCORE0 (Second Pass) 
         AND #$0F        ;Remove Tens Digit
         STA TEMP0       ;And Save It
         ASL             ;Multiply By 4
@@ -30,14 +29,14 @@ SCRPRL: LDA SCORE0,X    ;Get SCORE1 (First Pass) or SCORE0 (Second Pass)
         ADC TEMP0       ;Add Saved Value, Resulting in Digit / 16 * 5
         STA SC0TEN,X    ;Store in SC0TEN (First Pass) or SC1TEN (Second Pass)
         DEX             ;Point to SCORE 1
-        BPL SCRPRL      ;AND Loop if >0
+        BPL SCPREL      ;AND Loop if >0
         RTS             ;Return
 
-;Display Score Kernel - Uses 12 Lines Total
-SCRDSP: LDA #2          ;      - Use Player Colors
+;scdisp() - Score Display Kernel - Uses 12 Scanlines Total
+SCDISP: LDA #2          ;      - Use Player Colors
         STA CTRLPF      ;      - Set Playfield Control Register
         LDX #5          ;   43 - cycle after looping
-SCRDSL: LDY SC0TEN      ; 3 46 - get the tens digit offset for the Score
+SCDISL: LDY SC0TEN      ; 3 46 - get the tens digit offset for the Score
         LDA DGTGFX,Y    ; 5 51 -   use it to load the digit graphics
         AND #$F0        ; 2 53 -   remove the graphics for the ones digit
         STA SC0GFX      ; 3 56 -   AND save it
@@ -57,7 +56,7 @@ SCRDSL: LDY SC0TEN      ; 3 46 - get the tens digit offset for the Score
         AND #$0F        ; 2 26 -   remove the graphics for the tens digit
         ORA SC1GFX      ; 3 29 -   merge with the tens digit graphics
         STA SC1GFX      ; 3 32 -   AND save it
-        JSR SCRDSR      ;12 44 - waste 12 cycles
+        JSR SCDISX      ;12 44 - waste 12 cycles
         STA PF1         ; 3 47 - @39-54, update playfield for Timer display
         LDY SC0GFX      ; 3 50 - preload for next scanline 
         STA WSYNC       ; 3 53 - wait for end of scanline
@@ -66,12 +65,12 @@ SCRDSL: LDY SC0TEN      ; 3 46 - get the tens digit offset for the Score
         INC SC1TEN      ; 5 13 - advance for the next line of graphic data
         INC SC0ONE      ; 5 18 - advance for the next line of graphic data
         INC SC1ONE      ; 5 23 - advance for the next line of graphic data
-        JSR SCRDSR      ;12 35 - waste 12 cycles
+        JSR SCDISX      ;12 35 - waste 12 cycles
         DEX             ; 2 37 - decrease the loop counter
         STA PF1         ; 3 40 - @39-54, update playfield for the Timer display
-        BNE SCRDSL      ; 2 42 - (3 43) if dex != 0 then branch to ScoreLoop
+        BNE SCDISL      ; 2 42 - (3 43) if dex != 0 then branch to ScoreLoop
         STA WSYNC       ; 3 45 - wait for end of scanline
         STX PF1         ; 3  3 - x = 0, so this blanks out playfield        
         STA WSYNC       ; 3  6 - wait for end of scanline
-SCRDSR: RTS             ; 6 12 - Return
+SCDISX: RTS             ; 6 12 - Return
 

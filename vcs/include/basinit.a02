@@ -1,0 +1,22 @@
+;Atari 2600 Initialization Code - C02 Assembly Language File
+;Based on Batari Basic Initialization Code
+
+START:  SEI         ;Disable Interrupts
+        CLD         ;Disable Decimal Modes
+        LDY #0      ;Set Y-Index to $00
+        LDA $D0     ;If Location $D0
+        CMP #$2C    ;  Does Not Contain $2C
+        BNE IS2600  ;And
+        LDA $D1     ;  Location $D1 
+        CMP #$A9    ;  Does Not Contain $D1
+        BNE IS2600  ;Then
+        DEY         ;  Set Y-Index to $FF
+IS2600: LDX #0      ;
+        TXA         ;
+CLRMEM: INX         ;Clear TIA Registers and RAM
+        TXS         ;  by Cycling Through All Stack Locations
+        PHA         ;  and Pushing 0
+        BNE CLRMEM  ;  which leaves Stack Pointer at $FF
+        TYA         ;Copy 2600 Flag to Accumulator
+        JMP MAIN
+        

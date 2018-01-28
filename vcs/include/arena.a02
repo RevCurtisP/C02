@@ -1,0 +1,148 @@
+;arena.a02 - Two Line Arena Kernal for Atari 2600
+;Requires Constants ARLINS, P0LINS and P1LINS
+
+P0DRAW  EQU $D0   ;Player 0 Draw Counter
+P1DRAW  EQU $D1   ;Player 1 Draw Counter
+P0PTRL  EQU $D2   ;Player 0 Graphics Pointer
+P0PTRH  EQU $D3
+P1PTRL  EQU $D4   ;Player 0 Graphics Pointer
+P1PTRH  EQU $D5
+
+P0OFST: STA TEMP0       ;Save Multiplier
+        BEQ POFFSX      ;If 0, Return
+        LDA #P0LINS     ;Load # of Lines
+        BNE POFFST
+
+P1OFST: STA TEMP0       ;Save Multiplier
+        BEQ POFFSX      ;If 0, Return
+        LDA #P1LINS     ;Load # of Lines
+POFFST: STA TEMP1       
+POFFSL: TXA 
+        CLC
+        ADC TEMP1
+        TAX
+        TYA
+        ADC #0
+        TAY
+        DEC TEMP0
+        BNE POFFSL
+POFFSX: RTS
+
+;p0prep() - Prepare Player 0 for Display
+;Args: A - Y-Position
+;      X,Y - Address of Graphics Data
+;Uses:  ARLINS, P0LINS
+;Sets:  TEMP0 - Y-Position
+;Affects; A,C,N,Z
+P0PREP: LSR             ;Divide by 2 for Two-line Position
+        STA TEMP0       ;Save Y Position
+        ROL             ;Rotate Carry into Bit 1
+        EOR #1          ;Reverse It
+        STA VDELP0      ;and Store in Vertical Delay Register
+        LDA #ARLINS     ;Draw = Top Line + Height - Y Position
+        CLC
+        ADC #P0LINS
+        SEC
+        SBC TEMP0
+        STA P0DRAW
+        TXA              ;Pointer = GfxAddr + Height - 1 - Y Position
+        CLC
+        ADC #P0LINS-1
+        TAX
+        TYA
+        ADC #0
+        TAY
+        TXA
+        SEC
+        SBC TEMP0
+        STA P0PTRL
+        TYA
+        SBC #0
+        STA P0PTRH
+        RTS
+
+;p1prep() - Prepare Player 1 for Display
+;Args: A - Y-Position
+;      X,Y - Address of Graphics Data
+;Uses:  ARLINS, P1LINS
+;Sets:  TEMP1 - Y-Position
+;Affects; A,C,N,Z
+P1PREP: CLC             ;Add 1 to Y-Position
+        ADC #1          ;to Compensate for GRP1 Priming
+        LSR             ;Divide by 2 for Two-line Position
+        STA TEMP1       ;Save Y Position
+        ROL             ;Rotate Carry into Bit 1
+        EOR #1          ;Reverse It
+        STA VDELP1      ;and Store in Vertical Delay Register
+        LDA #ARLINS     ;Draw = Top Line + Height - Y Position + 1
+        CLC
+        ADC #P1LINS+1
+        SEC
+        SBC TEMP1
+        STA P1DRAW
+        TXA              ;Pointer = GfxAddr + Height - 1 - Y Position
+        CLC
+        ADC #P1LINS-1
+        TAX
+        TYA
+        ADC #0
+        TAY
+        TXA
+        SEC
+        SBC TEMP1
+        STA P1PTRL
+        TYA
+        SBC #0
+        STA P1PTRH
+        RTS
+
+;ardisp() - Kernel Display Routine
+;Args: A = Playfield Color
+;Uses: ARLINS, P0LINS, P1LINS, P0PTRL, P1PTRL
+;Affects: A,X,Y,C,N,Z
+ARDISP: STA COLUPF
+        LDY #ARLINS+1   ; 2 14 - Number of Kernal Lines (Scanlines / 2)
+        LDX #$FF        ;      - Initialize Playfield Index
+        LDA #1          ;      - Reflect Playfield
+        STA CTRLPF      ;      - Set Playfield Control Register
+        LDA #P1LINS-1   ;      - Preset GRP1 if Player 1 on Top Line
+        DCP P1DRAW      ;  
+        BCS ARDIS0      ;
+        LDA #0          ;
+        BYTE $2C        ;
+ARDIS0: LDA (P1PTRL),Y  ;
+        STA GRP1        ; 3  6
+        DEY             ; 2 ??        
+ARDISL: TYA             ; 2 29 - Get Loop Counter
+        AND #ARMULT-1   ; 2 31 - Mask Against Multiplier
+        BNE ARDISS      ; 2 33   If 0
+        INX             ; 2 35 -   Increment Playfield Pointer
+ARDISS: LDA #P0LINS-1   ; 2 15 - Player 1 Height minus 1 due to STArting with 0
+        DCP P0DRAW      ; 5 20 - Decrement P0DRAW and compare with height
+        BCS ARDIS1      ; 2 22 - If Player 0 not on Current Scanline
+        LDA #0          ; 2 24 -   Load 0 (No Graphics)
+        BYTE $2C        ; 4 28 - Else (BIT trick)
+ARDIS1: LDA (P0PTRL),Y  ;(5 28)-   Load Player 0 Graphics Line
+        STA WSYNC       ; 3 31 - Start Line 2
+        STA GRP0        ; 3  3 - Set Player 0 Graphics Data
+        LDA ARENA0,X    ; 4  7 - get current scanline's playfield pattern
+        STA PF0         ; 3 10 - @0-22 and update it
+        LDA ARENA1,X    ; 4 14 - get current scanline's playfield pattern
+        STA PF1         ; 3 17 - @71-28 and update it
+        LDA ARENA2,X    ; 4 21 - get current scanline's playfield pattern
+        STA PF2         ; 3 24 - @60-39
+        LDA #P1LINS-1   ; 2 26 - Player 1 Height minus 1 due to STArting with 0
+        DCP P1DRAW      ; 5 31 -   Load 0 (No Graphics)
+        BCS ARDIS2      ; 2 33 - If Player 1 not on Current Scanline
+        LDA #0          ; 2 35 -   Load 0 (No Graphics)
+        BYTE $2C        ; 4 39 - Else (BIT trick)
+ARDIS2: LDA (P1PTRL),Y  ;(5 39)-   Load Player 1 Graphics Line
+        STA WSYNC       ; 3 42 - Start Line 2
+        STA GRP1        ; 3  3 - Set Player 1 Graphics Data
+        DEY             ; 2  5 - Decrement Loop Counter
+        BNE ARDISL      ; 2  7 - and Loop if >= 0
+        STY PF0         ; 3 10 - Clear Playfield
+        STY PF1         ; 3 13 - 
+        STY PF2         ; 3 16 - 
+        RTS
+

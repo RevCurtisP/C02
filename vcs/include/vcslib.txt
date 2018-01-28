@@ -1,0 +1,34 @@
+vcslib - Atari 2600 Library Functions for C02
+
+This library contains commonly used functions for the Atari VCS.
+
+  res = adcbcd(num, &var);    Adds value num plus carry to variable var 
+                              using BCD arithmetic.
+                              
+                              Used to update multi-byte BCD numbers, such 
+                              as scores with more than two digits.
+                              
+                              Returns the updated contents of var. Can
+                              be called as a void function if the result
+                              is not needed.
+
+  res = addbcd(num, &var);    Adds value num to variable var using BCD 
+                              arithmetic.
+                              
+                              Used to update BCD numbers, such as two
+                              digit scores.
+                              
+                              Returns the updated contents of var. Can
+                              be called as a void function if the result
+                              is not needed.
+
+  posobj(hrz, obj);           Sets horizontal position of object obj to
+                              hrz.
+                              
+                              Argument obj may be any of the following:
+                                0 = Player 0
+                                1 = Player 1
+                                2 = Missile 0
+                                3 = Missile 1
+                                4 = Ball
+
