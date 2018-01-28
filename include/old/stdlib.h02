@@ -1,0 +1,50 @@
+/*********************************************
+ * stdlib - Standard Library Routines for C02 *
+ *********************************************/
+
+/* Convert String to Byte                *
+ * Args: &s - string                     *
+ * Returns: Number Represented by String */
+//char strtob();
+
+/* Terminate Program Abnormally */
+//void abort();
+
+/* Terminate Program Normally */
+//void exit();
+
+/* Absolute Value                          *
+ * Args: b - Byte to get absolute value of *
+ * Returns: Absolute value of b            */
+byte abs();
+
+/* Convert ASCII String to Byte     *
+ * Args: &s - String to Convert     *
+ * Returns: Numeric value of string */
+char atoc();
+
+/* Convert Unsigned Byte to ASCII String *
+ * Args: c  - Unsigned Byte to Convert   *
+ *       &s - String to populate         */
+void ctoa();
+
+/* Divide Unsigned Bytes            *
+ * Args: n - Numerator              *
+ *       d - Denominator            *
+ * Returns: Numerator / Denominator */
+char div();
+
+/* Multiply Unsigned Bytes            *
+ * Args: n - Multiplicand             *
+ *       d - Multiplier               *
+ * Returns: Multiplicand * Multiplier */
+char mult();
+
+/* Generate Pseudo-Random Number            *
+ * Returns: Random number between 1 and 255 */
+char rand();
+
+/* Seed Pseudo-Random Number Generator *
+ * Args: n -  Seed number              */
+void srand();
+

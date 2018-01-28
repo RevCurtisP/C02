@@ -1,0 +1,26 @@
+/* py65mon Header File */
+
+//System Pointer Variables
+char srclo,srchi; //Source String Pointer for Library Functions
+char dstlo,dsthi; //Destination String Pointer for Library Functions
+char blklo,blkhi; //Block Segment Pointer
+
+//System Variables
+char blkslo, blkshi;      //Block Start Address
+char blkelo, blkehi;      //Block End Address
+char blklen;              //Block Segment Length
+char temp0, temp1, temp2; //Temporary Variables
+
+//Memory Mapped I/O
+char putc;        //Write Character to Console
+char getc;        //Read Character from Console
+
+//System Subroutines
+char plkey();     //Poll Console for character
+char rdkey();     //Wait for character from Console
+char getkey();    //Read ASCII character from Console
+void newlin();    //Advance cursor to beginning of next line
+void prchr();     //Print ASCII character to Console
+void prbyte();    //Print Accumulator as Hexadadecimal number
+void prhex();     //Print Low Nybble of Accumulator as Hex Digit
+

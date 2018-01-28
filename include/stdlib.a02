@@ -1,0 +1,176 @@
+; C02 library stdlib.h02 assembly language subroutines
+; Requires 
+; external zero page locations SRCLO and srchi
+; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
+
+;Return ABSolute Value of Accumulator
+ABS:    CMP #$80        ;If Negative (High Bit Set)
+        BCC ABSX        ;  Carry will Already be Set
+        EOR #$FF        ;  One's Complement
+        ADC #$00        ;  and Increment (Carry set by CMP)
+ABSX:   RTS
+
+;Return Higher of A and Y
+;Uses TEMP0
+;Affects A,N,Z,C
+MAX:    STY TEMP0       ;Save Second Parameter
+        CMP TEMP0       ;If First Parameter
+        BCC MAXX        ;  Greater than Second Parameter
+        TYA             ;Copy Second Parameter into Accumulator  
+MAXX:   RTS
+
+;Return Lower of A and &
+;Uses TEMP0
+;Affects A,N,Z,C
+MIN:    STY TEMP0       ;Save Second Parameter
+        CMP TEMP0       ;If First Parameter
+        BCS MINX        ;  Less than Second Parameter
+        TYA             ;Copy Second Parameter into Accumulator  
+MINX:   RTS
+
+;Multiply A times Y
+;Uses TEMP0, TEMP1
+;Affects A,N,Z,C
+MULT:   STA TEMP0       ;Store Multiplicand
+        STY TEMP1       ;Store Multiplier
+;Multiply TEMP0 times TEMP1
+MULTT:  LDA #$00        ;Initialize Accumulator
+        BEQ MULTE       ;Enter Loop
+MULTA:  CLC
+        ADC TEMP0       ;Add Multiplicand
+MULTL:  ASL TEMP0       ;Shift Multiplicand Left
+MULTE:  LSR TEMP1       ;Shift Multiplier Right
+        BCS MULTA       ;If Bit Shifted Out, Add Multiplicand
+        BNE MULTL       ;Loop if Any 1 Bits Left
+        RTS
+
+;Divide A by Y
+;Used TEMP0,TEMP1
+;Affects A,X,N,Z,C
+DIV:    STA TEMP0       ;Store Dividend
+        STY TEMP1       ;Store Divisor
+;Divide TEMP0 by TEMP1
+DIVT:   LDA #$00        ;Clear Accumulator
+        LDX #$07        ;Load Loop Counter
+        CLC
+DIVL:   ROL TEMP0       ;Shift Bit Out of Dividend
+        ROL             ;  into Accumulator
+        CMP TEMP1       ;If Accumulator 
+        BCC DIVS        ;  >= Divisor
+        SBC TEMP1       ;Subtract Divisor
+DIVS:   DEX             ;Decrement Counter
+        BPL DIVL        ;  and Loop
+        ROL TEMP0       ;Shift Result into Dividend
+        LDA TEMP0       ;Load Result into Accumulator
+        RTS
+
+;Generate Pseudo-Random Number between 1 and 255
+;Uses RANDOM (must be non-zero on entry)
+;Affects A,N,Z,C
+RAND:   LDA RANDOM      ;Load Last Result
+        ASL             ;Shift the Seed
+        BCC RANDX       ;If a one was shifted out
+        EOR #$1D        ;  Twiddle the bite
+RANDX:  STA RANDOM      ;Save the Seed
+        RTS
+
+;Seed Pseudo-Random Number Generator
+;Uses RDSEED (if A is zero)
+;Affects A,N,Z,C
+;Sets RANDOM
+RANDS:  ORA #$00        ;If Passed Value not 0
+        BNE RANDX       ;  Store in Seed and Return
+        LDA RDSEED      ;Load System Generated Seed
+        BNE RANDX       ;If Not 0, Store and Return
+        ADC #$01        ;Else Add 1 or 2 
+        BNE RANDX       ;  then Store and Return
+
+;Return A Shifted Y Bytes to the Left
+;Affects A,Y,N,Z,C
+SHIFTL: ASL             ;Shift Byte to Left
+        DEY             ;Decrement Counter
+        BNE SHIFTL      ;  and Loop if Not 0
+        RTS
+
+;Return A Shifted Y Bytes to the Right
+;Affects A,Y,N,Z,C
+SHIFTR: LSR             ;Shift Byte to Right
+        DEY             ;Decrement Counter
+        BNE SHIFTL      ;  and Loop if Not 0
+        RTS
+
+;Convert ASCII to Byte
+;Uses TEMP0, TEMP1
+;Affects A,X,Y,N,Z,C
+ATOC:   JSR SETSRC      ;Initialize Source String
+        STY TEMP0       ;Initialize Result
+ATOCL:  LDA (SRCLO),Y   ;Get Next Character
+        CMP #$30        ;If Less Than '0'
+        BCC ATOCX       ;  Exit
+        CMP #$3A        ;If Greater Than '9'
+        BCS ATOCX       ;  Exit
+        AND #$0F        ;Convert to Binary Nybble
+        STA TEMP1       ;  and Save It
+        LDA TEMP0       ;Load Result
+        ASL             ;Multiply by 5 by
+        ASL             ;  Multiplying by 4
+        ADC TEMP0       ;  And Adding Itself
+        ASL             ;Multiply that by 2  
+        ADC TEMP1       ;Add Saved Nybble
+        STA TEMP0       ;  and Store Result
+        INY             ;Increment Index
+        BPL ATOCL       ;  and Loop
+ATOCX:  LDA TEMP0       ;Load Result
+        RTS             ;And Return
+
+;Convert Byte to ASCII
+;Uses SRCLO, srchi, TEMP0, TEMP1, TEMP2
+;Affects A,X,Y,N,Z
+CTOA:   JSR SETSRC      ;Initialize Source String
+        JSR CVBCD      ;Convert Accumulator to BCD
+        ;LDY #$00       ;Set String Offset to 0
+        LDA TEMP2      ;Get High Byte
+        BEQ CTOAL      ;If Not Zero
+        JSR CTOAN       ;  Convert Low Nybble
+CTOAL:  LDA TEMP1      ;Get Low Byte
+        LSR            ;Shift High Nybble
+        LSR            ;  into Low Nybble
+        LSR
+        LSR
+        BNE CTOA2      ;If Not Zero
+        CMP TEMP2      ;  and High Byte 
+        BEQ CTOA3      ;  not Zero   
+CTOA2:  JSR CTOAN      ;  Convert It
+CTOA3:  LDA TEMP1      ;Get Low Byte
+        JSR CTOAN      ;and Convert Low Nybble
+        LDA #$00
+        BEQ CTOAX      ;Terminate String
+CTOAN:  AND #$0F       ;Strip High Nybble
+        ORA #$30       ;Convert to ASCII digit
+CTOAX:  STA (SRCLO),Y  ;Store in String
+        INY            ;and Increment Offset
+        RTS  
+
+;Convert Binary Number in Accumulator to Binary Coded Decimal
+;Uses TEMP0
+;Returns BCD in TEMP1,temp and A,X = 0
+CVBCD:  STA TEMP0  ;Save Binary Value
+        LDA #0     ;Clear BCD Bytes
+        STA TEMP1
+        STA TEMP2
+        LDX #8     ;Process 8 bits of Binary
+        SEI        ;Disable Interupts
+        SED        ;Set Decimal Mode
+CVBCDL: ASL TEMP0  ;Shift High Bit Into Carry
+        LDA TEMP1  ;Add BCD Low Byte to Itself 
+        ADC TEMP1  ;  Plus Bit Shifted out of Binary
+        STA TEMP1  ;  Effectively Multiplying It by 2
+        LDA TEMP2  ;Add BCD High Byte to Itself
+        ADC TEMP2  ;  Plus Bit Shifted out of Low Byte
+        STA TEMP2  ;  Effectively Multiplying It by 2
+        DEX        ;Decrement Counter and
+        BNE CVBCDL ;  Process Next Bit
+        CLD        ;Clear Decimal Mode
+        CLI        ;Enable Interrupts
+        RTS
+

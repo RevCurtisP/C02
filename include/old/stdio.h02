@@ -1,0 +1,36 @@
+/*****************************************
+ * stdio - Standard I/O Routines for C02 *
+ *****************************************/
+
+/* Read Character from Keyboard          *
+ *   Waits for Keypress                  *
+ * Returns: ASCII value of Key           */
+char getchr();
+
+/* Write Character to Screen             *
+ * Args: c - ASCII character to write    */
+void putchr(); 
+
+/* Read String from Keyboard             *
+ *   Buffers string until C/R is pressed *
+ * Args: &s - string read from keyboard  *
+ * Returns: length of string             */
+char getstr(); 
+
+/* Write String to Screen                *
+ * Args: &s - string to print from       *
+ * Returns: ending position in string    */
+char outstr();
+
+/* Write Partial String to Screen         *
+ * Args: n  - starting position in string *
+ *       &s - string to print from        *
+ * Returns: ending position in string     */
+char outsub();
+
+/* Write String to Screen and Move        *
+ *   Cursor to Beginning of Next Line     *
+ * Args: &s - string to print to screen   *
+ * Returns: number of characters printed  */
+char putstr();
+

@@ -1,0 +1,39 @@
+/*********************************************
+ * memory - Array Handling Routines for C02 *
+ *********************************************/
+
+/* Sets Destination Array for subsequent function calls *
+ * Args: &s - Destination string                        */
+void memdst();
+
+/* Find Character in Destination Array             *
+ * Args: c - Character to find                     *
+ *       n - Number of bytes to search             *
+ * Uses: Destination array specified by memdst()   *
+ * Returns: Position of c in s                     *
+ *          $FF if not found                       */
+char memchr();
+
+/* Compare Destination Array against Source Array  *
+ * Args: n  - Number of bytes to compare           *
+ *       &s - Source array                         *
+ * Uses: Destination array specified by memdst()   *
+ * Returns: Result of comparison                   *
+ *          -1 = Destination < Source              *
+ *           0 = Destination = Source              *
+ *           1 = Destination > Source              */
+char memcmp();
+
+/* Copy Source Array to Destination Array         *
+ * Args: n  - Number of bytes to copy             *
+ *       &s - Source string                       *
+ * Sets: Destination string specified by memdst() */
+char memcpy();
+
+/* Fill Destination Array with Character         *
+ * Args: c - Character to fill array with        *
+ *       n - Number of bytes to fill             *
+ * Uses: Destination array specified by memdst() *
+ * Returns: Number of characters copied          */
+char memset();
+

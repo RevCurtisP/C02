@@ -1,0 +1,83 @@
+;Wildcard String Match Function for C02
+
+
+;C02 Wrapper for Pattern Matcher Routine
+;Args:     X,Y = Pointer to Pattern String
+;Requires: DSTLO,DSTHI = pointer to null-terminated String
+;Calls:    SETSRC, PTTRN
+;Returns:  A=$FF if match
+
+;Match passed string against pattern pointed to by src
+STRPTN: JSR SETSRC      ;Initialize source string variables
+        JSR PTTRN       ;Do pattern match
+        BMI STRPTM      ;If string length exceeded
+        BCS STRPTX      ;or no match found
+STRPTM: INX             ;  Change X from $FF to $00
+STRPTX: TXA             ;Set Result to TRUE or FALSE
+        RTS             ;and Return
+
+;Pattern Matcher by Paul Guertin, 30 August 2000
+;from http://6502.org/source/strings/patmatch.htm
+;
+;Modifications by Curtis F Kaylor, 23 May 2017
+;changed labels to conform to c02 library standards
+;moved index storage to memory to allow indirect reference to pattern
+;added exit with N=1 if strings exceed 128 characters
+;
+;Requires: SRCLO,SRCHI = pointer to null-terminated Pattern
+;          DSTLO,DSTHI = pointer to null-terminated String
+;Sets:     X - $FF
+;          TEMP0 - index into pattern
+;          TEMP1 - index into string
+;Uses:     4 bytes of stack for each '*' in pattern
+;Affects:  A,Y,Z
+;Returns:  C - 1 if String matches Pattern, otherwise 0
+;          N - 1 if String or Pattern longer than 127 characters, otherwise 0
+
+PTTRNQ  EQU "?"         ;Question mark Matches exactly 1 character
+PTTRNA  EQU "*"         ;Matches any number of characters (including 0)
+
+PTTRN:  LDX #$00        ;Initialize pattern pointer to 0
+        STX TEMP0
+        DEX             ;Initialize string pointer to 255
+        STX TEMP1
+PTTRNL: LDY TEMP0
+        LDA (SRCLO),Y   ;Get next pattern character
+        CMP #PTTRNA     ;If it's a '*'
+        BEQ PTTRNS      ;  Jump to star match 
+        INC TEMP1       ;Else point to next string character
+        LDY TEMP1
+        CMP #PTTRNQ     ;If it's a '?'
+        BNE PTTRNR      ;   Replace with string character  
+        LDA (DSTLO),Y   ;   If End of String
+        BEQ PTTRNX      ;     Exit with no match found
+PTTRNR: CMP (DSTLO),Y   ;If pattern character <> string character
+        BNE PTTRNX      ;  Exit with no match found
+        INC TEMP0       ;Else point to next pattern character
+        BMI PTTRNX      ;If max length exceeded, exit no match
+        CMP #0          ;If not string terminator
+        BNE PTTRNL      ;  Check loop
+PTTRNF: RTS             ;Else exit with match found
+
+PTTRNS: INC TEMP0       ;Skip '*' in pattern 
+        LDY TEMP0
+        CMP (SRCLO),Y   ;If next pattern character is '*'
+        BEQ PTTRNS      ;  loop back to skip
+PTTRNT: LDA TEMP0       ;Push pointer into pattern
+        PHA             ;  onto stack
+        LDA TEMP1       ;Push pointer into string
+        PHA             ;  onto stack
+        JSR PTTRNL      ;Recursive call to match rest of string
+        PLA             ;Pop pointer into string
+        STA TEMP1       ;  off of stack
+        PLA             ;Pop pointer into pattern
+        STA TEMP0       ;  off of stack
+        BCS PTTRNF      ;If rest of string matched, exit with match
+        INC TEMP1       ;Skip next string character
+        BMI PTTRNX      ;If max length not exceeded
+        LDY TEMP1
+        LDA (DSTLO),Y   ;and not string terminator terminator
+        BNE PTTRNT      ;  loop to pattern check
+PTTRNX: CLC             ;Clear carry
+        RTS             ; and return
+

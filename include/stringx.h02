@@ -1,0 +1,30 @@
+/*******************************************************
+ * stringx - Extended String Handling Routines for C02 *
+ *******************************************************/
+
+/* Find Span of Characters not matching String  *
+ * Args: &s - String of characters to match     *
+ * Uses: String to parse specified by strdst()  *
+ * Sets: temp1 - Result                         *
+ * Returns: Number of consecutive characters in *
+ *          Destination that are not in Source  */
+char strbrk();
+char strcsp(); //Alias
+
+/* Find Span of Characters matching String      *
+ * Args: &s - String of characters to match     *
+ * Uses: String to parse specified by strdst()  *
+ * Sets: temp1 - Result                         *
+ * Returns: Number of consecutive characters in *
+ *          Destination that are also in Source */
+char strspn();
+
+/* Find First Character matching String         *
+ * Args: &s - String of characters to match     *
+ * Uses: String to parse specified by strdst()  *
+ * Sets: temp1 - Result                         *
+ * Returns: Position of first character in      *
+ *          Destination that is also in Source  *
+ *          $FF if not found                    */
+char strpbk();
+

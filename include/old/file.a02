@@ -1,0 +1,155 @@
+; Requires external routines SETSRC and SETDST
+; Requires the following RAM locations be defined
+; external zero page byte pairs SRCLO,SRCHI and DSTLO,DSTHI
+; and external bytes TEMP0 and TEMP1
+
+;fsetup(fn, fs, fd) - Set Parameters for fsopen()
+;Args: A = Logical file number
+;      Y = Secondary address (255 for None)
+;      X = Device 0=Keyboard, 1=Cassette, 2=RS232, 3=Screen
+;                 4-7=Printers, 8-15=Disks, 31=All Devices 
+;Affects None
+FSETUP  EQU SETLFS    ;Set up a logical file
+
+;fsname(n, &s) - Set Filename for Load, Open, Save
+;Args: A = Length of filename string
+;      X,Y = Pointer to string containing filename
+;Affects: A,X,Y
+;Returns: A = 1,2,3,4,6,240 (see FERROR)
+
+;fsload(v, &a) - Load Memory from File
+;Prereqs: fsetup(), fsname()
+;Args: A = Mode 0=Load, 1=Verify
+;      Y,X = Address to Load File
+;Stack: 9
+;Affects: A,X,Y
+;Sets: STATUS = 0,4,5,8,9 (see FERROR)
+FSLOAD  EQU LOAD      ;Load RAM from device
+
+;fssave(v, &a) - Save Memory to File
+;Prereqs: fsdst fsetup(), fsname()
+;Requires: DSTLO, DSTHI - Start Address
+;Args: Y,X = End Address
+;Stack: 9
+;Affects: A,X,Y
+;Sets: STATUS = 0,4,5,8,9 (see FERROR)
+FSSAVE: LDA #SRCLO    ;Load Pointer to Start Address
+        JMP SAVE      ;Save memory to device
+
+;fsopen() - Open
+;Prereqs: fsetup(), fsname()
+;Affects: A,X,Y
+;Sets: STATUS = 1,2,3,4,6,240 (see FERROR)
+STRCHR: JSR SETNAM      ;Set file name
+        JMP OPEN        ;Open File
+
+;fopen(n, &s) - Open File with Specified Name
+;Not Implemented
+
+;fclose(fn) - Close File
+;Args: A = Logical file number
+;Returns: A = 0,240 (see FERROR)
+FCLOSE  EQU CLOSE       ;Close a logical file
+
+;feof(fn) - Check for End of File
+;Args: A = Logical file number
+;Affects: A,X
+;Returns: A = 0,240 (see FERROR)
+FEOF:   JSR READST      ;Read status word
+        AND #$C0        ;$40=End of File, $80 End of Tape
+        BEQ FRTS        ;If Not 0
+FERR:	LDA #$FF        ;  Set Generic Error Condition
+FRTS:	RTS             ;Return from Subroutine
+
+;ferror(fn) - Check for Error
+;Args: A = Logical file number
+;Affects: A,X
+;Returns: A = Error Bit Mask  
+;         Bit  Cassette Read  Serial Bus I/O     Tape Load/Verify
+;         $01                  Write Timeout
+;         $02                  Read Timeout
+;         $04   Short Block                         Short Block
+;         $08   Long Block                          Long Block
+;         $10   Read Error                          Any Mismatch
+;         $20   Checksum Err                        Checksum Err
+;         $40   End of File    EOI Line
+;         $80   End of Tape    Device Not Present   End of Tape
+FERROR  EQU READST      ;Read status word
+
+;fflush() - Flush file buffer
+; No-Op - Not Needed
+FFLUSH:	RTS
+
+;fgetc(fn) - Read character from file
+;Args: A = Logical file number
+;Stack:   9
+;Affects: A,X
+;Returns: A = 0,240 (see FERROR)
+FGETC:  TAX                ;Move logical file number to X register
+        JSR CHKIN       ;Open channel for input
+        JSR CHRIN       ;Get character from input channel
+        PHA	            ;Save read character
+        JSR CLRCHN      ;Clear I/O channels
+        PLA             ;Retrieve read Character
+        RTS
+        
+;fputc(fn) - Write character from file
+;Args: A = Logical file number
+;      Y = Character to Write
+;Stack:   9
+;Affects: A,X
+;Returns: A = 0,240 (see FERROR)
+FPUTC:  TAX                ;Move logical file number to X register
+        JSR CHKOUT      ;Open channel for input
+        TYA             ;Move character to accumulator
+FPUTCH: JSR CHROUT      ;Output a character
+         JMP CLRCHN      ;Clear I/O channels and return
+
+;fgets(fn, &s) - Read string from file
+;Requires: DSTLO, DSTHI - Pointer to destination string
+;Args: A = Logical file number
+;      Y,X = Pointer to String
+;Stack: 9
+;Affects: X,Y
+;Returns: A = Number of bytes read
+FGETS:  JSR SETDST        ;Save string address & initialize pointer 
+        TAX                ;Move logical file number to X register
+        JSR CHKIN       ;Open channel for input
+FGETSL: JSR CHRIN       ;Get character from input channel
+        PHA               ;Save read character
+        JSR READST      ;Read status word
+        BNE FGETSX      ;If Not 0, Exit
+        PLA             ;Retrieve read character
+        STA SRCLO,Y     ;Store character in string
+        CMP $0D         ;If Carriage Return
+        BEQ FGETSX      ;  Then Exit
+        INY             ;Increment pointer
+        BPL FGETSL      ;and loop if less than 128
+FGETSX: LDA #$00        ;Terminate String        
+        STA (SRCLO),Y   ; 
+FGETSY: JSR CLRCHN      ;Clear I/O channels
+        TYA             ;Return string length
+        RTS
+
+;fputs(fn, &s) - Write String to File
+;Requires: DSTLO, DSTHI - Pointer to source string
+;Args: A = Logical file number
+;      Y,X = Pointer to String
+;Stack: 9
+;Affects: X,Y
+;Returns: A = Number of bytes written
+FPUTS:  JSR SETDST        ;Save string address & initialize pointer 
+        TAX                ;Move logical file number to X register
+        JSR CHKIN       ;Open channel for input
+FPUTSL: LDA SRCLO,Y     ;Load next character
+        PHA               ;Save write character	
+        JSR CHROUT      ;Write character to output channel
+        PLA             ;Retrieve write character
+        CMP $0D         ;If Carriage Return
+        BEQ FGETSY      ;  Then Exit
+        JSR READST      ;Read status word
+        BNE FGETSY      ;If Not 0, Exit
+        INY             ;Increment pointer
+        BPL FPUTSL      ;If less than 128 then loop
+        BMI FGESTY        ;Else exit
+

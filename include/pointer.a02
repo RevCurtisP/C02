@@ -1,0 +1,111 @@
+;C02 library pointer.h02 assembly language subroutines
+;Requires External Zero Page Variables PTRLO, PTRHI, SRCLO, SRCHI
+;External Routines MSETSRC
+
+;ptrset(&a) - Set Pointer Address
+;Args: X,Y = Address
+;Sets: PTRLO, PTRHI = Pointer
+PTRSET: STX PTRLO  ;Save Block Start Low Byte
+        STY PTRHI  ;Save Block Start High Byte
+        RTS
+
+;ptrcmp(&a) - Compare Pointer to Address
+;Requires: PTRLO, PTRHI - Pointer
+;Args: X,Y = Address to Compare Against
+;Affects N,Z
+;Returns A=$01 and C=? if Pointer > Address  
+;        A=$00 and Z=1, C=? if Pointer = Address  
+;        A=$FF and C=? if Pointer < Address
+PTRCMP: CPY PTRHI  ;Compare High Bytes
+        BCC PTRCMN ;If Pointer > Address, Return 1
+        BNE PTRCMF ;If Pointer < Address Return 1
+        CPX PTRLO  ;Compare Low Byte
+        BCC PTRCMN ;If Pointer > Address, Return 1
+        BNE PTRCMF ;If Pointer < Address Return 1
+PTRCMZ: LDA #$00   ;Return 0
+        RTS
+PTRCMN: LDA #$01   ;Return 1
+        RTS
+PTRCMF: LDA #$FF   ;Return 255
+        RTS
+
+;ptrget() - Read Byte from Pointer Address
+;           and Increment Pointer 
+;Sets: PTRLO, PTRSHI = New pointer address
+;Returns: A = Byte at pointer address
+;Affects:  Y, N, Z
+PTRGET: LDY #0         ;Set Offset to 0
+        LDA (PTRLO),Y  ;Load Value at Pointer
+
+;ptrinc() - Increment Pointer Address
+;Sets: PTRLO, PTRSHI = New pointer address
+;Affects:  N, Z
+PTRINC: INC PTRLO   ;Increment Pointer Low Byte
+        BNE PTRRET  ;If Zero
+        INC PTRHI   ;  Increment Pointer High Byte
+PTRRET: RTS         ;Return from function
+
+;ptrput() - Write Byte from Pointer Address
+;           and Increment Pointer 
+;Args: A = Byte to write 
+;Sets: PTRLO, PTRSHI = New pointer address
+;Affects: Y, N, Z
+PTRPUT: LDY #0         ;Set Offset to 0
+        STA (PTRLO),Y  ;Load Value at Pointer
+        JMP PTRINC     ;Increment Pointer
+
+;ptrdec() - Decrement Pointer Address
+;Sets: PTRLO, PTRSHI = New pointer address
+;Affects:  Y, N, Z
+PTRDEC: LDY PTRLO   ;Get Pointer Low Byter
+        BNE PTRDEL  ;If Zero
+        DEC PTRHI   ;  Deccrement Pointer High Byte
+PTRDEL: DEC PTRLO   ;Decrement Pointer Low Byte
+        RTS         ;Return from function
+
+;ptradd() - Add Offset to Pointer
+;Args: A = Number of bytes to add
+;Sets: PTRLO, PTRSHI = New pointer address
+;Affects: A, N, Z
+PTRADD: CLC            ;Add Offset to Low Byte
+        ADC PTRLO
+        STA PTRLO      ;And Save It
+        BCC PTRRET     ;If Carry 
+        INC PTRHI      ;  Increment High Byte
+        RTS
+
+;ptrsub() - Subtract Offset from Pointer
+;Args: A = Number of bytes to subtract
+;Sets: PTRLO, PTRSHI = New pointer address
+;Affects: A, N, Z
+PTRSUB: STA TEMP0      ;Save Offset
+        LDA PTRLO      ;Get Pointer Low Byte
+        SEC            ;Subtract Offset
+        SBC TEMP0      ;
+        STA PTRLO      ;And Save New Low Byte
+        BCS PTRRET     ;If Borrow
+        DEC PTRHI      ;  Decrement High Byte
+        RTS
+
+;ptrsav(&a) - Save Pointer Address
+;Args: X,Y = Address of Array to Save Pointer in
+;Sets: SRCLO, SRCHI = Address of Array
+PTRSAV: JSR SETSRC      ;Save Address & Initialize Y Index 
+        LDA PTRLO       ;Get Pointer Low Byte
+        STA (SRCLO),Y   ;Store In First Byte of Array\
+        INY             ;Increment Index
+        LDA PTRHI       ;Get Pointer High Byte
+        STA (SRCLO),Y   ;Store In Second Byte of Array 
+        RTS
+
+;ptrrst(&a) - Restore Pointer Address
+;Args: X,Y = Address of Array to Restore Address
+;Sets: SRCLO, SRCHI = Address of Array
+;      PTRLO, PRTHI = Pointer Value Stores in Array
+PTRRST: JSR SETSRC      ;Save Address & Initialize Y Index 
+        LDA (SRCLO),Y   ;Get First Byte of Array
+        STA PTRLO       ;Store in Pointer Low Byte
+        INY             ;Increment Index
+        LDA (SRCLO),Y   ;Get Second Byte of Array 
+        STA PTRHI       ;Store in Pointer High Byte
+        RTS

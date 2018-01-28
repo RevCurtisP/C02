@@ -1,0 +1,45 @@
+/* CBM Kernal Header File */
+
+//Zero Page Variables
+
+//Kernal Routines I/O
+char acptr();  //Input byte from serial port
+void chkin();  //Open channel for input
+void chkout(); //Open channel for output
+char chrin();  //Input Character to Channel
+void chrout(); //Output Character to Channel
+ciout();  //Output byte to serial port
+cint();   //Initialize screen editor
+clall();  //Initialize screen editor 
+close();  //Close a specified logical file
+clrchn(); //Close input and output channels
+char getin();  //Read Character from Keyboard Buffer
+iobase(); //Return base address of I/O devices
+ioinit(); //Initialize input/output
+listen(); //Command devices on the serial bus to LISTEN
+load();   //Load RAM from a device
+membot(); //Read/set the bottom of memory
+memtop(); //Read/set the top of memory
+open();   //Open a logical file
+plot();   //Read/set X,Y cursor position
+ramtas(); //Initialize RAM, allocate tape buffer, set screen
+rdtim();  //Read real time clock
+readst(); //Read I/O Status Word
+restor(); //Restore default I/O vectors
+save();   //Save RAM to device
+scnkey(); //Scan keyboard
+screen(); //Return X,Y organization of screen
+second(); //Send secondary address after LISTEN
+setlfs(); //Set logical, first, and second addresses
+setmsg(); //Control KERNAL messages
+setnam(); //Set file name
+settim(); //Set real time clock
+settmo(); //Set timeout on serial bus
+stop();   //Scan stop key
+talk();   //Command serial bus device to TALK
+tksa();   //Send secondary address after TALK
+udtim();  //Increment real time clock
+unlsn();  //Command serial bus to UNLISTEN
+untlk();  //Command serial bus to UNTALK
+vector(); //Read/set vectored I/O
+

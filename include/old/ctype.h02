@@ -1,0 +1,80 @@
+/**************************************
+ * ctype - Character Typing Functions *
+ **************************************/
+
+/* Check for Alphanumeric Character *
+ *   (Alphabetic or Digit)          *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isalnm();
+
+/* Checks for Alphabetic Character  *
+ *   (Upper Case or Lower Case)     *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isalph();
+
+/* Checks for Control Character     *
+ *   (Less than Space or Delete)    *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isctrl();
+
+/* Checks for Digit Character       *
+ *  (In range 0-9)                  *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isdigt();
+
+/* Checks for Graphical Character   *
+ *  (Printable except Space)        *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isgrph();
+
+/* Checks for Hex Digit Character   *
+ *   (In range 0-9, A-F, or a-f)    *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte ishdgt();
+
+/* Checks for Lower Case Character  *
+ *  (In range a-z)                  *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte islowr();
+
+/* Checks for Printable Character   *
+ *  (Not High ASCII nor Control)    *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isprnt();
+
+/* Checks for Punctuation Character *
+ *   (Printable not Alphanumeric)   *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte ispnct();
+
+/* Checks for White Space Character *
+ *   (Space, Tab, NL, VT, FF, CR)   *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isspce();
+
+/* Checks for Upper Case Character  *
+ *  (In range A-Z)                  *
+ * Args: c - Character to Check     *
+ * Returns: TRUE or FALSE           */
+byte isuppr();
+
+/* Convert Character to Lower Case  *
+ * Args: c - Character to Convert   *
+ * Returns: Converted Character     */
+byte tolowr();
+
+/* Convert Character to Upper Case  *
+ * Args: c - Character to Convert   *
+ * Returns: Converted Character     */
+byte touppr();
+

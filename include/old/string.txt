@@ -1,0 +1,78 @@
+String Manipulation Functions for C02
+
+Strings are zero-terminated arrays of type char with a maximum length
+of 128 characters. 
+
+The first character in a string is at position 0, and the last character 
+is at position length - 1.
+
+Since all of the routines stop processing at the 128th character, a 128
+character string does not require a zero terminator.
+
+Usage: at the beginning of the program use the directives
+
+  #include <string.h02>
+  
+The following functions are defined:
+
+  p = strchr(c, &s);  Searches string s for character c. 
+                      
+                      Returns position of character in string, or 255
+                      if character was not found.
+                      
+  n = strlen(&s);     Determines length of string s.
+
+                      Returns length of string.
+                                         
+  strset(&s);         Sets string s as the  source string for subsequent
+                      strcat(). strcmp(), strcpy(), and strstr() calls.
+
+                      Note: Sets variables srclo and srchi as a pointer
+                      to the string.
+
+  n = strcat(&s);     Concatenates destination string s onto the end of
+                      source string set by prior setstr() call.
+                       
+                      Returns total length of concatenated string.
+
+                      Note: srclo and srchi are left pointing to the
+                      source string.
+                  
+  b = strcmp(&s);     Compares destination string s against source 
+                      string set by prior setstr() call.
+                       
+                      Returns -1 if source < destination, 0 if 
+                      source = destination, and 1 if source > destination.
+                  
+                      Note: srclo and srchi are left pointing to the
+                      source string.
+                                    
+  n = strcpy(&s);     Copies destination string s into source string 
+                      set by prior setstr() call, replacing previous
+                      contents.
+                      
+                      Returns number of characters copied.
+                      
+                      Note: srclo and srchi are left pointing to the
+                      source string.
+
+  p = strstr(&s);     Searches for destination string s in source string 
+                      set by prior setstr() call.
+                      
+                      Returns position of destination string in source
+                      string, or 255 if character was not found.
+                      
+                      Note: srclo and srchi are left pointing to the
+                      address of the position of the destination string 
+                      in the source string.
+
+Note: This library expects the following Zero Page locations to be defined
+  
+  strlo, strhi        Destination String Pointer 
+  srclo, srchi        String Pointer (high byte)
+
+as well as the memory location 
+
+  temp0               Temporary storage
+
+

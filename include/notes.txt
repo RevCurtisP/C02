@@ -1,0 +1,6 @@
+Library Compiled Code Size:
+ctype.asm   181 bytes
+stdio.asm    83 bytes
+stdlib,asm  191 bytes
+string.asm  162 bytes
+

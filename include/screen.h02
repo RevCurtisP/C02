@@ -1,0 +1,55 @@
+/********************************************
+ * screen - Screen Control Routines for C02 *
+ ********************************************/
+
+/* Set Background Color                    *
+ * Args: color -  background color code    */
+void bkgclr();
+
+/* Clear the Screen                        */
+void clrscn();
+
+/* Move Cursor Down                       */
+void crsrdn();
+
+/* Move Cursor to Top Left of Screen       */
+void crsrhm();
+
+/* Move Cursor Left                       */
+void crsrlf();
+
+/* Move Cursor Right                      */
+void crsrrt();
+
+/* Move Cursor Up                          */
+void crsrup();
+
+/* Get Character at Current Position       *
+ * Returns: ASCII code of character        */
+char curchr();
+
+/* Move Cursor to Specified Coordinates    *
+ * Args: column - screen column (0 = left) *
+ *       row -    screen line (0 = top)    */
+void mvcrsr();
+
+/* Get Cursor Horizontal Position          *
+ * Returns: current cursor column          */
+char scncol();
+
+/* Get Screen Height in Columns            *
+ * Returns: screen height                  */
+char scnhgt();
+
+/* Get Cursor Vertical Position            *
+ * Returns: current cursor row             */
+char scnrow();
+
+/* Get Screen Width in Columns             *
+ * Returns: screen width                   */
+char scnwid();
+
+/* Set Text Color                          *
+ * Args: color -  text color code          */
+void txtclr();
+

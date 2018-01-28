@@ -1,0 +1,101 @@
+; c02 Program Initialization Code for Commodore Plus/4 & 16
+
+;ASCII Control Codes Equivalents
+CR      EQU $0D   ;Carriage Return
+LF      EQU $11   ;Line Feed (Cursor Down)
+DEL     EQU $14   ;Delete
+HT      EQU $1D   ;Horizontal Tab (Cursor Right)
+VT      EQU $91   ;Vertical Tab (Cursor Up)
+FF      EQU $93   ;Form Feed (Clear Screen)
+BS      EQU $9D   ;Backspace (Cursor Left)
+
+;PETSCII Key Mappings
+DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Zero Page Locations
+strlo   EQU $FE   ;String Pointer (stdio.asm)
+strhi   EQU $FF   ;
+
+;Other RAM Locations
+tbffr   EQU $0333 ;Cassette I/O Buffer
+
+;Video RAM and ROM 
+vidscn  EQU $0C00 ;Video Screen Memory Area 
+chrrom  EQU $D000 ;Character Generator ROM
+vidclr  EQU $0800 ;Color RAM 
+
+;Kernal Routines
+chrin   EQU $FFCF ;Input Character to Channel
+chrout  EQU $FFD2 ;Output Character to Channel
+getin   EQU $FFE4 ;Read Character from Keyboard Buffer
+
+;Machine Language Basic Stub
+        ORG $1001              ;Start 
+basic:  DC  $0C, $10           ; Pointer to Next Line (4108)
+        DC  $00, $00           ; Line Number (0)
+        DC  $9E                ; SYS 
+        DC  $20                ; ' '
+        DC  $34, $31, $31 ,$30 ; "4110" 
+        DC  $00                ;End of Line Marker
+        DC  $00, $00           ;End of Basic Program
+
+start:  TSX         ;Get Stack Pointer
+        STX user15  ;and Save for Exit
+        JMP main    ;Execute Program
+
+exit:   LDX user15  ;Retrieve Saved Stack Pointer
+        TXS         ;and Restore It
+        RTS         ;Return to BASIC
+
+;Poll Keyboard for Character
+plkey   EQU getin   ;Read Character from Keyboard Buffer
+
+;Get Character from Keyboard
+getkey: 
+
+;Wait for Character from Keyboard
+rdkey:  JSR plkey   ;Poll Keyboard
+        BEQ getkey  ;If No Key, Loop
+        RTS
+
+;Delete Previous Character
+delchr: RTS
+
+;Advance Character to Next line
+newlin: LDA #$0D     ;Load C/R into Accumulator
+        
+;Print Character to Console
+prchr   EQU chrout   ;
+
+;Delete Previous Character
+delchr: LDA #$9D     ;Load Cursor Left into Accumulator
+        JSR prchr    ;  and Print it
+        LDA #$14     ;Load Delete into Accumulater
+        JMP prchr    ;  and Print it
+
+;Advance Character to Next line
+newlin: LDA #$0D     ;Load C/R into Accumulator
+        JMP prchr    ;  and Print it
+
+;Print Byte as Two-Digit Hex Number to Console
+prbyte: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR prhex   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into prhex
+                    
+;Print Low Nybble as Hex Digit to Console
+prhex:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC prhexc  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+prhexc: ADC #$30    ;Convert to ASCII Character
+        JMP prchr   ;Print Hex Digit and Return
+
+exit:   RTS             ;Return to Monitor
+

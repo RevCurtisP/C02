@@ -1,0 +1,42 @@
+;acptr() - Get data from the serial bus
+;Returns: A = Received Character
+;Preparatory routines: TALK, TKSA
+;Error returns: See READST
+;Stack requirements: 13
+;Registers affected: A, X
+ACPTR  = $FFA5     ;Alias to ACPTR Routine  
+
+;chkin(lfn) - Open a channel for input
+;Arguments: A = Logical File Number
+;    Preparatory routines: (OPEN)
+;    Error returns:
+;    Stack requirements: None
+;    Registers affected: A, X
+CHKIN:  TAX        ;Transfer Channel# to Accumulator
+		JMP $FFC6  ;Execute CHKIN Routine
+		
+;chkout(lfn) - Open a channel for output
+;Arguments: A = Logical File Number
+;    Preparatory routines: (OPEN)
+;    Error returns: 0,3,5,7 (See READST)
+;    Stack requirements: 4+
+;    Registers affected: A, X
+CHKOUT: TAX        ;Transfer Channel# to Accumulator
+		JMP $FFC9  ;Execute CHKOU7T Routine
+
+;chrin() - Get a character from the input channel
+;Returns: A = Byte Received
+;    Preparatory routines: (OPEN, CHKIN)
+;    Error returns: 0 (See READST)
+;    Stack requirements: 7+
+;    Registers affected: A, X
+CHRIN   = $FFCF     ;Alias to CHRIN Routine  
+
+;chrout(chr) - Output a character
+;Arguments: A = Character to Send
+;    Preparatory routines: (CHKOUT,OPEN)
+;    Error returns: 0 (See READST)
+;    Stack requirements: 8+
+;    Registers affected: A
+CHRIN   = $FFD2     ;Alias to CHROUT Routine  
+

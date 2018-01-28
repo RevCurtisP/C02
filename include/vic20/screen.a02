@@ -1,0 +1,152 @@
+;Screen Control Assembly Lanuage Routines for C02
+
+;Vic Display Colors
+BLACK   EQU 0     Black
+WHITE   EQU 1     White
+RED     EQU 2     Red
+CYAN    EQU 3     Cyan
+MAGNTA  EQU 4     Purple
+GREEN   EQU 5     Green
+BLUE    EQU 6     Blue
+YELLOW  EQU 7     Yellow
+
+;PETSCII Color Codes
+CTLBLK  EQU 144   Black
+CTLWHT  EQU 5     White
+CTLRED  EQU 28    Red
+CTLCYN  EQU 159   Cyan
+CTLPUR  EQU 156   Purple
+CTLGRN  EQU 30    Green
+CTLBLU  EQU 32    Blue
+CTLYLW  EQU 158   Yellow
+
+;PETSCII Screen Control Codes
+CLEAR   EQU 147   Clear (CLR)
+DELETE  EQU 20    Delete (DEL)
+DOWN    EQU 17    Cursor Down
+ENTER   EQU 13    Return
+FN1     EQU 133   Function Key 1 (F1)
+FN2     EQU 137   Function Key 2 (F2)
+FN3     EQU 134   Function Key 3 (F3)
+FN4     EQU 138   Function Key 4 (F4)
+FN5     EQU 135   Function Key 5 (F5)
+FN6     EQU 139   Function Key 6 (F6)
+FN7     EQU 136   Function Key 7 (F7)
+FN8     EQU 140   Function Key 8 (F8)
+HOME    EQU 19    Home 
+INSERT  EQU 148   Insert
+LEFT    EQU 157   Cursor Left
+RIGHT   EQU 29    Cursor Left
+RVSOFF  EQU 146   Reverse Off
+RVSON   EQU 18    Reverse On
+UP      EQU 145   Cursor Up
+
+;PETSCII Box Drawing Characters
+BTMLFT  EQU 173   Bottom Left Corner
+BTMRGT  EQU 189   Bottom Right Corner
+BTMTEE  EQU 177   Bottom to Cetter Tee 
+CTRCRS  EQU 123   Center Cross
+HRZLIN  EQU 96    Horizontal Line
+LFTTEE  EQU 171   Left To Center T
+RGHTEE  EQU 179   Right To Center T
+TOPLFT  EQU 176   Top Left Corner
+TOPRGT  EQU 174   Top Right Corner
+TOPTEE  EQU 178   Top to Center T
+VRTLIN  EQU 98    Verical Line
+
+;PETSII Color Table
+CLRTBL: DB CTLBLK,CTLWHT,CTLRED,CTLCYN,CTLPUR,CTLGRN,CTLBLU,CTLYLW
+
+;Set Background Color
+;Args: A = Vic Color Code
+;Uses: TEMP0 - Temporary Storage
+;Affects: A,C,N,Z
+BKGCLR: LSR           ;Shift Color Code 4 Bits Left
+        LSR 
+        LSR 
+        LSR 
+        STA TEMP0     ;Save it
+        LDA $900F     ;Read VIC Color Control Register
+        AND #$15      ;Strip Existing Backround Color
+        ORA           ;Add in Background Color
+        STA $900F     ;Write back to VIC Chip
+        RTS
+
+;Set Text Color
+;Args: A = Vic color code
+;Affects: A,X,C,N,Z
+TXTCLR: TAX           ;Transfer Color Code to Index
+        LDA CLRTBL,X  ;Load PETSCII Color Control Character
+        JMP PRCHR     ;Print Character and Return
+
+;Clear Screen
+;Affects A,C,N,Z
+CLRSCN: LDA #CLEAR  ;Load Clear Screen Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Down
+;Affects A,C,N,Z
+CRSRDN: LDA #DOWN   ;Load Cursor Down Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor To Home Position
+;Affects A,C,N,Z
+CRSRHM: LDA #HOME   ;Load Cursor Home Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Left
+;Affects A,C,N,Z
+CRSRLF: LDA #LEFT   ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Right
+;Affects A,C,N,Z
+CRSRRT: LDA #RIGHT  ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Up
+;Affects A,C,N,Z
+CRSRUP: LDA #UP     ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor to Specified Coordinates
+;Args: A = screen column (0 = top)   
+;      Y = screen line (0 = left)
+MVCRSR: TAX         ;Transfer Column to X Register
+        CLC         ;Clear Carry Flag
+        JMP $FFF0   ;Call PLOT Kernal Routine and Return
+
+;Get Cursor Horizontal Position
+;Returns: A = current cursor column
+;         Y = current cursor row
+;         X = current cursor column
+SCNCOL: SEC         ;Set Carry Flag
+        JSR $FFF0   ;Call PLOT Kernal Routine
+        TXA         ;Transfer Column to Accumulator
+        RTS
+
+;Get Screen Height in Rows
+;Returns: A = height of screen in rows
+;         Y = height of screen in rows
+;         X = width of screen in columns
+SCNGHT: JSR $FFED   ;Call SCREEN Kernal Routine
+        TYA         ;Transfer Height to Accumulator
+        RTS
+
+;Get Cursor Vertical Position
+;Returns: A = current cursor row
+;         Y = current cursor row
+;         X = current cursor column
+SCNROW: SEC         ;Set Carry Flag
+        JSR $FFF0   ;Call PLOT Kernal Routine
+        TYA         ;Transfer Row to Accumulator
+        RTS
+
+;Get Screen Width in Rows
+;Returns: A = width of screen in columns
+;         Y = height of screen in rows
+;         X = width of screen in columns
+SCNWID: JSR $FFED   ;Call SCREEN Kernal Routine
+        TXA         ;Transfer Width to Accumulator
+        RTS
+

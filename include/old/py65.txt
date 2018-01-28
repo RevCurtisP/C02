@@ -1,0 +1,42 @@
+C02 Header File for py65mon
+
+At the beginning of the program use the directive
+
+  #include <py65,h02>
+  
+This must be the first include directive.
+
+Defined zero-page memory locations (variables):
+
+  strlo, strhi      String Pointer (used by stdio library).
+  
+Defined functions:
+
+  delchr();         Moves cursor one character to the left and
+                    deletes character in that position.
+                   
+                    Note: Writes backspace, space, backspace
+                    via prchr($08), prchr($20), and prchr($08).
+
+  c = getkey();     Waits for keypress and returns ASCII code of
+                    key that was pressed. 
+                    
+                    Note: Aliased to rdkey().       
+
+  newlin();         Advances the cursor to the beginning of then
+                    next line.
+                   
+                    Note: Writes carriage return and line feed
+                    via prchr($0D) and prchr($0A).
+
+                   
+  c = rdkey();      Waits for keypress and returns ASCII code of
+                    key that was pressed. 
+                    
+                    Note: Continuously reads from memory location 
+                    getc until a non-zero value is returned.
+
+  prchr(c);         Prints character to screen.
+  
+                    Note: Writes argument to memory location putc.
+

@@ -1,0 +1,7 @@
+; Minimal Assembly Language Header for C02
+        ORG $0200   ;Program Start Address
+
+START:  JMP MAIN    ;Execute Program
+
+EXIT:   BRK         ;Usually BRK if returning to Monitor
+

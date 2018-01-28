@@ -1,0 +1,72 @@
+Standard Input/Output Functions for Apple 1
+
+At the beginning of the program use the directives
+
+  #include <stdioh02>
+  
+The following functions are defined:
+
+  c = getchr();       Waits for a keypress and returns the cleaned 
+                      ASCII value corresponding to the pressed key.
+                      
+                      Note: Calls getkey() from system library.
+
+  putchr(c);          Writes character c to the screen.
+                      
+                      Note: Calls prchr() from system library.
+
+  r = getstr(&s);     Reads a maximum of 128 characters from keyboard 
+                      until the Return/Enter key is pressed, storing the 
+                      entered characters as null-terminated string s.
+                      
+                      Allows corrections using Backspace/Delete. 
+                      
+                      Pressing the Escape/Abort key terminates entry,
+                      leaving the string in an undefined state.
+                      
+                      Returns number of characters entered, or 255
+                      if entry was aborted.
+
+                      Note: Calls getchr() in a loop and uses constants 
+                      DELKEY, RTNKEY, and ESCKEY from the system library.
+
+  r = outstr(&s):     Writes up to 128 characters of null-terminated 
+                      string s to the screen.
+                      
+                      Returns position of null terminator in string.
+                      
+                      Note: Calls outsub(0, &s).
+
+  r = outsub(n, &s):  Writes up to 128 characters of null-terminated 
+                      string s to the screen, starting at position n.
+                      
+                      Returns position of null terminator in string.
+                      
+                      Note: Calls putchr() in a loop.
+
+  r = putstr(&s):     Writes up to 128 characters of null-terminated 
+                      string s to the screen and advances the cursor to 
+                      the beginning of the next line.
+                    
+                      Returns number of characters printed.
+                    
+                      Note: Calls outstr(&s) followed by newlin().
+
+Note: This library expects the following functions to be defined:
+
+  getkey();         Wait for and read ASCII character from keyboard
+  prchr();          Print ASCII character to screen
+  delchr();         Backspace and delete previous character on screen
+  newlin();         Advance cursor to beginning of next line
+
+along with the sequential Zero Page locations
+  
+  strlo:            String Pointer (low byte)             
+  strhi:            String Pointer (high byte)
+
+and the assembler constants
+  
+  DELKEY            Delete/Backspace key ASCII code (usually DEL or BS)
+  ESCKEY            Escape/Abort key ASCII code (usually ESC)
+  RTNKEY            Return/Enter key ASCII code (usually CR)
+

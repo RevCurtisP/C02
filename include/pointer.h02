@@ -1,0 +1,47 @@
+/****************************************************
+ * pointer - Pointer Manipulation Functions for C02 *
+ ****************************************************/
+
+/* Set Pointer Address                 *
+ * Args: &a - Address                  */
+void ptrset();
+
+/* Write byte to pointer address *
+ * and increment pointer         *
+ * Args: b - Byte to write       * /
+void ptrput();
+
+/* Read byte from pointer address  *
+ * and increment pointer           *
+ * Returns: Byte read from pointer */
+char ptrget();
+
+/* Increment Pointer */
+void ptrinc();
+
+/* Decrement Pointer */
+void ptrdec();
+
+/* Add Offset to Pointer            *
+ * Args: n - Number of bytes to add * /
+void ptradd();
+
+/* Subtract Offset from Pointer          *
+ * Args: n - Number of bytes to subtract * /
+void ptrsub();
+
+/* Compare Pointer to Address            *
+ * Args: &a - Address to compare against *
+ * Returns: Result of comparison         *
+ *          -1 = Pointer < Address       *
+ *           0 = Pointer = Address       *
+ *           1 = Pointer > Address       */
+void ptrcmp();
+
+/* Save Pointer Value                    *
+ * Args: &a - Address to save pointer to */
+void ptrsav();
+
+/* Restore Pointer Value                      *
+ * Args: &a - Address to restore pointer from */
+void ptrrst();

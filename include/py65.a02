@@ -1,0 +1,98 @@
+; py65mon program initialization code for c02 programs
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $7F     ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
+
+;Zero Page Locations
+SRCLO   EQU $30     ;Source String Pointer (stdio.a02)
+SRCHI   EQU $31
+DSTLO   EQU $32     ;Destination String Pointer (string.a02)
+DSTHI   EQU $33
+BLKLO   EQU $34     ;Block Segment Pointer (block.a02)
+BLKHI   EQU $35
+
+
+RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
+RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
+TEMP0   EQU $40     ;Temporary Storage
+TEMP1   EQU $41
+TEMP2   EQU $42
+BLKSLO  EQU $4A     ;Block Start Address
+BLKSHI  EQU $4B
+BLKELO  EQU $4C     ;Block End Address
+BLKEHI  EQU $4D
+BLKLEN  EQU $4E     ;Block Segment Length     
+
+;Memory Mapped I/O 
+PUTC    EQU $F001   ;Write Character to Console
+GETC    EQU $F004   ;Read Character from Console
+
+        ORG $0200   ;START Directly Above Stack
+
+START:  JMP MAIN    ;Execute Program
+
+;Poll Character from Keyboard
+PLKEY:  INC RDSEED  ;Cycle the RANDOM Seed (if not provided by system)
+        LDA GETC    ;Read Character from Console
+        RTS
+
+;Read Character from Console
+GETKEY             ;Same As RDKEY
+
+;Wait for Character from Console
+RDKEY:  JSR PLKEY   ;Read Character from Console
+        BEQ RDKEY   ;  Loop if None Received
+        RTS
+
+;Delete Previous Character
+DELCHR: LDA #$08    ;Load Backspace into Accumulator
+        JSR PRCHR   ;  and Print it
+        LDA #$20    ;Load Space into Accumulater
+        JSR PRCHR   ;  and Print it
+        LDA #$08    ;Load Backspace into Accumulator
+        JMP PRCHR   ;  and Print it
+
+;Advance Character to Next line
+NEWLIN: LDA #$0D    ;Load C/R into Accumulator
+        JSR PRCHR   ;  and Print it
+        LDA #$0A    ;Load L/F into Accumulater
+                    ;  and fall into PRCHR
+
+;Print Character to Console
+PRCHR:  STA PUTC   ;Write Character to Console
+        RTS
+
+EXIT:   BRK        ;Return to Monitor
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA        ;Save Accumulater
+        LSR        ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX  ;  and Print it
+        PLA        ;Restore Accumulator 
+                   ;  and fall into PRHEX
+                    
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F   ;Strip High Nybb
+        SED        ;Set Decimal Flag for 
+        CLC        ;  Addition Wizardry
+        ADC #$90   ;Convert to $90-$99,$00-$05
+        ADC #$40   ;Convert to $30-$39,$41-$46
+        CLD        ;Clear Decimal Flag
+        JMP PRCHR  ;Print Hex Digit and Return
+
+;Initialize Destination String Pointer and Index
+SETDST: STX DSTLO       ;Save Destination String Pointer
+        STY DSTHI
+        RTS
+
+;Initialize Source String Pointer and Index
+SETSRC: STX SRCLO       ;Save Source String Pointer
+        STY SRCHI
+        LDY #$00        ;Initialize Index Into String
+        RTS
+

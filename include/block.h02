@@ -1,0 +1,61 @@
+/******************************************
+ * block - Block Memory Functions for C02 *
+ ******************************************/
+
+/* Set Block Start Address  *
+ * Args: &b - Start Address */
+void blkbgn();
+
+/* Set Destination Pointer to Block Start */
+void blkdst();
+
+/* Set Block End Address  *
+ * Args: &b - End Address */
+void blkend();
+
+/* Read Bytes from Block                     * 
+ * Args: n  - Number of bytes to read        *
+ *       &m - Array containing bytes to read *
+ * Returns: A=$FF if bytes were written      *
+ *            $00 if block was overflowed    */
+char blkget();
+
+/* Search Block for Array Contents                 *
+ * Args: n  - Search segment size                  *
+ *       &m - Array containing bytes to search for *
+ * Returns: A=$FF if found                         *
+ *            $00 if not found                     */
+char blkmem();
+
+/* Write Bytes to Block                       * 
+ * Args: n  - Number of bytes to write        *
+ *       &m - Array containing bytes to write *
+ * Returns: A=$FF if bytes were written       *
+ *            $00 if block was overflowed     */
+char blkput();
+
+/* Set Block Pointer to Block Start */
+void blkrst();
+
+/* Fill Block with Character              *
+ * Args: c - Character to fill block with *
+ * Returns: Fill character                */
+char blkset();
+
+/* Sort Segments in Block                    *
+ * Args: &m - Array containing bytes to swap */
+char blksrt();
+
+/* Search Block for String                         *
+ * Args: n  - Search segment size                  *
+ *       &m - Array containing bytes to search for *
+ * Returns: A=$FF if found                         *
+ *            $00 if not found                     */
+char blkstr();
+
+/* Swap Bytes in Array with Block Segment    *
+ * Args: n  - Search segment size            *
+ *       &m - Array containing bytes to swap */
+char blkswp();
+
+

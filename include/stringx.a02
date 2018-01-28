@@ -1,0 +1,75 @@
+; C02 library stringx.h02 assembly language subroutines
+; Requires the subroutines and definitions from string.asm
+
+;Common Code - Initialize Variables
+STRXSI: JSR SETSRC      ;Initialize Source String
+        STY TEMP1       ;Save Destination Pointer
+        LDX #0          ;Set End of String Flag
+        RTS             ;  and Return
+
+;Common Code - Check Next Character in Destination String
+STRXSL: LDY TEMP1
+        LDA (DSTLO),Y   ;Get Next Character in Destination String
+        BEQ STRXST      ;If NUL, Return from Calling Routine
+        LDY #0          ;Initialize Source Pointer
+        JMP STRCHA      ;Search for Character in Source and Return
+
+;Common Code - Exit with Result
+STRXST: PLA             ;Pop Return Address Off Stack
+        PLA             ;  to force exit from Calling Routine
+STRXSX: TXA             ;Load End of String Flag into Accumulator 
+        BNE STRXSR      ;If 0 Then
+STRXSP: LDA TEMP1       ;  Load Character Position into Accumulator
+STRXSR: RTS             ;Return 
+
+;strpbk(&s) - Return position of first character in Destination
+;             also contained in Source
+;Requires: DSTLO, dsthi - Pointer to destination string
+;Args: X,Y = Pointer to source string
+;Sets: srclo,srchi = Pointer to source string
+;      TEMP1 = Position of last character checked
+;Uses: TEMP0
+;Affects: C,X,Y
+;Returns: A = Position of first character that matches
+;             $FF if no characters matched
+STRPBK: JSR STRXSI      ;Initialize Variables
+        DEX             ;Change End of String Flag to $FF
+        BNE STRBRL      ;Jump into strbrk subroutine
+
+;strbrk(&s) - Return length of Destination with characters 
+;             not contained in Source
+;Requires: DSTLO, dsthi - Pointer to destination string
+;Args: X,Y = Pointer to source string
+;Sets: srclo,srchi = Pointer to source string
+;      TEMP1 = Return value
+;Uses: TEMP0
+;Affects: C,X,Y
+;Returns: A = Length of matching string segment
+;         Z = 1 if no characters matched 
+;         N = 1 if > 127 characters matched
+STRCSP:                 ;Alias to strbrk 
+STRBRK: JSR STRXSI      ;Initialize Variables
+STRBRL: JSR STRXSL      ;and Search for Character in Source String
+        BCS STRXSP      ;If Not Found
+        INC TEMP1       ;  Increment Destination Pointer
+        BPL STRBRL      ;  and Loop if < 128 
+        BMI STRXSX      ;and Return Not Found
+
+;strspn(&s) - Return length of Destination with characters 
+;             contained in Source
+;Requires: DSTLO, dsthi - Pointer to destination string
+;Args: X,Y = Pointer to source string
+;Sets: srclo,srchi = Pointer to source string
+;      TEMP1 = Return value
+;Uses: TEMP0
+;Affects: C,X,Y
+;Returns: A = Length of matching string segment
+;         Z = 1 if no characters matched 
+;         N = 1 if > 127 characters matched
+STRSPN: JSR STRXSI      ;Initialize Variables
+STRSPL: JSR STRXSL      ;and Search for Character in Source String
+        BCC STRXSP      ;If Found
+        INC TEMP1       ;  Increment Destination Pointer
+        BPL STRSPL      ;  and Loop if < 128 
+        BMI STRXSP      ;Else Return Position
+

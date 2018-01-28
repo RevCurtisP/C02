@@ -1,0 +1,58 @@
+/*********************************************
+ * string - String Handling Routines for C02 *
+ *********************************************/
+
+/* Find Charaacter in String    *
+ * Args: c -  Character to find *
+ *       &s - String to search  *
+ * Returns: c in s              *
+ *          $FF if not found    */
+byte strchr();
+
+/* Get Length of String      *
+ * Args: s - string          *
+ * Returns: Length of string */
+char strlen();
+
+/* Sets Destination String for    *
+ * functions that use two strings *
+ * Args: s - Destination string   */
+void strset();
+
+/* Concatenate Destination String to Source String *
+ * Args: s - Source string                         *
+ * Sets: Destination string specified by strset()  *
+ * Returns: Total Length of concatenated string    */
+char strcat();
+
+/* Compare Destination String against Source String  *
+ * Args: s - Source string                           *
+ * Uses: Destination string specified by strset()    *
+ * Returns: Result of comparison                     *
+ *          -1 = Destination < Source                *
+ *           0 = Destination = Source                *
+ *           1 = Destination > Source                */
+byte strcmp();
+
+/* Copy Source String to Destination String       *
+ * Args: s - Source string                        *
+ * Sets: Destination string specified by strset() *
+ * Returns: Number of characters copied           */
+char strcpy();
+
+/* Copy Part of Source String to Destination String *
+ * Args: n - Starting point in source string        *
+ *       s - Source string                          *
+ * Sets: Destination string specified by strset()   *
+ * Returns: Number of characters copied             */
+char strcut();
+
+/* Find String in String                        *
+ * Args: &s - String to Find                    *
+ * Uses: String to search specified by strset() *
+ * Sets: strset() pointer to position of string *
+ *       End of string if not found             *
+ * Returns: Position of s in Destination string *
+ *          $FF if not found                    */
+byte strstr();
+

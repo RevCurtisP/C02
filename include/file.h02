@@ -1,0 +1,120 @@
+/******************************************
+ * file - Standard File Functions for C02 *
+ ******************************************/
+
+/* File Setup - System Specific           *
+ * Args: system dependent                 *
+ * Returns: system dependent              */
+char fsetup();
+
+/* Set File Name - System Specific        *
+ * Args: system dependent                 *
+ * Returns: system dependent              */
+char fsname();
+
+/* Load File - System Specific            *
+ * Args: system dependent                 *
+ * Returns: system dependent              */
+char fsload();
+
+/* Save File - System Specific            *
+ * Args: system dependent                 *
+ * Returns: system dependent              */
+char fssave();
+
+/* Open File - System Specific            *
+ * Args: system dependent                 *
+ * Returns: system dependent              */
+char fsopen();
+
+/* Open File                              *
+ *   Opens File Specified by Name         *
+ * Args: m  - mode                        *
+ *       &f - string containing filename  *
+ * Returns: file pointer if successful    *
+            0 if an error occurs          */
+char fopen();
+
+/* Close File                             *
+ *   Closes File Opened to File Pointer   *
+ * Args: fp - file pointer                *
+* Returns: 0 if successful                *
+           255 if an error occurred       */
+char fclose();
+
+/* End of File                            *
+ *   Check for End of File Condition      *
+ * Args: fp - file pointer                *
+* Returns: 0 if not at end of file        *
+           255 if end of file reached     */
+char feof();
+
+/* File Error                             *
+ *   Check File Error Indicator           *
+ * Args: fp - file pointer                *
+* Returns: system dependent error number  *
+           0 if no error                  */
+char ferror();
+
+/* Flush File Buffer                      *
+ *   Flush File Output Buffer             *
+ * Args: fp - file pointer                *
+ * Returns: system dependent error number *
+           0 if no error                  */
+char fflush();
+
+/* Read Character from File               *
+ * Args: fp - file pointer                *
+ * Returns: ASCII value of character      *
+ *          system dependent garbage      *
+            character if past end of file */
+char fgetc();
+
+/* Write Character to File                *
+ * Args: fp - file pointer                *
+ *       c - ASCII character to write     *
+ * Returns: ASCII value of character      */
+char fputc(); 
+
+/* Read String from File                  *
+ *   Buffers up to 128 characters         *
+ *   until C/R is pressed                 *
+ * Args: fp - file pointer                *
+ *       &s - string read from file       *
+ * Returns: length of string              *
+ *          255 if error during write     */
+char fgets(); 
+
+/* Write String to File                   *
+ *   Writes up to 128 characters of a     *
+ *   null terminated string               *
+ * Args: fp - file pointer                *
+ *       &s - string to print from        *
+ * Returns: ending position in string     *
+ *          255 if error during write     */
+char fputs();
+
+/* Write Line to File                     *
+ *   Write String to File followed by C/R *
+ * Args: fp - file pointer                *
+ *       &s - string to print from        *
+ * Returns: ending position in string     *
+ *          255 if error during write     */
+char fputln();
+
+/* Sets Array for fread() and fwrite()    *
+ * Args: &s - Destination string          */
+void fsdst();
+
+/* Read Bytes from File                   *
+ *   Reads until EOF is reached           *
+ * Args: fp - file pointer                *
+ *       n - number of bytes to read      *
+ * Returns: number of bytes read          */
+char fread(); 
+
+/* Write Bytes to File                    *
+ * Args: fp - file pointer                *
+ *       n - number of bytes to write     *
+ * Returns: number of bytes written       */
+char fwrite();

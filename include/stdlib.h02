@@ -1,0 +1,69 @@
+/*********************************************
+ * stdlib - Standard Library Routines for C02 *
+ *********************************************/
+
+/* Terminate Program Abnormally */
+//void abort();
+
+/* Terminate Program Normally */
+//void exit();
+
+/* Absolute Value                          *
+ * Args: b - Byte to get absolute value of *
+ * Returns: Absolute value of b            */
+char abs();
+
+/* Convert ASCII String to Unsigned Byte *
+ * Args: &s - String to Convert          *
+ * Returns: Numeric value of string      */
+char atoc();
+
+/* Convert Unsigned Byte to ASCII String *
+ * Args: c  - Unsigned Byte to Convert   *
+ *       &s - String to populate         */
+void ctoa();
+
+/* Divide Unsigned Bytes            *
+ * Args: n - Numerator              *
+ *       d - Denominator            *
+ * Returns: Numerator / Denominator */
+char div();
+ 
+/* Maximum of Two Bytes        *
+ * Args: b - First Byte        *
+ *       c - Second Byte       *
+ * Returns: Greater of the Two */
+char max();
+
+/* Minimum of Two Bytes       *
+ * Args: b - First Byte       *
+ *       c - Second Byte      *
+ * Returns: Lesser of the Two */
+char min();
+
+/* Multiply Unsigned Bytes            *
+ * Args: d - Multiplicand             *
+ *       r - Multiplier               *
+ * Returns: Multiplicand * Multiplier */
+char mult();
+
+/* Generate Pseudo-Random Number            *
+ * Returns: Random number between 1 and 255 */
+char rand();
+
+/* Shift Byte Left                   *
+ * Args: b - Byte to Shift           *
+ *       n - Number of Bits to Shift *
+ * Returns: Shifted Byte */
+char shiftl();
+
+/* Shift Byte Right                  *
+ * Args: b - Byte to Shift           *
+ *       n - Number of Bits to Shift *
+ * Returns: Shifted Byte */
+char shiftr();
+
+/* Seed Pseudo-Random Number Generator *
+ * Args: n -  Seed number              */
+void srand();
+

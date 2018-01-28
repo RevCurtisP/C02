@@ -1,0 +1,111 @@
+; Program initialization code for C02 programs
+; Template for System Specific Code
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $7F     ;Delete/Backspace Key ($08=Backspace, $7F=Delete)
+ESCKEY  EQU $1B     ;Escape/Stop Key      ($03=Ctrl-C, $1B=Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
+NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
+
+;Zero Page Locations
+SRCLO   EQU $00     ;Source String Pointer (stdio.asm)
+SRCHI   EQU $01
+DSTLO   EQU $02     ;Destination String Pointer (string.asm)
+DSTHI   EQU $03
+
+STKSAV  EQU $0D     ;Stack Pointer Storage
+RDSEED  EQU $0E     ;Pseudo-RANDOM Seed
+RANDOM  EQU $0F     ;Pseudo-RANDOM Number Storage
+TEMP0   EQU $10     ;Temporary Storage
+TEMP1   EQU $11
+TEMP2   EQU $12
+
+BLKSLO  EQU $20     ;Block Start Address
+BLKSHI  EQU $21
+BLKELO  EQU $22     ;Block End Address
+BLKEHI  EQU $23
+
+        ORG $0200   ;Program Start Address
+
+START:  NOP         ;System specific initialization code
+        TXS         ;If an RTS is used to return to the Operating System,
+        STX STKSAV  ;  the Stack Pointer should be preserved
+        JMP MAIN    ;Execute Program
+
+;Poll Character from Keyboard
+PLKEY:  INC RDSEED  ;Cycle the Random Seed (if not provided by system)
+        NOP         ;Code Read from Keyboad         
+        RTS
+
+;Read Character from Console
+GETKEY;             ;Usually Drops into RDKEY, but may need to call RDKEY
+                    ;  then clean/convert returned value (e.g. Apple-1) 
+
+;Wait for Character from Console
+RDKEY:  JSR PLKEY   ;Usually calls PLKEY 
+        BEQ RDKEY   ;  until a non-zero is returned
+        RTS         
+
+;Delete Previous Character
+DELCHR: RTS         ;Code to move Cursor to left and clear that position
+                    ;May work differently on systems that don't support this
+
+;Advance Cursor to Next line
+NEWLIN: RTS         ;Code to move Cursor to beginning of next line
+                    ;May emit Carriage Return, Line Feed, or both
+
+;Print Character to Screen
+PRCHR:  RTS         ;Code to write ASCII character to Screen
+
+;Exit Program and Return to Operating System or Monitor
+EXIT:   BRK         ;Usually BRK if returning to Monitor
+        LDX STKSAV  ;If an RTS is used to return to the Operating System,
+        TXS         ;  the Stack Pointer should be restored to original state 
+        RTS         ;  in case program exits in the middle of a Function
+
+;Note: The following two functions replicate calls available 
+;in the Apple-1 monitor and are included for test purposes
+;They will likely be removed before the final release
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into PRHEX
+
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybb
+        SED         ;Set Decimal Flag for 
+        CLC         ;  Addition Wizardry
+        ADC #$90    ;Convert to $90-$99,$00-$05
+        ADC #$40    ;Convert to $30-$39,$41-$46
+        CLD         ;Clear Decimal Flag
+        JMP PRCHR   ;Print Hex Digit and Return   
+
+;Alternate Code for Systems with Interrupts that don't CLD
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP PRCHR   ;Print Hex Digit and Return
+
+
+;Functions to set String Pointers
+;Used by memory, stdio, stdlin, string, and stringx libraries
+
+;Initialize Destination String Pointer and Index
+SETDST: STX DSTLO       ;Save Destination String Pointer
+        STY DSTHI
+        RTS
+
+;Initialize Source String Pointer and Index
+SETSRC: STX SRCLO       ;Save Source String Pointer
+        STY SRCHI
+        LDY #$00        ;Initialize Index Into String
+        RTS
+

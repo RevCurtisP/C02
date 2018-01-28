@@ -1,0 +1,114 @@
+Character Checking and Conversion Functions for C02
+
+This library provides functions for classifying ASCII characters, as
+well as converting upper-case characters to lower-case characters
+and vice-versa.
+
+The character classification functions return a value of -1 ($FF)
+for TRUE, and 0 for FALSE. All these functions return FALSE when 
+testing high ASCII characters (127 - 255) 
+
+  #include <ctype.h02>
+  
+The following functions are defined:
+
+  b = isalnm(c);      Returns TRUE if c is alphanumeric, otherwise FALSE.
+                      
+                      An alphanumeric character is a letter (A-Z or a-z), 
+                      or a digit (0-9). 
+                     
+                      Note: Calls internal routine isaln, which in turn
+                      calls internal routines isdgt and isalp.
+                      
+  b = isalph(c);      Returns TRUE if c is alphabetic, otherwise FALSE.
+                      
+                      An alphabetic character is a letter (A-Z or a-z). 
+                     
+                      Note: Call internal routine isalp, which in turn
+                      calls internal routines isupr and islwr.
+  
+  b = isctrl(c);      Returns TRUE if c is a control characte, otherwise FALSE.
+                      
+                      A control character is a character with ASCII code
+                      0 through 31 or 127.
+                     
+                      Note: Calls internal routine isctl.
+
+  b = isdigt(c);      Returns TRUE if c is a digit, otherwise FALSE.
+                      
+                      A digit is a character in the range 0 through 9.
+                     
+                      Note: Calls internal routine isdgt.
+                      
+  b = isgrph(c);      Returns TRUE if c is graphical, otherwise FALSE.
+                      
+                      A graphical character is any character in the
+                      range ! through |.
+                     
+                      Note: Calls internal routine isgrp, which in turn
+                      calls internal routine isprt.
+                      
+  b = ishdgt(c);      Returns TRUE if c is a hex digit, otherwise FALSE.
+                      
+                      A hex digit is a character in the range 0 through 9.
+                      A through F, or a through f.
+                     
+                      Note: Calls internal routine ishex, which in turn
+                      calls internal routine isdgt.
+                      
+  b = islowr(c);      Returns TRUE if c is lowercase, otherwise FALSE.
+                      
+                      An alphabetic character is a letter in the range
+                      a through z. 
+                     
+                      Note: Call internal routine islwr.
+  
+  b = ispnct(c);      Returns TRUE if c is punctuation, otherwise FALSE.
+                      
+                      A punctuation character is any graphical character
+                      that is not aplhapnumeric.
+                     
+                      Note: Calls internal routine ispnc, which in turn
+                      calls internal routines isalp and isgrp.
+                      
+  b = isprnt(c);      Returns TRUE if c is printable, otherwise FALSE.
+                      
+                      A printable character is any character in the
+                      range Space through |.
+                     
+                      Note: Calls internal routine isprt.
+
+  b = isspce(c);      Returns TRUE if c is white space, otherwise FALSE.
+                      
+                      The white space characters are Tab (9), Line Feed (10),
+                      Vertical Tab (11), Form Feed (12), Carriage Return (13),
+                      and Space (32).
+                      
+                      Note: Calls internal routine isspc.
+
+  b = isuppr(c);      Returns TRUE if c is upper case, otherwise FALSE.
+                      
+                      An uppercase character is a letter in the range
+                      A through Z.
+                     
+                      Note: Call internal routine isupr.
+
+  t = tolowr(c);      Returns lower case version of c if it is an upper case
+                      character, otherwise c.
+                      
+                      Note: Calls internal routine isupr.
+
+  t = touppr(c);      Returns upper case version of c if it is a lower case
+                      character, otherwise c.
+                      
+                      Note: Calls internal routine islwr.
+
+Note: This library has no external dependencies.
+
+Implementation: The standard method of implementing the ctype library is to
+use a bit mask table of 128 bytes (one for each standard ASCII character).
+
+This library instead uses a series of comparisons in the internal routines,
+which leave the accumulator unmodified, and occupies approximately 128 bytes 
+of memory.
+

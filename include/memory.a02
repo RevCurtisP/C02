@@ -1,0 +1,123 @@
+; C02 library memory.h02 assembly language subroutines
+; Requires external routines SETSRC and SETDST
+; Requires the following RAM locations be defined
+; external zero page byte pairs SRCLO,SRCHI and DSTLO,DSTHI
+; and external bytes TEMP0 and TEMP1
+
+;memchr(c, n) - Find Character in Destination Array
+;Args: A = Character to look for
+;      Y = Number of Elements to Search
+;Uses: DSTLO,DSTHI = Pointer to Destination Array 
+;Sets: TEMP1 = Character being searched for
+;      TEMP0 = Number of bytes
+;Affects: N,Z
+;Returns: A = Position in Array, C=1 if found
+;         A = $FF, C=0 if not found
+;         Y = Position of last character scanned
+MEMCHR: STA TEMP1       ;Save Search Character
+        STY TEMP0       ;Save Count
+        BEQ MEMCLC      ;If 0, Return Not Found
+        LDY #$00        ;Initialize Index
+MEMCHL: LDA (DSTLO),Y   ;Get Next Character
+        CMP TEMP1       ;Compare Character
+        BEQ MEMCLX      ;If Found, Return Index
+        INY             ;Increment Counter
+        CPY TEMP0       ;If < Count, Loop
+        BCC MEMCHL      ;Else
+MEMCLC: CLC             ;Clear Carry
+        LDA #$FF        ;Load -1 into Accumulater
+        RTS             ;and Return
+MEMCLX: TYA             ;Return Index into String
+        RTS
+
+;memdst(&r) - Set Destination Array 
+;             Called before strcat(), memcmp(), memcpy(), strstr()
+;Args: X,Y = Pointer to destination Array
+;Sets: DSTLO,DSTHI = Pointer to destination Array
+;Affects: N,Z
+MEMDST  EQU SETDST      ;Aliased to System Header function
+
+;Set Source Address and Number of Characters
+;Args: X,Y = Pointer to Source Array
+;Sets: DSTLO,DSTHI = Pointer to destination Array
+;      TEMP0 - Number of Characters
+;Affects: A,N,Z
+MEMSRC: JSR SETSRC      ;Initialize Source Array and Index
+MEMSRA: STA TEMP0       ;Store Number Of Character
+        ORA #0          ;If Number of Characters
+        BNE MEMSRX      ;  Equals 0
+        PLA             ;  Pull Return Address off Stack
+        PLA             ;  Aborting Calling Routine
+MEMSRX: RTS             ;Return
+
+;memcmp(n, &r) - Compare Array (to Destination Array)
+;Requires: DSTLO, DSTHI - Pointer to destination Array
+;Args: A = Number of Bytes to Compare
+;      X,Y = Pointer to source Array
+;Sets: TEMP0 = Number of Bytes to Compare
+;Affects N
+;Returns A=$01 and C=1 if Destination > Source  
+;        A=$00 and Z=1 if Destination = Source  
+;        A=$FF and C=0 if Destination < Source
+;        Y=Position of first character that differs
+MEMCMP: JSR MEMSRC      ;Initialize Source, Index, and Count
+MEMCML: LDA (DSTLO),Y   ;Load Destination Character
+        CMP (SRCLO),Y   ;Compare Against Source Character
+        BNE MEMCMX      ;If Equal
+        INY             ;  Increment Offset
+        CPY TEMP0       ;  If < Count  
+        BCC MEMCML      ;    Loop
+MEMCMZ: LDA #$00        ;  Else 
+        RTS             ;    Return 0
+MEMCMX: BCC MEMCLC      ;If Source < Destination Return -1
+        LDA #$01        ;Else Return 1
+MEMCMR: RTS             ;  
+
+;memcpy(n, &r) - Copy Array (to Destination Array)
+;Requires: DSTLO, DSTHI - Pointer to destination Array
+;Args: A = Number of bytes to copy
+;      X,Y = Pointer to source Array
+;Sets: TEMP0 = Number of bytes to copy
+;Affects: A,Y,C,N,Z
+MEMCPY: JSR MEMSRC      ;Initialize Source, Index, and Count
+MEMCPL: LDA (SRCLO),Y   ;Get Character from Source Array
+        STA (DSTLO),Y   ;Copy to Destination Array
+        INY             ;  Increment Index
+        CPY TEMP0       ;If < Count
+        BCC MEMCPL      ;  Loop 
+        RTS             ;Else Return
+
+;memset(c, n) - Fill Destination Array
+;Args: A = Character to fill with
+;      Y = Number of bytes to fill
+;Uses: DSTLO,DSTHI = Pointer to Destination Array 
+;Sets: TEMP0 = Number of bytes
+;Affects: N,Z
+MEMSET: STY TEMP0       ;Save Count
+        CPY #0          ;If 0
+        BEQ MEMSEX      ;  Return 
+        LDY #$00        ;Initialize Index
+MEMSEL: STA (DSTLO),Y   ;Store Character at Index
+        INY             ;Increment Counter
+        CPY TEMP0       ;If < Count, Loop
+        BCC MEMSEL      ;Else
+MEMSEX: RTS
+
+;memswp(n, &r) - Swap Array (with Destination Array)
+;Requires: DSTLO, DSTHI - Pointer to destination Array
+;Args: A = Number of bytes to swap
+;      X,Y = Pointer to source array
+;Sets: TEMP0 = Number of bytes to swap
+;Affects: A,X,Y,C,N,Z
+MEMSWP: JSR MEMSRC      ;Initialize Source, Index, and Count
+MEMSWL: lDA (DSTLO),Y   ;Get Character from Destination Array
+        TAX             ;Save in X Register
+        LDA (SRCLO),Y   ;Get Character from Source Array
+        STA (DSTLO),Y   ;Copy to Destination Array
+        TXA             ;Restore Saved Character
+        STA (SRCLO),Y   ;Copy to Source Array        
+        INY             ;  Increment Index
+        CPY TEMP0       ;If < Count
+        BCC MEMSWL      ;  Loop 
+        RTS             ;Else Return
+

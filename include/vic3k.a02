@@ -1,0 +1,96 @@
+;c02 Program Initialization Code for VIC-20 with 3K Expansion
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $7F   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Zero Page Locations
+RDSEED  EQU $A2   ;Software Jiffy Clock (Low Byte)
+SRCLO   EQU $D1   ;Pointer to Address of Current Screen Line
+SRCHI   EQU $D2   ;Pointer to Address of Current Screen Line
+DSTLO   EQU $FB   ;Free Byte for User Programs
+DSTHI   EQU $FC   ;Free Byte for User Programs
+BLKLO   EQU $FD   ;Free Byte for User Programs
+BLKHI   EQU $FE   ;Free Byte for User Programs
+
+USER0   EQU $0310 ;Free Byte for User Programs
+USER1   EQU $0311 ;Free Byte for User Programs
+USER2   EQU $0312 ;Free Byte for User Programs
+USER3   EQU $0313 ;Free Byte for User Programs
+USER4   EQU $0334 ;Free Byte for User Programs
+USER5   EQU $0335 ;Free Byte for User Programs
+USER6   EQU $0336 ;Free Byte for User Programs
+BLKSLO  EQU $0337 ;Free Byte for User Programs
+BLKSHI  EQU $0338 ;Free Byte for User Programs
+BLKELO  EQU $0339 ;Free Byte for User Programs
+BLKEHI  EQU $033A ;Free Byte for User Programs
+STKSAV  EQU $033B ;Free Byte for User Programs
+TBFFR   EQU $033C ;Cassette I/O Buffer
+TEMP0   EQU $03FC ;Free Byte for User Programs
+TEMP1   EQU $03FD ;Free Byte for User Programs
+TEMP2   EQU $03FE ;Free Byte for User Programs
+TEMP3   EQU $03FF ;Free Byte for User Programs
+
+;Video RAM and ROM 
+VICSCN  EQU $1E00 ;Video Screen Memory Area (Unexpanded)
+CHRROM  EQU $8000 ;Character Generator ROM
+VICCLR  EQU $9600 ;Color RAM (Unexpanded)
+
+;Machine Language Basic Stub
+        ORG $0401              ;Start 
+BASIC:  DC  $0C, $04           ; Pointer to Next Line (1036)
+        DC  $00, $00           ; Line Number (0)
+        DC  $9E                ; SYS 
+        DC  $20                ; ' '
+        DC  $31, $30, $33 ,$38 ; "1038" 
+        DC  $00                ;End of Line Marker
+        DC  $00, $00           ;End of Basic Program
+
+START:  TSX         ;Get Stack Pointer
+        STX STKSAV  ;and Save for Exit
+        JMP main    ;Execute Program
+
+EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
+        TXS         ;and Restore It
+        RTS         ;Return to BASIC
+
+;Poll Keyboard for Character
+PLKEY   EQU $FFE4  ;Aliased to Kernal GETIN Routine
+
+;Get Character from Keyboard
+GETKEY: EQU RDKEY
+
+;Wait for Character from Keyboard
+RDKEY:  JSR PLKEY   ;Poll Keyboard
+        BEQ GETKEY  ;If No Key, Loop
+        RTS
+
+;Delete Previous Character
+DELCHR: LDA #DELKEY ;Load Delete Character
+        JMP PRCHR   :Print and Return
+
+;Advance Character to Next line
+NEWLIN: LDA #RTNKEY ;Load C/R into Accumulator
+
+;Print Character to Console
+PRCHR   EQU $FFD2  ;Aliased to Kernal CHROUT Routine
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR prhex   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into prhex
+
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP prchr   ;Print Hex Digit and Return
+
