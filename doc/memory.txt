@@ -1,0 +1,82 @@
+Array Manipulation Functions for C02
+
+This library contains functions for handling non-string arrays. It is 
+maintained separately from string.h so that it can be included only 
+when needed, in order to reduce program size.
+
+Arrays may be declared with up to 256 elements, but only lengths of up
+to 255 characters may be passed to the array handling functions.
+
+Usage: at the beginning of the program use the directives
+
+  #include <memory.h02>
+  
+The following functions are defined:
+
+  memdst(&d);         Sets array d as the destination array for subsequent
+                      memchr(). memcmp(), strcpy(), and memset() calls.
+
+                      This function is not part of the standard C and 
+                      C++ string libraries. It is needed because of the 
+                      parameter passing limitations of C02.
+
+                      Note: Aliased to the setdst() routine which sets 
+                      variables dstlo and dsthi as a pointer to the array.
+
+  memset(c, n);       Fills  first n bytes of the destination array set 
+                      by a a prior memdst() call with character c.
+                      
+                      Note: dstlo and dsthi are left pointing to the
+                      destination array.
+
+  p = memchr(c, n);   Searches for character c in the first n bytes of the
+                      destination array set by a a prior memdst() call. 
+                      
+                      Returns position of first occurance of character 
+                      in array, or 255 if character was not found or a 
+                      length of 0 was specified.
+
+                      Note: dstlo and dsthi are left pointing to the
+                      destination array.
+
+  c = memcmp(n, &s);  Compares up to n bytes of source array s against the 
+                      destination array set by a prior memdst() call.
+                       
+                      Returns 255 if destination < source, 0 if 
+                      destination = source, and 1 if destination > source.
+
+                      These results can be evaluated using the C02 
+                      unary comparator ! or the test-operators :+ or :-.
+                  
+                      Note: dstlo and dsthi are left pointing to the
+                      destination array.
+                                    
+  memcpy(n, &s);      Copies n bytes of source array s into destination 
+                      array set by prior memdst() call. Data in the
+                      destination array starting at position n is left
+                      undisturbed.
+                     
+                      Note: dstlo and dsthi are left pointing to the
+                      destination array.
+
+  memswp(n, &s);      Swaps n bytes of source array s with destination 
+                      array set by prior memdst() call. Data in both
+                      arrays starting at position n is left undisturbed.
+                       
+                      Note: dstlo and dsthi are left pointing to the
+                      destination array.
+
+Note: This library expects the following functions to be defined
+
+  setdst(&s);         Set destination string pointer
+  setsrc(&s);         Set source string pointer and initialize index
+
+along with the zero page pairs
+  
+  strlo, strhi        Source String Pointer 
+  dstlo, dsthi        Destination String Pointer
+
+and the memory locations
+
+  temp0, temp1        Temporary storage
+

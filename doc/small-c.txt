@@ -1,0 +1,155 @@
+Types
+  char — 8 bit data element
+  int  — 16 bit data element
+
+Declarations
+  type name — declares name to be element
+  type *name — declares name to be pointer to element of specified type
+  type name[] — syntactically identical to above pointer declaration
+  type name[constant] — declares an array of "constant” size where 
+                        each array element is of specified type
+                        
+Constants
+  Decimal number.
+  Single or pair of ASCII characters enclosed in single quotes, 
+    such as ‘a’ or ‘T X ’.
+  String enclosed in double quotes, such as “this is a string”.
+    The value such a constant yields is a pointer to the first character 
+    of the string which the compiler stores in memory.
+  
+Function Calls
+  Defined as any expression followed by an open paren. Thus, a function 
+  can be to a named routine, such as “print()” , or to the results of some
+  expression, such as “1000()” (which calls location 1000 decimal), or
+  “array[i]()” which calls the location whose value is found in array[i] .
+  
+Subscripted elements. 
+  Either an array name or a pointer may be subscripted to refer to the 
+  appropriate element. Subscripts are assumed to start from zero. Therefore, 
+  legal expressions are:
+    array [0] - the first element in array,
+    array [x+31] — the element at the address given by adding x to 31 
+                   and then to array,
+    pointer [i] — the elemen t at the address given by adding i to the 
+                  contents of pointer.
+  Only single dimensions are allowed. Subscripting either an integer array 
+  or a pointer to an integer will cause the subscript expression to be 
+  doubled. Therefore, if you declare “int *ptr”, the expression “ptr[3]” 
+  refers to the element at ptr+6.
+  
+Unary Expression Operators
+  "-"  — forms the two’s complement of the expression (minus).
+  “*”  — refers to the element pointed to by the expression
+         (providing the expression is a pointer).
+  “&”  — evaluates the address of the given expression, providing 
+         it hasone. Hence, &count yields the address of the element 
+         “count”. &1000 is an error.
+  “&”  — increments the expression by one. If this appears before the 
+         expression, it increments before using it. If it appears after 
+         it, it will increment it after.  Only values (expressions which 
+         can appear on the left-hand side of an equal sign) are allowed.
+         Hence, assuming “count” contains a 5, ++count would evaluate to
+         a 6, and “count” would contain a 6. Likewise, count++ would 
+         evaluate to a 5, and count would contain a 6. 1000++ is illegal.
+         If this operator is applied to an integer pointer, it will
+         increment by 2.
+  "--" — decrements the expression by one. This works just like ++ but 
+         subtracts one rather than adding.
+  
+Binary Operators
+  “+” — adds the two expressions (i.e. count + total)
+  "-" — subtracts the two expressions.
+  “*” — multiplies the two expressions.
+  “/” — divides the first expression by the second.
+  "%" — yields the remainder after dividing the first expression
+        by the second (modulo).
+  “|” — yields the logical inclusive “or” of the two expressions.
+  "^" — yields the logical exclusive “or” of the two expressions.
+  "&" — yields the logical “and”  of the two expressions.
+  “=” — assigns the value of the expression on the right to the one 
+        on the left. Since evaluation is done right to left in this 
+        case, syntaxes like "x = y = z" are legal.
+        
+Comparison Operators
+  “==” — tests for equality.
+  “==” — tests for inequality.
+  “<”  — tests for less than.
+  “>”  — tests for greater than.
+  “<=” — tests for less than or equal to
+  “>=”  — tests for greater than or equal to
+  Comparisons involving a pointer (which is an address) are done 
+  as unsigned compares. All other compares are signed.
+  
+Statements
+  expression; An expression, no matter how complex, is considered
+    a simple statement.
+  if (expression); If the expression is non-zero, the statement 
+    is executed , otherwise it isn’t.
+  if (expression) statement; else statement; This form of the “if” 
+    statement allows the “else” clause. As is the case with most 
+    “dangling else” ambiguities, all “else" statements pair with 
+    the nearest unmatched “if".
+  while (expression) statement; The statement is performed until  
+    the expression becomes zero. Since the test is made before the 
+    statement is executed the first time, it need not be executed 
+    at all.
+  break; This statement will cause control to be transferred out 
+    of the inner-most “while” loop.
+  continue; This statement, used within a “while” loop, will transfer 
+    control back to the top of the loop.
+  return; This statement does an immediate return from the current 
+    function . If a function does not end with this statement, one 
+    is performed regardless.
+  return expression; This statement allows a function to return a 
+    value explicitly.
+  ; A semicolon by itself is considered a null statement which does 
+    nothing but take the place of a statement. You see this in forms 
+    such as: “while (*iptr++ = *jptr++);” where the test itself 
+    contains all the necessary parts of the statement.
+  {statement; statement;. . . ; statement;} The use of curly brackets 
+  (“{ }”) around any group of simple statements is considered a 
+  compound statement. A compound statement can be used anywhere a 
+  simple statement can. For example: 
+    while (1) {x = 3; y = 10; funct(33);}
+    or
+    if (x< y)
+    { print(x);
+      total (x);
+      --x;
+    }
+    else
+    { type(“all done”);
+      x = y;
+    }
+    
+Pseudo-ops
+  #include filename — Anywhere this statement appears in the program, 
+    the indicated filename will be opened and inserted. The “included” 
+    file may not contain an “#include” statement.
+  #define name string  — This statement will cause the given name to 
+    be replaced by the string throughout the entire program . Normally, 
+    it is used to define constants, such as:
+      #define tablesize 1000
+      #define maxlength 8
+    But it can also be used for any sort of text:
+      #define jprint 3crs print(12); print(12); print(l2);
+    The replacem ent is purely on a text level, and error checking will 
+    be performed only after the replacement.
+  #asm . . . #endasm  — This structure is not supported by standard C, 
+  but it was a feature I felt I needed. It may appear anywhere a statement 
+  would, but it passes everything between the word “#asm” and the word 
+  “#endasm” right through the parser without intervention. It is intended
+  to be used to pass assembly language code through the parsing mechanism. 
+  Since it counts as a single statement, allowable (and expected) forms are:
+    if (x < y)
+      #asm
+      LHLD TOTAL
+      CALL ADD
+      CNC ERROR
+      #end asm
+    else return;
+  This pseudo-op conceivably allows an entire assembly language program to 
+  be passed through the compiler. Its intent is to allow machine dependent 
+  features (like the 8080’s “IN” and “OUT” instructions to be used without
+  writing separate programs).
+

@@ -1,0 +1,50 @@
+Standard C Keywords
+break     
+case      
+char      
+const     
+continue
+default
+do
+else
+for
+goto
+if
+return
+switch
+void
+while
+
+C Preprocessor directives
+#define
+#error
+#include
+#pragma
+
+Questionable C Keywords
+enum
+extern
+register
+signed
+sizeof
+struct
+typedef
+union
+unsigned
+volatile
+
+Unused Standard C Keywords
+auto      n/a
+double    n/a
+float     n/a
+int       n/a  
+long      n/a
+short     n/a
+static    n/a
+
+Unused Preprocessor Directives
+#if
+#ifdef
+#ifndef
+#undef
+# line

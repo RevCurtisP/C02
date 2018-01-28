@@ -1,0 +1,90 @@
+Function Library  Name                  Description
+abs      stdlib   Absolute Value        Return absolute value of byte.
+atoc     stdlib   ASCII to Character    Convert numeric string to byte.
+blkbgn   block    Block Begin           Set beginning of block address.
+blkend   block    Block End             Set end of block address.
+blkseg   block    Block Segment         Set block segment size.
+blkset   block    Block Set             Fill entire block with character.
+blkrst   block    Block Reset           Set block pointer to beginning of block.
+blknxt   block    Block Next            Move block pointer forward one segment.
+blkput   block    Block Append          Copy bytes from array to current segment.
+blkget   block    Block Get             Copy bytes from current segment to array.
+blkmem   block    Block Memory          Search block for segment matching array. 
+blkstr   block    Block String          Search block for segment beginning with string.
+blkswp   block    Block Swap            Swap bytes of array with the current segment.
+blksrt   block    Block Sort            Sort segments in block by initial string.
+ctoa     stdlib   Character to ASCII    Convert byte to numeric string.
+div      stdlib   Divide                Divide two bytes.
+fclall   file     File Close All        Close all files. 
+fclose   file     File Close            Close file.
+feof     file     File End of File      Check for end of file condition.
+ferror   file     File Error            Get file error information.
+fgetc    file     File Get Character    Read character from file.
+fgets    file     File Get String       Read string from file.
+fopen    file     File Open             Open file.
+fputc    file     File Put Character    Write character to file.
+fputs    file     File Put String       Write string to file.
+fread    file     File Read             Read bytes from file.
+fschk    file     File System Check     Check for valid file pointer
+fsdst    file     File Set Destination  Set destination array for fread.
+fsinit   file     File System Init      Initialize file system.
+fsptr    file     File System Pointer   Get unused file pointer.
+fssrc    file     File Set Source       Set source array for fwrite.
+fstat    file     File System Status    Get file pointer status.
+fwrite   file     File Write            Write bytes to file.
+getchr   stdio    Get Character         Read character from keyboard.
+isalnm   ctype    Is Alphanumeric       Return TRUE if character is A-Z, a-z, or 0-9.
+isalph   ctype    Is Alphabetic         Return TRUE if character is A-Z or a-z.
+isbdgt   ctype    Is Binary Digit       Return TRUE if character is 0 or 1.
+isctrl   ctype    is Control            Return TRUE if ASCII code is 0-31 or 127.
+isdigt   ctype    Is Digit              Return TRUE if character is 0-9.
+isgrph   ctype    Is Graphical          Return TRUE if ASCII code is 33-126.
+ishdgt   ctype    Is Hex Digit          Return TRUE if character is 0-9, A-F, or a-f.
+islowr   ctype    Is Lowercase          Return TRUE if character is a-z.   
+ispnct   ctype    Is Punctuation        Return TRUE if Graphical and not Alphanumeric.
+isprnt   ctype    Is Printable          Return TRUE if ASCII code is 32-126.
+isspce   ctype    Is white Space        Return TRUE if ASCII code is 9-13 or 32.
+isuppr   ctype    Is Uppercase          Return TRUE if character is A-Z.
+max      stdlib   Maximum               Return greater of two byte.
+memdst   memory   Memory Destination    Set destination array for subsequent functions.
+memset   memory   Memory Set            File bytes in array with character.
+memchr   memory   Memory Character      Search for byte in array.
+memcmp   memory   Memory Compare        Compare bytes in array against destination array.
+memcpy   memory   Memory Copy           Copy bytes from array to destination array.
+memswp   memory   Memory Swap           Swap bytes in array with destination array.
+min      stdlib   Minimum               Return lesser of two byte.
+mult     stdlib   Multiply              Multiply two bytes.
+ptrset   pointer  Pointer Set           Set pointer to address.
+ptrput   pointer  Pointer Put           Write byte and increment pointer.
+ptrget   pointer  Pointer Get           Read byte and increment pointer.
+ptrinc   pointer  Pointer Increment     Increment pointer.
+ptrdec   pointer  Pointer Decrement     Decrement pointer.
+ptradd   pointer  Pointer Add           Add value to pointer.
+ptrsub   pointer  Pointer Subtract      Subtract value from pointer.
+ptrcmp   pointer  Pointer Compare       Compare pointer against address.
+ptrsav   pointer  Pointer Save          Save pointer into two-byte array.
+ptrrst   pointer  Pointer Restore       Restore pointer from two-byte array.
+putchr   stdio    Put Character         Write character to screen.
+getstr   stdio    Get String            Read string from keyboard.
+outstr   stdio    Output String         Write string to screen.
+outsub   stdio    Output Substring      Write substring to screen.
+putstr   stdio    Put String            Write string plus newline to screen. 
+rand     stdlib   Random                Generate pseudorandom number.
+rands    stdlib   Random Seed           Seed random number generator.
+shiftl   stdlib   Shift Left            Shift byte left specified number of bits.
+shiftr   stdlib   Shift Right           Shift byte right specified number of bits.
+strapd   string   String Append         Append character to string.
+strcat   string   String Concatenate    Concatenate string to destination string.
+strchr   string   String Character      Search for character in string.
+strcmp   string   String Compare        Compare string contents against destination string.
+strcpy   string   String Copy           Copy string contents to destination string.
+strcsp   stringx  String Char Span      Return length of span in destination not in string.
+strcut   string   String Cut            Copy substring to destination string.
+strdst   string   String Destination    Set destination string for subsequent functions.
+strlen   string   String Length         Calculate length of string.
+strpbk   stringx  String Pointer Break  Find first character in destination found in string.
+strrch   string   String Reverse Char   Search for character from end of string.
+strspn   stringx  String Span           Return length of span in destination found in string.
+strstr   string   String String         Search for string in destination string.
+tolowr   ctype    To Lowercase          Convert character to lowercase.
+touppr   ctype    To Uppercase          Convert character to uppercase.

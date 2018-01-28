@@ -1,0 +1,138 @@
+Common String Manipulation Functions for C02
+
+Strings are zero-terminated arrays of type char with a maximum length
+of 128 characters. 
+
+The first character in a string is at position 0, and the last character 
+is at position length minus 1.
+
+Since all of the routines stop processing at the 128th character, a 128
+character string does not require a zero terminator.
+
+Due to the limitations of parameter passing in C02, the argument lists of
+most of these functions do not match those in standard C and C++.
+
+Usage: at the beginning of the program use the directives
+
+  #include <string.h02>
+  
+The following functions are defined:
+
+  p = strapd(c, &s);  Append character c to string s. 
+                      
+                      Returns length of new string.
+                      
+                      If the string length exceeds 127 prior to the
+                      append, no action is taken and the existing
+                      length is returned.
+
+                      This function is not part of the standard C and 
+                      C++ string libraries. It is included because it 
+                      is more efficient than the equivalent C02 code.
+                      
+  p = strchr(c, &s);  Searches string s for character c. 
+                      
+                      Returns position of first occurance of character 
+                      in string, or 255 if character was not found.
+                      
+  n = strlen(&s);     Determines length of string s.
+
+                      Returns length of string.
+                                         
+  p = strrch(c, &s);  Searches end of string s for character c. 
+                      
+                      Returns position of last occurance of character 
+                      in string, or 255 if character was not found.
+                      
+  strdst(&d);         Sets string d as the destination string for subsequent
+                      strcat(). strcmp(), strcpy(), and strstr() calls.
+
+                      This function is not part of the standard C and 
+                      C++ string libraries. It is needed because of the 
+                      parameter passing limitations of C02.
+
+                      Note: Aliased to the setdst() routine which sets 
+                      variables dstlo and dsthi as a pointer to the string.
+
+  n = strcat(&s);     Concatenates source string s onto the end of
+                      destination string set by prior strdst() call.
+                       
+                      Returns total length of concatenated string.
+
+                      Note: dstlo and dsthi are left pointing to the
+                      destination string.
+                  
+  c = strcmp(&s);     Compares source string s against destination 
+                      string set by prior strdst() call.
+                       
+                      Returns 255 if destination < source, 0 if 
+                      destination = source, and 1 if destination > source.
+
+                      These results can be evaluated using the C02 
+                      unary comparator ! or the test-operators :+ or :-.
+                  
+                      Note: dstlo and dsthi are left pointing to the
+                      destination string.
+                                    
+  n = strcpy(&s);     Copies wource string s into destination string set
+                      by prior strdst() call, replacing previous contents.
+                      
+                      Returns number of characters copied.
+                      
+                      Note: dstlo and dsthi are left pointing to the
+                      destination string.
+
+                      To copy the first n characters from string s to
+                      string d, the following code can be used: 
+                      
+                      strdst(&d); strcpy(&s); s[n]=0;
+                        
+  n = strcut(n, &s);  Copies from source string s, starting at position n,
+                      into destination string set by prior strdst() call, 
+                      replacing previous contents.
+                      
+                      Returns number of characters copied.
+
+                      This function is not part of the standard C and 
+                      C++ string libraries. It is included because
+                      it is faster and more compact tham the equivalent
+                      C02 code.
+
+                      To copy a substring starting at position n with 
+                      length l from string s to string d, the following
+                      code can be used:
+                      
+                      strdst(&d); strcut(&s, n); s[l]=0;
+                      
+                      Note: calls routine strcat(). leaving dstlo and 
+                      dsthi pointing to the destination string, along 
+                      with strlo and strhi pointing to the address of
+                      position n in the source string.
+ 
+  p = strstr(&s);     Searches for destination string s in source string 
+                      set by prior strdst() call.
+                      
+                      Returns position of source string in destination
+                      string, or 255 if character was not found.
+                      
+                      Note: calls routine strcmp(), leaving dstlo and 
+                      dsthi pointing to the address of the position of 
+                      the source string in the destination string (or
+                      the end of the destination string if the source
+                      string was not found).
+
+Note: This library expects the following functions to be defined
+
+  setdst(&s);         Set destination string pointer
+  setsrc(&s);         Set source string pointer and initialize index
+
+along with the zero page variable pairs
+  
+  strlo, strhi        Source String Pointer 
+  dstlo, dsthi        Destination String Pointer
+
+as well as the transient variables 
+
+  temp0               Temporary storage
+  temp1
+

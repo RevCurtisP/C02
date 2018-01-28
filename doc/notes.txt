@@ -1,0 +1,54 @@
+Keywords:
+  break     complete
+  case      unimplemented
+  char      incomplete
+  const     unimplemented
+  continue  complete
+  default   unimplemented
+  do        incomplete - break/continue don't work
+  else      complete
+  for       complete
+  goto      complete
+  if        complete
+  return    untested
+  switch    unimplemented
+  void      incomplete
+  while     complete
+
+Features:
+  comparisons   variable type checking not implemented
+  functions     definition incomplete
+  
+
+Conditional Operator Bit-Mask
+
+Character
+   = 1
+   < 2
+   > 4
+
+Comparator  Complement  
+   == 1       6 <>
+   <  2       5 >=
+   <= 3       4 >
+   >  4       3 <=
+   >= 5       2 <
+   <> 6       1 ==
+ 
+XOR 7 Reverses Operator!!!
+
+Block Sort Algorithm
+;blkptr = blkbgn
+;while blkptr < blkend
+;  dst = blkptr
+;  src = blkptr
+;  while dst += seglen < blkend
+;    if *dst < *src 
+;      src = dst
+;  if src <> blkptr
+;    *m      = *src
+;    *src    = *blkptr
+;    *blkptr = *m
+;  blkptr += seglen
+
+

@@ -1,0 +1,139 @@
+Pointer Functions
+
+This library contains functions for basic pointer access and manipulation.
+
+These functions are intended to allow sequential reading and writing of
+individual bytes to arbitrary locations in memory. 
+
+Only one pointer may be active at a time, but it's contents may be saved 
+and restored. 
+
+Note: There is no concept of a null pointer in C02. A pointer containing
+the value 0 simply points to the first byte of memory. 
+
+In the equivalent C code examples below, the system pointer is represented 
+as the variable p. In all cases, assume the following declaration :
+
+  int *p;
+
+Usage: at the beginning of the program use the directives
+
+  #include <pointer.h02>
+
+The following application functions are defined:
+
+  ptrset(&v);         Pointer Set: Set pointer contents to the address of
+                      variable v.
+
+                      This is equivalent to the C code 
+                      
+                        p = &v;
+                      
+                      Note: Sets variables ptrlo and ptrhi.
+
+  ptrput(b);          Pointer Put: Stores value of b in the byte currently 
+                      pointed to and increments the pointer.
+
+                      This is equivalent to the C code 
+                      
+                        *p = b; p++;
+                      
+                      Note: Updates variables ptrlo and ptrhi.
+
+  b = ptrget();       Pointer Get: Retrieves the contents of the byte 
+                      currently pointed to and increments the pointer.
+
+                      This is equivalent to the C code 
+                      
+                        b = *p; p++;
+                      
+                      Note: Updates variables ptrlo and ptrhi.
+
+  ptrinc();           Pointer Increment: Increases the pointer value by 1,
+                      causing it to point to the next byte in memory.  
+
+                      This is equivalent to the C code 
+                      
+                        p++;
+                      
+                      Note: Updates variables ptrlo and ptrhi.
+
+  ptrdec();           Pointer Decrement: Decreases the pointer value by 1,
+                      causing it to point to the previous byte in memory.  
+
+                      This is equivalent to the C code 
+                      
+                        p++;
+                      
+                      Note: Updates variables ptrlo and ptrhi.
+
+  ptradd(n);          Pointer Add: Adds the value n to the address contained 
+                      in the pointer, moving it that many bytes forward in
+                      memory.
+
+                      This is equivalent to the C code 
+                      
+                        p += n;
+                      
+                      Note: Updates variables ptrlo and ptrhi.
+
+  ptrsub(n);          Pointer Subtract: Adds the value n to the address 
+                      contained in the pointer, moving it that many bytes 
+                      backward in memory.
+
+                      This is equivalent to the C code 
+                      
+                        p -= n;
+                      
+                      Note: Updates variables ptrlo and ptrhi.
+
+  ptrcmp(&v);         Pointer Compare: Compares pointer contents against
+                      the address of variable v.
+
+                      Returns 255 if the pointer is less than the address
+                      (pointing to a byte lower in memory), 0 if the pointer
+                      is equal to the address (pointing to the same byte),
+                      and 1 if greater than tge address (pointing to a 
+                      byte higher in memory).
+                      These results can be evaluated using the C02 
+                      unary comparator ! or the test-operators :+ or :-.
+
+                      This is equivalent to the C code 
+                      
+                        if (p < &v) return 255;
+                        else if (p > &v) return 1;
+                        else return 0;
+                      
+                      Note: Sets variables srclo and srchi.
+
+  ptrsav(&r);         Pointer Save: Copies the pointer contents into the
+                      first to bytes of array r.
+
+                      This is roughly equivalent to the C code
+                      
+                        r = (int) p;
+                       
+                      
+                      Note: Sets variables srclo, srchi, and temp0.
+
+  ptrrst(&r);         Pointer Restore: Copies the first to bytes of array r 
+                      into the pointer contents.
+
+                      This is roughly equivalent to the C code
+                      
+                        p = (void*) r;
+                       
+                      Note: Sets variables srclo, srchi, ptrlo, and ptrhi.
+
+Note: This library expects the following functions to be defined
+
+  setsrc(&s);         Set source string pointer and initialize index
+
+along with the zero page variable pairs
+  
+  strlo, strhi        Source String Pointer 
+
+as well as the transient variable 
+
+  temp0               Temporary storage
+

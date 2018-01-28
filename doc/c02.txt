@@ -1,0 +1,628 @@
+INTRODUCTION
+
+C02 is a simple C-syntax language designed to generate highly optimized
+code for the 6502 microprocessor. The C02 specification is a highly
+specific subset of the C standard with some modifications and extensions
+
+PURPOSE
+
+Why create a whole new language, particularly one with severe restrictions,
+when there are already full-featured C compilers available? It can be
+argued that standard C is a poor fit for processors like the 6502. The C 
+was language designed to translate directly to machine language instructions 
+whenever possible. This works well on 32-bit processors, but requires either 
+a byte-code interpreter or the generation of complex code on a typical
+8-bit processor. C02, on the other hand, has been designed to translate 
+directly to 6502 machine language instructions.
+ 
+The C02 language and compiler were designed with two goals in mind.
+
+The first goal is the ability to target machines with low memory: a few 
+kilobytes of RAM (assuming the generated object code is to be loaded into 
+and ran from RAM), or as little as 128 bytes of RAM and 2 kilobytes of ROM
+(assuming the object code is to be run from a ROM or PROM). 
+
+The compiler is agnostic with regard to system calls and library functions. 
+Calculations and comparisons are done with 8 bit precision. Intermediate 
+results, array indexing, and function calls use the 6502 internal registers.
+While this results in compiled code with virtually no overhead, it severely 
+restricts the syntax of the language.
+
+The second goal is to port the compiler to C02 code so that it may be
+compiled by itself and run on any 6502 based machine with sufficient memory
+and appropriate peripherals. This slightly restricts the implementation of
+code structures.
+
+SOURCE AND OUTPUT FILES
+
+C02 source code files are denoted with the .c02 extension. The compiler 
+reads the source code file, processes it, and generates an assembly 
+language file with the same name as the source code file, but with
+the .asm extension instead of the .c02 extension. This assembly language
+file is then assembled to create the final object code file.
+
+Note: The default implementation of the compiler creates assembly 
+language code formatted for the DASM assembler. The generation of the 
+assembly language is parameterized, so it may be easily changed to
+work with other assemblers.
+
+COMMENTS
+
+The parser recognizes both C style and C++ style comments.
+
+C style comments begin with /* and end at next */. Nested C style comments 
+are not supported.
+
+C++ style comments begin with // and end at the next newline. C++ style
+comments my be nested inside C style comments.
+
+DIRECTIVES
+
+Directives are special instructions to the compiler. They do not directy
+generate compiled code. A directive is denoted by a leading # character. 
+C02 currently supports only one directive.
+
+The #include directive causes the compiler to read and process and external
+file. In most cases, #include directives will be used with libraries of
+function calls, but they can also be used to modularize the code that makes
+up a program.
+
+An #include directive is followed by the file name to be included. This
+file name may be surrounded with either a < and > character, or by two "
+characters. In the former case, the compiler looks for the file in an
+implementation specific library directory (the default being ./include), 
+while in the latter case, the compiler looks for the file in the current
+working directory. Two file types are currently supported.
+
+Header files are denoted by the .h02 extension. A header file is used to
+provide the compiler with the information necessary to use machine
+language system and/or library routines written in assembly language,
+and consists of comments and declarations. The declarations in a header 
+file added to the symbol table, but do not directly generate code. After
+a header file has been processed, the compiler reads and process a
+assembly language file with the same name as the header file, but with
+the .a02 extension instead of the .h02 extension.
+
+The compiler does not currently generate any assembler required 
+pseudo-operators, such as the specification of the target processor,
+or the starting address of the assembled object code. Therefore, at least
+one header file, with an accompanying assembly language file is needed
+in order to successfully assemble the compiler generated code. Details
+on the structure and implementation of a typical header file can be
+found in the file header.txt.
+
+Assembly language files are denoted by the .asm extension. When the
+compiler processes an assembly language file, it simply inserts the contents
+of the file into the generated code.
+
+Note: Unlike standard C and C++, which use a preprocessor to process
+directives, the C02 compiler processes directives directly.
+
+CONSTANTS
+
+A constant represents a value between 0 and 255. Values may be written as
+a number (binary, decimal, osir hexadecimal) or a character literal.
+
+A binary number consists of a % followed by eight binary digits (0 or 1).
+
+A decimal number consists of one to three decimal digits (0 through 9).
+
+A hexadecimal number consists of a $ followed by two hexadecimal digits 
+(0 throuth 9 or A through F).
+
+A character literals consists of a single character surrounded by ' symbols.
+A ' character may be specified by escaping it with a \. 
+
+Examples:
+  &0101010  Binary Number
+  123       Decimal Number
+  $FF       Hexadecimal Number
+  'A'       Character Literal
+  '\''      Escaped Character Literal
+
+STRINGS 
+
+A string is a consecutive series of characters terminated by an ASCII null
+character (a byte with the value 0).
+
+A string literal is written as up to 255 printable characters. prefixed and 
+suffixed with " characters.
+
+SYMBOLS
+
+A symbol consists of an alphabetic character followed by zero to five 
+alphanumeric characters. Four types of symbols are supported: labels,
+simple variables, variable arrays, and functions.
+
+A label specifies a target point for a goto statement. A label is written
+as a symbol suffixed by a : character.
+
+A simple variable represents a single byte of memory. A variable is written 
+as a symbol without a suffix.
+
+A variable array represents a block of up to 256 continuous bytes in
+memory. An Array reference are written as a symbol suffixed a [ character,
+
+index, and ] character. The lowest index of an array is 0, and the highest
+index is one less than the number of bytes in the array. There is no bounds
+checking on arrays: referencing an element beyond the end of the array will 
+access indeterminate memory locations.
+
+A function is a subroutine that receives multiple values as arguments and 
+optionally returns a value. A function is written as a symbol suffixed with
+a ( character, up to three arguments separated by commas, and a ) character,
+
+The special symbols A, X, and Y represent the 6502 registers with the same
+names. Registers may only be used in specific circumstances (which are
+detailed in the following text). Various C02 statements modify registers 
+as they are processed, care should be taken when using them. However, when
+used properly, register references can increase the efficiency of compiled
+code.
+
+STATEMENTS
+
+Statements include declarations, assignments, stand-alone function calls,
+and control structures. Most statements are suffixed with ; characters,
+but some may be followed with program blocks.
+
+BLOCKS
+
+A program block is a series of statements surrounded by the { and }
+characters. They may only be used with function definitions and control
+structures. 
+
+DECLARATIONS
+
+A declaration statement consists of type keyword (char or void) followed 
+by one or more variable names and optional definitions, or a single 
+function name and optional function block. 
+
+Variables may only be of type char and all variable declaration statements
+are suffixed with a ; character.
+
+A simple variable declaration may include an initial value definition in
+the form of an = character and constant after the variable name. 
+
+A variable array may be declares in one of two ways: the variable name
+suffixed with a [ character, a constant specifying the upper bound of 
+the array, and a ] character; or a variable name followed by an = character 
+and string literal or series of constants separated by , characters and 
+surrounded by { or } characters.
+
+Variables are initialized at compile time. If a variable is changed during
+execution, it will not be reinitialized unless the compiled program is
+reloaded into memory.
+
+Examples:
+  char c;             //Defines variable c 
+  char i, j;          //Defines variables i and j
+  char r[7];          //Defines 8 byte array r 
+  char s = "string";  //Defines 7 byte array s initialized to "string"
+  char m = {1,2,3};   //Defines 3 byte array m initialized to 1, 2, and 3   
+
+A function declaration consists of the function name suffixed with a (
+character, followed zero to three comma separated simple variables and 
+a ) character. A function declaration terminated with a ; character is
+called a forward declaration and does not generate any code, while one 
+followed by a program block creates the specified function. Functions of
+type char explicitly return a value (using a return statement), while 
+functions of type void do not.
+
+Examples:
+  void myfunc();            //Forward declaration of function myfunc
+  char min(tmp1, tmp2) {if (tmp1 < tmp2) return tmp1; else return tmp2;}
+
+Note: Like all variables, function parameters are global. They must be
+declared prior to the function decaration, and retain there values after
+the function call. Although functions may be called recursively, they are
+not re-entrant. Allocation of variables and functions is implementation 
+dependent, they could be placed in any part of memory and in any order.  
+The default behavior is to place variables directly after the program code, 
+including them as part of the generated object file. 
+
+The return value of a function is passed through the A register. A return 
+statement with an explicit expression will simply process that expression
+(which leaves the result in the A register) before returning. A return
+statement without an expression (including an implicit return) will, by
+default, return the value of the last processed expression.
+
+EXPRESSIONS
+
+An expression is a sseries of one or more terms separated by operators. 
+
+The first term in an expression may be a function call, subscripted array 
+element, simple variable, constant, or register (A, X, or Y). An expression 
+may be preceded with a - character, in which case the first term is assumed 
+to be the constant 0.
+
+Additional terms are limited to subscripted array elements, simple variables
+and constants.
+
+Operators:
+  + — Add the following value.
+  - — Subtract the following value. 
+  & — Bitwise AND with the following value.
+  | — Bitwise OR with the following value.
+  ^ — Bitwise Exclusive OR with the following value.
+
+Arithmetic operators have no precedence. All operations are performed in
+left to right order. Expressions may not contain parenthesis. 
+
+Note: the character ! may be substituted for | on systems that do not 
+support the latter character. No escaping is necessary because a ! may
+not appear anywere a | would.
+
+After an expression has been evaluated, the A register will contain the
+result. 
+
+EVALUATIONS
+
+An evaluation is a construct which generates either TRUE or FALSE condition.
+It may be an expression, a comparison, or a test.
+
+A stand-alone expression evaluates to TRUE if the result is non-zero, or 
+FALSE if the result is zero.
+
+A comparison consists of an expression, a comparator, and a term (subscripted
+array element, simple variable, or constant).
+
+Comparators:
+  =  — Evaluates to TRUE if expression is equal to term
+  <  — Evaluates to TRUE if expression is less than term
+  <= — Evaluates to TRUE if expression is less than or equal to term
+  >  — Evaluates to TRUE if expression is greater than term
+  >= — Evaluates to TRUE if expression is greater than or equal to term
+  <> — Evaluates to TRUE if expression is not equal to term
+
+The parser considers == equivalent to a single =. The operator <>
+was chosen instead of the usual != because it simplified the parser design. 
+
+A test consists of an expression followed by a test-op.
+
+Test-Ops:
+  :+ — Evaluates to TRUE if the result of the expression is positive
+  :- — Evaluates to TRUE if the result of the expression is negative
+  
+A negative value is one in which the high bit is a 1 (128 — 255), while a
+positive value is one in which the high bit is a 0 (0 — 127). The primary
+purpose of test operators is to check the results of functions that return
+a positive value upon succesful completion and a negative value if an error 
+was encounters. They compile into smaller code than would be generated 
+using the equivalent comparison operators.
+
+A comparison may be preceded by negation operator (a ! character), which 
+reverses the meaning of the entire comparison. For example,
+  ! expr
+evaluates to TRUE if expr is zero, or FALSE if it is non-zero; while
+  ! expr = term
+evaluates to TRUE if expr and term are not equal, or FALSE if they are; and
+  ! expr :+
+evaluates to TRUE if expr is negative, or FALSE if it is positive
+
+Note: Evaluations are compiled directly into 6502 conditional branch 
+instructions, which precludes their use inside expressions. Standalone 
+expressions and test-ops generate a single branch instruction, and 
+therefore result in the most efficient code. Comparisons generate a
+compare instruction and one or two branch instructions (=. <. >=, and <> 
+generate one, while <= and > generate two). A preceding negation operator
+will switch the number of branch instructions used in a comparison, but
+otherwise does not change the size of the generated code.
+
+ARRAY SUBSCRIPTS
+
+Individual elements of an array are accessed using subscript notation.
+Subscripted array elements may be used as a terms in an expression, as well
+as the target variable in an assignments. They are written as the variable
+name suffixed with a [ character, followed by an index, and the ] character.
+The index may be a constant, a simple variable, or a register (A, X or Y).
+
+Examples:
+  z = r[i];  //Store the value from element i of array r into variable z
+  r[0] = z;  //Store the value of variable z into the first element of r
+
+Note: After a subscripted array reference, the 6502 X register will contain
+the value of the index (unless the register Y was used as the index, in 
+which X register is not changed).
+
+FUNCTION CALLS
+
+A function call may be used as a stand-alone statement, or as the first
+term in an expression. A function call consists of the function name 
+appended with a ( character, followed by zero to three arguments separated 
+with commas, and a closing ) character.
+
+The first argument of a function call may be an expression, address, or 
+string (see below).
+
+The second argument may be a term (subscripted array element, simple 
+variable, or constant), address, or string,
+
+The third argument may only be a simple variable or constant.
+
+If the first or second argument is an address or string, then no more 
+arguments may be passed.
+
+To pass the address of a variable or array into a function, precede the
+variable name with the address-of operator &. To pass a string, simply
+specify the string as the argument.
+
+Examples:
+  c = getchr();          //Get character from keyboard
+  n = abs(b+c-d);        //Return the absolute value of result of expression
+  m = min(r[i], r[j]);   //Return lesser of to array elements
+  l = strlen(&s);        //Return the length of string s
+  p = strchr(c, &s);     //Return position of character c in string s
+  putstr("Hello World"); //Write "Hello World" to screen
+
+Note: This particular argument passing  convention has been chosen because 
+of the 6502's limited number of registers and stack processing instructions. 
+When an address is passed, the high byte is stored in the Y register and 
+the low byte in the X register. If a string is passed, it is turned into 
+anonymous array, and it's address is passed in the Y and X registers. 
+Otherwise, the first argument is passed in the A register, the second in 
+the Y register, and the third in the X register. 
+
+EXTENDED PARAMETER PASSING
+
+To enable direct calling of machine language routines that that do not match
+the built-in parameter passing convention, C02 supports the non-standard
+statements push, pop, and inline.
+
+The push statement is used to push arguments onto the machine stack prior
+to a function call. When using a push statement, it is followed by one or
+more arguments, separated by commas, and terminated with a semi-colon. An
+argument may be an expression, in which case the single byte result is 
+pushed onto the stack, or it may be an address or string, in which case the
+address is pushed onto the string, high byte first and low byte second.
+
+The pop statement is likewise used to pop arguments off of the machine
+stack after a function call. When using a pop statement, it is followed
+with one or more simple variables, separated by commas, and terminated
+with a semicolon. If any of the arguments are to be discarded, an asterisk
+can be specified instead of a variable name.
+
+The number of arguments pushed and popped may or may not be the same,
+depending on how the machine language routine manipulates the stack pointer.
+
+Examples:
+  push d,r; mult(); pop p;
+  push x1,y1,x2,y2; rect(); pop *,*,*,*;
+  push &s, "tail"; strcat();
+
+Note: The push and pop statements could also be used to manipulate the
+stack inside or separate from a function, but this should be done with
+care.
+  
+The inline statement is used when calling machine language routines that
+expect constant byte or word values immediately following the 6502 JSR
+instruction. A routine of this type will adjust the return address to the
+point directly after the last instruction. When using the inline statement,
+it is followed by one or more arguments, separated by commas, and 
+terminated with a semicolon. The arguments may be constants, addresses,
+or strings.
+
+Examples;
+  iprint(); inline "Hello World"; //Print "Hello World"
+  irect(); inline 10,10,100,100;  //Draw rectangle from (10,10) to (100,100)
+
+Note: If a string is specified in an inline statement, rather than creating
+an anonymous string and compiling the address inline, the entire string will
+be compiled directly inline.
+
+ASSIGNMENTS
+
+An assignment is a statement in which the result of an expression is stored 
+in a variable. An assignment usually consists of a simple variable or 
+subscripted array element, an = character, and an expression, terminated 
+with a ; character.
+
+Examples:
+  i = i + 1;     //Add 1 to contents variable i
+  c = getchr();  //Call function and store result in variable c
+  s[i] = 0;      //Terminate string at position i
+    
+SHORTCUT-IFS
+
+A shortcut-if is a special form of assignment consisting of an evaluation 
+and two expressions, of which one will be assigned based on the result
+of the evaluation. A shortcut-if is written as a condition surrounded 
+by ( and ) characters, followed by a ? character, the expression to be 
+evaluated if the condition was true, a : character, and the expression to 
+be evaluated if the condition was false.
+
+Example:
+  result = (value1 < value) ? value1 : value2;
+  
+Note: Shortcut-ifs may only be used with assignments. This may change in
+the future.  
+  
+POST-OPERATORS
+
+A post-operator is a special form of assignment which modifies the value
+of a variable. The post-operator is suffixed to the variable it modifies. 
+
+Post-Operators:
+  ++  Increment variable (increase it's value by 1)
+  --  Decrement variable (decrease it's value by 1)
+  <<  Left shift variable
+  >>  Right shift variable
+  
+Post-operators may be used with either simple variables or subscripted
+array elements.  
+
+Examples:
+  i++;    //Increment the contents variable i
+  b[i]<<; //Left shift the contenta of element i of array b
+  
+Note: Post-operators may only be used in stand-alone statements, although
+this may change in the future.
+
+ASSIGNMENTS TO REGISTERS
+
+Registers A, X, and Y may assigned to using the = character. Register A
+(but not X or Y) may be used with the << and >> post-operators, while
+registers X and Y (but not A) may be used with the ++ and -- post-operators.
+
+IMPLICIT ASSIGNMENTS
+
+A statement consisting of only a simple variable is treated as an 
+implicit assignment of the A register to the variable in question.
+
+This is useful on systems that use memory locations as strobe registers.
+
+Examples:
+  HMOVE;  //Move Objects (Atari VCS)
+  S80VID; //Enable 80-Column Video (Apple II)
+
+Note: An implicit assignment generates an STA opcode with the variable
+as the operand.
+
+GOTO STATEMENT
+
+A goto statement unconditionally transfers program execution to the 
+specified label. When using a goto statement, it is followed by the
+label name and a terminating semicolon.
+
+Example:
+  goto end;
+  
+Note: A goto statement may be executed from within a loop structure
+(although a break or continue statement is preferred), but should not 
+normally be used to jump from inside a function to outside of it, as 
+this would leave the return address on the machine stack.
+
+IF AND ELSE STATEMENTS
+
+The if then and else statements are used to conditionally execute blocks
+of code. 
+
+When using the if keyword, it is followed by an evaluation (surrounded by
+parenthesis) and the block of code to be executed if the evaluation was true.
+
+An else statement may directly follow an if statement (with no other 
+executable code intervening). The else keyword is followed by the block
+of code to be executed if the evaluation was false.
+
+Examples:
+  if (c = 27) goto end;
+  if (n) q = (n/d) else putstr("Division by 0!");
+  if (r[j]<r[i]) {t=r[i],r[i]=r[j],r[j]=t)}
+  
+Note: In order to optimize the compiled code, the if and else statements 
+are to 6502 relative branch instructions. This limits the amount of 
+generated code between the if statement and the end of the if/else block
+to slightly less than 127 characters. This should be sufficient in most
+cases, but larger code blocks can be accomodated using function calls or
+goto statements.
+
+WHILE LOOPS
+
+The while statement is used to conditionally execute code in a loop. When
+using the while keyword, it is followed by an evalution (surrounded by
+parenthesis) and the the block of code to be executed while the evaluation
+is true. If the evaluation is false when the while statement is entered,
+the code in the block will never be executed.
+
+Alternatively, the while keyword may be followed by a pair of empty 
+parenthesis, in which case an evaluation of true is implied.
+
+Examples:
+  c = 'A' ; while (c <= 'Z') {putchr(c); c++;} //Print letters A-Z
+  while() if (rdkey()) break;                  //Wait for a keypress
+
+Note: While loops are compiled using the 6502 JMP statements, so the code
+blocks may be abritrarily large.
+
+DO WHILE LOOPS
+
+The do statement used with to conditionally execute code in a loop at 
+least once. When using the do keyword, it is followed by the block of
+code to be executed, a while statement, an evaluation (surrounded
+by parenthesis), and a terminating semicolon.
+
+A while statement that follows a do loop must contain an evaluation. 
+The while statement is evaluated after each iteration of the loop, and
+if it is true, the code block is repeated.
+
+Examples:
+  do c = rdkey(); while (c=0);                //Wait for keypress
+  do (c = getchr(); putchr(c); while (c<>13)  //Echo line to screen
+
+Note: Unlike the other loop structures do/while statements do not use
+6502 JMP instructions. This optimizes the compiled code, but limits
+the amount of code inside the loop.
+
+FOR LOOPS
+
+The for statement allows the initialization, evaluation, and modification
+of a loop condition in one place. For statements are usually used to 
+execute a piece of code a specific number of times, or to iterate through
+a set of values.
+
+When using the if keyword, it is followed by a pair of parenthesis 
+containing an initialization assignment statement (which is executed once), 
+a semicolon separator, an evaluation (which determines if the code block 
+is exectued), another semicolon separator, and an increment assignment 
+(which is executed after each iteration of the code block). This is then 
+followed by the block of code to be conditionally executed.
+
+The assignments and conditional of a for loop must be populated. If an
+infinite loop is desired, use a while () statement.
+
+Examples:
+  for (c='A'; c<='Z'; c++) putchr(c);       //Print letters A-Z
+  for (i=strlen(s)-1;i:+;i--) putchr(s[i]); //Print string s backwards
+  for (i=0;c>0;i++) {c=getchr();s[i]=c}     //Read characters into string s  
+
+Note: For loops are compiled using the 6502 JMP statements, so the code
+blocks may be abritrarily large.  A for loop generates less efficient code
+more than a simple while loop, but will always execute the increment 
+assignment on a continue.
+
+BREAK AND CONTINUE
+
+The break and continue statements are used to jump to the beginning or
+end of a do, for, or while loop. Neither may be used outside of a loop.
+
+When a break statement is encountered, program execution is transferred
+to the statement immediately following the end of the block associated 
+with the innermost for or while loop. When using the break keyword, it is
+followed with a trailing semicolon.
+
+When a continue statement is encountered, program execution is transferred
+to the beginning of the block associated with the innermost for or while
+loop. In the case of a for statement, the increment assignment is executed,
+followed by the evaluation, and in the case of a while statement, the 
+evaluation is executed. When using the break keyword, it is followed with 
+a trailing semicolon.
+
+Examples:
+  do {c=rdkey(); if (c=0) continue; if (c=27) break;} while (c<>13);`
+  for (i=0;i<strlen(s);i++) {if (s[i]=0) break; putchr(s[i]);}
+  while() {c=rdkey;if (c=0) continue;putchr(c);if (c=13) break;}
+  
+Note: The break and continue statements may not be used inside a do/while\
+loop. This may change in the future.
+
+UNIMPLEMENTED FEATURES
+
+The #define directive is recognized but generates an error. The exact
+implementation of this directive has not yet been determined, so it has
+been reserved for future use.
+
+The #pragma directive is currently unrecognized. It may be implemented in
+the future to allow the specification of assembler specific instructions.
+
+The only type recognized by the compiler is char. Since the 6502 is an
+8-bit processor, multi-byte types would generate over-complicated code. 
+For this reason, pointers are not currently implemented, athough the
+address of operator can be used with specific statements. In addition, 
+the signed and unsigned keywords are unrecognized, due to the 6502's 
+limited signed comparison functionality.
+
+The switch and case keywords are recognized, but generate an error. There
+are no plans to implement these keywords. Due to single pass nature of the
+compiler, the code generated by a switch/case structure would be no more
+efficient than an equivalent series of if/then/else statements.
+
+

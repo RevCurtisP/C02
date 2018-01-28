@@ -1,0 +1,113 @@
+Screen Control Functions for C02
+
+This is a prototype definition for a library providing functions
+to manipulate the screen and move the cursor. Since this code is
+highly system dependent, a separate library will need to be 
+created for each system type.
+
+The following functions should be defined:
+
+  clrscn();           Clears the screen and returns the cursor to the 
+                      home position.
+                      
+                      Note: May  call a system routine, or may print
+                      "clear screen" character sequence.
+                      
+  crsrhm();           Moves cursor to home position (upper left corner
+                      of the screen).    
+
+                      Note: May call mvcrsr(0,0); or may print "cursor
+                      home" character sequence.
+                      
+  crsrlf();           Moves cursor one column to the left. May or may not
+                      screen wrap, depending on system.
+
+                      Note: May call mvcrsr; or may print "cursor left"
+                      character sequence.
+
+  crsrrt();           Moves cursor one column to the right. May or may not
+                      screen wrap, depending on system.
+                      
+                      Note: May call mvcrsr; or may print "cursor right"
+                      character sequence.
+
+  crsrup();           Moves cursor one row up.
+                      
+                      Note: May call mvcrsr; or may print "cursor up"
+                      character sequence.
+
+  crsrdn();           Moves cursor one row down.
+                      
+                      Note: May call mvcrsr; or may print "cursor down"
+                      character sequence.
+
+  mvcrsr(r, c);       Moves cursor to row r, column c.
+
+                      Note: May call system routine, or set system variables.
+  
+  h = scnhgt();       Returns screen height in rows.
+  
+                      Note: May call system routine, or read system variable.
+                                            
+  w = scnwid();       Returns screen width in columns.
+  
+                      Note: May call system routine, or read system variable.
+                                            
+  c = scncol();       Returns current screen column.
+  
+                      Note: May call system routine, or read system variable.
+                                            
+  r = scnrow();       Returns current screen row.
+  
+                      Note: May call system routine, or read system variable.
+                                            
+  txtclr(c);          Sets text color to system color c. 
+            
+                      Note: May call system routine or may print color change
+                      sequence.
+
+  bkgclr(c);          Sets background color to system color c.
+                      
+                      Note: May call system routine or may print color change
+                      sequence.
+
+
+Assembly Constants (Defined in System Header file)
+
+  BLACK             Code for color Black
+  BLUE              Code for color Blue
+  GREEN             Code for color Green
+  CYAN              Code for color Cyan
+  RED               Code for color Red
+  MAGNTA            Code for color Magenta
+  YELLOW            Code for color Yellow
+  WHITE             Code for color White
+   
+  BREAK             ASCII code for Break/Stop Key
+  BCKSPC            ASCII code for Backspace key
+  CLEAR             ASCII code for Clear Key
+  DELETE            ASCII code for Delete key
+  DOWN              ASCII code for Cursor Down Key
+  ENTER             ASCII code for Return/Enter key (usually CR)
+  ESCAPE            ASCII code for Escape/Abort key (usually ESC)
+  FNx               ASCII code for Function Key x
+  HOME              ASCII code for Home Key
+  INSERT            ASCII code for Insert Key
+  LEFT              ASCII code for Cursor Left Key
+  RIGHT             ASCII code for Cursor Left Key
+  TAB               ASCII code for Tab Key  
+  UP                ASCII code for Cursor Up Key
+
+  BTMLFT            ASCII code for Box Drawing Bottom Left Corner
+  BTMRGT            ASCII code for Box Drawing Bottom Right Corner
+  BTMTEE            ASCII code for Box Drawing Bottom to Cetter Tee
+  CTRCRS            ASCII code for Box Drawing Center Cross
+  HRZLIN            ASCII code for Box Drawing Horizontal Line
+  LFTTEE            ASCII code for Box Drawing Left To Center T
+  RGHTEE            ASCII code for Box Drawing Right To Center T
+  TOPLFT            ASCII code for Box Drawing Top Left Corner
+  TOPRGT            ASCII code for Box Drawing Top Right Corner
+  TOPTEE            ASCII code for Box Drawing Top to Center T
+  VRTLIN            ASCII code for Box Drawing Verical Line
+
+

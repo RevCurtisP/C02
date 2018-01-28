@@ -1,0 +1,30 @@
+C02 for C programmers
+
+TYPES
+
+C02 only supports one data type: unsigned char.
+
+POINTERS
+
+C02 does not support pointer type variables or parameters. However, the
+address-of operator may be used in function calls.
+
+
+DECLARATIONS
+
+Variable and function names may be no more than six characters in length. 
+Multiple variable declarations separated by commas are allowed. 
+
+A variable in a declaration may be initialized by following it with an
+equal sign and a constant, however this declaration is done at compile
+time, so no re-initialization will occur during code execution.
+
+Array declarations using bracket syntax specify the upper bound, rather
+than the array size. Therefore, the array will be allocated with one more
+element than the specified number.
+
+EXPRESSIONS
+
+C02 supports the addition, subtraction, bitwise-and, bitwise-or, and 
+exclusive-or operators. The multiplication, division, and binary shift
+operators are not supported. These can be implemented through functions. 

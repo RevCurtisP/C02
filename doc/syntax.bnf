@@ -1,0 +1,17 @@
+conditional := expression | expression comparator term
+comparator := comparacter | comparacter comparacter
+comparactor := '=' | '<' | '>'
+operator := '+' | '-' | '&' | '|' | '^'
+term := element | value
+element := variable '[' value ']'
+
+number := binary | decimal | hexadecimal
+hexadecimal := '$' hexdigit hexdigit
+decimal := digit | decimal digit
+binary := '%' bit bit bit bit bit bit bit bit
+letter := 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' |
+          'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' |
+          'W' | 'X' | 'Y' | 'Z'
+hexdigit := digit | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+digit := bit | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+bit := '0' | '1' 

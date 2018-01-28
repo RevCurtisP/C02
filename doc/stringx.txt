@@ -1,0 +1,67 @@
+Extended String Manipulation Functions for C02
+
+This library contains less commonly used string functions. It is maintained
+as a separate set of files so that it can be included only when needed, in
+order to reduce program size.
+
+Strings follow all the same rules as specified in the string.h02 library.
+
+Usage: at the beginning of the program use the directives
+
+  #include <string.h02>
+  #include <stringx.h02>
+  
+The following functions are defined:
+
+
+
+  n = strspn(&s);     Returns the length of the span of characters at
+                      the beginning of destination string set by prior 
+                      strdst() call that are present in source string s.
+
+                      This mimics the functionality of the standard C
+                      and C++ strspn() function.
+                      
+                      Note: calls routine strchr(), leaving dstlo and 
+                      dsthi pointing to the destination string.
+
+  n = strcsp(&s);     Returns the length of the span of characters at
+                      the beginning of destination string set by prior 
+                      strdst() call that are not present in source 
+                      string s.
+
+                      This mimics the functionality of the standard C
+                      and C++ strcspn() function.
+                      
+                      Note: aliased to the strbrk() function, which calls 
+                      strchr(), leaving dstlo and dsthi pointing to the 
+                      destination string.
+
+  n = strpbk(&s);     Returns the poisition of the first character in
+                      the destination string set by prior strdst() call 
+                      that is present in source string s.
+                      
+                      If no characters in the source string are present
+                      in the destination string, returns 255.
+
+                      This mimics the functionality of the standard C
+                      and C++ strpbrk() function.
+                      
+                      Note: calls routine strchr(), leaving dstlo and 
+                      dsthi pointing to the destination string.
+
+Note: This library expects the following functions to be defined
+
+  setdst(&s);         Set destination string pointer
+  setsrc(&s);         Set source string pointer and initialize index
+  strchr(c, &s);      Return position of character in string
+
+along with the zero page pairs
+  
+  strlo, strhi        Source String Pointer 
+  dstlo, dsthi        Destination String Pointer
+
+and the memory locations
+
+  temp0, temp1        Temporary storage
+
