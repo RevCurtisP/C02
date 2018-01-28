@@ -21,10 +21,11 @@
 
 #define CPUOP  "PROCESSOR" //Target CPU Pseudo-Operator 
 #define CPUARG "6502"      //Target CPU Operand
-#define ORGOP  "ORG"       //Equate Pseudo-Op
+#define ORGOP  "ORG"       //Origin Pseudo-Op
 #define EQUOP  "EQU"       //Equate Pseudo-Op
 #define BYTEOP "DC"        //Define Byte Pseudo-Op
 #define STROP  "DS"        //Define String Pseudo-Op
+#define ALNOP  "ALIGN"     //Align Pseudo-Op
 
 #define ASMFMT "%-7s %-3s %-12s %s\n"  //Assembly Language Line printf Format
 
@@ -33,6 +34,7 @@
 #define FALSE 0
 
 #define DEBUG(fmt, val) if (debug) {prtpos(); printf(fmt, val);}
+#define DETAIL(fmt, val) if (debug) {printf(fmt, val);}
 #define ERROR(fmt, val, err) if (debug) {printf(fmt, val);exterr(err);}
 #define SCMNT(str) if (gencmt) {setcmt(str);}
 #define ACMNT(str) if (gencmt) {addcmt(str);}
@@ -48,6 +50,7 @@ int nxtchr; //Next Character of Source File to Process
 int nxtupc; //Next Character Converted to Uppercase
 int savchr; //Holds nxtchr when switching input files
 
+char incdir[FNAMLEN]; //Include File Directory
 char inpnam[FNAMLEN]; //Include File Name 
 
 int alcvar; //Allocate Variables Flag

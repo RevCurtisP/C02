@@ -4,6 +4,7 @@
 
 /* Variable Table */
 char varnam[MAXVAR+1][VARLEN+1];   //Variable Name Table
+char varmod[MAXVAR+1];             //Variable Modifier
 char vartyp[MAXVAR+1];             //Variable Type
 char varsiz[MAXVAR+1][4];          //Variable Array
 int  varcnt;                       //Number of Variables in Table
@@ -26,7 +27,7 @@ int  dsize;                    //Total Data Length
 
 enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 
-enum mtypes {MTNONE, MTZP}; //Variable Modifier Types
+enum mtypes {MTNONE, MTALGN, MTZP}; //Variable Modifier Types
 
 int symdef(char *name);        //Is Variable defined (TRUE or FALSE)
 int zpaddr;                    //Current Zero-Page Address
@@ -40,7 +41,7 @@ int  prmcnt;                   //Number of Parameters
 void chksym(int alwreg, char *name); //Error if Variable not defined
 void prsdts();                 //Parse Data String
 void setdat();                 //Set Variable Data
-void setvar(int t);            //Set Variable Name and Size
+void setvar(int m, int t);     //Set Variable Name and Size
 void pdecl(int m, int t);      //Parse Variable Declaration
 
 void vartbl();                  //Create Variable Table

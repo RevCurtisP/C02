@@ -37,6 +37,9 @@ int isvpre();                  //Is Next Character a Value Prefix
 int isoper();                  //Is Next Character an Operator
 int ispopr();                  //Is Next Character a Post-Operator
 
+int invasc;                    //Invert ASCII Flag
+char invchr(char c);           //Invert Character Case
+
 int wordis(char *s);           //Does word match s
 
 char getnxt();                 //Return Next Character and Advance
