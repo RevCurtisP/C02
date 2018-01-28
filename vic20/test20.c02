@@ -1,0 +1,20 @@
+/************************************
+ * TESTFILE - Test file.h02 Library *
+ ************************************/
+ 
+#include "include/vic20.h02"
+#include <string.h02>
+#include <stdio.h02>
+
+char c;        //Character
+char key;      //Key read from keyboard
+
+main:
+  c = 32;
+  
+  loop:
+    prchr(c);
+    c++;
+    if (c < 128) goto loop;
+    
+  goto exit;

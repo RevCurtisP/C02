@@ -1,0 +1,89 @@
+/*************************************
+ * fgets.c02 - test file.h02 Library *
+ *             function fgets()      *
+ *************************************
+load "fgets.prg",8
+*/
+
+#include <vic20.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <file.h02>
+
+char fp; //File Pointer
+char filnam = "TESTFILE.SEQ";
+char buffer[128];
+
+main:
+    //Print Banner
+    putchr(147); //Clear Screen
+    putchr(18);  //Reverse On
+    putstr("     FILE TESTS     ");
+
+    //Initialize File System
+    fsinit();
+
+    //Get Next Available File Pointer
+    newlin();
+    outstr("NEXT OPEN CHANNEL ");
+    ctoa(fsptr(), &buffer);
+    outstr(&buffer);
+    newlin();    
+
+    //Open File
+    newlin();
+    fp = fopen(8, &filnam);
+    if (fp) {
+        outstr("CHANNEL ");
+        ctoa(fp, &buffer);
+        outstr(&buffer);
+        putstr(" OPENED TO ");
+        putstr(&filnam);
+    } 
+    else {
+        prterr();
+        putstr(" OPENING FILE");
+        putstr(&filnam);
+        goto exit;
+    }
+
+    //Print File Contents
+    newlin();
+    putstr("FILE CONTENTS:");
+    while (!feof(fp)) {
+        fgets(fp, &buffer);
+        putchr($20);
+        putstr(&buffer);
+    }
+    newlin();
+
+    //Close File
+    if (fclose(fp)) {
+        prterr();
+        putstr(" CLOSING FILE");
+        putstr(&filnam);
+    }
+    else {
+        if (fstat(fp)) {
+            outstr("FILETABLE ENTRY ");
+            ctoa(fp, &buffer);
+            putstr(&buffer);
+            outstr("CONTAINS ");
+            ctoa(fstat(fp), &buffer);
+            putstr(&buffer);
+        }
+        else {
+            outstr("FILE ");
+            putstr(&filnam);
+            putstr("CLOSED");
+        }        
+    }
+
+goto exit;
+
+void prterr() {
+    outstr("ERROR ");
+    ctoa(fstat(0), &buffer);
+    outstr(&buffer);
+}

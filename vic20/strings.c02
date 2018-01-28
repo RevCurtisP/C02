@@ -1,0 +1,159 @@
+/**********************************************
+ * STRINGS - Demonstrate string.h02 functions *
+ **********************************************
+load "strings.prg",8 
+ */
+
+#include <vic20.h02>
+#include <stdio.h02>
+#include <stdlib.h02>
+#include <string.h02>
+#include <stringx.h02>
+
+#pragma ascii invert  //Inver case for PETSCII
+
+char slen, scmp, spos;
+char s1  = "First string.";
+char s2  = "Second string.";
+char stest = "12345678901234567890";
+char stemp[32];
+char sless = "This string is less.";
+char smore = "This string is more.";
+char sprt[4];
+char pass = "Pass";
+char fail = "Fail";
+
+main:
+  putchr(14); //Switch to Lower Case
+  newlin();
+
+  //Demo strapd()
+  putstr("Appending to string:");
+  s1 = 0; //Set string to empty
+  for (spos='0'; spos<='9'; spos++) {
+    strapd(spos, &s1);
+    putstr(&s1);
+  }
+  anykey();
+  
+  //Demo strchr(), strrch()
+  putstr(&s1);              //Print s1 to screen
+  outstr("Position of first 's'  is: ");
+  spos = strchr('s', &s1);  //Get position of 's'
+  ctoa(spos, &sprt);        //Convert to string
+  putstr(&sprt);            //Print position to screen
+  outstr("Position of first 'x'  is: ");
+  spos = strchr('x', &s1);  //Get position of 's'
+  ctoa(spos, &sprt);        //Convert to string
+  putstr(&sprt);            //Print position to screen
+  outstr("Position of last 's'   is: ");
+  spos = strrch('s', &s1);  //Get position of 's'
+  ctoa(spos, &sprt);        //Convert to string
+  putstr(&sprt);            //Print position to screen
+  outstr("Position of last 'x'   is: ");
+  spos = strrch('x', &s1);  //Get position of 's'
+  ctoa(spos, &sprt);        //Convert to string
+  putstr(&sprt);            //Print position to screen
+  newlin();
+
+  //Demo strlen();  
+  putstr(&stest);        //Print stest to screen
+  slen = strlen(&stest); //Get string length
+  ctoa(slen, &sprt);     //Convert to string
+  outstr("String length is ");
+  putstr(&sprt);         //Print length to screen
+  newlin();
+  
+  //Demo setstr();
+  strdst(&stemp);         //Set stemp as destination street
+  outstr("Address of stemp       is $");
+  prbyte(dsthi);          //Print stored address to string
+  prbyte(dstlo);
+  newlin();
+  anykey();
+
+  //Demo strcpy()
+  putstr("Copying s1 to stemp");
+  strdst(&stemp);         //Set Destination String
+  slen = strcpy(&s1);            //Copy s1 into Destination String
+  outstr("String stemp contains  ");
+  putstr(&stemp);         //Print stest to screen
+  ctoa(slen, &sprt);     //Convert to string
+  outstr("Characters copied      ");
+  putstr(&sprt);         //Print length to screen
+  newlin();
+  
+  //Demo strcat()
+  putstr("Concatenating s2       to stemp: ");
+  strdst(&stemp);         //Set Destination String
+  slen = strcat(&s2);     //Copy s1 into Destination String
+  outstr("String stemp contains ");
+  putstr(&stemp);         //Print stest to screen
+  ctoa(slen, &sprt);      //Convert to string
+  outstr("Concatenated string    length is ");
+  putstr(&sprt);          //Print length to screen
+  newlin();
+  anykey();
+  
+  //Demo strcut()
+  putstr("Cutting s2 at position 7 to stemp: ");
+  strdst(&stemp);         //Set Destination String
+  slen = strcut(7, &s2);     //Copy s1 into Destination String
+  outstr("String stemp contains ");
+  putstr(&stemp);         //Print stest to screen
+  ctoa(slen, &sprt);      //Convert to string
+  outstr("Cut string length is   ");
+  putstr(&sprt);          //Print length to screen
+  newlin();
+
+  //Demo strcmp();
+  outstr("Comparing sless to     smore: ");
+  strdst(&sless);
+  scmp = strcmp(&smore);  
+  prbyte(scmp); newlin();
+  outstr("Comparing sless to     sless: ");
+  strdst(&sless);
+  scmp = strcmp(&sless);  
+  prbyte(scmp); newlin();
+  outstr("Comparing smore to     sless: ");
+  strdst(&smore);
+  scmp = strcmp(&sless);
+  prbyte(scmp); newlin();
+  anykey();
+  
+  
+  //Demo strspn();
+  putstr(&stest);        //Print test to screen
+  putstr("Span matching");  
+  outstr(" 0123 is ");
+  strdst(&stest);        //Set string to search
+  slen = strspn("0123");  //Get position of "123"
+  ctoa(slen, &sprt);     //Convert to string
+  putstr(&sprt);         //Print position to screen
+  outstr(" 0123456789 is ");
+  strdst(&stest);        //Set string to search
+  slen = strspn("0123456789");  //Get position of "123"
+  ctoa(slen, &sprt);     //Convert to string
+  putstr(&sprt);         //Print position to screen
+  outstr(" 789 is ");
+  strdst(&stest);        //Set string to search
+  slen = strspn("789");  //Get position of "123"
+  ctoa(slen, &sprt);     //Convert to string
+  putstr(&sprt);         //Print position to screen
+
+  //Demo strstr();
+  outstr("Position of 234 is: ");
+  strdst(&stest);        //Set string to search
+  spos = strstr("234");  //Get position of "123"
+  ctoa(spos, &sprt);     //Convert to string
+  putstr(&sprt);         //Print position to screen
+  newlin();    
+
+goto exit;
+
+void anykey() {
+  newlin();
+  putstr("Press any key...");
+  getkey();
+  newlin();  
+}

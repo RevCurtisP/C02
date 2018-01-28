@@ -1,0 +1,67 @@
+/*************************************
+ * fgetc.c02 - test file.h02 Library *
+ *             function fgetc()      *
+ *************************************
+load "fgetc.prg",8
+*/
+
+#include <vic20.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <file.h02>
+
+char fp; //File Pointer
+char filnam = "TESTFILE.SEQ";
+char buffer[128];
+char c;
+
+main:
+    //Print Banner
+    putchr(147); //Clear Screen
+    putchr(18);  //Reverse On
+    putstr("     TEST FGETC     ");
+
+    //Initialize File System
+    fsinit();
+
+    //Open File
+    newlin();
+    fp = fopen(8, &filnam);
+    if (fp) {
+        outstr("CHANNEL ");
+        ctoa(fp, &buffer);
+        outstr(&buffer);
+        putstr(" OPENED TO ");
+        putstr(&filnam);
+    } 
+    else {
+        prterr();
+        putstr(" OPENING FILE");
+        putstr(&filnam);
+        goto exit;
+    }
+
+    //Print File Contents
+    newlin();
+    putstr("FILE CONTENTS:");
+    while (!feof(fp)) {
+        c = fgetc(fp);
+        putchr(c);
+    }
+    newlin();
+
+    //Close File
+    if (fclose(fp)) {
+        prterr();
+        putstr(" CLOSING FILE");
+        putstr(&filnam);
+    }
+
+goto exit;
+
+void prterr() {
+    outstr("ERROR ");
+    ctoa(fstat(0), &buffer);
+    outstr(&buffer);
+}

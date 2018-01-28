@@ -1,0 +1,44 @@
+/*********************************
+ * FILES - Test file.h02 Library *
+ *********************************/
+ 
+#include <vic20.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <file.h02>
+
+char chan, c, i;
+char dir = "$";
+
+main:
+	//Initialize File System
+	fsinit();
+
+    //Open Directory
+    chan = fopen(8, &dir);
+    if (!chan) {
+      outstr("ERROR ");
+      prbyte(ferror());
+	  outstr(" OPENING ");
+      putstr(&dir);
+      goto exit;
+    }
+
+    i = 0;
+    while() {
+      c = fgetc(chan);
+      if (feof(chan)) break;
+      i++;
+      if (i<4) continue;
+      if (c) {
+        putchr(c);
+      }
+      else {
+        newlin();
+        i=0;
+      }
+    }
+
+goto exit;
+
+

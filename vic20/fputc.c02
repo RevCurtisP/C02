@@ -1,0 +1,69 @@
+/*************************************
+ * fputc.c02 - test file.h02 Library *
+ *             function fgetc()      *
+ *************************************
+load "fputc.prg",8
+*/
+
+#include <vic20.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <file.h02>
+
+char fp; //File Pointer
+char filnam = "PETSCII.SEQ";
+char buffer[128];
+char c;
+
+main:
+    //Print Banner
+    putchr(147); //Clear Screen
+    putchr(18);  //Reverse On
+    putstr("     TEST FGETC     ");
+
+    //Initialize File System
+    fsinit();
+
+    //Open File
+    newlin();
+    strdst(&filnam);
+    strcat(",S,W");
+    fp = fopen(8, &filnam);
+    if (fp) {
+        outstr("CHANNEL ");
+        ctoa(fp, &buffer);
+        outstr(&buffer);
+        putstr(" OPENED TO ");
+        putstr(&filnam);
+        putstr("FOR WRITING");
+    } 
+    else {
+        prterr();
+        putstr(" OPENING FILE");
+        putstr(&filnam);
+        goto exit;
+    }
+
+    //Write to File
+    newlin();
+    putstr("WRITING FILE");
+    for (c=32; c<127; c++) {
+        fputc(fp,c);
+    }
+    newlin();
+
+    //Close File
+    if (fclose(fp)) {
+        prterr();
+        putstr(" CLOSING FILE");
+        putstr(&filnam);
+    }
+
+goto exit;
+
+void prterr() {
+    outstr("ERROR ");
+    ctoa(fstat(0), &buffer);
+    outstr(&buffer);
+}

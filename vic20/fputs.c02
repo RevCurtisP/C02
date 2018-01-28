@@ -1,0 +1,73 @@
+/*************************************
+ * fputs.c02 - test file.h02 Library *
+ *             function fgets()      *
+ *************************************
+load "fputs.prg",8
+*/
+
+#include <vic20.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <file.h02>
+
+char fp; //File Pointer
+char filnam = "TESTLINES.SEQ";
+char buffer[128];
+char c, i;
+
+main:
+    //Print Banner
+    putchr(147); //Clear Screen
+    putchr(18);  //Reverse On
+    putstr("     TEST FPUTS    ");
+
+    //Initialize File System
+    fsinit();
+
+    //Open File
+    newlin();
+    strdst(&buffer);
+    strcpy(&filnam);
+    strcat(",S,W");
+    fp = fopen(8, &buffer);
+    if (fp) {
+        outstr("CHANNEL ");
+        ctoa(fp, &buffer);
+        outstr(&buffer);
+        putstr(" OPENED TO ");
+        putstr(&filnam);
+        putstr("FOR WRITING");
+    } 
+    else {
+        prterr();
+        putstr(" OPENING FILE");
+        putstr(&filnam);
+        goto exit;
+    }
+
+    //Write to File
+    newlin();
+    putstr("WRITING FILE");
+    for (i=1; i<10; i++) {
+        fputs(fp, "LINE NUMBER ");
+        c = $30 + i;
+        fputc(fp, c);
+        fputc(fp, $0D);
+    }
+    newlin();
+
+    //Close File
+    if (fclose(fp)) {
+        prterr();
+        putstr(" CLOSING FILE");
+        putstr(&filnam);
+    }
+
+goto exit;
+
+void prterr() {
+    outstr("ERROR ");
+    ctoa(fstat(0), &buffer);
+    outstr(&buffer);
+}

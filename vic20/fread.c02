@@ -1,0 +1,80 @@
+/*************************************
+ * fread.c02 - test file.h02 Library *
+ *             function fread()      *
+ *************************************
+load "fread.prg",8
+*/
+
+#include <vic20.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <file.h02>
+
+char fp; //File Pointer
+char filnam = "PETSCII.SEQ";
+char buffer[128];
+char i, n;
+
+main:
+    //Print Banner
+    putchr(147); //Clear Screen
+    putchr(18);  //Reverse On
+    putstr("     FREAD TEST     ");
+
+    //Initialize File System
+    fsinit();
+
+    //Open File
+    newlin();
+    fp = fopen(8, &filnam);
+    if (fp) {
+        outstr("CHANNEL ");
+        ctoa(fp, &buffer);
+        outstr(&buffer);
+        putstr(" OPENED TO ");
+        putstr(&filnam);
+    } 
+    else {
+        prterr();
+        putstr(" OPENING FILE");
+        putstr(&filnam);
+        goto exit;
+    }
+
+    //Print File Contents
+    newlin();
+    putstr("FILE CONTENTS:");
+    fsdst(&buffer);
+    while (!feof(fp)) {
+        n = fread(fp, 6);
+        if (!n) break;
+        prbyte(n);
+        putchr(':');
+        for (i=0; i<n; i++) {
+          prbyte(buffer[i]);
+          putchr(' ');
+        }
+        newlin();
+    }
+    newlin();
+
+    //Close File
+    if (fclose(fp)) {
+        prterr();
+        putstr(" CLOSING FILE");
+        putstr(&filnam);
+    }
+    else {
+        outstr("FILE ");
+        putstr(&filnam);
+        putstr("CLOSED");
+    }
+
+goto exit;
+
+void prterr() {
+    outstr("ERROR ");
+    ctoa(fstat(0), &buffer);
+    outstr(&buffer);
+}

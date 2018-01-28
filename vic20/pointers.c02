@@ -1,0 +1,86 @@
+/************************************
+ * POINTERS - Test pointer.h02 Library *
+ ************************************/
+ 
+#include "include/vic20.h02"
+#include <stdio.h02>
+#include <pointer.h02>
+
+char psave[2]; //Pointer Storage Variable
+
+main:
+  //Set Pointer to Cassette Buffer
+  putstr("SET POINTER TO TBFFR");
+  ptrset(&tbffr);
+  prpntr();
+  newlin();
+  
+  //Demonstrate Compare
+  putstr("COMPARE AGAINST");
+  outstr(" TEMP0 $");
+  prbyte(ptrcmp(&temp0)); newlin();
+  outstr(" TBFFR $");
+  prbyte(ptrcmp(&tbffr)); newlin();
+  outstr(" PSAVE $");
+  prbyte(ptrcmp(&psave)); newlin();
+  newlin();
+  
+  anykey();
+  
+  //Demonstrate Get, Put, Inc, and Dec
+  putstr("PUT '*' AT POINTER");
+  ptrput('*');
+  prpntr();
+  putstr("DECREMENT POINTER");
+  ptrdec();
+  prpntr();
+  outstr("GOT FROM POINTER: ");
+  putchr(ptrget());
+  newlin();
+  prpntr();
+  putstr("INCREMENT POINTER");
+  ptrinc();
+  prpntr();
+  newlin();
+  
+  //Demonstrate Add and Subtract
+  putstr("ADD $FF TO POINTER");
+  ptradd($FF);
+  prpntr();
+  putstr("SUBTRACT $FF");
+  ptrsub($FF);
+  prpntr();
+  newlin();
+  
+  anykey();
+  
+  //Demonstrate Save and Restore
+  putstr("SAVE POINTER TO PSAVE");
+  ptrsav(&psave);
+  outstr(" PSAVE IS NOW ");
+  prbyte(psave[1]); prbyte(psave[0]); newlin();
+  putstr("CLEAR POINTER");
+  ptrlo = 0; ptrhi = 0;
+  prpntr();
+  putstr("RESTORE FROM PSAVE");
+  ptrrst(&psave);
+  prpntr();
+  
+  goto exit;
+
+  
+//Print Pointer Contents
+void prpntr() {
+  outstr(" POINTER IS NOW ");
+  prbyte(ptrhi); 
+  prbyte(ptrlo); 
+  newlin();
+}
+
+//Wait for Keypress
+void anykey() {
+  putstr("PRESS ANY KEY...");
+  getchr();
+  newlin();
+  newlin();
+}
