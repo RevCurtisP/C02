@@ -1,0 +1,7 @@
+#Files created when compiling a C02 program
+*/*.asm
+*/*.bin
+*/*.log
+*/*.lst
+*/*.prg
+*/*.sym
