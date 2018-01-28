@@ -6,7 +6,13 @@ These functions are intended to allow sequential reading and writing of
 individual bytes to arbitrary locations in memory. 
 
 Only one pointer may be active at a time, but it's contents may be saved 
-and restored. 
+and restored using the following code:
+
+  savelo = ptrlo; savehi = ptrhi; //save current pointer
+  ptrlo = savelo; ptrhi = savehi; //restore current pointer
+  
+where savelo and savehi are an arbitrary pair of variables defined in the
+program. 
 
 Note: There is no concept of a null pointer in C02. A pointer containing
 the value 0 simply points to the first byte of memory. 
@@ -106,34 +112,13 @@ The following application functions are defined:
                       
                       Note: Sets variables srclo and srchi.
 
-  ptrsav(&r);         Pointer Save: Copies the pointer contents into the
-                      first to bytes of array r.
 
-                      This is roughly equivalent to the C code
-                      
-                        r = (int) p;
-                       
-                      
-                      Note: Sets variables srclo, srchi, and temp0.
+Note: This library expects the following to be defined: 
 
-  ptrrst(&r);         Pointer Restore: Copies the first to bytes of array r 
-                      into the pointer contents.
-
-                      This is roughly equivalent to the C code
-                      
-                        p = (void*) r;
-                       
-                      Note: Sets variables srclo, srchi, ptrlo, and ptrhi.
-
-Note: This library expects the following functions to be defined
-
-  setsrc(&s);         Set source string pointer and initialize index
-
-along with the zero page variable pairs
+the zero page variable pair
   
-  strlo, strhi        Source String Pointer 
+  ptrlo, ptrhi        System Pointer 
 
-as well as the transient variable 
+and the transient variable 
 
   temp0               Temporary storage
-

@@ -37,11 +37,3 @@ void ptrsub();
  *           0 = Pointer = Address       *
  *           1 = Pointer > Address       */
 void ptrcmp();
-
-/* Save Pointer Value                    *
- * Args: &a - Address to save pointer to */
-void ptrsav();
-
-/* Restore Pointer Value                      *
- * Args: &a - Address to restore pointer from */
-void ptrrst();

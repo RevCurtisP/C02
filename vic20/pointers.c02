@@ -6,7 +6,8 @@
 #include <stdio.h02>
 #include <pointer.h02>
 
-char psave[2]; //Pointer Storage Variable
+char savelo, savehi; //Pointer Storage Variable
+char ptemp;  //Memory Marker for Compare 
 
 main:
   //Set Pointer to Cassette Buffer
@@ -21,8 +22,8 @@ main:
   prbyte(ptrcmp(&temp0)); newlin();
   outstr(" TBFFR $");
   prbyte(ptrcmp(&tbffr)); newlin();
-  outstr(" PSAVE $");
-  prbyte(ptrcmp(&psave)); newlin();
+  outstr(" PTEMP $");
+  prbyte(ptrcmp(&ptemp)); newlin();
   newlin();
   
   anykey();
@@ -55,15 +56,13 @@ main:
   anykey();
   
   //Demonstrate Save and Restore
-  putstr("SAVE POINTER TO PSAVE");
-  ptrsav(&psave);
-  outstr(" PSAVE IS NOW ");
-  prbyte(psave[1]); prbyte(psave[0]); newlin();
+  putstr("SAVE POINTER");
+  savelo = ptrlo; savehi = ptrhi;
   putstr("CLEAR POINTER");
   ptrlo = 0; ptrhi = 0;
   prpntr();
   putstr("RESTORE FROM PSAVE");
-  ptrrst(&psave);
+  ptrlo = savelo; ptrhi = savehi;
   prpntr();
   
   goto exit;

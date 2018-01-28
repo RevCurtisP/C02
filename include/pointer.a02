@@ -1,5 +1,5 @@
 ;C02 library pointer.h02 assembly language subroutines
-;Requires External Zero Page Variables PTRLO, PTRHI, SRCLO, SRCHI
+;Requires External Zero Page Variables PTRLO, PTRHI
 ;External Routines MSETSRC
 
 ;ptrset(&a) - Set Pointer Address
@@ -85,27 +85,4 @@ PTRSUB: STA TEMP0      ;Save Offset
         STA PTRLO      ;And Save New Low Byte
         BCS PTRRET     ;If Borrow
         DEC PTRHI      ;  Decrement High Byte
-        RTS
-
-;ptrsav(&a) - Save Pointer Address
-;Args: X,Y = Address of Array to Save Pointer in
-;Sets: SRCLO, SRCHI = Address of Array
-PTRSAV: JSR SETSRC      ;Save Address & Initialize Y Index 
-        LDA PTRLO       ;Get Pointer Low Byte
-        STA (SRCLO),Y   ;Store In First Byte of Array\
-        INY             ;Increment Index
-        LDA PTRHI       ;Get Pointer High Byte
-        STA (SRCLO),Y   ;Store In Second Byte of Array 
-        RTS
-
-;ptrrst(&a) - Restore Pointer Address
-;Args: X,Y = Address of Array to Restore Address
-;Sets: SRCLO, SRCHI = Address of Array
-;      PTRLO, PRTHI = Pointer Value Stores in Array
-PTRRST: JSR SETSRC      ;Save Address & Initialize Y Index 
-        LDA (SRCLO),Y   ;Get First Byte of Array
-        STA PTRLO       ;Store in Pointer Low Byte
-        INY             ;Increment Index
-        LDA (SRCLO),Y   ;Get Second Byte of Array 
-        STA PTRHI       ;Store in Pointer High Byte
         RTS
