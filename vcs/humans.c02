@@ -5,6 +5,7 @@
 #include <vcsstub.h02>  //VCS Program Stub
 #include <vcslib.h02>   //VCS Library Routines
 #include <score2.h02>   //Two Player Score Kernel
+#include <timerbar.h02>   //Two Player Score Kernel
 #include <k2line.h02>   //Two Line Game Kernel
 
 //TIA Register Bit Masks
@@ -15,8 +16,10 @@
 #define P1DIFF = $80  //Player 1 Difficulty 
 #define P0DIFF = $40  //Player 0 Difficulty
 
+//Constants Required by timerbar.h02
+#define TMRCLR = $64
+
 //Constants Required by k2line.h02
-#define KNLLNS = 90     //Kernal Lines (Scanlines/2)
 #define P0HGHT = 10     //Player 0 Height
 #define P1HGHT = 10     //Player 1 Height
 
@@ -27,30 +30,37 @@ char colors = {$86, $C6, $46, $00, $0E, $06, $0A, $00};
 char human = {%00011100, %00011000, %00011000, %00011000, %01011010,
               %01011010, %00111100, %00000000, %00011000, %00011000};
 
+zeropage char frame;  //Frame Counter
+
 /* Setup Code */
 void setup() {
   setclr(&colors); //Set Color Table
+  initmr();        //Initialize Timer Bar
 }
 
 /* Vertical Blank Code */
 void vrtblk() {
   scrprp();             //Prepare Score For Display
   posobj(0,0);          //Set P0 X-Position
-  p0prep(179, &human);  //Set P0 Y-Position & Graphics Pointer
+  p0prep(175, &human);  //Set P0 Y-Position & Graphics Pointer
   posobj(8,1);          //Set P1 X-Position
-  p1prep(179, &human);  //Set P1 Y-Position & Graphics Pointer
+  p1prep(175, &human);  //Set P1 Y-Position & Graphics Pointer
 }
 
 /* Execute Kernel Code */
 void kernel() {	
   scrdsp();     //Display Scores
+  dsptmr();     //Display Timer Bar
   dsplns();     //Display Playfield and Objects
 }
 
 /* Execute Overscan Code */
 void ovrscn() {
+  frame++;
+  if (!frame & 7) { //Decrement Timer Every X Frames
+    if (!dectmr()) initmr(); //Reset Timer if It Runs Out
+  }
 }
 
 #include <digits.h02>   //Digit Graphics
 #include <vcsfoot.h02>  //Finalization Code
-

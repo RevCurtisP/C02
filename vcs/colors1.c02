@@ -1,0 +1,69 @@
+//Atari VCS Color Bars Program
+
+#pragma origin $F800    //2k Cartridge
+#include <vcshead.h02>  //TIA and RIOT Registers
+#include <vcsinit.h02>  //Initialize VCS
+
+/* Generate Vertical Sync Signal */
+void vtsync() {
+  A=2;     //Set Bit 2 (D1)
+  WSYNC=A; //Wait for end of Scanline
+  VSYNC=A; //Turn On Vertical Sync
+  WSYNC=A; //Wait 2 More Scanlines
+  WSYNC=A;
+  A=0;     //Clear Bit 2 (D1)
+  WSYNC=A; //Wait for End of 3rd Scanline
+  VSYNC=A; //Turn On Vertical Sync
+  return;
+}
+
+/* Execute Vertical Blank Code */
+void vtblnk() {
+  X=37; //Delay 37 Scanlines
+  do {
+    WSYNC=A;  //Wait for end of Scanline
+    A=A-1;
+  } while (A);
+  return;
+}
+
+/* Execute Kernel Code */
+void kernel() {
+  A=0; //Clear All Bits
+  WSYNC=A;  //Wait for end of Scanline
+  VBLANK=A; //Turn Off Vertical Blank
+  X=0; //Draw 192 Scanlines (256-64) 
+  do {
+    if (X & 3) {
+      WSYNC = A;  //Wait for end of Scanline
+      COLUBK = X; //Set Background Color
+    }
+    X--;
+  } while (X);
+  return;
+}
+
+/* Execute Overscan Code */
+void ovrscn() {
+  WSYNC=A;  //Wait for end of Scanline
+  A=2;      //Set Bit 2 (D1)
+  VBLANK=A; //Turn On Vertical Blank
+  A=27; //Delay 27 Scanlines
+  do {
+    WSYNC=A;  //Wait for end of Scanline
+    A=A-1;
+  } while(A);
+  return;
+}
+
+irqbrk: //Code to Execute when BRK Instruction is Encountered
+main:  //Start of Program Code
+  vtsync(); //Generate Vertical Sync Signal  
+  vtblnk(); //Generate Vertical Blank Signal  
+  kernel(); //Execute Kernal Code
+  ovrscn(); //Execute Overscan Code
+  goto main;
+
+#include <vcsfoot.h02>  //Finalization Code
+
+

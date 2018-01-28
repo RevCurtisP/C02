@@ -1,0 +1,156 @@
+/* Atari VCS Color Bars Program */
+
+#pragma origin $F800    //2k Cartridge
+#include <vcshead.h02>  //TIA and RIOT Registers
+#include <vcsinit.h02>  //Initialize VCS
+
+zeropage char clrbkg; //Color Background
+zeropage char clrofs; //Color Offset
+zeropage char clrmsk; //Color/B&W Mask
+
+zeropage char score;  //Two Digit BCD Score
+zeropage char timer;  //Two Digit BDC Timer
+zeropage char scrone; //Offset into Ones Digit
+zeropage char tmrone;
+zeropage char scrten; //Offset into Tens Digit
+zeropage char tmrten;
+zeropage char scrgfx; //Score Graphics Data
+zeropage char tmrgfx; //Score Timer Graphics
+ 
+zeropage char temp; //Scratch Variable
+
+/* Generate Ones Digit Offset */
+char ofsone() {
+  temp = A & $0F;
+  temp++;
+  A<<; A<<;
+  return A + temp;
+}
+
+/* Generate Tens Digit Offset */
+char ofsten() {
+  A = A & $F0;
+  A>>; A>>;
+  temp = A;
+  temp++;
+  A>>; A>>;
+  return A + temp;
+}
+
+/* Prepare Score and Timer for Display */
+void prepst() {
+  scrone = ofsone(score);
+  scrten = ofsten(score);
+  tmrone = ofsone(timer);
+  tmrten = ofsten(timer);
+}
+
+/* Display Score and Timer */
+void dispst() {
+  X = 5; //5 lines in digit
+  
+}
+
+ScoreLoop:              ;   43 - cycle after bpl ScoreLoop
+        ldy DigitTens   ; 3 46 - get the tens digit offset for the Score
+        lda DigitGfx,y  ; 5 51 -   use it to load the digit graphics
+        and #$F0        ; 2 53 -   remove the graphics for the ones digit
+        sta ScoreGfx    ; 3 56 -   and save it
+        ldy DigitOnes   ; 3 59 - get the ones digit offset for the Score
+        lda DigitGfx,y  ; 5 64 -   use it to load the digit graphics
+        and #$0F        ; 2 66 -   remove the graphics for the tens digit
+        ora ScoreGfx    ; 3 69 -   merge with the tens digit graphics
+        sta ScoreGfx    ; 3 72 -   and save it
+        sta WSYNC       ; 3 75 - wait for end of scanline
+;---------------------------------------        
+        sta PF1         ; 3  3 - @66-28, update playfield for Score dislay
+        ldy DigitTens+1 ; 3  6 - get the left digit offset for the Timer
+        lda DigitGfx,y  ; 5 11 -   use it to load the digit graphics
+        and #$F0        ; 2 13 -   remove the graphics for the ones digit
+        sta TimerGfx    ; 3 16 -   and save it
+        ldy DigitOnes+1 ; 3 19 - get the ones digit offset for the Timer
+        lda DigitGfx,y  ; 5 24 -   use it to load the digit graphics
+        and #$0F        ; 2 26 -   remove the graphics for the tens digit
+        ora TimerGfx    ; 3 29 -   merge with the tens digit graphics
+        sta TimerGfx    ; 3 32 -   and save it
+        jsr Sleep12     ;12 44 - waste some cycles
+        sta PF1         ; 3 47 - @39-54, update playfield for Timer display
+        ldy ScoreGfx    ; 3 50 - preload for next scanline 
+        sta WSYNC       ; 3 53 - wait for end of scanline
+;---------------------------------------
+        sty PF1         ; 3  3 - @66-28, update playfield for the Score display
+        inc DigitTens   ; 5  8 - advance for the next line of graphic data
+        inc DigitTens+1 ; 5 13 - advance for the next line of graphic data
+        inc DigitOnes   ; 5 18 - advance for the next line of graphic data
+        inc DigitOnes+1 ; 5 23 - advance for the next line of graphic data
+        jsr Sleep12     ;12 35 - waste some cycles
+        dex             ; 2 37 - decrease the loop counter
+        sta PF1         ; 3 40 - @39-54, update playfield for the Timer display
+        bne ScoreLoop   ; 2 42 - (3 43) if dex != 0 then branch to ScoreLoop
+        sta WSYNC       ; 3 45 - wait for end of scanline
+;---------------------------------------
+        stx PF1         ; 3  3 - x = 0, so this blanks out playfield        
+        sta WSYNC       ; 3  6 - wait for end of scanline
+
+/* Generate Vertical Sync Signal */
+void vtsync() {
+  X=49;     //49*64 Cycles (37 Scanlines)
+  A=2;      //Set Bit 2 (D1)
+  WSYNC=A;  //Wait for end of Scanline
+  VSYNC=A;  //Turn On Vertical Sync
+  TIM64T=X; //Set Timer
+  WSYNC=A;  //Wait 2 More Scanlines
+  WSYNC=A;
+  A=0;      //Clear Bit 2 (D1)
+  WSYNC=A;  //Wait for End of 3rd Scanline
+  VSYNC=A;  //Turn Off Vertical Sync
+  return;
+}
+
+/* Execute Vertical Blank Code */
+void vtblnk() {
+  clrmsk = (SWCHB & 8) ? $FF : $0F;
+  if (SWCHB & 64) clrofs--; else clrofs++;
+  A=0; //Clear All Bits
+  return;
+}
+
+/* Execute Kernel Code */
+void kernel() {
+  do WSYNC=A; while(INTIM);
+  VBLANK=0; //Turn Off Vertical Blank
+  X=192; //Draw 192 Scanlines
+  do {
+    clrbkg = X;
+    if (!SWCHB & 128) clrbkg<<;
+    A = clrbkg + clrofs & clrmsk; //Set Background Color
+    WSYNC = A;  //Wait for end of Scanline
+    COLUBK = A; //Set Background Color
+    X--;
+  } while (X);
+  return;
+}
+
+/* Execute Overscan Code */
+void ovrscn() {
+  WSYNC=A;     //Wait for end of Scanline
+  A=2;         //Set Bit 2 (D1)
+  VBLANK=A;    //Turn On Vertical Blank
+  TIM64T = 32; //Delay 32*64 Cycles (27 Scanlines)
+  do {
+    WSYNC=A;  //Wait for end of Scanline
+  } while(INTIM);
+  return;
+}
+
+irqbrk: //Code to Execute when BRK Instruction is Encountered
+main:  //Start of Program Code
+  vtsync(); //Generate Vertical Sync Signal  
+  vtblnk(); //Generate Vertical Blank Signal  
+  kernel(); //Execute Kernal Code
+  ovrscn(); //Execute Overscan Code
+  goto main;
+
+#include <vcsfoot.h02>  //Finalization Code
+
+

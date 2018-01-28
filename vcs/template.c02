@@ -1,0 +1,13 @@
+/* Atari VCS C02 Program Template */
+
+#include <vcshead.h02>  //TIA and RIOT Registers
+
+//ROM Start Address  - $F800 for 2K, $F000 for 4K Cartridge
+#pragma origin $F000
+
+irqbrk: //Code to Execute when BRK Instruction is Encountered
+start:  //Start of Program Code
+  goto start;
+
+#include <vcsfoot.h02>  //Finalization Code
+

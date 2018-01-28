@@ -1,0 +1,166 @@
+/* Atari VCS 2 Line Kernel Test` */
+
+#pragma origin $F800    //4k Cartridge
+#include <vcshead.h02>  //TIA and RIOT Registers
+#include <vcsstub.h02>  //VCS Program Stub
+#include <vcslib.h02>   //VCS Library Routines
+#include <colors.h02>   //Color Selection Routines
+#include <score2.h02>   //Two Player Score Kernel
+#include <timerbar.h02> //Timer Bar Kernel
+#include <arena.h02>    //Arena Two-Line Kernel
+
+#pragma zeropage $80
+
+//Boolean Equivalents
+#define TRUE = $FF
+#define FALSE = 0
+
+//TIA Register Bit Masks
+#define CLEAR = 0
+#define SET = $0B
+
+//Console Switch Bit Masks
+#define P1DIFF = $80  //Player 1 Difficulty 
+#define P0DIFF = $40  //Player 0 Difficulty
+#define SELECT = $02  //Game Select
+#define RESET  = $01  //Game Reset
+
+//Joystick Direction Bit Masks
+#define STK1UP = $01   //Joystick Up
+#define STK1DN = $02   //Joystick Down
+#define STK1LF = $04   //Joystick Left
+#define STK1RT = $08   //Joystick Right
+#define STK0UP = $10   //Joystick Up
+#define STK0DN = $20   //Joystick Down
+#define STK0LF = $40   //Joystick Left
+#define STK0RT = $80   //Joystick Right
+
+
+//Constants Required by arena.h02
+#define ARLINS = 88     //88 Kernel Lines = 176 Scan Lines
+#define ARMULT =  4     //Playfield Multiplier
+#define P0LINS = 10     //Player 0 Lines
+#define P1LINS = 10     //Player 1 Lines
+
+zeropage char frame;  //Frame Counter
+zeropage char cntdwn; //Countdown Timer
+zeropage char arnclr; //Arena Playfield Color
+zeropage char tmrclr; //Timer Playfield Color
+zeropage char gstate; //Game State: #TRUE = Running
+zeropage char clmask; //Color Cycling Mask
+
+zeropage char p0xpos, p1xpos; //Player X-Positions
+zeropage char p0ypos, p1ypos; //Player Y-Positions
+zeropage char s0xpos, s1xpos; //Player Saved X-Positions
+zeropage char s0ypos, s1ypos; //Player Saved Y-Positions
+
+//Color Table
+char colors = {$86, $C6, $46, $00, $0E, $06, $0A, $00};
+
+//Human Shaped Player Graphics
+char human = {%00011100, %00011000, %00011000, %00011000, %01011010,
+              %01011010, %00111100, %00000000, %00011000, %00011000};
+
+//Aren Playfield Data
+char arena0 = {$F0, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10,
+               $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $F0};
+
+char arena1 = {$FF, $00, $00, $00, $00, $00, $0F, $08, $08, $08, $08,
+               $08, $08, $08, $08, $0F, $00, $00, $00, $00, $00, $FF};
+
+char arena2 = {$FF, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00,
+               $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $FF};
+
+
+/* Setup Code */
+void setup() {
+  gstate = #FALSE;
+  init();
+}
+
+/* Initialize Game */
+void init() {
+  clmask = 0;
+  frame = 0;
+  cntdwn = 15;
+  tmprep();        //Initialize Timer Bar
+  p0xpos = 12;  p0ypos = 98;
+  p1xpos = 136; p1ypos = 98;
+}
+
+/* Process Joystick */
+void pstcks() {
+  s0xpos = p0xpos; s0ypos = p0ypos;
+  s1xpos = p1xpos; s1ypos = p1ypos;
+  if (!SWCHA & #STK0UP) p0ypos++;
+  if (!SWCHA & #STK0DN) p0ypos--;
+  if (!SWCHA & #STK0RT) {p0xpos++; REFP0 = #CLEAR;}
+  if (!SWCHA & #STK0LF) {
+    if (p0xpos) {p0xpos--; REFP0 = #SET;}
+  }
+  if (!SWCHA & #STK1UP) p1ypos++;
+  if (!SWCHA & #STK1DN) p1ypos--;
+  if (!SWCHA & #STK1RT) {p1xpos++; REFP1 = #CLEAR;}
+  if (!SWCHA & #STK1LF) {
+    if (p1xpos) {p1xpos--; REFP1 = #SET;}
+  }
+}
+
+/* Process Collisions */
+void pclsns() {
+  if (CXP0FB:-) {p0xpos = s0xpos; p0ypos = s0ypos;}
+  if (CXP1FB:-) {p1xpos = s1xpos; p1ypos = s1ypos;}
+  CXCLR = A;
+}
+
+/* Process Console Switches */
+void pswchs() {
+  if (!SWCHB & #SELECT) {
+    setup();
+  }
+  if (!SWCHB & #RESET) {
+    gstate = #TRUE;
+    init(); 
+  }
+}
+/* Vertical Blank Code */
+void vrtblk() {
+  pswchs();     //Process Console Switches
+  setclr(clmask, &colors);  //Set Color Table
+  tmrclr = getclr(clmask, $64, $04);
+  arnclr = getclr(clmask, $46, $0A);
+  scprep();                 //Prepare Score For Display
+  posobj(p0xpos,0);         //Set P0 X-Position
+  p0prep(p0ypos, &human);   //Set P0 Y-Position & Graphics Pointer
+  posobj(p1xpos,1);         //Set P1 X-Position
+  p1prep(p1ypos, &human);   //Set P1 Y-Position & Graphics Pointer
+}
+
+/* Execute Kernel Code */
+void kernel() {	
+  scdisp();     //Display Scores
+  tmdisp(tmrclr);     //Display Timer Bar
+  ardisp(arnclr);  //Display Playfield and Objects
+}
+
+/* Execute Overscan Code */
+void ovrscn() {
+  frame++;
+  if (gstate) {
+    if (!frame & 63) { //Decrement Timer Every X Frames
+      if (!tmtick()) tmprep(); //Reset Timer if It Runs Out
+    }
+    pclsns(); //Process Collisions
+    pstcks(); //Process Joysticks
+  }
+  else {
+    if (!frame & 63) {
+      if (cntdwn) cntdwn--;  //Countdown    
+      else clmask++;  //Cycle Color Mask    
+    }
+  }
+}
+
+#include <digits.h02>   //Digit Graphics
+#include <vcsfoot.h02>  //Finalization Code
+
