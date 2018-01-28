@@ -33,6 +33,9 @@ int isoper() {return TF(strchr("+-&|^", nxtchr));}
 int ispopr() {return TF(strchr("+-<>", nxtchr));}
 int isxpre() {return TF(isvpre() || match('-'));}
 
+/* Conversion Functions */
+char invchr(char c) {return isalpha(c)?(islower(c)?toupper(c):tolower(c)):c;}
+
 /* if Word is s then return TRUE else return FALSE*/
 int wordis(char *s)
 {
@@ -165,6 +168,7 @@ void getstr() {
       if (match('\\')) 
         escnxt = TRUE;
       else
+		if (invasc) nxtchr = invchr(nxtchr);
         word[wrdlen++] = nxtchr;
       skpchr();
     }  
@@ -228,12 +232,12 @@ int prshex()
   int wrdlen = 0;
   int digit;
   int number = 0;
-  DEBUG("Parsing hexadecimal constant\n", 0);
+  DEBUG("Parsing hexadecimal constant '", 0);
   if (!match('$'))
     expctd("hexadecimal number"); 
   word[wrdlen++] = getnxt();
   while (ishexd()) {
-    DEBUG("Found hex digit '%c'\n", nxtchr);    
+    DETAIL("%c", nxtchr);    
     word[wrdlen++] = nxtchr;
     if (isdec())
       digit = nxtchr - '0';
@@ -242,6 +246,7 @@ int prshex()
     number = number * 16 + digit;
     skpchr();
   }
+  DETAIL("'\n", 0);
   word[wrdlen] = 0;
   return (number);
 }
@@ -261,6 +266,7 @@ int prschr()
     word[wrdlen++] = getnxt();
   c = getnxt();
   DEBUG("Extracted character %c\n", c);
+  if (invasc) c = invchr(c);
   word[wrdlen++] = c;
   expect('\'');
   word[wrdlen++] = '\'';
@@ -290,8 +296,8 @@ int prsnum(int maxval)
     default:
       number = prsdec();
   }
-  DEBUG("Parsed number '%s'\n", word);
-  DEBUG("with value '%d'\n", number);
+  DEBUG("Parsed number '%s' ", word);
+  DETAIL("with value '%d'\n", number);
 
   if (number > maxval) {
     ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE);
@@ -333,8 +339,12 @@ int prsdef()
 /* Parse numeric constant                      *
  * Args: maxval - maximum allowed value        *
  * Sets: cnstnt - the constant (as an integer) *
- *       value - the constant (as a string)    *
- *       valtyp - value type (CONSTANT)        */
+ *       value - the constant (as asm arg)     *
+ *       valtyp - value type (CONSTANT)        *
+ *       word - constant (as a string)         *
+ * Note: Value is converted to hexadecimal     *
+ *       because DASM uses the format 'c for   *
+ *       character arguments instead of 'c'    */
 void prscon()
 {
   skpspc();
@@ -344,6 +354,7 @@ void prscon()
     cnstnt = prsbyt();
   valtyp = CONSTANT;
   ACMNT(word);
+  strcpy(word, value); //Patch for DASM
   strcpy(value, "#");
   strcat(value, word);
   DEBUG("Generated constant '%s'\n", value);
@@ -382,11 +393,20 @@ void prsopr()
   skpspc();
 }
 
-void prcpst(char* name) 
+void prcidx(char *name, char *index)
+{
+  if (strlen(index)) { 
+      asmlin("LDX", index);
+      strcat(name,",X");
+  }
+}
+
+void prcpst(char* name, char *index) 
 {
   DEBUG("Processing post operation '%c'\n", oper);
+  prcidx(name, index);
   switch(oper)
-  {
+  {    
     case '+': 
       if (strcmp(name, "X")==0)
         asmlin("INX", "");
@@ -434,7 +454,7 @@ void prcpst(char* name)
 }
 
 /* Parse Post Operator */
-int prspst(char trmntr, char* name) {
+int prspst(char trmntr, char* name, char* index) {
   oper = getnxt();
   CCMNT(oper);
   DEBUG("Checking for post operation '%c'\n", oper);
@@ -442,7 +462,7 @@ int prspst(char trmntr, char* name) {
     skpchr();
     CCMNT(oper);
     expect(trmntr);
-    prcpst(name);  //Process Post-Op
+    prcpst(name, index);  //Process Post-Op
     oper = 0;
   }
   else {

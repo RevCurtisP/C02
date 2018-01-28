@@ -36,6 +36,7 @@ void init()
   curlin = 0;
   inpfil = srcfil;
   strcpy(inpnam, srcnam);
+  strcpy(incdir, "../include/");
   alcvar = TRUE;
   inblck = FALSE;
   xstmnt[0] = 0;
@@ -43,12 +44,11 @@ void init()
   nxtptr = 0;
   vrwrtn = FALSE;
   zpaddr = 0;
+  invasc = FALSE;
 }
 
-
-
 /* Reads and parses the next Word in Source File */
-pword()
+void pword()
 {
   lsrtrn = FALSE; //Clear RETURN flag
   getwrd();

@@ -24,7 +24,7 @@ void pincnm()
   skpspc();
   dlmtr = getnxt();
   if (dlmtr == '<') {
-    strcpy(incnam, "include/");
+    strcpy(incnam, incdir);
     inclen = strlen(incnam);
     dlmtr = '>';
   }
@@ -68,6 +68,20 @@ void pdefin()
   DEBUG("Defined as '%s'\n", value);
 }
 
+/* Parse ASCII Subdirective */
+void pascii()
+{
+  getwrd(); //Get Pragma Subdirective
+  if (wordis("INVERT")) {
+    invasc = TRUE;
+  }
+  else {
+    printf("Unrecognized option '%s'\n", word);
+    exterr(EXIT_FAILURE);
+  }
+
+}
+
 /* Parse Origin Subdirective */
 void porign()
 {
@@ -97,7 +111,9 @@ void pprgma()
 {
   getwrd(); //Get Pragma Subdirective
   DEBUG("Parsing pragma directive '%s'\n", word);
-  if (wordis("ORIGIN"))
+  if (wordis("ASCII"))
+    pascii(); //Parse Ascii
+  else if (wordis("ORIGIN"))
     porign(); //Parse Origin
   else if (wordis("VARTABLE"))
     pvrtbl(); //Parse Vartable

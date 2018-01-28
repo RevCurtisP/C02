@@ -33,29 +33,6 @@ void prssif(char trmntr) {
 void prcasn(char trmntr)
 {
   expect('=');
-/*    
-  if (strlen(asnvar) == 1 && strchr("XY", asnvar[0])) {
-    DEBUG("Processing assignment of register '%s'\n", asnvar);    
-    prsval(TRUE); //Get value to assign
-    expect(trmntr);
-    if (strlen(value) == 1 && strchr("XY", value[0])) {
-      ERROR("Illegal Reference to Register %s\n", value, EXIT_FAILURE);
-    }
-    if (asnvar[0] == 'X') {
-      if (strcmp(value, "A") == 0)
-        asmlin("TAX", "");
-      else
-        asmlin("LDX", value);
-    }  
-    else {
-      if (strcmp(value, "A") == 0)
-        asmlin("TAY", "");
-      else
-        asmlin("LDY", value);    
-    }
-    return;
-  }
-*/
   DEBUG("Processing assignment of variable '%s'\n", asnvar);
   if (look('(')) 
     prssif(trmntr); //Parse Shortcut If 
@@ -99,12 +76,15 @@ void prcvar(char trmntr)
   if (valtyp == ARRAY) {
     prsidx();  //Parse Array Index
     asnivt = valtyp;
-    strncpy(asnidx, value, VARLEN);
+    if (asnivt == CONSTANT) 
+	    strncpy(asnidx, word, VARLEN);
+	else
+    	strncpy(asnidx, value, VARLEN);
   }
   else
     asnidx[0] = 0;
   if (ispopr()) {
-    if (prspst(trmntr, asnvar)) //Parse Post Operator
+    if (prspst(trmntr, asnvar, asnidx)) //Parse Post Operator
       expctd("post operator");
   }
   else

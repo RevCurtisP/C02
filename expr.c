@@ -51,7 +51,7 @@ void chkidx()
     prsidx();
     if (valtyp == CONSTANT) {
       strcat(term, "+");
-      strcat(term, value);
+      strcat(term, word);
     }
     else if (strcmp(value, "Y")==0) 
       strcat(term, ",Y");
@@ -120,7 +120,7 @@ void prsstr(adract)
   DEBUG("Parsing anonymous string\n", 0);
   newlbl(vrname);         //Generate Variable Name
   value[0] = 0;           //Use Variable Size 0
-  setvar(VTCHAR);         //Set Variable Name, Type, and Size
+  setvar(MTNONE, VTCHAR); //Set Variable Name, Type, and Size
   prsdts();               //Parse Data String
   setdat();               //Set Variable Data
   varcnt++;               //Increment Variable Counter
@@ -187,7 +187,6 @@ void prsftm()
   }
   if (wordis("A"))
     return;
-  //if (ispopr()) oper = prspst(0, term); //Check for Post-Operator
   if (wordis("X"))
     asmlin("TXA", "");
   else if (wordis("Y"))

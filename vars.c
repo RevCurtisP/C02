@@ -138,7 +138,8 @@ void setdat()
       datvar[dsize++] = value[i];   
   } 
   datlen[varcnt] = dlen;
-  dattyp[varcnt] = dtype;  
+  dattyp[varcnt] = dtype;
+  DEBUG("Total data alllocated: %d bytes\n", dsize);  
 }
 
 /* Parse and store variable data */
@@ -164,13 +165,14 @@ void prsdat()
 /* Add Variable to Variable table *
  * Uses: word - variable name     *
  *       value - variable size    */
-void setvar(int t) 
+void setvar(int m, int t) 
 {
-  DEBUG("Adding variable '%s'\n", word);
+  DEBUG("Added variable '%s' ", word);
   strncpy(varnam[varcnt], vrname, VARLEN);
+  varmod[varcnt] = m;
   vartyp[varcnt] = t;
   strncpy(varsiz[varcnt], value, 3);
-  DEBUG("Added at index %d\n", varcnt);
+  DETAIL("at index %d\n", varcnt);
 }
 
 /* Parse and Compile Variable Declaration *
@@ -190,7 +192,7 @@ void addvar(int m, int t)
   }
   else
     pvarsz();   //Check for Array Declaration and Get Size
-  setvar(t);  //Add to Variable Table  
+    setvar(m, t);  //Add to Variable Table  
   if (m != MTZP)
     prsdat();   //Parse Variable Data
   varcnt++;   //Increment Variable Counter
@@ -252,6 +254,8 @@ void pdecl(int m, int t)
       break;
   }    
   expect(';');
+  DEBUG("Variable Declaration Completed\n", 0);
+  SCMNT("");  //Clear Assembler Comment
 }
 
 /* Check for and Parse Type Keyword */
@@ -264,6 +268,7 @@ int ptype(int m)
     pdecl(m, VTCHAR);   //Parse 'char' declaration
   else
     result = FALSE;
+  //DEBUG("Returning %d from function ptype\n", result)'
   return result;
 }
 
@@ -272,7 +277,11 @@ int pmodfr()
 {
   DEBUG("Parsing modifier '%s'\n", word);
   int result = TRUE;
-  if (wordis("ZEROPAGE")) {
+  if (wordis("ALIGNED")) {
+    getwrd();
+    ptype(MTALGN);  
+  }
+  else if (wordis("ZEROPAGE")) {
     getwrd();
     ptype(MTZP);  
   }
@@ -308,6 +317,10 @@ void vartbl()
     DEBUG("Set Label to '%s'\n", lblasm);
     if (strcmp(varsiz[i], "*") == 0)
       continue;
+    if (varmod[i] == MTALGN) {
+      DEBUG("Alligning variable '%s'\n", varnam[i]);
+      asmlin(ALNOP, "256");
+    }
     if (datlen[i])
       vardat(i);  //Write Variable Data
     else if (strlen(varsiz[i]) > 0) {
