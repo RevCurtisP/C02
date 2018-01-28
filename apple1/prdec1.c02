@@ -1,0 +1,20 @@
+/***************************************
+ * PRDEC TEST - Test routine prdec     *
+ *   from file prdec.asm for Apple 1   *
+ ***************************************/
+ 
+#include <apple1.h>
+#include <apple1.asm>
+#include <prdec.asm>
+
+byte i;
+
+main:
+
+i = 0;
+loop:
+  prdec(i);
+  echo(32);
+  i++;
+  if (i<>0) goto loop;
+goto exit;

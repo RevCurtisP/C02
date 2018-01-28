@@ -1,0 +1,16 @@
+/***************************************
+ * ECHO - Demo program for the Apple 1 *
+ * Echos typed keys to display         *
+ * ESC key aborts to monitor           *
+ ***************************************/
+ 
+#include <apple1.h02>
+
+char key;  //Key value
+
+main:
+  key = getkey();
+  if (key == 155) goto exit;
+  echo(key);
+  goto main;
+

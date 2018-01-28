@@ -1,0 +1,25 @@
+/************************************************
+ * RNDTEST - Test Random Function in apple1.h02 *
+ ************************************************/
+ 
+#include <apple1.h02>
+
+char c, i;    //Index
+char msg = "Press any key to start";
+
+main:
+  i = 0;
+print:
+  c = msg[i];
+  echo(c);
+  i++;
+  if (c <> 0) goto print;
+  echo($0D);
+  getkey();
+  random(count);
+loop:  
+  c = random(0);
+  prbyte(c);
+  echo(' ');
+  goto loop;
+

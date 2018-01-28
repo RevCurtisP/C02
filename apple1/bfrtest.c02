@@ -1,0 +1,20 @@
+/***************************************
+ * BUFFER TEST - Test buffer routines  *
+ *   from file prdec.asm for Apple 1   *
+ ***************************************/
+ 
+#include <apple1.h>
+
+#include <apple1.asm>
+#include <prdec.asm>
+#include <buffer.asm>
+
+char n;
+
+main:
+  n = getbfr();   //Read line into buffer
+  prdec(n);       //Print line length
+  echo($20);      //Print a space
+  putbfr();       //Print buffer contents
+  goto main;     // and loop
+

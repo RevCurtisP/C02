@@ -1,0 +1,20 @@
+/***************************************
+ * ECHO - Demo C02 program for Apple 1 *
+ *        using minimal header file    *
+ * Echos typed keys to display         *
+ * ESC key aborts to monitor           *
+ ***************************************/
+ 
+#include "a1min.h02"
+
+char key;  //Key value
+
+main:
+while() {
+  key = rdkey();       //Read keyboard
+  if (key == $9B)  //If ESCAPE pressed
+    break;         //exit loop
+  echo(key);       //Display character on screen
+}
+goto exit;
+

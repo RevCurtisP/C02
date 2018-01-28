@@ -1,0 +1,25 @@
+/* Apple 1 Minimal Header File for Apple 1*/
+
+/* Monitor Variables */
+char xaml, xamh;  //Examine Index
+char stl, sth;    //Store Index
+char l,h;         //Hex Data
+char ysave;       //Y Register Storage
+char mode;        //Mode: Store, Examine, Block Examine
+char buffer[];    //Input Buffer
+
+//PIA 6820 Registers
+char kbd;         //Keyboard Data
+char kbdcr;       //Keyboard Control Register
+char dsp;         //Display Data
+char dspcr;       //Display Control Register
+
+//Monitor Subroutines
+void echo();      //Print Character in Accumulator
+void prbyte();    //Print Accumulator as Hexadadecimal number
+void prhex();     //Print Low Nybble of Accumulator as Hex Digit
+
+//System Subroutines
+char plkey();     //Poll Keyboard for raw character
+char rdkey();     //Wait for raw character from Keyboard
+                   

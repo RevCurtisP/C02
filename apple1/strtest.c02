@@ -1,0 +1,15 @@
+/*********************************************
+ * STRTEST - Test Library string.h for Apple *
+ *********************************************/
+ 
+#include <apple1.h02>
+#include <string.h02>
+
+char key;  //Key value
+
+main:
+  key = getkey();
+  if (key == 155) goto exit;
+  echo(key);
+  goto main;
+

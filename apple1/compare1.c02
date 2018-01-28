@@ -1,0 +1,68 @@
+/***********************************
+ * COMPARE TEST - Test C02 compare *
+ *       instructions on Apple 1   *
+ ***********************************/
+ 
+#include <apple1.h>
+#include <apple1.asm>
+#include <prdec.asm>
+#include <stdio.asm>
+
+char passed = " PASSED.\r";
+char failed = " FAILED.\r";
+
+main:
+  prdecr(1);
+  if (1==1) putstr(&passed);
+  else putstr(&failed);
+
+  prdecr(2);
+  if (1==2) putstr(&failed);
+  else putstr(&passed);
+
+  prdecr(3);
+  if (1<2) putstr(&passed);
+  else putstr(&failed);
+
+  prdecr(4);
+  if (2<1) putstr(&failed);
+  else putstr(&passed);
+
+  prdecr(5);
+  if (1<1) putstr(&failed);
+  else putstr(&passed);
+
+  prdecr(6);
+  if (1<=2) putstr(&passed);
+  else putstr(&failed);
+
+  prdecr(7);
+  if (2<=1) putstr(&failed);
+  else putstr(&passed);
+
+  prdecr(8);
+  if (1<=1) putstr(&passed);
+  else putstr(&failed);
+
+  prdecr(9);
+  if (2>1) putstr(&passed);
+  else putstr(&failed);
+
+  prdecr(10);
+  if (1>2) putstr(&failed);
+  else putstr(&passed);
+
+  prdecr(11);
+  if (1>1) putstr(&failed);
+  else putstr(&passed);
+
+  prdecr(12);
+  if (1<>2) putstr(&passed);
+  else putstr(&failed);
+
+  prdecr(13);
+  if (1<>1) putstr(&failed);
+  else putstr(&passed);
+
+  goto exit;
+

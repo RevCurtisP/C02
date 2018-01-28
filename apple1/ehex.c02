@@ -1,0 +1,18 @@
+/**************************************************
+ * ECHO HEX - Demo program for the Apple 1        *
+ * Displays typed key ASCII values in hexadecimal *
+ **************************************************/
+ 
+#include <apple1.h>
+#include <apple1.asm>
+
+char key;  //Key value
+
+main:
+  key = getkey();
+  echo(key);
+  echo(32);
+  prbyte(key);
+  echo(32);
+  goto main;
+

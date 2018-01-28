@@ -1,0 +1,28 @@
+/******************************************
+ * CHRSET - Display Apple 1 Character Set *
+ ******************************************/
+ 
+#include <apple1.h>
+#include <apple1.asm>
+
+byte i, j;
+
+main:
+  i = $20;
+  j = 0;
+loop:  
+  echo(i + j);
+  j = j + 8;
+  if (j < 64) goto loop;
+  echo($0D);
+  j = 0;
+  i = i + 8;
+  if (i<96) goto loop;
+  echo($0D);
+  goto exit;
+  
+  
+
+
+
+

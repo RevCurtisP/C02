@@ -1,0 +1,34 @@
+/*********************************************
+ * STRTEST - Test Library stdio.h for Apple *
+ *********************************************/
+ 
+#include <apple1.h02>
+#include <stdio.h02>
+
+char key;      //Key read from keyboard
+char len;      //Length of input output string
+char str[128]; //String to read/write
+
+char anykey = "Press any key to continue";
+char tlines = "Type lines followed by carriage-return";
+char escend = "press Escape key to end"; 
+char utyped = "You typed: ";
+
+main:
+  putstr(&anykey);    //Display "Press any key" message
+  key = getchr();     //Wait for key press
+  newlin();           //Advance cursor to next line
+  putstr(&tlines);    //Display "Type lines" message
+  putstr(&utyped);    //Display "press Escape" message
+
+loop:
+  newlin();
+  len = getstr(&str); //Read string from keybaord     
+  if (len == $FF)     //If entry was aborted
+    goto done;
+  prbyte(len);        //Display length of entered string
+  putstr(&str);       //Display entered string
+  goto loop;
+
+done:
+  goto exit;
