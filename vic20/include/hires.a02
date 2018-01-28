@@ -1,0 +1,50 @@
+; C02 library hires.h02 assembly language subroutines
+; Requires Thomas Magnusson's HIRES Package loaded at $1C00
+
+;void hrinit() - Initialize High Resolution Graphics
+HRINIT  EQU $1C00     ;Aliased to Initialize Routine
+
+;void hrfclr() - Set Foreground Color
+HRFCLR  EQU $1C2E     ;Set Dot Color Routine Alternate Entry Point 
+
+;void hrclrs() - Clear High Resolution Screen
+HRCLRS  EQU $1C37     ;Aliased to Clear Screen Routine
+
+;void hrsetp(x, y) - Set Pixel to Foreground Color
+HRSETP  JSR HRSTRT    ;Store X and Y Coordinates
+        JMP $1CB2     ;Execute Draw Dot Routine 
+
+;void hrrstp(x, y) - Reset Pixel to Background Color
+HRRSTP  JSR HRSTRT    ;Store X and Y Coordinates
+        JMP $1CC0     ;Execute Clear Dot Routine 
+
+;char hrgetp(x, y) - Get Pixel Status
+HRGETP  JSR HRSTRT    ;Store X and Y Coordinates
+        JMP $1CCD     ;Execute Get Dot Routine 
+
+HRSTRX  STX 2         ;Store A, Y, and X Registers
+;void hrstrt(x, y) - Set Start Point
+HRSTRT  STA	0         ;Store X Coordinate
+        STY 1         ;Store Y Coordianate
+        RTS
+
+;void hrdrto(x, y) - Draw To Point
+HRDRTO  STA 2         ;Store Ending X Coordinate
+        STY 3         ;Store Ending Y Coordinate
+        JMP $1D98     ;Execute Draw Line Routine
+
+;void hrclto(x, y) - Clear to Point
+HRCLTO  STA 2         ;Store Ending X Coordinate
+        STY 3         ;Store Ending Y Coordinate
+        JMP $1D98     ;Execute Draw Line Routine
+
+;void hrsave() - Save Image from Tape
+HRSAVE  EQU $1DA8     ;Aliased to Save ROutine
+
+;void hrload(f, r, b) - Load Image from Tape
+HRLOAD  JSR HRSTRX    ;Store A, Y and X Registers 
+        JMP $1DBA     ;Execute Load Routine
+
+;void hrsetc(f, r, b) - Set Screen Colors
+HRSETC  JSR HRSTRX    ;Store A, Y and X Registers 
+        JMP $1DCC     ;Execute Set Screen Colors Routine

@@ -1,0 +1,133 @@
+; c02 Program Initialization Code for Unexpanded VIC-20
+
+;ASCII Control Codes Equivalents
+CR      EQU $0D   ;Carriage Return
+LF      EQU $11   ;Line Feed (Cursor Down)
+DEL     EQU $14   ;Delete
+HT      EQU $1D   ;Horizontal Tab (Cursor Right)
+VT      EQU $91   ;Vertical Tab (Cursor Up)
+FF      EQU $93   ;Form Feed (Clear Screen)
+BS      EQU $9D   ;Backspace (Cursor Left)
+
+;PETSCII Key Mappings
+DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Standard Library Constants
+FOMAX   EQU 7     ;Maximum Number of Open Files
+FNMAX   EQU 16    ;Maximum Filename Length
+
+;Zero Page Locations
+SRCLO   EQU $FB   ;String Pointer (stdio.asm)
+SRCHI   EQU $FC   ;Free Byte for User Programs
+DSTLO   EQU $FD   ;Free Byte for User Programs
+DSTHI   EQU $FE   ;Free Byte for User Programs
+
+;Other RAM Locations
+TEMP0   EQU $0310 ;Free Byte for User Programs
+TEMP1   EQU $0311 ;Free Byte for User Programs
+TEMP2   EQU $0312 ;Free Byte for User Programs
+TEMP3   EQU $0313 ;Free Byte for User Programs
+FTBL    EQU $0334 ;File Table (files.a02)
+TBFFR   EQU $033C ;Cassette I/O Buffer
+user12  EQU $03FC ;Free Byte for User Programs
+user13  EQU $03FD ;Free Byte for User Programs
+user14  EQU $03FE ;Free Byte for User Programs
+STKPTR  EQU $03FF ;Stack Pointer Storage
+
+;Video RAM and ROM 
+VICSCN  EQU $1E00 ;Video Screen Memory Area (Unexpanded)
+CHRROM  EQU $8000 ;Character Generator ROM
+VICCLR  EQU $9600 ;COLOR RAM (UNEXPANDED)
+
+;Kernal Routines
+SETMSG  EQU $FF90 ;Control System Message Output
+SETLFS  EQU $FFBA ;Set up Logical File
+READST  EQU $FFB7 ;Read Status Word
+SETNAM  EQU $FFBD ;Set File Name
+OPEN    EQU $FFC0 ;Open a Logical File
+CLOSE   EQU $FFC3 ;Close Logical File
+CHKIN   EQU $FFC6 ;Open Channel for Input
+CHKOUT  EQU $FFC9 ;Open Channel for Output
+CLRCHN  EQU $FFCC ;Clear I/O Channels
+CHRIN   EQU $FFCF ;Input Character to Channel
+CHROUT  EQU $FFD2 ;Output Character to Channel
+GETIN   EQU $FFE4 ;Read Character from Keyboard Buffer
+CLALL   EQU $FFE7 ;Close All Files
+
+;Machine Language Basic Stub
+        ORG $A000   ;Start 
+        DC.W START  ;Cartridge Start Address
+        DC.W RESTR  ;Restore Key Routine
+ 		DC $41,$30,$C3,$C2,$CD      ;Cartridge Start Sequence
+START:  JMP MAIN    ;Execute Program
+
+;Exit - Return to BASIC
+;Execute a Warm Start, bypassing the Cartridge Check Code
+EXIT:  	LDX	#$FF    ; Set X for stack
+		SEI         ; Disable interrupts
+		TXS         ; Clear stack
+		CLD        	; Clear decimal mode
+        JMP $FD2F   ; Jump into Initialization Code
+		
+		;Poll Keyboard for Character
+PLKEY   EQU GETIN   ;Read Character from Keyboard Buffer
+
+;Get Character from Keyboard
+GETKEY: 
+;Wait for Character from Keyboard
+RDKEY:  JSR PLKEY   ;Poll Keyboard
+        BEQ GETKEY  ;If No Key, Loop
+        RTS
+
+;Print Character to Console
+PRCHR   EQU CHROUT   ;
+
+;Delete Previous Character
+DELCHR: LDA #$9D     ;Load Cursor Left into Accumulator
+        JSR PRCHR    ;  and Print it
+        LDA #$14     ;Load Delete into Accumulater
+        JMP PRCHR    ;  and Print it
+
+;Advance Character to Next line
+NEWLIN: LDA #$0D     ;Load C/R into Accumulator
+        JMP PRCHR    ;  and Print it
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into prhex
+                    
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP PRCHR   ;Print Hex Digit and Return
+
+;Functions to set String Pointers
+;Used by memory, stdio, stdlin, string, and stringx libraries
+
+;Initialize Destination String Pointer and Index
+SETDST: STX DSTLO       ;Save Destination String Pointer
+        STY DSTHI
+        RTS
+
+;Initialize Source String Pointer and Index
+SETSRC: STX SRCLO       ;Save Source String Pointer
+        STY SRCHI
+        LDY #$00        ;Initialize Index Into String
+        RTS
+
+;Retrieve Source String Pointer
+GETSRC: LDX SRCLO
+        LDY SRCHI
+        RTS
+**

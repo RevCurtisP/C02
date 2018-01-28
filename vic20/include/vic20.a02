@@ -1,0 +1,157 @@
+; c02 Program Initialization Code for Unexpanded VIC-20
+
+;ASCII Control Codes Equivalents
+CR      EQU $0D   ;Carriage Return
+LF      EQU $11   ;Line Feed (Cursor Down)
+DEL     EQU $14   ;Delete
+HT      EQU $1D   ;Horizontal Tab (Cursor Right)
+VT      EQU $91   ;Vertical Tab (Cursor Up)
+FF      EQU $93   ;Form Feed (Clear Screen)
+BS      EQU $9D   ;Backspace (Cursor Left)
+
+;PETSCII Key Mappings
+DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Standard Library Constants
+FOMAX   EQU 7     ;Maximum Number of Open Files
+FNMAX   EQU 16    ;Maximum Filename Length
+
+;Zero Page Variables
+PTRLO   EQU $35   ;System Pointer (pointer.a02)
+PTRHI   EQU $36   ;NOTE: Overwritten by BASIC String Routines
+
+BLKLO   EQU $50   ;Block Pointer (block.a02)
+BLKHI   EQU $51   ;NOTE: Overwritten by BASIC String Routines
+
+TIMEH   EQU $A0   ;Jiffy Clock High Byte
+TIMEM   EQU $A1   ;Jiffy Clock Middle Byte
+TIMEL   EQU $A2   ;Jiffy Clock Low Byte
+
+SRCLO   EQU $FB   ;Source Pointer Low Byte (stdlib.a02, etc.)
+SRCHI   EQU $FC   ;Source Pointer High Byte
+DSTLO   EQU $FD   ;Destination Pointer Low Byte (stdlib.a02, etc.)
+DSTHI   EQU $FE   ;Destination Pointer High Byte
+
+;Page 1 RAM Locations (Unused Area at Bottom of Stack)
+FTBL    EQU $0140 ;File Table (files.a02) Same on PET
+
+;Other RAM Locations
+TEMP0   EQU $0310 ;Temporary Variables
+TEMP1   EQU $0311 ;Used by Library Functions
+TEMP2   EQU $0312
+TEMP3   EQU $0334 ;($0313 is Free on VIC-20 but not C64)
+BLKLEN  EQU $0335 ;Block Segment Length
+BLKSLO  EQU $0336 ;Block Start Address
+BLKSHI  EQU $0337 
+BLKELO  EQU $0338 ;Block End Address
+BLKEHI  EQU $0339
+;       EQU $033A ;Free Byte for User Programs
+;       EQU $033B ;Free Byte for User Programs
+TBFFR   EQU $033C ;Cassette I/O Buffer
+;       EQU $03FC ;Free Byte for User Programs
+RANDOM  EQU $03FD ;Seed for rand() Function
+RDSEED  EQU $03FE ;Seed for random() Function
+STKPTR  EQU $03FF ;Stack Pointer Storage
+
+;Video RAM and ROM 
+VICSCN  EQU $1E00 ;Video Screen Memory Area (Unexpanded)
+CHRROM  EQU $8000 ;Character Generator ROM
+VICCLR  EQU $9600 ;COLOR RAM (UNEXPANDED)
+
+;Kernal Routines
+SETMSG  EQU $FF90 ;Control System Message Output
+SETLFS  EQU $FFBA ;Set up Logical File
+READST  EQU $FFB7 ;Read Status Word
+SETNAM  EQU $FFBD ;Set File Name
+OPEN    EQU $FFC0 ;Open a Logical File
+CLOSE   EQU $FFC3 ;Close Logical File
+CHKIN   EQU $FFC6 ;Open Channel for Input
+CHKOUT  EQU $FFC9 ;Open Channel for Output
+CLRCHN  EQU $FFCC ;Clear I/O Channels
+CHRIN   EQU $FFCF ;Input Character to Channel
+CHROUT  EQU $FFD2 ;Output Character to Channel
+GETIN   EQU $FFE4 ;Read Character from Keyboard Buffer
+CLALL   EQU $FFE7 ;Close All Files
+
+;Machine Language Basic Stub
+        ORG $1001              ;Start 
+BASIC:  DC  $0C, $10           ; Pointer to Next Line (4108)
+        DC  $00, $00           ; Line Number (0)
+        DC  $9E                ; SYS 
+        DC  $20                ; ' '
+        DC  $34, $31, $31 ,$30 ; "4110" 
+        DC  $00                ;End of Line Marker
+        DC  $00, $00           ;End of Basic Program
+
+START:  TSX         ;Get Stack Pointer
+        STX STKPTR  ;and Save for Exit
+        LDA TIMEL   ;Load Jiffy Clock Low Byte
+        STA RDSEED  ;and Store in Random Seed
+        JMP MAIN    ;Execute Program
+
+EXIT:   LDX STKPTR  ;Retrieve Saved Stack Pointer
+        TXS         ;and Restore It
+        RTS         ;Return to BASIC
+
+;Poll Keyboard for Character
+PLKEY   EQU GETIN   ;Read Character from Keyboard Buffer
+
+;Get Character from Keyboard
+GETKEY: 
+;Wait for Character from Keyboard
+RDKEY:  JSR PLKEY   ;Poll Keyboard
+        BEQ GETKEY  ;If No Key, Loop
+        RTS
+
+;Print Character to Console
+PRCHR   EQU CHROUT   ;
+
+;Delete Previous Character
+DELCHR: LDA #$9D     ;Load Cursor Left into Accumulator
+        JSR PRCHR    ;  and Print it
+        LDA #$14     ;Load Delete into Accumulater
+        JMP PRCHR    ;  and Print it
+
+;Advance Character to Next line
+NEWLIN: LDA #$0D     ;Load C/R into Accumulator
+        JMP PRCHR    ;  and Print it
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into prhex
+                    
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP PRCHR   ;Print Hex Digit and Return
+
+;Functions to set String Pointers
+;Used by memory, stdio, stdlin, string, and stringx libraries
+
+;Initialize Destination String Pointer and Index
+SETDST: STX DSTLO       ;Save Destination String Pointer
+        STY DSTHI
+        RTS
+
+;Initialize Source String Pointer and Index
+SETSRC: STX SRCLO       ;Save Source String Pointer
+        STY SRCHI
+        LDY #$00        ;Initialize Index Into String
+        RTS
+
+;Retrieve Source String Pointer
+GETSRC: LDX SRCLO
+        LDY SRCHI
+        RTS
+**
