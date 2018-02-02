@@ -1,0 +1,82 @@
+; C02 library stdiox.h02 assembly language subroutines
+
+;Print Byte as Left Justified Decimal Number
+;putdel(b)
+PUTDEL: STA TEMP3
+PUTDEM: JSR PUTDEC      ;Alternate Entry Point
+        LDA TEMP3
+PUTDEH: CMP #100
+        BCS PUTDE0
+        JSR PUTSPC
+PUTDE0: CMP #10
+        BCS PUTDEX
+        JSR PUTSPC
+PUTDEX: RTS
+
+;Print Byte as Right Justified Decimal Number
+;putder(b)
+PUTDER: CMP #100
+        BCS PUTDE0
+        JSR PUTSPC
+PUTDE0: CMP #10
+        BCS PUTDEC
+        JSR PUTSPC
+;Print Byte as Decimal Number
+;putdec(b)
+PUTDEC: JSR CUBCD       ;Convert Accumulator to Unpacked BCD
+        LDA TEMP2       ;Get High Byte
+        BEQ PUTDE1      ;If Not Zero
+        JSR PUTDEP      ;  Convert Low Nybble
+PUTDE1: LDA TEMP1       ;Get Low Byte
+        BNE PUTDE2      ;If Not Zero
+        CMP TEMP2       ;  and Hundreds 
+        BEQ PUTDE3      ;  not Zero   
+PUTDE2: JSR PUTDEP      ;  Convert It
+PUTDE3: LDA TEMP0       ;Get Low Byte
+PUTDEP: ORA #$30        ;Convert to ASCII digit
+        JSR PRCHR       ;And Print
+        RTS
+
+;Print a Space
+PUTSPC: PHA             ;Save Accumulator
+        LDA #32         ;Load Space Character
+        JSR PRCHR       ;and Print it
+        PLA             ;Restore Accumulator
+        RTS
+
+;Print Byte in Formatted String
+;printf(b, &s)
+PRINTF: JSR SETSRC     ;Initialize Source String
+        STA TEMP3      ;Save Byte to Format
+PRINTL: LDA (SRCLO),Y  ;Read next character in string
+        BEQ PRINTX     ;If Not 0
+        CMP #'%        ;  If Format Specified
+        BEQ PRINTS     ;    Jump to Formatter
+PRINTC: JSR PRCHR      ;  Print character at offset,
+PRINTY: INY            ;  increment offset, and
+        BPL PRINTL     ;  loop if less than 128
+PRINTX: RTS            ;  characters printed
+;Process Format Specifier
+PRINTS: INY            ;Increment Offset
+        LDA (SRCLO),Y  ;Get Formatting Character
+        BEQ PRINTX     ;If NUL, then Exit
+        CMP #'%        ;If Percent Sign
+        BEQ PRINTC     ;  Print it and Continue
+        AND #$DF       ;Convert to Upper Case
+        CMP #'R        ;If "d" or "D"
+        BNE PRINTD
+		LDA TEMP3      ;  Load Byte to Format
+		JSR PUTDER     ;  Print as Decimal
+		JMP PRINTY     ;  and Continue Printing Screen
+PRINTD: CMP #'D        ;If "d" or "D"
+        BNE PRINTH
+		LDA TEMP3      ;  Load Byte to Format
+		JSR PUTDEC     ;  Print as Decimal
+		JMP PRINTY     ;  and Continue Printing Screen
+PRINTH: CMP #'H         ;Else If "h" or "H"
+        BNE PRINTB
+		LDA TEMP3      ;  Load Byte to Format
+		JSR PRBYTE     ;  Print as Hexadecimal
+		JMP PRINTY     ;  and Continue Printing Screen
+PRINTB: LDA TEMP3      ;Otherwise
+        JMP PRINTC     ;  Print Raw Byte and Continue

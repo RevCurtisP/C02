@@ -123,39 +123,54 @@ ATOCL:  LDA (SRCLO),Y   ;Get Next Character
 ATOCX:  LDA TEMP0       ;Load Result
         RTS             ;And Return
 
-;Convert Byte to ASCII
+;Convert Byte to ASCII String
 ;Uses SRCLO, srchi, TEMP0, TEMP1, TEMP2
 ;Affects A,X,Y,N,Z
-CTOA:   JSR SETSRC      ;Initialize Source String
-        JSR CVBCD      ;Convert Accumulator to BCD
-        ;LDY #$00       ;Set String Offset to 0
+CTOA:   JSR SETSRC     ;Initialize Source String
+        JSR CUBCD      ;Convert Accumulator to Unpacked BCD
         LDA TEMP2      ;Get High Byte
-        BEQ CTOAL      ;If Not Zero
+        BEQ CTOA1      ;If Not Zero
         JSR CTOAN       ;  Convert Low Nybble
-CTOAL:  LDA TEMP1      ;Get Low Byte
+CTOA1:  LDA TEMP1      ;Get Low Byte
+        BNE CTOA2      ;If Not Zero
+        CMP TEMP2      ;  and Hundreds 
+        BEQ CTOA3      ;  not Zero   
+CTOA2:  JSR CTOAN      ;  Convert It
+CTOA3:  LDA TEMP0      ;Get Low Byte
+        JSR CTOAN      ;and Convert Low Nybble
+        LDA #$00
+        BEQ CTOAX      ;Terminate String
+CTOAN:  ORA #$30       ;Convert to ASCII digit
+CTOAX:  STA (SRCLO),Y  ;Store in StringCTOAS:  STA (SRCLO),Y  ;Store in String
+        INY            ;and Increment Offset
+        RTS
+
+;Unpack 3-Digit BCD Number 
+;Input: TEMP1 = Low Byte
+;       TEMP2 = High Nybble
+;Output: TEMP0 = Ones Digit 
+;        TEMP1 = Tens Digit
+;        TEMP2 = Hundreds Digit
+;Affects: A,N,Z
+;Returns: X = 0
+CUBCD:  JSR CVBCD      ;Convert Accumulator to BCD
+UPBCD:  LDA TEMP1      ;Get Low Byte
+        AND #$0F       ;Strip High Nybbleet
+        STA TEMP0      ;Save in Ones
+        LDA TEMP1      ;Get Low Byte
         LSR            ;Shift High Nybble
         LSR            ;  into Low Nybble
         LSR
         LSR
-        BNE CTOA2      ;If Not Zero
-        CMP TEMP2      ;  and High Byte 
-        BEQ CTOA3      ;  not Zero   
-CTOA2:  JSR CTOAN      ;  Convert It
-CTOA3:  LDA TEMP1      ;Get Low Byte
-        JSR CTOAN      ;and Convert Low Nybble
-        LDA #$00
-        BEQ CTOAX      ;Terminate String
-CTOAN:  AND #$0F       ;Strip High Nybble
-        ORA #$30       ;Convert to ASCII digit
-CTOAX:  STA (SRCLO),Y  ;Store in String
-        INY            ;and Increment Offset
+        STA TEMP1      ;Save in Tens
         RTS  
 
+
 ;Convert Binary Number in Accumulator to Binary Coded Decimal
-;Uses TEMP0
+;Uses: TEMP0
 ;Returns BCD in TEMP1,temp and A,X = 0
 CVBCD:  STA TEMP0  ;Save Binary Value
-        LDA #0     ;Clear BCD Bytes
+CVBCDT: LDA #0     ;Clear BCD Bytes
         STA TEMP1
         STA TEMP2
         LDX #8     ;Process 8 bits of Binary
@@ -173,4 +188,3 @@ CVBCDL: ASL TEMP0  ;Shift High Bit Into Carry
         CLD        ;Clear Decimal Mode
         CLI        ;Enable Interrupts
         RTS
-

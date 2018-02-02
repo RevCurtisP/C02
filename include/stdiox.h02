@@ -1,0 +1,13 @@
+/******************************************
+ * stdiox - Extended I/O Routines for C02 *
+ ******************************************/
+
+/* Print Byte as Decimal Number          *
+ * Args: b - Number to print             */
+void putdec(); 
+
+/* Print Formatted Byte to Screen         *
+ * Args: b  - byte to format              *
+ *       &s - formatting string           */
+void printf();
+        
