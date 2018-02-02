@@ -1,0 +1,59 @@
+/***********************************************
+ * TESTIOX - Test Library stdiox.h for py65mon *
+ ***********************************************/
+ 
+#include <py65.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+
+char c, i;
+
+main:
+
+i = 0;
+
+putln("prtdec()");
+do {
+  putdec(i);
+  putc(':');
+  i++;
+  if (!i&15) newlin();
+} while (i);
+anykey();
+
+putln("prtdel()");
+do {
+  putdel(i);
+  putc(':');
+  i++;
+  if (!i&15) newlin();
+} while (i);
+anykey();
+
+putln("prtder()");
+do {
+  putder(i);
+  putc(':');
+  i++;
+  if (!i&15) newlin();
+} while (i);
+anykey();
+
+do {
+  if (i<32) printf("      H='%h' R='%r' L='%l' D='%d'");
+  else      printf("C='%c' H='%h' R='%r' L='%l' D='%d'");
+  newlin();
+  i++;
+  if (!i&15) anykey();
+} while (i<128);    
+
+done:
+  goto exit;
+
+void anykey() {
+  newlin();
+  putln("Press any key...");
+  c = getc();
+  newlin();
+}

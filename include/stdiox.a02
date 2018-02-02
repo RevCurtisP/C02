@@ -6,21 +6,19 @@ PUTDEL: STA TEMP3
 PUTDEM: JSR PUTDEC      ;Alternate Entry Point
         LDA TEMP3
 PUTDEH: CMP #100
-        BCS PUTDE0
+        BCS PUTDET
         JSR PUTSPC
-PUTDE0: CMP #10
+        LDA TEMP3
+PUTDET: CMP #10
         BCS PUTDEX
         JSR PUTSPC
 PUTDEX: RTS
 
 ;Print Byte as Right Justified Decimal Number
 ;putder(b)
-PUTDER: CMP #100
-        BCS PUTDE0
-        JSR PUTSPC
-PUTDE0: CMP #10
-        BCS PUTDEC
-        JSR PUTSPC
+PUTDER: STA TEMP3
+PUTDES: JSR PUTDEH
+        LDA TEMP3
 ;Print Byte as Decimal Number
 ;putdec(b)
 PUTDEC: JSR CUBCD       ;Convert Accumulator to Unpacked BCD
@@ -38,12 +36,9 @@ PUTDEP: ORA #$30        ;Convert to ASCII digit
         RTS
 
 ;Print a Space
-PUTSPC: PHA             ;Save Accumulator
-        LDA #32         ;Load Space Character
-        JSR PRCHR       ;and Print it
-        PLA             ;Restore Accumulator
-        RTS
-
+PUTSPC: LDA #32         ;Load Space Character
+        JMP PRCHR       ;and Print it
+        
 ;Print Byte in Formatted String
 ;printf(b, &s)
 PRINTF: JSR SETSRC     ;Initialize Source String
@@ -63,20 +58,25 @@ PRINTS: INY            ;Increment Offset
         CMP #'%        ;If Percent Sign
         BEQ PRINTC     ;  Print it and Continue
         AND #$DF       ;Convert to Upper Case
-        CMP #'R        ;If "d" or "D"
+        CMP #'L        ;If "d" or "D"
+        BNE PRINTR
+        LDA TEMP3      ;  Load Byte to Format
+        JSR PUTDEM     ;  Print Left Justified
+        JMP PRINTY     ;  and Continue Printing Screen
+PRINTR: CMP #'R        ;If "d" or "D"
         BNE PRINTD
-		LDA TEMP3      ;  Load Byte to Format
-		JSR PUTDER     ;  Print as Decimal
-		JMP PRINTY     ;  and Continue Printing Screen
+        LDA TEMP3      ;  Load Byte to Format
+        JSR PUTDES     ;  Print Right Justified
+        JMP PRINTY     ;  and Continue Printing Screen
 PRINTD: CMP #'D        ;If "d" or "D"
         BNE PRINTH
-		LDA TEMP3      ;  Load Byte to Format
-		JSR PUTDEC     ;  Print as Decimal
-		JMP PRINTY     ;  and Continue Printing Screen
+        LDA TEMP3      ;  Load Byte to Format
+        JSR PUTDEC     ;  Print as Decimal
+        JMP PRINTY     ;  and Continue Printing Screen
 PRINTH: CMP #'H         ;Else If "h" or "H"
         BNE PRINTB
-		LDA TEMP3      ;  Load Byte to Format
-		JSR PRBYTE     ;  Print as Hexadecimal
-		JMP PRINTY     ;  and Continue Printing Screen
+        LDA TEMP3      ;  Load Byte to Format
+        JSR PRBYTE     ;  Print as Hexadecimal
+        JMP PRINTY     ;  and Continue Printing Screen
 PRINTB: LDA TEMP3      ;Otherwise
         JMP PRINTC     ;  Print Raw Byte and Continue
