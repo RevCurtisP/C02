@@ -12,13 +12,17 @@ DSTLO   EQU $32     ;Destination String Pointer (string.a02)
 DSTHI   EQU $33
 BLKLO   EQU $34     ;Block Segment Pointer (block.a02)
 BLKHI   EQU $35
-
+PTRLO   EQU $35     ;System Pointer (pointer.a02)
+PTRHI   EQU $36
 
 RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
 RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
+
 TEMP0   EQU $40     ;Temporary Storage
 TEMP1   EQU $41
 TEMP2   EQU $42
+TEMP3   EQU $43
+
 BLKSLO  EQU $4A     ;Block Start Address
 BLKSHI  EQU $4B
 BLKELO  EQU $4C     ;Block End Address
@@ -96,3 +100,7 @@ SETSRC: STX SRCLO       ;Save Source String Pointer
         LDY #$00        ;Initialize Index Into String
         RTS
 
+;Retrieve Source String Pointer
+GETSRC: LDX SRCLO
+        LDY SRCHI
+        RTS
