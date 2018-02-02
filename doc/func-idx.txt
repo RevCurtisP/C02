@@ -32,7 +32,8 @@ fsptr    file     File System Pointer   Get unused file pointer.
 fssrc    file     File Set Source       Set source array for fwrite.
 fstat    file     File System Status    Get file pointer status.
 fwrite   file     File Write            Write bytes to file.
-getchr   stdio    Get Character         Read character from keyboard.
+getc     stdio    Get Character         Read character from keyboard.
+gets     stdio    Get String            Read string from keyboard.
 isalnm   ctype    Is Alphanumeric       Return TRUE if character is A-Z, a-z, or 0-9.
 isalph   ctype    Is Alphabetic         Return TRUE if character is A-Z or a-z.
 isbdgt   ctype    Is Binary Digit       Return TRUE if character is 0 or 1.
@@ -64,11 +65,10 @@ ptrsub   pointer  Pointer Subtract      Subtract value from pointer.
 ptrcmp   pointer  Pointer Compare       Compare pointer against address.
 ptrsav   pointer  Pointer Save          Save pointer into two-byte array.
 ptrrst   pointer  Pointer Restore       Restore pointer from two-byte array.
-putchr   stdio    Put Character         Write character to screen.
-getstr   stdio    Get String            Read string from keyboard.
-outstr   stdio    Output String         Write string to screen.
-outsub   stdio    Output Substring      Write substring to screen.
-putstr   stdio    Put String            Write string plus newline to screen. 
+putc     stdio    Put Character         Write character to screen.
+puts     stdio    Output String         Write string to screen.
+putsub   stdio    Output Substring      Write substring to screen.
+putln    stdio    Put String            Write string plus newline to screen. 
 rand     stdlib   Random                Generate pseudorandom number.
 rands    stdlib   Random Seed           Seed random number generator.
 shiftl   stdlib   Shift Left            Shift byte left specified number of bits.

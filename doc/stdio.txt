@@ -6,16 +6,16 @@ At the beginning of the program use the directives
   
 The following functions are defined:
 
-  c = getchr();       Waits for a keypress and returns the cleaned 
+  c = getc();         Waits for a keypress and returns the cleaned 
                       ASCII value corresponding to the pressed key.
                       
                       Note: Aliased to getkey() from system library.
 
-  putchr(c);          Writes character c to the screen.
+  putc(c);            Writes character c to the screen.
                       
                       Note: Aliased to prchr() from system library.
 
-  r = getstr(&s);     Reads a maximum of 128 characters from keyboard 
+  r = gets(&s);       Reads a maximum of 128 characters from keyboard 
                       until the Return/Enter key is pressed, storing the 
                       entered characters as null-terminated string s.
                       
@@ -30,21 +30,21 @@ The following functions are defined:
                       Note: Calls getchr() in a loop and uses constants 
                       DELKEY, RTNKEY, and ESCKEY from the system library.
 
-  r = outstr(&s):     Writes up to 128 characters of null-terminated 
+  r = puts(&s):       Writes up to 128 characters of null-terminated 
                       string s to the screen.
                       
                       Returns position of null terminator in string.
                       
                       Note: Calls outsub(0, &s).
 
-  r = outsub(n, &s):  Writes up to 128 characters of null-terminated 
+  r = putsub(n, &s):  Writes up to 128 characters of null-terminated 
                       string s to the screen, starting at position n.
                       
                       Returns position of null terminator in string.
                       
                       Note: Calls putchr() in a loop.
 
-  r = putstr(&s):     Writes up to 128 characters of null-terminated 
+  r = putln(&s):      Writes up to 128 characters of null-terminated 
                       string s to the screen and advances the cursor to 
                       the beginning of the next line.
                     
@@ -69,4 +69,3 @@ and the assembler constants
   DELKEY            Delete/Backspace key ASCII code (usually DEL or BS)
   ESCKEY            Escape/Abort key ASCII code (usually ESC)
   RTNKEY            Return/Enter key ASCII code (usually CR)
-

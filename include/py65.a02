@@ -1,7 +1,7 @@
 ; py65mon program initialization code for c02 programs
 
 ;System Specific ASCII Key Mappings
-DELKEY  EQU $7F     ;Delete/Backspace Key (Delete)
+DELKEY  EQU $08     ;Delete/Backspace Key (Backspace)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
@@ -30,8 +30,8 @@ BLKEHI  EQU $4D
 BLKLEN  EQU $4E     ;Block Segment Length     
 
 ;Memory Mapped I/O 
-PUTC    EQU $F001   ;Write Character to Console
-GETC    EQU $F004   ;Read Character from Console
+PUTCON    EQU $F001   ;Write Character to Console
+GETCON    EQU $F004   ;Read Character from Console
 
         ORG $0200   ;START Directly Above Stack
 
@@ -39,7 +39,7 @@ START:  JMP MAIN    ;Execute Program
 
 ;Poll Character from Keyboard
 PLKEY:  INC RDSEED  ;Cycle the RANDOM Seed (if not provided by system)
-        LDA GETC    ;Read Character from Console
+        LDA GETCON  ;Read Character from Console
         RTS
 
 ;Read Character from Console
@@ -65,7 +65,7 @@ NEWLIN: LDA #$0D    ;Load C/R into Accumulator
                     ;  and fall into PRCHR
 
 ;Print Character to Console
-PRCHR:  STA PUTC   ;Write Character to Console
+PRCHR:  STA PUTCON  ;Write Character to Console
         RTS
 
 EXIT:   BRK        ;Return to Monitor

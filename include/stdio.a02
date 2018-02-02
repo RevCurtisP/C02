@@ -2,53 +2,52 @@
 ; Requires external routines GETKEY, prchr, delchr, and NEWLIN
 ; external zero page locations SRCLO and SRCHI
 ; and external constants DELKEY, ESCKEY, and RTNKEY
-;char getchr()
-GETCHR  EQU GETKEY     ;Alias to external GETKEY routine
+;char getc()
+GETC    EQU GETKEY     ;Alias to external GETKEY routine
 
-;void putchr(c)
-PUTCHR  EQU PRCHR      ;Alias to external PRCHR Routine
+;void putc(c)
+PUTC    EQU PRCHR      ;Alias to external PRCHR Routine
 
-;char getstr(&s)
-GETSTR: JSR SETSRC     ;Initialize Source String
-GETSTL: JSR GETCHR     ;Get Keypress
-GETSTD: CMP #DELKEY    ;If Delete
-        BNE GETSTE     ;Then  
+;char gets(&s)
+GETS:   JSR SETSRC     ;Initialize Source String
+GETSL:  JSR GETC       ;Get Keypress
+        CMP #DELKEY    ;If Delete
+        BNE GETSE     ;Then  
         TYA            ;  If Offset is Zero
-        BEQ GETSTL     ;    Get Next Character
+        BEQ GETSL     ;    Get Next Character
         DEY            ;  Else Decrement Offset
         JSR DELCHR     ;    Delete Previous Character
-        JMP GETSTL     ;    and Get Next Character
-GETSTE: CMP #ESCKEY    ;Else If Escape
-        BNE GETSTC     ;Then  
+        JMP GETSL     ;    and Get Next Character
+GETSE:  CMP #ESCKEY    ;Else If Escape
+        BNE GETSC     ;Then  
         LDY #$FF       ;  Return -1
-        BNE GETSTY     
-GETSTC: CMP #RTNKEY    ;Else If Not Carriage Return 
-        BEQ GETSTX
-        JSR PUTCHR     ;  Echo Character
+        BNE GETSY     
+GETSC: CMP #RTNKEY    ;Else If Not Carriage Return 
+        BEQ GETSX
+        JSR PUTC       ;  Echo Character
         STA (SRCLO),Y  ;  Store Character at offset
         INY            ;  increment offset and
-        BPL GETSTL     ;  loop if less than 128
-GETSTX: JSR NEWLIN     ;Else Advance Cursor to Next Line
+        BPL GETSL     ;  loop if less than 128
+GETSX:  JSR NEWLIN     ;Else Advance Cursor to Next Line
         LDA #$00       ;  Terminate String        
         STA (SRCLO),Y  ;  and 
-GETSTY: TYA            ;  Return String Length
+GETSY:  TYA            ;  Return String Length
         RTS
 
-;char outstr(n, &s)
-OUTSTR: LDA #$00       ;Set Start Position to 0
-                       ;and fall into outsub
-;char outsub(n, &s)
-OUTSUB: JSR SETSRC     ;Initialize Source String
+;char puts(n, &s)
+PUTS:   LDA #$00       ;Set Start Position to 0
+                       ;and fall into putsub
+;char putsub(n, &s)
+PUTSUB: JSR SETSRC     ;Initialize Source String
         TAY            ;Initialize character offset
-OUTSUL: LDA (SRCLO),Y  ;Read next character in string
-        BEQ OUTSUX     ;If Not 0
-        JSR PUTCHR     ;  Print character at offset,
+PUTSUL: LDA (SRCLO),Y  ;Read next character in string
+        BEQ PUTSUX     ;If Not 0
+        JSR PUTC       ;  Print character at offset,
         INY            ;  increment offset, and
-        BPL OUTSUL     ;  loop if less than 128
-OUTSUX: TAY            ;Return number of
+        BPL PUTSUL     ;  loop if less than 128
+PUTSUX: TAY            ;Return number of
         RTS            ;  characters printed
 
-;char putstr(*s)
-PUTSTR: JSR OUTSTR     ;Write string to screen
+;char putln(&s)
+PUTLN:  JSR PUTS       ;Write string to screen
         JMP NEWLIN     ;Call external NEWLINe routine and return
-
