@@ -1,0 +1,109 @@
+/************************************
+ * LOOPS - Test C02 Loop Structures *
+ ************************************/
+ 
+#include <py65.h02>
+#include <stdio.h02>
+
+char i, b;
+char failed = " Test Failed!";
+
+main:
+
+/* Test If/Goto Loop */  
+puts("IF    ");
+i = 0;
+ifloop:
+  prbyte(i);
+  putc(' ');
+  i++;
+  if (i < 10) goto ifloop; 
+newlin();
+  
+/* Test While Loop */
+puts("WHILE ");
+i = 0;
+while (i < 10) {
+  prbyte(i);
+  putc(' ');
+  i++;
+}
+newlin();
+
+/* Test Do Loop */
+puts("DO    ");
+i = 0;
+do {
+  prbyte(i);
+  putc(' ');
+  i++;
+} while (i<10);
+newlin();
+
+/* Test For Loop */
+puts("FOR   ");
+i = 0;
+for (i=0;i<10;i++) {
+  prbyte(i); 
+  putc(' ');
+}
+newlin();
+
+/* While with Break */
+puts("BREAK ");
+i = 0;
+while ($FF) {
+  if (i = 10) break;
+  prbyte(i);
+  putc(' ');
+  i++;
+}
+newlin();
+
+/* For with Continue */
+puts("CONT  ");
+for (i=0;i<10;i++) {
+  if (i & 1) continue;
+  prbyte(i);
+  putc(' ');
+}
+newlin();
+
+newlin();
+
+/* Test Block If */
+putln("BLOCK IF");
+b = 1;
+if (b>0) {
+  prbyte(b);
+  puts(" is greater than ");
+  prbyte(0);
+  newlin();
+}
+else 
+  putln(&failed);
+b = 0;
+if (b>0) {
+  putln(&failed); 
+}
+else {
+  prbyte(b);
+  puts(" is equal to ");
+  prbyte(0);
+  newlin();
+}
+newlin();
+
+/* Test If/Else in For Loop */ 
+putln("FOR/IF/ELSE");
+for(i = 0;i<4;i++) {
+  prbyte(i);
+  if (i & 1)
+    putln(" is odd");
+  else
+    putln(" is even");
+}
+newlin();
+
+
+goto exit;
