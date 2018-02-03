@@ -36,7 +36,7 @@ void init()
   curlin = 0;
   inpfil = srcfil;
   strcpy(inpnam, srcnam);
-  strcpy(incdir, "../include/");
+  strcpy(incdir, "include/");
   alcvar = TRUE;
   inblck = FALSE;
   xstmnt[0] = 0;

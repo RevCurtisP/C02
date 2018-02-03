@@ -2,3 +2,4 @@
 del *.log
 del *.lst
 del *.sym
+del *.out

@@ -1,0 +1,37 @@
+#!/bin/bash
+#Compile and Assemble C02 Program
+
+#Split Script Into Directory and File Name
+SDIR=${0%/*}; #Script Path
+SNAM=${0##*/};   #Script Name 
+
+#Check for Command Line Argument
+if [[ "$1" = "" ]]; then
+  echo "Usage: $SNAM file[.c02]"
+  exit
+fi
+
+
+#Split File Name Parts
+FSPC=$1;          #File Spec
+FNAM=${FSPC%.*};  #File Name without Extension
+FEXT=${FSPC##*.}; #File Extension
+
+#Compile C02 FILE
+$SDIR/c02 $FSPC
+ESTS=$?; #Exit Status
+if [[ $ESTS -ne 0 ]]; then
+  echo "Error compiling file $FSPC"
+  exit $ESTS
+fi 
+
+#Assemble ASM File
+dasm $FNAM.asm -f1 -o$FNAM.prg -l$FNAM.lst
+ESTS=$?; #Exit Status
+if [[ $ESTS -ne 0 ]]; then
+  echo "Error compiling file $FNAM.asm"
+  exit $ESTS
+fi 
+
+#Report Successful Completion
+echo "Successfully compiled and assembled file $FSPC"
