@@ -6,8 +6,18 @@
  * Args: b - Number to print             */
 void putdec(); 
 
+/* Print Byte as Left Justified Decimal *
+ * Args: b - Number to print            */
+void putdel(); 
+
+/* Print Byte as Right Justified Decimal *
+ * Args: b - Number to print             */
+void putder(); 
+
+/* Print a Space Character */
+void putspc(); 
+
 /* Print Formatted Byte to Screen         *
  * Args: b  - byte to format              *
  *       &s - formatting string           */
 void printf();
-        
