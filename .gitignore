@@ -5,3 +5,10 @@
 */*.lst
 */*.prg
 */*.sym
+
+#Converted Object Files
+*.asc
+*.out
+*.s9
+*.wav
+
