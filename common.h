@@ -20,7 +20,7 @@
 #define MAXLAB 15         //Maximum Number of Labels (Nesting Depth)
 
 #define CPUOP  "PROCESSOR" //Target CPU Pseudo-Operator 
-#define CPUARG "6502"      //Target CPU Operand
+#define CPUARG "65C02"     //Target CPU Operand
 #define ORGOP  "ORG"       //Origin Pseudo-Op
 #define EQUOP  "EQU"       //Equate Pseudo-Op
 #define BYTEOP "DC"        //Define Byte Pseudo-Op
@@ -40,8 +40,9 @@
 #define ACMNT(str) if (gencmt) {addcmt(str);}
 #define CCMNT(chr) if (gencmt) {chrcmt(chr);}
 
-int gencmt;        //Generate Assembly Language Comments
-int debug;         //Print Debug Info (TRUE or FALSE)
+int t65c02; //Target 65C02 Processor
+int gencmt; //Generate Assembly Language Comments
+int debug;  //Print Debug Info (TRUE or FALSE)
 
 int curcol, curlin;  //Position in Source Code
 int savcol, savlin;  //Save Position in Source Code

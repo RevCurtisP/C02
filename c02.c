@@ -164,6 +164,7 @@ void pargs(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+  t65c02 = TRUE; //Target 65C02 Processor
   debug = TRUE;  //Output Debug Info
   gencmt = TRUE; //Generate Assembly Language Comments
   

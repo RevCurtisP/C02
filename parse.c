@@ -145,6 +145,7 @@ char escape(char c)
 {
   DEBUG("Escaping character '%c'\n", c);
   switch (c) {
+    case 'n': return 0x0a;
     case 'r': return 0x0d;
     default: return c;
   }
@@ -158,7 +159,7 @@ void getstr() {
   DEBUG("Parsing string\n", 0);
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
-  while(match(strdel) == escnxt) {
+  while(!match(strdel) || escnxt) {
     CCMNT(nxtchr);
     if (escnxt) {
       word[wrdlen++] = escape(getnxt());

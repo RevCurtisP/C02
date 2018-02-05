@@ -15,6 +15,12 @@
 #include "expr.h"
 #include "stmnt.h"
 
+/* Emit BRA or JMP */
+void brajmp(char *lbl) {
+  if (t65c02) asmlin("BRA", lbl);
+  else asmlin("JMP", lbl);
+}
+
 /* Parse Shortcut If */
 void prssif(char trmntr) {
   newlbl(cndlbl);         //Create Label for "if FALSE" expression
@@ -22,7 +28,7 @@ void prssif(char trmntr) {
   expect('?');          
   prsxpr(':');            //Parse "if TRUE" expression
   newlbl(tmplbl);         //Create End of Expression Label
-  asmlin("JMP", tmplbl);  //Jump over "if FALSE" expression
+  brajmp(tmplbl);         //Jump over "if FALSE" expression
   setlbl(cndlbl);         //Emit "if FALSE" label
   prsxpr(trmntr);         //Parse "if FALSE" expression
   setlbl(tmplbl);         //Emit End of Expression Label
@@ -194,10 +200,10 @@ void pfor() {
   pshlbl(LTLOOP, loplbl); //and Push onto Stack
   newlbl(cndlbl);         //Create Conditional Label
   prscnd(';', TRUE);      //Parse Conditional Expession
-  asmlin("JMP", endlbl);  //Jump over Increment
+  asmlin("JMP", endlbl);  //Jump to End of Loop
   setlbl(loplbl);         //Set to Emit on Next Line
   prsasn(')');            //Parse Increment Assignment
-  asmlin("JMP", forlbl);  //Jump to Conditional
+  brajmp(forlbl);         //Jump to Conditional
   setlbl(cndlbl);         //Emit Label at Start of Loop  
   bgnblk(FALSE);          //Check For and Begin Block
 }
@@ -219,7 +225,7 @@ void pelse() {
   lblasm[0] = 0;            //and Clear It
   newlbl(skplbl);           //Create Skip Label
   pshlbl(LTIF, skplbl);     //Push Onto Stack
-  asmlin("JMP", skplbl);    //Emit Jump over Block Code
+  brajmp(skplbl);           //Emit Jump over Block Code
   strcpy(lblasm, lbltmp);   //Restore Line Label
   bgnblk(FALSE);            //Check For and Begin Block
 }
