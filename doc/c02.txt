@@ -108,7 +108,7 @@ A binary number consists of a % followed by eight binary digits (0 or 1).
 A decimal number consists of one to three decimal digits (0 through 9).
 
 A hexadecimal number consists of a $ followed by two hexadecimal digits 
-(0 throuth 9 or A through F).
+(0 through 9 or A through F).
 
 A character literals consists of a single character surrounded by ' symbols.
 A ' character may be specified by escaping it with a \. 
@@ -347,14 +347,15 @@ variable name with the address-of operator &. To pass a string, simply
 specify the string as the argument.
 
 Examples:
-  c = getchr();          //Get character from keyboard
+  c = getc();            //Get character from keyboard
   n = abs(b+c-d);        //Return the absolute value of result of expression
   m = min(r[i], r[j]);   //Return lesser of to array elements
   l = strlen(&s);        //Return the length of string s
   p = strchr(c, &s);     //Return position of character c in string s
-  putstr("Hello World"); //Write "Hello World" to screen
+  putc(getc());          //Echo typed characters to screen
+  puts("Hello World");   //Write "Hello World" to screen
 
-Note: This particular argument passing  convention has been chosen because 
+Note: This particular argument passing convention has been chosen because 
 of the 6502's limited number of registers and stack processing instructions. 
 When an address is passed, the high byte is stored in the Y register and 
 the low byte in the X register. If a string is passed, it is turned into 
@@ -373,7 +374,7 @@ to a function call. When using a push statement, it is followed by one or
 more arguments, separated by commas, and terminated with a semi-colon. An
 argument may be an expression, in which case the single byte result is 
 pushed onto the stack, or it may be an address or string, in which case the
-address is pushed onto the string, high byte first and low byte second.
+address is pushed onto the stack, high byte first and low byte second.
 
 The pop statement is likewise used to pop arguments off of the machine
 stack after a function call. When using a pop statement, it is followed
