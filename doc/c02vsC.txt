@@ -10,7 +10,6 @@ C02 does not support pointer type variables or parameters. However, the
 address-of operator may be used in function calls and the inline 
 statement.
 
-
 DECLARATIONS
 
 Variable and function names may be no more than six characters in length. 
