@@ -2,32 +2,7 @@
 <settings version="1.0">
 	<category name="expr.h" />
 	<category name="cond.h" />
-	<category name="asm.h" />
-	<category name="c02.c" />
-	<category name="stmnt.c">
-		<category name="Window">
-			<property name="Left" type="integer">-8</property>
-			<property name="Top" type="integer">-31</property>
-			<property name="Right" type="integer">952</property>
-			<property name="Bottom" type="integer">422</property>
-			<property name="Maximized" type="integer">1</property>
-			<property name="Active" type="integer">1</property>
-		</category>
-	</category>
-	<category name="asm.c" />
-	<category name="vars.c" />
-	<category name="parse.c">
-		<category name="Window">
-			<property name="Left" type="integer">52</property>
-			<property name="Top" type="integer">52</property>
-			<property name="Right" type="integer">760</property>
-			<property name="Bottom" type="integer">362</property>
-			<property name="Maximized" type="integer">0</property>
-			<property name="Active" type="integer">0</property>
-		</category>
-	</category>
-	<category name="include.c" />
-	<category name="expr.c">
+	<category name="asm.h">
 		<category name="Window">
 			<property name="Left" type="integer">78</property>
 			<property name="Top" type="integer">78</property>
@@ -37,7 +12,116 @@
 			<property name="Active" type="integer">0</property>
 		</category>
 	</category>
+	<category name="c02.c">
+		<category name="Window">
+			<property name="Left" type="integer">0</property>
+			<property name="Top" type="integer">0</property>
+			<property name="Right" type="integer">952</property>
+			<property name="Bottom" type="integer">310</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="stmnt.c">
+		<category name="Window">
+			<property name="Left" type="integer">26</property>
+			<property name="Top" type="integer">26</property>
+			<property name="Right" type="integer">978</property>
+			<property name="Bottom" type="integer">336</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="asm.c">
+		<category name="Window">
+			<property name="Left" type="integer">52</property>
+			<property name="Top" type="integer">52</property>
+			<property name="Right" type="integer">760</property>
+			<property name="Bottom" type="integer">362</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="vars.c">
+		<category name="Window">
+			<property name="Left" type="integer">52</property>
+			<property name="Top" type="integer">52</property>
+			<property name="Right" type="integer">1004</property>
+			<property name="Bottom" type="integer">362</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="parse.c">
+		<category name="Window">
+			<property name="Left" type="integer">78</property>
+			<property name="Top" type="integer">78</property>
+			<property name="Right" type="integer">1030</property>
+			<property name="Bottom" type="integer">388</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="include.c">
+		<category name="Window">
+			<property name="Left" type="integer">104</property>
+			<property name="Top" type="integer">104</property>
+			<property name="Right" type="integer">1056</property>
+			<property name="Bottom" type="integer">414</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="expr.c">
+		<category name="Window">
+			<property name="Left" type="integer">130</property>
+			<property name="Top" type="integer">130</property>
+			<property name="Right" type="integer">1082</property>
+			<property name="Bottom" type="integer">440</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
 	<category name="parse.h" />
-	<category name="common.h" />
+	<category name="common.h">
+		<category name="Window">
+			<property name="Left" type="integer">-8</property>
+			<property name="Top" type="integer">-31</property>
+			<property name="Right" type="integer">952</property>
+			<property name="Bottom" type="integer">422</property>
+			<property name="Maximized" type="integer">1</property>
+			<property name="Active" type="integer">1</property>
+		</category>
+	</category>
 	<category name="files.c" />
+	<category name="common.c">
+		<category name="Window">
+			<property name="Left" type="integer">26</property>
+			<property name="Top" type="integer">26</property>
+			<property name="Right" type="integer">978</property>
+			<property name="Bottom" type="integer">336</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="label.c">
+		<category name="Window">
+			<property name="Left" type="integer">104</property>
+			<property name="Top" type="integer">104</property>
+			<property name="Right" type="integer">812</property>
+			<property name="Bottom" type="integer">414</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="cond.c">
+		<category name="Window">
+			<property name="Left" type="integer">130</property>
+			<property name="Top" type="integer">130</property>
+			<property name="Right" type="integer">838</property>
+			<property name="Bottom" type="integer">440</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
 </settings>

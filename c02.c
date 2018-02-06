@@ -54,10 +54,7 @@ void pword()
   getwrd();
   ACMNT(word);
   DEBUG("Parsing Word '%s'\n", word);
-  if (xstmnt[0])
-    if (wordis(xstmnt))
-      xstmnt[0] = 0;
-    else
+  if (xstmnt[0] && !wordis(xstmnt))
       ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE);
   if (!pmodfr() && !ptype(MTNONE))
     pstmnt();     //Parse Statement

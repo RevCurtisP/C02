@@ -85,8 +85,6 @@ void reqlbl(char* lbname)
     
 }
 
-
-
 /* Pop Label from Stack and Emit on Next Line */
 int poplbl() 
 {
@@ -102,10 +100,25 @@ int poplbl()
   else if (lbtype == LTDWHL)
     strcpy(endlbl, lblnam[lblcnt]);
     //strcpy(cndlbl, lblnam[lblcnt]);
+  else if (lbtype == LTCASE)
+    strcpy(cndlbl, lblnam[lblcnt]);
   else
     setlbl(lblnam[lblcnt]);
-  inblck = lblblk[lblcnt-1];
+  if (lbtype != LTCASE)
+    inblck = lblblk[lblcnt-1];
   return lbtype;
+}
+
+/* Get Top Label and Return Type */
+int toplbl(char *rtlbl) 
+{
+  if (lblcnt) {
+    strcpy(rtlbl, lblnam[lblcnt-1]);
+    DEBUG("Found top label %s\n", rtlbl);
+    return lbltyp[lblcnt-1];
+  }
+  rtlbl[0] = 0; //Clear Label
+  return LTNONE;
 }
 
 /* Push Label onto Stack        *
