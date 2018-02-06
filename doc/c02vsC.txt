@@ -7,7 +7,8 @@ C02 only supports one data type: unsigned char.
 POINTERS
 
 C02 does not support pointer type variables or parameters. However, the
-address-of operator may be used in function calls.
+address-of operator may be used in function calls and the inline 
+statement.
 
 
 DECLARATIONS
@@ -28,3 +29,10 @@ EXPRESSIONS
 C02 supports the addition, subtraction, bitwise-and, bitwise-or, and 
 exclusive-or operators. The multiplication, division, and binary shift
 operators are not supported. These can be implemented through functions. 
+
+STATEMENTS
+
+Instead of the switch statement, C02 uses the select statement. The 
+select statement works almost identically to the switch statement except
+that case blocks do not fall through and the break statement does not
+exit a case block.
