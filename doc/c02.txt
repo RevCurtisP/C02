@@ -513,8 +513,47 @@ Note: In order to optimize the compiled code, the if and else statements
 are to 6502 relative branch instructions. This limits the amount of 
 generated code between the if statement and the end of the if/else block
 to slightly less than 127 characters. This should be sufficient in most
-cases, but larger code blocks can be accomodated using function calls or
+cases, but larger code blocks can be accommodated using function calls or
 goto statements.
+
+SELECT, CASE, AND DEFAULT STATEMENTS
+
+The select, case, an default statements are used to execute a specific
+block of code depending on the result of an expression.
+
+When using the select keyword, it is followed by an expression (surrounded
+by parenthesis) and an opening curly brace, which begins the select block.
+This must then be followed by a case statement.
+
+Each use of the case keyword is followed by term and a colon. If the 
+term is equal to select expression then the code immediately following 
+the is executed, otherwise, program execution transfers to the next 
+case or default statement. 
+
+The code between two case statements or a case and default statement is
+called a case block. At the end of a case block, program execution
+transfers to the end of the select block (the closing curly brace at
+the end of the default block).
+
+The last case block must be followed by a default statement. When using
+the default keyword, it is followed by a colon. The code between the
+default statement and the end of the select block (marked with a closing
+curly-brace) is called the default block and is executed if none of
+the case arguments matched the select expression.
+
+Example:
+  puts("You pressed ");
+  select (getc()) {
+    case $0D: putln("The Enter key");
+    case ' ': putln("The space bar");
+    case ltr: putln("The character in variable 'ltr'");
+    case s[2]: putln("The third character of string 's'"); 
+    default: putln("some other key");
+  }
+
+Note: It's possible for multiple case statement arguments to evaluate to
+the same value. In this case, only the first case block matching the
+select expression will be executed.
 
 WHILE LOOPS
 
@@ -532,7 +571,7 @@ Examples:
   while() if (rdkey()) break;                  //Wait for a keypress
 
 Note: While loops are compiled using the 6502 JMP statements, so the code
-blocks may be abritrarily large.
+blocks may be arbitrarily large.
 
 DO WHILE LOOPS
 

@@ -18,7 +18,7 @@ int  lblcnt;                       //Number of Labels in stack
 int  lblnxt;                       //Sequence of next label to be generated
 char lbltmp[LABLEN+1];             //Label Temporary Storage
 
-enum ltypes {LTNONE, LTIF, LTLOOP, LTEND, LTDO, LTDWHL, LTFUNC}; //Label Types
+enum ltypes {LTNONE, LTIF, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
 
 void prslbl();              //Parse Label From Code
 void newlbl(char* lbname);  //Generate New Block Label

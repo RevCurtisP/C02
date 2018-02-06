@@ -204,7 +204,7 @@ void pfor() {
 
 /* parse and compile if statement */
 void pif() {
-  DEBUG("Parsing IF statement '%c'\n", nxtchr);
+  DEBUG("Parsing IF statement\n", 0);
   expect('(');
   newlbl(cndlbl);      //Create New Label
   pshlbl(LTIF,cndlbl); //Push Onto Stack
@@ -214,7 +214,7 @@ void pif() {
 
 /* parse and compile else statement */
 void pelse() {
-  DEBUG("Parsing ELSE statement '%c'\n", nxtchr);
+  DEBUG("Parsing ELSE statement\n", 0);
   strcpy(lbltmp, lblasm);   //Save Line Label
   lblasm[0] = 0;            //and Clear It
   newlbl(skplbl);           //Create Skip Label
@@ -306,6 +306,47 @@ void pretrn() {
   lsrtrn = TRUE;  //Set RETURN flag
 }
 
+/* parse and compile select statement */
+void pslct() {
+  DEBUG("Parsing SELECT statement\n", 0);
+  expect('(');
+  prsxpr(')');            //Parse Expression
+  newlbl(endlbl);         //Create New Label
+  pshlbl(LTSLCT,endlbl);  //Push Onto Stack
+  bgnblk(TRUE);           //Check For and Begin Block
+  strcpy(xstmnt, "CASE"); //Require Next Statement to be CASE
+}
+
+/* process end of case block */
+void ecase() {
+  if (poplbl(cndlbl) != LTCASE)
+    ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE);  
+  if (toplbl(endlbl) != LTSLCT)
+    ERROR("Illegal nesting in SELECT statement\n", 0, EXIT_FAILURE);  
+  asmlin("JMP", endlbl);  //Emit jump over default case
+  setlbl(cndlbl);  //Set entry point label to emit
+}
+
+/* parse and compile select statement */
+void pcase() {
+  if (strcmp(xstmnt, "CASE") == 0)
+    xstmnt[0] = 0;  //Clear xstmnt
+  else 
+	ecase("CASE");  //Process end of case block
+  prstrm();                //Parse CASE argument
+  asmlin("CMP", term);     //Emit Comparison
+  expect(':');
+  newlbl(cndlbl);          //Create Conditional Label
+  pshlbl(LTCASE, cndlbl);  //and Push onto Stack
+  asmlin("BNE", cndlbl);   //Emit skip of CASE body
+}
+
+/* parse and compile default statement */
+void pdflt() {
+  expect(':');
+  ecase(); //Process end of case block
+}
+
 /* parse and compile while statement */
 void pwhile() {
   DEBUG("Parsing WHILE statement '%c'\n", nxtchr);
@@ -385,15 +426,18 @@ void pstmnt()
     return;
   }
   if (wordis("SWITCH")) {
-    punimp();
-    return;  
+    ERROR("SWITCH not implemented. Use SELECT.\n", word, EXIT_FAILURE);  
+  }
+  if (wordis("SELECT")) {
+    pslct();
+    return;
   }
   if (wordis("CASE")) {
-    punimp();
+    pcase();
     return;  
   }
   if (wordis("DEFAULT")) {
-    punimp();
+    pdflt();
     return;  
   }
   if (wordis("WHILE")) {
