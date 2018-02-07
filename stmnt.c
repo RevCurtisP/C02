@@ -329,16 +329,30 @@ void ecase() {
 
 /* parse and compile select statement */
 void pcase() {
-  if (strcmp(xstmnt, "CASE") == 0)
+  int fcase = (strcmp(xstmnt, "CASE") == 0);
+  if (fcase)
     xstmnt[0] = 0;  //Clear xstmnt
   else 
 	ecase("CASE");  //Process end of case block
-  prstrm();                //Parse CASE argument
-  asmlin("CMP", term);     //Emit Comparison
-  expect(':');
+  skplbl[0] = 0;           //Clear Skip Label
   newlbl(cndlbl);          //Create Conditional Label
   pshlbl(LTCASE, cndlbl);  //and Push onto Stack
-  asmlin("BNE", cndlbl);   //Emit skip of CASE body
+  while(TRUE) {
+    prstrm();              //Parse CASE argument
+    if (!fcase || valtyp != CONSTANT || cnstnt)
+      asmlin("CMP", term); //Emit Comparison
+    if (look(',')) {
+      chklbl(skplbl);      //Emit skip to beginning of CASE block
+      asmlin("BEQ", skplbl);
+      fcase = 0;
+	  continue;            //Parse next argument
+    }
+    expect(':');           //Emit branch to end of CASE block
+    asmlin("BNE", cndlbl); 
+    break;
+  }
+  if (skplbl[0])
+    setlbl(skplbl); //Set CASE block label if defined
 }
 
 /* parse and compile default statement */

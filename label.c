@@ -71,6 +71,13 @@ void newlbl(char* lbname)
   DEBUG("Generated new label '%s'\n", lbname);
 }
 
+/* if label is blank, generate a new one */
+void chklbl(char* lbname) 
+{
+  if (lbname[0]) return;
+  newlbl(lbname);
+}
+
 /* require label                               *
  * if label is already set, returns that label *
  * else generates new label and sets it        */
@@ -81,8 +88,7 @@ void reqlbl(char* lbname)
   else {
     newlbl(lbname);
     setlbl(lbname);
-  }
-    
+  }    
 }
 
 /* Pop Label from Stack and Emit on Next Line */
