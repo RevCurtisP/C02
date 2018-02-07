@@ -39,7 +39,8 @@ for (c=0; c<10; c++) {
 }
 
 newlin();
-for (c=$18; c<$23; c++) {
+for (c=$18; c<$22; c++) {
+  if (c & 15 > 9) continue; //Skip $1A - $1F 
   prbyte(c);
   putc(' ');
   select (c) {
@@ -48,8 +49,8 @@ for (c=$18; c<$23; c++) {
       putln("BREAK ONE-NINE");
       if (c==$19) break;
       putln("OOPS!");
-    case $22: putln("BLACKJACK!");
-    default: //putln("*");
+    case $21: putln("BLACKJACK!");
+    default: putln("*");
   }
 }
 

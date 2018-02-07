@@ -13,20 +13,21 @@
 #include "parse.h"
 #include "label.h"
 
+const char lblflg[] = {LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE, LFNONE}; //Label Type Flags
+
 /* Find Last Label of Specified Types *
  * Args: lbtyp1: First label type     *
  *       lbtyp2: Second label type    *
  * Sets: tmplbl - Label name          *
  * Returns: Index into label table    *
  *          (-1 if not found)         */
-int lstlbl(int lbtyp1, int lbtyp2)
+int lstlbl(int lbflag)
 {
   int i;
-  DEBUG("Searching for label type %d ", lbtyp1);
-  DEBUG("and label type %d\n",lbtyp2);
+  DEBUG("Searching for label flag %d\n", lbflag);
   for (i = lblcnt - 1; i>-1; i--) {
-    if (lbltyp[i] == lbtyp1) break;
-    if (lbltyp[i] == lbtyp2) break;
+    //DEBUG("Comparing against flag %d", lblflg[lbltyp[i]]); 
+    if (lblflg[lbltyp[i]] == lbflag) break;
   }
   DEBUG("Search produced label index %d\n", i);
   if (i>=0) 

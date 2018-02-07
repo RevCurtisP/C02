@@ -139,10 +139,10 @@ void prsasn(char trmntr)
 }
 
 /* parse and compile 'break'/'continue' statement */
-void pbrcnt(int lbtyp1, int lbtyp2) 
+void pbrcnt(int lbflag) 
 {
   DEBUG("Parsing BREAK/CONTINUE statement\n", 0);
-  if (lstlbl(lbtyp1, lbtyp2) < 0)
+  if (lstlbl(lbflag) < 0)
     ERROR("Break/continue statement outside of loop\n", 0, EXIT_FAILURE);
   DEBUG("Found Label '%s'\n", tmplbl);
   asmlin("JMP", tmplbl);
@@ -312,8 +312,8 @@ void pslct() {
   expect('(');
   prsxpr(')');            //Parse Expression
   newlbl(endlbl);         //Create New Label
-  pshlbl(LTSLCT,endlbl);  //Push Onto Stack
-  bgnblk('{');           //Require Beginning of Block
+  pshlbl(LTSLCT,endlbl);   //Push Onto Stack
+  bgnblk('{');            //Require Beginning of Block
   strcpy(xstmnt, "CASE"); //Require Next Statement to be CASE
 }
 
@@ -466,9 +466,9 @@ void pstmnt()
   if (wordis("ASM"))
     pasm();
   else if (wordis("BREAK"))
-    pbrcnt(LTEND, LTDWHL);
+    pbrcnt(LFEND);
   else if (wordis("CONTINUE"))
-    pbrcnt(LTLOOP, LTDO);
+    pbrcnt(LFBGN);
   else if (wordis("GOTO"))
     pgoto();
   else if (wordis("INLINE"))
