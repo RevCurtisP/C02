@@ -1,0 +1,41 @@
+/************************************************
+ * TESTSELECT - Test C02 Select/Case Statements *
+ ************************************************/
+ 
+#include <py65.h02>
+#include <stdio.h02>
+
+char c;
+
+main:
+
+for (c=0; c<=9; c++) {
+  prbyte(c);
+  putc(' ');
+  select (c) {
+    case 0: putln("OH!");
+    case 1: putln("WON");
+    case 7,8,9: putln("SEVEN ATE NINE");
+    case 4: putln("FORE!");
+    case 10: putln("TEN");
+    case 0: putln("OOPS!");
+    default: putln("*");
+  }
+}
+
+newlin();
+for (c=0; c<=9; c++) {
+  prbyte(c);
+  putc(' ');
+  select (c) {
+    case 0,7: putln("SEVEN - LOVE");
+    case 5:
+      five: putln("FIVE");
+    case 9: 
+      puts("WORKING NINE TO "); 
+      goto five;
+    default: putln("*");
+  }
+}
+
+goto exit;
