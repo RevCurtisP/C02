@@ -233,7 +233,7 @@ void addfnc()
     asmlin("STX", prmtrx); //Store Third Parameter
   endlbl[0] = 0;          //Create Dummy End Label
   pshlbl(LTFUNC, endlbl); //and Push onto Stack
-  bgnblk(TRUE);           //Start Program Block
+  bgnblk('{');           //Start Program Block
 }
 
 /* (Check For and) Parse Variable Declaration*/

@@ -9,7 +9,7 @@ char c;
 
 main:
 
-for (c=0; c<=9; c++) {
+for (c=0; c<10; c++) {
   prbyte(c);
   putc(' ');
   select (c) {
@@ -24,7 +24,7 @@ for (c=0; c<=9; c++) {
 }
 
 newlin();
-for (c=0; c<=9; c++) {
+for (c=0; c<10; c++) {
   prbyte(c);
   putc(' ');
   select (c) {
@@ -37,5 +37,21 @@ for (c=0; c<=9; c++) {
     default: putln("*");
   }
 }
+
+newlin();
+for (c=$18; c<$23; c++) {
+  prbyte(c);
+  putc(' ');
+  select (c) {
+    case $18: putln("I'M EIGHTEEN!");
+    case $19:
+      putln("BREAK ONE-NINE");
+      if (c==$19) break;
+      putln("OOPS!");
+    case $22: putln("BLACKJACK!");
+    default: //putln("*");
+  }
+}
+
 
 goto exit;

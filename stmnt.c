@@ -92,11 +92,11 @@ void prcvar(char trmntr)
 }
 
 /* Begin Program Block */
-void bgnblk(int blkflg)
+void bgnblk(char blkchr)
 {
   DEBUG("Begining program block\n", 0);
-  if (blkflg) {
-    expect('{');
+  if (blkchr) {
+    expect(blkchr);
     inblck = TRUE;
   }
   else
@@ -313,12 +313,13 @@ void pslct() {
   prsxpr(')');            //Parse Expression
   newlbl(endlbl);         //Create New Label
   pshlbl(LTSLCT,endlbl);  //Push Onto Stack
-  bgnblk(TRUE);           //Check For and Begin Block
+  bgnblk('{');           //Require Beginning of Block
   strcpy(xstmnt, "CASE"); //Require Next Statement to be CASE
 }
 
 /* process end of case block */
 void ecase() {
+  DEBUG("Processing end of CASE block\n", 0);
   if (poplbl(cndlbl) != LTCASE)
     ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE);  
   if (toplbl(endlbl) != LTSLCT)
@@ -347,7 +348,7 @@ void pcase() {
       fcase = 0;
 	  continue;            //Parse next argument
     }
-    expect(':');           //Emit branch to end of CASE block
+    bgnblk(':');           //Emit branch to end of CASE block
     asmlin("BNE", cndlbl); 
     break;
   }
@@ -481,6 +482,7 @@ void pstmnt()
   else
     prssym();
   if (lblcnt && !inblck) {
+    DEBUG("Ending implied block\n", 0);
     if (poplbl() == LTDO)
       pdowhl(); //Parse While at End of Do Loop
   }
