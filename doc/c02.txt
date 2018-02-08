@@ -525,10 +525,10 @@ When using the select keyword, it is followed by an expression (surrounded
 by parenthesis) and an opening curly brace, which begins the select block.
 This must then be followed by a case statement.
 
-Each use of the case keyword is followed by term and a colon. If the 
-term is equal to select expression then the code immediately following 
-the is executed, otherwise, program execution transfers to the next 
-case or default statement. 
+Each use of the case keyword is followed by one or more comma-separated
+terms and a colon. If the term is equal to select expression then the 
+code immediately following the is executed, otherwise, program execution 
+transfers to the next case or default statement. 
 
 The code between two case statements or a case and default statement is
 called a case block. At the end of a case block, program execution
@@ -541,15 +541,47 @@ default statement and the end of the select block (marked with a closing
 curly-brace) is called the default block and is executed if none of
 the case arguments matched the select expression.
 
+If the constant 0 is to be used as an argument to any of the case 
+statements, using it as the first argument of the first case statement 
+will produce slightly more efficient code.
+
 Example:
   puts("You pressed ");
   select (getc()) {
+    case $00: putln("Nothing");
     case $0D: putln("The Enter key");
     case ' ': putln("The space bar");
+    case 'A','a': putln ("The letter A");
     case ltr: putln("The character in variable 'ltr'");
     case s[2]: putln("The third character of string 's'"); 
     default: putln("some other key");
   }
+
+Unlike the switch statement in C, the break statement is not needed to 
+exit from a case block. It may be used, however, to prematurely exit a 
+case block if desired.
+
+Example:
+  select (arg) {
+    case foo: 
+      puts("fu");
+      if (!bar) break;
+      puts("bar");
+    default: //do nothing
+  }
+
+In addition, fall through of case blocks can be duplicated using the goto
+statement with a label.
+
+  select (num)
+    case 1:
+      putc('I');
+      goto two;
+    case 2:
+    two: 
+      putc('I');
+    default: //do nothing
+   }
 
 Note: It's possible for multiple case statement arguments to evaluate to
 the same value. In this case, only the first case block matching the
