@@ -6,7 +6,7 @@
 		<category name="Window">
 			<property name="Left" type="integer">0</property>
 			<property name="Top" type="integer">0</property>
-			<property name="Right" type="integer">952</property>
+			<property name="Right" type="integer">953</property>
 			<property name="Bottom" type="integer">310</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -16,7 +16,7 @@
 		<category name="Window">
 			<property name="Left" type="integer">26</property>
 			<property name="Top" type="integer">26</property>
-			<property name="Right" type="integer">978</property>
+			<property name="Right" type="integer">979</property>
 			<property name="Bottom" type="integer">336</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -24,19 +24,19 @@
 	</category>
 	<category name="stmnt.c">
 		<category name="Window">
-			<property name="Left" type="integer">-8</property>
-			<property name="Top" type="integer">-31</property>
-			<property name="Right" type="integer">952</property>
-			<property name="Bottom" type="integer">422</property>
-			<property name="Maximized" type="integer">1</property>
-			<property name="Active" type="integer">1</property>
+			<property name="Left" type="integer">52</property>
+			<property name="Top" type="integer">52</property>
+			<property name="Right" type="integer">1005</property>
+			<property name="Bottom" type="integer">362</property>
+			<property name="Maximized" type="integer">0</property>
+			<property name="Active" type="integer">0</property>
 		</category>
 	</category>
 	<category name="asm.c">
 		<category name="Window">
 			<property name="Left" type="integer">78</property>
 			<property name="Top" type="integer">78</property>
-			<property name="Right" type="integer">1030</property>
+			<property name="Right" type="integer">1031</property>
 			<property name="Bottom" type="integer">388</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -46,7 +46,7 @@
 		<category name="Window">
 			<property name="Left" type="integer">104</property>
 			<property name="Top" type="integer">104</property>
-			<property name="Right" type="integer">1056</property>
+			<property name="Right" type="integer">1057</property>
 			<property name="Bottom" type="integer">414</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -56,7 +56,7 @@
 		<category name="Window">
 			<property name="Left" type="integer">130</property>
 			<property name="Top" type="integer">130</property>
-			<property name="Right" type="integer">1082</property>
+			<property name="Right" type="integer">1083</property>
 			<property name="Bottom" type="integer">440</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -66,17 +66,26 @@
 		<category name="Window">
 			<property name="Left" type="integer">0</property>
 			<property name="Top" type="integer">0</property>
-			<property name="Right" type="integer">952</property>
+			<property name="Right" type="integer">953</property>
 			<property name="Bottom" type="integer">310</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
 		</category>
 	</category>
 	<category name="expr.c">
+		<category name="Foldings">
+			<property name="Line1" type="integer">1</property>
+			<property name="Line2" type="integer">17</property>
+			<property name="Line3" type="integer">35</property>
+			<property name="Line4" type="integer">86</property>
+			<property name="Line5" type="integer">119</property>
+			<property name="Line6" type="integer">203</property>
+			<property name="Line7" type="integer">234</property>
+		</category>
 		<category name="Window">
 			<property name="Left" type="integer">26</property>
 			<property name="Top" type="integer">26</property>
-			<property name="Right" type="integer">978</property>
+			<property name="Right" type="integer">979</property>
 			<property name="Bottom" type="integer">336</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -87,7 +96,7 @@
 		<category name="Window">
 			<property name="Left" type="integer">52</property>
 			<property name="Top" type="integer">52</property>
-			<property name="Right" type="integer">1004</property>
+			<property name="Right" type="integer">1005</property>
 			<property name="Bottom" type="integer">362</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -98,7 +107,7 @@
 		<category name="Window">
 			<property name="Left" type="integer">78</property>
 			<property name="Top" type="integer">78</property>
-			<property name="Right" type="integer">1030</property>
+			<property name="Right" type="integer">1031</property>
 			<property name="Bottom" type="integer">388</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
@@ -108,30 +117,31 @@
 		<category name="Window">
 			<property name="Left" type="integer">104</property>
 			<property name="Top" type="integer">104</property>
-			<property name="Right" type="integer">1056</property>
+			<property name="Right" type="integer">1057</property>
 			<property name="Bottom" type="integer">414</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
 		</category>
 	</category>
-	<category name="cond.c">
-		<category name="Window">
-			<property name="Left" type="integer">130</property>
-			<property name="Top" type="integer">130</property>
-			<property name="Right" type="integer">1082</property>
-			<property name="Bottom" type="integer">440</property>
-			<property name="Maximized" type="integer">0</property>
-			<property name="Active" type="integer">0</property>
-		</category>
-	</category>
+	<category name="cond.c" />
 	<category name="label.h">
 		<category name="Window">
 			<property name="Left" type="integer">0</property>
 			<property name="Top" type="integer">0</property>
-			<property name="Right" type="integer">952</property>
+			<property name="Right" type="integer">953</property>
 			<property name="Bottom" type="integer">310</property>
 			<property name="Maximized" type="integer">0</property>
 			<property name="Active" type="integer">0</property>
+		</category>
+	</category>
+	<category name="vars.h">
+		<category name="Window">
+			<property name="Left" type="integer">-8</property>
+			<property name="Top" type="integer">-31</property>
+			<property name="Right" type="integer">953</property>
+			<property name="Bottom" type="integer">422</property>
+			<property name="Maximized" type="integer">1</property>
+			<property name="Active" type="integer">1</property>
 		</category>
 	</category>
 </settings>
