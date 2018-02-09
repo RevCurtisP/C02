@@ -175,7 +175,6 @@ int main(int argc, char *argv[])
   compile();
 
   logdef();
-  logvar();
 
   clssrc();  //Close Source File
   clsout();  //Close Output File

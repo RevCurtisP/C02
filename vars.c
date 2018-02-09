@@ -302,8 +302,10 @@ void vartbl()
 {
   int i;
   DEBUG("Writing Variable Table", 0);
+  fprintf(logfil, "\n%-31s %s %s %s\n", "Variable", "Type", "Size", "Data");
   dlen = 0;
   for (i=0; i<varcnt; i++) {
+    fprintf(logfil, "%-31s %4d %4s %1d-%d\n", varnam[i], vartyp[i], varsiz[i], dattyp[i], datlen[i]);
     strcpy(lblasm, varnam[i]);
     DEBUG("Set Label to '%s'\n", lblasm);
     if (strcmp(varsiz[i], "*") == 0)
@@ -325,16 +327,3 @@ void vartbl()
   }
   vrwrtn = TRUE;
 }
-
-/* Print Variable Table to Log File */
-void logvar()
-{
-  int i;
-  fprintf(logfil, "\n%-31s %s %s %s\n", "Variable", "Type", "Size", "Data");
-  for (i=0; i<varcnt; i++)
-  {
-    fprintf(logfil, "%-31s %4d %4s %1d-%d\n", varnam[i], vartyp[i], varsiz[i], dattyp[i], datlen[i]);
-  }
-}
-
-
