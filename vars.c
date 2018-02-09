@@ -43,7 +43,6 @@ void chksym(int alwreg, char *name)
     ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE);
 }
 
-
 /* Parse Variable Name                         *
  * Parameters: alwary - Allow Array Reference *
  * Sets: vrname - operand for LDA/STA/LDY/STY */
@@ -54,13 +53,6 @@ void reqvar(int alwary)
     if (valtyp != VARIABLE) 
       expctd("Variable");
 } 
-
-/* Parse Data Constant */
-void prsdtc()
-{
-  dtype = DTBYTE;
-  prscon();
-}
 
 /* Parse Data Array */
 void prsdta()
@@ -123,8 +115,10 @@ void prsdat()
     return;
   }
   skpspc();
-  if (iscpre())
-    prsdtc();   //Parse Data Constant
+  if (iscpre()) {
+    dtype = DTBYTE;
+    prscon(); //Parse Data Constant
+  }
   else if (match('"'))
     prsdts();       //Parse Data String
   else if (match('{'))
