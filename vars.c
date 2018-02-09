@@ -55,25 +55,6 @@ void reqvar(int alwary)
       expctd("Variable");
 } 
 
-/* Check for Array specifier and get size *
- * Sets: value - array size (as string)   *
- *               "" if not an array       */
-void pvarsz() 
-{
-  DEBUG("Checking for array definition\n", 0);
-  value[0] = 0;
-  if (match('[')) {
-    skpchr();
-    if (alcvar) {
-      DEBUG("Parsing array size\n", 0);
-      sprintf(value, "%d", prsnum(0xFF) + 1);
-    }
-    expect(']');
-  }
-  if (!alcvar)
-    strcpy(value, "*");  
-}
-
 /* Parse Data Constant */
 void prsdtc()
 {
@@ -181,9 +162,20 @@ void addvar(int m, int t)
     asmlin(EQUOP, word);
     strcpy(value, "*"); //Set Variable Type to Zero Page  
   }
-  else
-    pvarsz();   //Check for Array Declaration and Get Size
-    setvar(m, t);  //Add to Variable Table  
+  else {
+    DEBUG("Checking for array definition\n", 0);
+    value[0] = 0;
+    if (match('[')) {
+      skpchr();
+      if (alcvar) {
+        DEBUG("Parsing array size\n", 0);
+        sprintf(value, "%d", prsnum(0xFF) + 1);
+      }
+      expect(']');
+    }
+    if (!alcvar) strcpy(value, "*");  
+    setvar(m, t);  //Add to Variable Table
+  }  
   if (m != MTZP)
     prsdat();   //Parse Variable Data
   varcnt++;   //Increment Variable Counter
