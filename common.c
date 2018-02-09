@@ -13,7 +13,7 @@
 /* Error - Print Input File name & position and exit */
 void exterr(int errnum)
 {
-  printf("Line %d Column %d of File %s\n", curlin, curcol, inpnam);
+  fprintf(stderr, "Line %d Column %d of File %s\n", curlin, curcol, inpnam);
   exit(errnum);
 }
 

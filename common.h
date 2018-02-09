@@ -35,7 +35,7 @@
 
 #define DEBUG(fmt, val) if (debug) {prtpos(); printf(fmt, val);}
 #define DETAIL(fmt, val) if (debug) {printf(fmt, val);}
-#define ERROR(fmt, val, err) if (debug) {printf(fmt, val);exterr(err);}
+#define ERROR(fmt, val, err) if (debug) {fprintf(stderr, fmt, val);exterr(err);}
 #define SCMNT(str) if (gencmt) {setcmt(str);}
 #define ACMNT(str) if (gencmt) {addcmt(str);}
 #define CCMNT(chr) if (gencmt) {chrcmt(chr);}
