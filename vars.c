@@ -15,28 +15,19 @@
 #include "label.h"
 #include "vars.h"
 
-/* Lookup variable name in variable table   *
- * Returns index into varnam array        *
- *         FALSE if variable was not found  */
+/* Lookup variable name in variable table  *
+ * Sets: varidx = index into varnam array  *
+ *                varcnt if not found      *
+ * Returns: TRUE if found, otherwise FALSE */
 int fndvar(char *name) 
 {
-  int i;
   DEBUG("Looking up variable '%s'\n", word);
-  for (i=0; i<varcnt; i++) {
-    if (strcmp(varnam[i], name) == 0)
-      return i;
+  for (varidx=0; varidx<varcnt; varidx++) {
+    if (strcmp(varnam[varidx], name) == 0) 
+      return TRUE;
   }
-  return -1;
+  return FALSE;
 }
-
-/* Check if variable has been defined */
-int symdef(char *name) 
-{
-  if (fndvar(name) > -1)
-    return TRUE;
-  else
-    return FALSE;
-}  
 
 /* Check for variable                       *
  * Generates error if variable is undefined *
@@ -48,7 +39,7 @@ void chksym(int alwreg, char *name)
     if (alwreg) return;
     else ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE);
   }
-  if (!symdef(name))
+  if (!fndvar(name))
     ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE);
 }
 
@@ -180,7 +171,7 @@ void setvar(int m, int t)
 void addvar(int m, int t) 
 {
   strcpy(vrname, word); //Save Variable Name
-  if (symdef(vrname))
+  if (fndvar(vrname))
     ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE);
   if (t == VTVOID)
     ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);

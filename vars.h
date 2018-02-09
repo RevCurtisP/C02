@@ -8,8 +8,10 @@ char varmod[MAXVAR+1];             //Variable Modifier
 char vartyp[MAXVAR+1];             //Variable Type
 char varsiz[MAXVAR+1][4];          //Variable Array
 int  varcnt;                       //Number of Variables in Table
+int  varidx;                       //Index into Variable Tables
 char vrname[MAXVAR+1];             //Variable Name
 int  vrwrtn;                       //Variables Written Flag
+
 
 /*
 int varidx; //Index into Variable Table
