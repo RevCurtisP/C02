@@ -281,26 +281,10 @@ int pmodfr()
   return result;
 }
 
-/* Write Variable Data */
-void vardat(int i)
-{
-  int j;
-  DEBUG("Building Data for Variable '%s'\n", varnam[i]);
-  value[0] = 0;
-  for (j=0; j<datlen[i]; j++) {
-    if (j) strcat(value,",");
-    sprintf(word, "$%hhX", datvar[dlen++]);
-    strcat(value, word);  
-  }
-  if (dattyp[i] == DTSTR) strcat(value, ",$00");
-  DEBUG("Allocating Data for Variable '%s'\n", varnam[i]);
-  asmlin(BYTEOP, value);
-}
-
 /* Write Variable Table */
 void vartbl()
 {
-  int i;
+  int i, j;
   DEBUG("Writing Variable Table", 0);
   fprintf(logfil, "\n%-31s %s %s %s\n", "Variable", "Type", "Size", "Data");
   dlen = 0;
@@ -314,8 +298,18 @@ void vartbl()
       DEBUG("Alligning variable '%s'\n", varnam[i]);
       asmlin(ALNOP, "256");
     }
-    if (datlen[i])
-      vardat(i);  //Write Variable Data
+    if (datlen[i]) {
+      DEBUG("Building Data for Variable '%s'\n", varnam[i]);
+      value[0] = 0;
+      for (j=0; j<datlen[i]; j++) {
+        if (j) strcat(value,",");
+        sprintf(word, "$%hhX", datvar[dlen++]);
+        strcat(value, word);  
+      }
+      if (dattyp[i] == DTSTR) strcat(value, ",$00");
+      DEBUG("Allocating Data for Variable '%s'\n", varnam[i]);
+      asmlin(BYTEOP, value);
+  }
     else if (strlen(varsiz[i]) > 0) {
       DEBUG("Allocating array '%s'\n", varnam[i]);
       asmlin(STROP, varsiz[i]);
