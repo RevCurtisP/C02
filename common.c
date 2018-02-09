@@ -22,7 +22,7 @@ void exterr(int errnum)
    Args: expected - Description of what was expected */ 
 void expctd(char *expstr)
 {
-  printf("Expected %s, but found '%c'\n", expstr, nxtchr);
+  fprintf(stderr, "Expected %s, but found '%c'\n", expstr, nxtchr);
   exterr(EXIT_FAILURE);
 }
 

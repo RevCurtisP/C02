@@ -80,7 +80,7 @@ void prccmp()
       asmlin("BNE", cndlbl);
       break;
     default:
-      printf("Unsupported comparison operator index %d\n", cmprtr);
+      fprintf(stderr, "Unsupported comparison operator index %d\n", cmprtr);
       exterr(EXIT_FAILURE);
   }
 }

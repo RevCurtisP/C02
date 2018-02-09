@@ -223,7 +223,7 @@ void prcopr()
       asmlin("EOR", term);
       break;
     default:
-      printf("Unrecognized operator '%c'\n", oper);
+      fprintf(stderr, "Unrecognized operator '%c'\n", oper);
       exterr(EXIT_FAILURE);
   }
   oper = 0;

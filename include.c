@@ -76,7 +76,7 @@ void pascii()
     invasc = TRUE;
   }
   else {
-    printf("Unrecognized option '%s'\n", word);
+    fprintf(stderr, "Unrecognized option '%s'\n", word);
     exterr(EXIT_FAILURE);
   }
 
@@ -134,7 +134,7 @@ void pincdr()
   if (wordis("PRAGMA")) 
     pprgma();
   else {
-    printf("Unrecognized directive '%s'\n", word);
+    fprintf(stderr, "Unrecognized directive '%s'\n", word);
     exterr(EXIT_FAILURE);
   }
 }
@@ -143,7 +143,7 @@ void pincdr()
 void phdwrd() {
   getwrd();
   if (!ptype(MTNONE)) {
-    printf("Unexpected word '%s' in header\n", word);
+    fprintf(stderr, "Unexpected word '%s' in header\n", word);
     exterr(EXIT_FAILURE); 
   }
 }
@@ -192,11 +192,10 @@ void inchdr() {
       skpcmt();
     else if (isalph()) 
       phdwrd();
-    else
-	  {
-      printf("Unexpected character '%c'\n", nxtchr);	 
-		  exterr(EXIT_FAILURE);
-	  }
+    else {
+      fprintf(stderr, "Unexpected character '%c'\n", nxtchr);	 
+	  exterr(EXIT_FAILURE);
+	}
   }    
   clsinc();
   rstsrc();
@@ -214,7 +213,7 @@ void pincfl()
   DEBUG("Processing include file '%s'\n", incnam);
   char *dot = strrchr(incnam, '.'); //find extension
   if (dot == NULL) {
-    printf("Invalid include file name '%sn", incnam);
+    fprintf(stderr, "Invalid include file name '%sn", incnam);
     exterr(EXIT_FAILURE);  
   }
   if (strcmp(dot, ".a02") == 0) 
@@ -229,7 +228,7 @@ void pincfl()
     incasm();  //Process Assembly File with Same Name
   }
   else {
-    printf("Unrecognized include file extension '%s'\n'", dot);
+    fprintf(stderr, "Unrecognized include file extension '%s'\n'", dot);
     exterr(EXIT_FAILURE);
   }   
 }

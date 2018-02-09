@@ -60,7 +60,7 @@ void prcasn(char trmntr)
 
 void poperr() 
 {
-  printf("Illegal post-operation %c%c on register %s\n", oper, oper, asnvar);
+  fprintf(stderr, "Illegal post-operation %c%c on register %s\n", oper, oper, asnvar);
   exterr(EXIT_FAILURE);
 }
 

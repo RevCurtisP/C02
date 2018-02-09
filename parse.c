@@ -92,7 +92,7 @@ void expect(char c)
   if (c == 0) return;
   if (look(c)) return;
   else {
-    printf("Expected Character '%c', but found '%c'\n", c, nxtchr);
+    fprintf(stderr, "Expected Character '%c', but found '%c'\n", c, nxtchr);
     exterr(EXIT_FAILURE);  
   }
 }
@@ -448,7 +448,7 @@ void prcpst(char* name, char *index)
        asmlin("LSR", name);
       break;
     default:
-      printf("Unrecognized post operator '%c'\n", oper);
+      fprintf(stderr, "Unrecognized post operator '%c'\n", oper);
       exterr(EXIT_FAILURE);
   }
 }
