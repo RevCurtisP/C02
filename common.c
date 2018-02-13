@@ -32,4 +32,23 @@ void prtpos()
   printf("(%s: %d,%d) ", inpnam, curlin, curcol);
 }
 
+/* Set comment to string */
+void setcmt(char *s)
+{
+  strcpy(cmtasm, s);
+}
 
+/* Append string to comment */
+void addcmt(char *s)
+{
+  strcat(cmtasm, s);
+}
+
+/* Append character to comment */
+void chrcmt(char c)
+{
+  if (cmtasm[0] == 0 && c == ' ') return;
+  int i = strlen(cmtasm);
+  cmtasm[i++] = c;
+  cmtasm[i] = 0;
+}

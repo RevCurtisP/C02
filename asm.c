@@ -10,32 +10,8 @@
 
 #include "common.h"
 #include "files.h"
-#include "parse.h"
+//#include "parse.h"
 #include "asm.h"
-
-char asmcmt[LINELEN];  //Processed Assembly Language Comment
-
-/* Set comment to string */
-void setcmt(char *s)
-{
-  strcpy(cmtasm, s);
-}
-
-/* Append string to comment */
-void addcmt(char *s)
-{
-  //strcat(cmtasm, " ");
-  strcat(cmtasm, s);
-}
-
-/* Append character to comment */
-void chrcmt(char c)
-{
-  if (cmtasm[0] == 0 && c == ' ') return;
-  int i = strlen(cmtasm);
-  cmtasm[i++] = c;
-  cmtasm[i] = 0;
-}
 
 /* Process comment */
 void prccmt()
@@ -84,5 +60,3 @@ void prolog()
   strcat(cmtasm, srcnam);
   cmtlin();
 }
-
-

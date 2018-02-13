@@ -10,27 +10,28 @@
 
 #include "common.h"
 #include "files.h"
+#include "asm.h"
 #include "parse.h"
 
 /* Various tests against nxtchr */
 int match(char c) {return TF(nxtchr == c);}
 int inbtwn(char mn, char mx) {return TF(nxtchr >= mn && nxtchr <= mx);}
-int isprnt() {return isprint(nxtchr);}
 int isalph() {return isalpha(nxtchr);}
 int isanum() {return isalnum(nxtchr);}
-int isdec()  {return inbtwn('0', '9');}
-int ishexd() {return TF(isdec() || inbtwn('A', 'Z'));}
-int isbin()  {return inbtwn('0', '1');}
-int isnl()   {return TF(match('\n') || match('\r'));}
-int isspc()  {return isspace(nxtchr);}
-int isnpre() {return TF(isdec() || match('$') || match('%'));}
 int isapos() {return match('\'');}
+int isbin()  {return inbtwn('0', '1');}
 int isbpre() {return TF(isnpre() || isapos());}
-int ishash() {return match('#');}
 int iscpre() {return TF(isbpre() || ishash());}
-int isvpre() {return TF(isalph() || iscpre());}
+int isdec()  {return inbtwn('0', '9');}
+int ishash() {return match('#');}
+int ishexd() {return TF(isdec() || inbtwn('A', 'Z'));}
+int isnl()   {return TF(match('\n') || match('\r'));}
+int isnpre() {return TF(isdec() || match('$') || match('%'));}
 int isoper() {return TF(strchr("+-&|^", nxtchr));}
 int ispopr() {return TF(strchr("+-<>", nxtchr));}
+int isprnt() {return isprint(nxtchr);}
+int isspc()  {return isspace(nxtchr);}
+int isvpre() {return TF(isalph() || iscpre());}
 int isxpre() {return TF(isvpre() || match('-'));}
 
 /* Conversion Functions */
@@ -141,6 +142,7 @@ void getwrd()
   word[wrdlen] = 0;
 }
 
+/* Escape Character */
 char escape(char c) 
 {
   DEBUG("Escaping character '%c'\n", c);
@@ -151,7 +153,6 @@ char escape(char c)
 }
 
 /* Get String */
-
 void getstr() {
   char strdel, tmpchr;
   int wrdlen = 0, escnxt = FALSE;
@@ -309,11 +310,13 @@ int prsnum(int maxval)
   return number;
 }
 
+/* Parse Nuneric Byte Value */
 int prsbyt()
 {
   return prsnum(0xFF);
 }
 
+/* Find Defined Constant */
 void fnddef(char *name)
 {
   DEBUG("Looking up defined constant '%s'\n", word);
@@ -324,6 +327,7 @@ void fnddef(char *name)
   defidx = -1;
 }
 
+/* Parse Definition */
 int prsdef()
 {
   expect('#');
@@ -368,20 +372,6 @@ int gettyp()
   else return VARIABLE;
 }
 
-/* Parse next word as variable or function name *
- * Args: alwreg - Allow Register Names          *
- * Sets: value - Identifier Name                *
- *       valtyp - Identifier Type               */
-void prsvar(int alwreg) 
-{
-  getwrd();
-  valtyp = gettyp();
-  if (valtyp != FUNCTION) chksym(alwreg, word);
-  strcpy(value, word);
-  DEBUG("Parsed variable '%s'\n", value);
-  ACMNT(word);
-}
-
 /* Parse arithmetic or bitwise operator */
 void prsopr()
 {
@@ -393,6 +383,7 @@ void prsopr()
   skpspc();
 }
 
+/* Process Array Index */
 void prcidx(char *name, char *index)
 {
   if (strlen(index)) { 
@@ -401,6 +392,14 @@ void prcidx(char *name, char *index)
   }
 }
 
+/* Generate Post-Operation Error */
+void poperr(char* name) 
+{
+  fprintf(stderr, "Illegal post-operation %c%c on register %s\n", oper, oper, name);
+  exterr(EXIT_FAILURE);
+}
+
+/* Process Post Operator */
 void prcpst(char* name, char *index) 
 {
   DEBUG("Processing post operation '%c'\n", oper);
@@ -413,7 +412,7 @@ void prcpst(char* name, char *index)
       else if (strcmp(name, "Y")==0)
         asmlin("INY", "");
       else if (strcmp(name, "A")==0)
-        poperr(); //65C02 supports implicit INC, 6502 does not
+        poperr(name); //65C02 supports implicit INC, 6502 does not
       else 
         asmlin("INC", name);
       break;
@@ -423,15 +422,15 @@ void prcpst(char* name, char *index)
       else if (strcmp(name, "Y")==0)
         asmlin("DEY", "");
       else if (strcmp(name, "A")==0)
-        poperr(); //65C02 supports implicit DEC, 6502 does not
+        poperr(name); //65C02 supports implicit DEC, 6502 does not
       else 
         asmlin("DEC", name);
       break;
     case '<':
       if (strcmp(name, "X")==0)
-        poperr(); //Index Register Shift not Supported
+        poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "Y")==0)
-        poperr(); //Index Register Shift not Supported
+        poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "A")==0)
         asmlin("ASL", "");
       else
@@ -439,9 +438,9 @@ void prcpst(char* name, char *index)
       break;
     case '>':
       if (strcmp(name, "X")==0)
-        poperr(); //Index Register Shift not Supported
+        poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "Y")==0)
-        poperr(); //Index Register Shift not Supported
+        poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "A")==0)
         asmlin("LSR", "");
       else
@@ -470,5 +469,3 @@ int prspst(char trmntr, char* name, char* index) {
   }
   return oper;
 }
-
-

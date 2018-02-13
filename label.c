@@ -72,14 +72,16 @@ void newlbl(char* lbname)
   DEBUG("Generated new label '%s'\n", lbname);
 }
 
-/* if label is blank, generate a new one */
+/* Check Label Contents             *
+ * If lbname is blank, generate new * 
+ * label and copy into lbname       */
 void chklbl(char* lbname) 
 {
   if (lbname[0]) return;
   newlbl(lbname);
 }
 
-/* require label                               *
+/* Require Label                               *
  * if label is already set, returns that label *
  * else generates new label and sets it        */
 void reqlbl(char* lbname) 
@@ -139,4 +141,3 @@ void pshlbl(int lbtype, char* lbname)
   lblblk[lblcnt++] = FALSE;
   DEBUG("Pushed label '%s' onto stack\n", lbname);
 }
-

@@ -2,10 +2,6 @@
  * C02 Common Definitions & Routines *
  *************************************/
 
-#ifndef COMMON_H
-
-#define COMMON_H          //Define Guard
-
 #define FNAMLEN 255       //Maximum File Name Length
 #define LINELEN 255       //Maximum Input/Output Line Length
 #define DEFLEN 6          //Maximum Definition Text Length
@@ -36,12 +32,11 @@
 #define DEBUG(fmt, val) if (debug) {prtpos(); printf(fmt, val);}
 #define DETAIL(fmt, val) if (debug) {printf(fmt, val);}
 #define ERROR(fmt, val, err) if (debug) {fprintf(stderr, fmt, val);exterr(err);}
-#define SCMNT(str) if (gencmt) {setcmt(str);}
-#define ACMNT(str) if (gencmt) {addcmt(str);}
-#define CCMNT(chr) if (gencmt) {chrcmt(chr);}
 
-int gencmt;        //Generate Assembly Language Comments
 int debug;         //Print Debug Info (TRUE or FALSE)
+
+int  gencmt;           //Generate Assembly Language Comments
+char asmcmt[LINELEN];  //Processed Assembly Language Comment
 
 int curcol, curlin;  //Position in Source Code
 int savcol, savlin;  //Save Position in Source Code
@@ -50,16 +45,25 @@ int nxtchr; //Next Character of Source File to Process
 int nxtupc; //Next Character Converted to Uppercase
 int savchr; //Holds nxtchr when switching input files
 
+char word[LINELEN];   //Word parsed from source file
+char uword[LINELEN];  //Word converted too uppercase
+char cmtasm[LINELEN]; //Assembly Language Comment Text
+
 char incdir[FNAMLEN]; //Include File Directory
 char inpnam[FNAMLEN]; //Include File Name 
 
 int alcvar; //Allocate Variables Flag
-
+int inblck; //Multiline Block Flag
 int lsrtrn; //Last Statement was a Return
 
-void exterr(int errnum); //Print current file name & position and exit
-void expctd(char *expected); //Print Expected message and exit
+void exterr(int errnum);        //Print current file name & position and exit
+void expctd(char *expected);    //Print Expected message and exit
+void prtpos();                  //Print current file name and position
+void setblk(int blkflg);        //Set Block Flag for Last Label
 
-void prtpos(); //Print current file name and position
-
-#endif
+void addcmt(char *s);   //Append string to comment
+void chrcmt(char c);    //Append character to comment
+void setcmt(char *s);   //Set comment to string
+#define SCMNT(str) if (gencmt) {setcmt(str);}
+#define ACMNT(str) if (gencmt) {addcmt(str);}
+#define CCMNT(chr) if (gencmt) {chrcmt(chr);}

@@ -12,10 +12,13 @@
 #include "files.h"
 #include "asm.h"
 #include "parse.h"
+#include "label.h"
 #include "vars.h"
+#include "stmnt.h"
+#include "dclrtn.h"
 #include "include.h"
 
-/* Reads next include file name from Source File  *
+/* Read next include file name from Source File  *
  * Sets: incnam - the include file name         */
 void pincnm()
 {
@@ -79,7 +82,6 @@ void pascii()
     fprintf(stderr, "Unrecognized option '%s'\n", word);
     exterr(EXIT_FAILURE);
   }
-
 }
 
 /* Parse Origin Subdirective */
@@ -90,7 +92,7 @@ void porign()
   DEBUG("Set origin to %s\n", value);
 }
 
-/* Parse Origin Subdirective */
+/* Parse Zeropage Subdirective */
 void prszpg()
 {
   zpaddr = prsnum(0xFF); //Set Zero Page Address to Constant
@@ -202,10 +204,6 @@ void inchdr() {
   nxtchr = savchr;
 }
 
-/* Process header include file  */
-void include_hfil() {
-  ERROR("Header files with extension .h not supported", 0, EXIT_FAILURE);
-}
 /* Process include file                    */
 void pincfl() 
 {
@@ -220,8 +218,6 @@ void pincfl()
     incasm();
   if (strcmp(dot, ".asm") == 0) 
     incasm();
-  else if (strcmp(dot, ".h") == 0) 
-    include_hfil();
   else if (strcmp(dot, ".h02") == 0) { 
     inchdr();  //Process Header File
     strcpy(dot, ".a02");
@@ -243,5 +239,3 @@ void logdef()
     fprintf(logfil, "%-31s %5d\n", defnam[i], defval[i]);
   }
 }
-
-

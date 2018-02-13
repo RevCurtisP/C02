@@ -22,6 +22,7 @@
 #include "label.h"   //Label Parsing, Generation, and Lookup
 #include "cond.h"    //Conditional Parsing
 #include "stmnt.h"   //Statement Compiling Code
+#include "dclrtn.h"   //Statement Compiling Code
 #include "include.h" //Include File Parsing
 
 /* Initilize Compiler Variables */

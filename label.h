@@ -2,8 +2,6 @@
  * C02 Label Parsing, Generation, and Lookup Routines *
  ******************************************************/
 
-int  inblck;                       //Multiline Block Flag
-
 char curlbl[LABLEN+1];             //Most recently generated label
 char cndlbl[LABLEN+1];             //Label for Conditional Code
 char endlbl[LABLEN+1];             //End Label
@@ -21,8 +19,14 @@ char lbltmp[LABLEN+1];             //Label Temporary Storage
 enum ltypes {LTNONE, LTIF, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
 enum lflags {LFNONE, LFBGN, LFEND}; //Label Flag Types
 
-void prslbl();              //Parse Label From Code
+void chklbl(char* lbname);  //Check Label Contents
+int  lstlbl(int lbflag);    //Find Last Label of Specified Types *
 void newlbl(char* lbname);  //Generate New Block Label
-int  poplbl();              //Pull Last Label and Emit on Next Line
-void setlbl();              //Emit word as Label on Next Line
+int  poplbl();              //Pop Last Label and Emit on Next Line
+void prslbl();              //Parse Label From Code
+void pshlbl(int lbtype, char* lbname);  //Push Label onto Stack
+void reqlbl(char* lbname);  //Require Label
+void setblk(int blkflg);    //Set Block Flag for Last Label
+void setlbl(char *lblset);  //Emit word as Label on Next Line
+int  toplbl(char *rtlbl);    //Get Top Label and Return Type
 

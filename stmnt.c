@@ -7,13 +7,44 @@
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
+
 #include "common.h"
 #include "asm.h"
 #include "parse.h"
-#include "vars.h"
 #include "label.h"
+#include "vars.h"
+#include "cond.h"
 #include "expr.h"
 #include "stmnt.h"
+
+/* Begin Program Block */
+void bgnblk(char blkchr)
+{
+  DEBUG("Begining program block\n", 0);
+  if (blkchr) {
+    expect(blkchr);
+    inblck = TRUE;
+  }
+  else
+    inblck = look('{');
+  DEBUG("Set inblck to %d\n", inblck);
+  setblk(inblck);
+}
+
+/* End Program Block                        *
+ * Args: blkflg: End of Multiline Block     */
+void endblk(int blkflg)
+{
+  int lbtype;
+  DEBUG("Ending program block with flag %d\n", blkflg);
+  expect('}'); //Block End Character
+  DEBUG("Found inblck set to %d\n", inblck);
+  if (inblck != blkflg)
+    ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE);
+  lbtype = poplbl();
+  if (lbtype == LTDO)
+    pdowhl(); //Parse While at End of Do Loop
+}
 
 /* Parse Shortcut If */
 void prssif(char trmntr) {
@@ -58,12 +89,6 @@ void prcasn(char trmntr)
   }
 }
 
-void poperr() 
-{
-  fprintf(stderr, "Illegal post-operation %c%c on register %s\n", oper, oper, asnvar);
-  exterr(EXIT_FAILURE);
-}
-
 /* Process Variable at Beginning of Statement */
 void prcvar(char trmntr)
 {
@@ -89,20 +114,6 @@ void prcvar(char trmntr)
   }
   else
     prcasn(trmntr);
-}
-
-/* Begin Program Block */
-void bgnblk(char blkchr)
-{
-  DEBUG("Begining program block\n", 0);
-  if (blkchr) {
-    expect(blkchr);
-    inblck = TRUE;
-  }
-  else
-    inblck = look('{');
-  DEBUG("Set inblck to %d\n", inblck);
-  setblk(inblck);
 }
 
 /* Parse 'asm' String Parameter */
@@ -405,21 +416,6 @@ void prssym()
     prcvar(';'); //Parse Assignment
 }
 
-/* End Program Block                    *
- * Args: blkflg: End of Multiline Block */
-void endblk(int blkflg)
-{
-  int lbtype;
-  DEBUG("Ending program block with flag %d\n", blkflg);
-  expect('}'); //Block End Character
-  DEBUG("Found inblck set to %d\n", inblck);
-  if (inblck != blkflg)
-    ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE);
-  lbtype = poplbl();
-  if (lbtype == LTDO)
-    pdowhl(); //Parse While at End of Do Loop
-}
-
 /* parse and compile program statement */
 void pstmnt()
 {
@@ -487,4 +483,3 @@ void pstmnt()
       pdowhl(); //Parse While at End of Do Loop
   }
 }
-

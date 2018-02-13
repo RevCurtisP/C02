@@ -17,7 +17,7 @@
 int  cmprtr;    //Encoded Comparison Operator
 int  cmpenc;    //Encoded Comparator Character
 
-/* Convert Comparison Operator Character *
+/* Encode Comparison Operator Character *
  * Args: Comparison Operator Character   *
  * Returns: Comparison Operator Bit Mask */
 int enccmp(char c) 
@@ -139,4 +139,3 @@ void prscnd(char trmntr, int revrse)
     prscmp(revrse);  //Parse Comparison Operator
   expect(trmntr);
 }
-

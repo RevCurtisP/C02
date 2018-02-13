@@ -14,10 +14,13 @@ char lognam[FNAMLEN]; //Log File Name
 char incnam[FNAMLEN]; //Include File Name 
 
 void opnsrc();   //Open Source File
-void clssrc();  //Close Source File
+void clssrc();   //Close Source File
 
 void opnout();   //Open Output File
-void clsout();  //Close Output File
+void clsout();   //Close Output File
+
+void opnlog();   //Open Log File
+void clslog();   //Close Log File
 
 void opninc();   //Open Include File
-void clsinc();  //Close Include File
+void clsinc();   //Close Include File

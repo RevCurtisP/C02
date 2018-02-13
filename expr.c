@@ -43,7 +43,7 @@ void prsidx()
   expect(']');
 }
 
-/* Check for, Parse, and Process index */
+/* Check for, Parse, and Process Index */
 void chkidx()
 {
   //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp);
@@ -65,7 +65,7 @@ void chkidx()
   }
 }
 
-/* Parse term in  expression           *
+/* Parse Term in Expression           *
  * Sets: term - the term (as a string) */
 void prstrm()
 {
@@ -81,7 +81,7 @@ void prstrm()
   skpspc();
 }
 
-/* Compile Address Reference */
+/* Process Address Reference */
 void prcadr(int adract, char* symbol)
 {
   DEBUG("Processing address '%s'\n", word);
@@ -115,7 +115,7 @@ void prsadr(int adract)
 }
 
 /* Parse and Create Anonymous String */
-void prsstr(adract)
+void prsstr(int adract)
 {
   DEBUG("Parsing anonymous string\n", 0);
   newlbl(vrname);         //Generate Variable Name
@@ -128,7 +128,7 @@ void prsstr(adract)
 }
 
 /* Check for and Process Address or String */
-int chkadr(adract)
+int chkadr(int adract)
 {
   DEBUG("Checking for Address or String\n", 0);
   int result = TRUE;
@@ -249,4 +249,3 @@ void prsxpr(char trmntr)
   } 
   expect(trmntr);
 }
-
