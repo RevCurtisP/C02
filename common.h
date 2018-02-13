@@ -56,6 +56,7 @@ char inpnam[FNAMLEN]; //Include File Name
 int alcvar; //Allocate Variables Flag
 int inblck; //Multiline Block Flag
 int lsrtrn; //Last Statement was a Return
+int fcase;  //First Case Statement  
 
 void exterr(int errnum);        //Print current file name & position and exit
 void expctd(char *expected);    //Print Expected message and exit

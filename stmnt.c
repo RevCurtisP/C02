@@ -323,8 +323,9 @@ void pslct() {
   expect('(');
   prsxpr(')');            //Parse Expression
   newlbl(endlbl);         //Create New Label
-  pshlbl(LTSLCT,endlbl);   //Push Onto Stack
+  pshlbl(LTSLCT,endlbl);  //Push Onto Stack
   bgnblk('{');            //Require Beginning of Block
+  fcase = TRUE;
   strcpy(xstmnt, "CASE"); //Require Next Statement to be CASE
 }
 
@@ -341,10 +342,7 @@ void ecase() {
 
 /* parse and compile select statement */
 void pcase() {
-  int fcase = (strcmp(xstmnt, "CASE") == 0);
-  if (fcase)
-    xstmnt[0] = 0;  //Clear xstmnt
-  else 
+  if (!fcase)
 	ecase("CASE");  //Process end of case block
   skplbl[0] = 0;           //Clear Skip Label
   newlbl(cndlbl);          //Create Conditional Label
@@ -365,6 +363,7 @@ void pcase() {
   }
   if (skplbl[0])
     setlbl(skplbl); //Set CASE block label if defined
+  fcase = FALSE;
 }
 
 /* parse and compile default statement */

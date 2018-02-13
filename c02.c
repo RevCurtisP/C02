@@ -45,6 +45,7 @@ void init()
   vrwrtn = FALSE;
   zpaddr = 0;
   invasc = FALSE;
+  fcase = FALSE;
 }
 
 /* Reads and parses the next Word in Source File */
@@ -54,8 +55,12 @@ void pword()
   getwrd();
   ACMNT(word);
   DEBUG("Parsing Word '%s'\n", word);
-  if (xstmnt[0] && !wordis(xstmnt))
+  if (xstmnt[0]) {
+    if (wordis(xstmnt))
+      xstmnt[0] = 0;  //Clear xstmnt
+    else
       ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE);
+  }
   if (!pmodfr() && !ptype(MTNONE))
     pstmnt();     //Parse Statement
 }
