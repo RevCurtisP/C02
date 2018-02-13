@@ -29,11 +29,12 @@
 #define TRUE -1
 #define FALSE 0
 
+void prtpos();  //Print current file name and position
 #define DEBUG(fmt, val) if (debug) {prtpos(); printf(fmt, val);}
 #define DETAIL(fmt, val) if (debug) {printf(fmt, val);}
 #define ERROR(fmt, val, err) if (debug) {fprintf(stderr, fmt, val);exterr(err);}
 
-int debug;         //Print Debug Info (TRUE or FALSE)
+int debug;  //Print Debug Info (TRUE or FALSE)
 
 int  gencmt;           //Generate Assembly Language Comments
 char asmcmt[LINELEN];  //Processed Assembly Language Comment
@@ -58,8 +59,6 @@ int lsrtrn; //Last Statement was a Return
 
 void exterr(int errnum);        //Print current file name & position and exit
 void expctd(char *expected);    //Print Expected message and exit
-void prtpos();                  //Print current file name and position
-void setblk(int blkflg);        //Set Block Flag for Last Label
 
 void addcmt(char *s);   //Append string to comment
 void chrcmt(char c);    //Append character to comment

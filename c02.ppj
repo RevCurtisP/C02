@@ -8,7 +8,7 @@ POC_PROJECT_TYPE = 3#
 POC_PROJECT_OUTPUTDIR = output#
 POC_PROJECT_RESULTDIR = .#
 POC_PROJECT_ARGUMENTS = #
-POC_PROJECT_WORKPATH = #
+POC_PROJECT_WORKPATH = .#
 POC_PROJECT_EXECUTOR = #
 POC_PROJECT_ZIPEXTRA = #
 CC = pocc.exe#
@@ -28,8 +28,8 @@ LIB = $(PellesCDir)\Lib\Win;$(PellesCDir)\Lib#
 # Build c02.exe.
 # 
 c02.exe: \
-	output\c02.obj \
 	output\asm.obj \
+	output\c02.obj \
 	output\common.obj \
 	output\cond.obj \
 	output\expr.obj \
@@ -38,7 +38,8 @@ c02.exe: \
 	output\label.obj \
 	output\parse.obj \
 	output\stmnt.obj \
-	output\vars.obj
+	output\vars.obj \
+	output\dclrtn.obj
 	$(LINK) $(LINKFLAGS) -out:"$@" $**
 
 # 
@@ -49,6 +50,7 @@ output\c02.obj: \
 	asm.h \
 	common.h \
 	cond.h \
+	dclrtn.h \
 	expr.h \
 	files.h \
 	include.h \
@@ -65,8 +67,7 @@ output\asm.obj: \
 	asm.c \
 	asm.h \
 	common.h \
-	files.h \
-	parse.h
+	files.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 
@@ -120,9 +121,12 @@ output\include.obj: \
 	include.c \
 	asm.h \
 	common.h \
+	dclrtn.h \
 	files.h \
 	include.h \
+	label.h \
 	parse.h \
+	stmnt.h \
 	vars.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
@@ -142,6 +146,7 @@ output\label.obj: \
 # 
 output\parse.obj: \
 	parse.c \
+	asm.h \
 	common.h \
 	files.h \
 	parse.h
@@ -154,6 +159,7 @@ output\stmnt.obj: \
 	stmnt.c \
 	asm.h \
 	common.h \
+	cond.h \
 	expr.h \
 	label.h \
 	parse.h \
@@ -174,6 +180,22 @@ output\vars.obj: \
 	vars.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
-.EXCLUDEDFILES:
+# 
+# Build dclrtn.obj.
+# 
+output\dclrtn.obj: \
+	dclrtn.c \
+	asm.h \
+	common.h \
+	cond.h \
+	dclrtn.h \
+	expr.h \
+	label.h \
+	parse.h \
+	stmnt.h \
+	vars.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 .SILENT:
+
+.EXCLUDEDFILES:

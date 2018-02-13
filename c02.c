@@ -32,7 +32,6 @@ void init()
   defcnt = 0;
   varcnt = 0;
   lblcnt = 0;
-  cmpsgn = 0;
   curcol = 0;
   curlin = 0;
   inpfil = srcfil;
@@ -78,6 +77,15 @@ void pdrctv()
     pprgma();
   else
     ERROR("Illegal directive %s encountered\n", word, EXIT_FAILURE);
+}
+
+void prolog()
+{
+  DEBUG("Writing Assembly Prolog\n", 0);
+  asmlin(CPUOP,CPUARG);
+  setcmt("Program ");
+  addcmt(srcnam);
+  cmtlin();
 }
 
 void epilog()

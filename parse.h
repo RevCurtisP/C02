@@ -22,7 +22,6 @@ int  defidx;                     //Index into Definition Tables
 int invasc;                    //Invert ASCII Flag
 
 int match(char c);             //Does Next Character match c
-int inbtwn(char mn, char mx);  //Is Next Character in Range ()mn - mx)
 int isalph();                  //Is Next Character Alphabetic
 int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
@@ -41,32 +40,19 @@ int isspc();                   //Is Next Character a Space
 int isvpre();                  //Is Next Character a Value Prefix
 int isxpre();                  //Is Next Character an Expression Prefix
 
-
-
-char escape(char c);        //Escape Character
 void expect(char c);        //Look for Character and Exit if not found
-void fnddef(char *name);    //Find Definition
 char getnxt();              //Return Next Character and Advance
 void getstr();              //Get String
 int  gettyp();              //Get Value Type
 void getwrd();              //Get Next Word
-char invchr(char c);        //Invert Character Case
 int  look(char c);          //Look for Character 
-void prcidx(char *name, char *index);   //Process Array Index
-void prcpst(char* name, char *index);   //Process Post Operator
-int  prsbin();              //Parse Binary Number
 int  prsbyt();              //Parse Numeric Byte
-int  prschr();              //Parse Character Constant
 void prscon();              //Parse a Constant
-int  prsdec();              //Parse Decimal Number 
-int  prsdef();              //Parse Definition
-int  prshex();              //Parse Hexadecimal Number
 int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
 int  prspst(char trmntr, char* name, char* index);  //Parse Post Operator
 void skpchr();              //Skip Next Character
 void skpcmt();              //Skip to End of Comment
-void skpeol();              //Skip to End of Line 
 void skpspc();              //Advance to Next Printable Character
-int wordis(char *s);        //Does word match s
+int  wordis(char *s);       //Does word match s
 

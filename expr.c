@@ -77,7 +77,6 @@ void prstrm()
   strcpy(term, value);
   DEBUG("Parsed term %s\n", term);
   chkidx();  //Check for Array Index
-  //chkpst = ispopr(); //Check for Post-Op
   skpspc();
 }
 

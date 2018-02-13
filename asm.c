@@ -42,21 +42,3 @@ void cmtlin()
   fprintf(outfil, "; %s\n", cmtasm);
   setcmt("");
 }
-
-/* Output a variable definition line *
- * Uses: word - assembly oprnd     */
-void equlin()
-{
-  fprintf(outfil, ASMFMT, lblasm, EQUOP, word, "");
-  if (debug) printf(ASMFMT, lblasm, EQUOP, word, "");
-  lblasm[0] = 0;
-}
-
-void prolog()
-{
-  DEBUG("Writing Assembly Prolog\n", 0);
-  asmlin(CPUOP,CPUARG);
-  strcpy(cmtasm, "Program ");
-  strcat(cmtasm, srcnam);
-  cmtlin();
-}

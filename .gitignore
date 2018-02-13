@@ -1,3 +1,10 @@
+#Compiled source code
+*.exe
+
+#Pelles C Auxillary Files
+*.ppx
+*.tag
+
 #Files created when compiling a C02 program
 */*.asm
 */*.bin

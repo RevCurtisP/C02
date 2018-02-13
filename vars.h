@@ -41,13 +41,9 @@ int  prmcnt;                    //Number of Parameters
 
 void addvar(int m, int t);      //Parse and Compile Variable Declaration
 void chksym(int alwreg, char *name); //Error if Variable not defined
-int  fndvar(char *name);        //Lookup variable name in variable table
 void prsdts();                  //Parse Data String
 void setdat();                  //Set Variable Data
 void setvar(int m, int t);      //Set Variable Name and Size
-void pdecl(int m, int t);       //Parse Variable Declaration
-void prsdat();                  //Parse and store variable data
-void prsdta();                  //Parse Data Array
 void prsdts();                  //Parse Data String
 void prsvar(int alwreg);        //Parse Variable
 void reqvar(int alwary);        //Require and Parse Variable Name

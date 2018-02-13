@@ -28,5 +28,5 @@ void pshlbl(int lbtype, char* lbname);  //Push Label onto Stack
 void reqlbl(char* lbname);  //Require Label
 void setblk(int blkflg);    //Set Block Flag for Last Label
 void setlbl(char *lblset);  //Emit word as Label on Next Line
-int  toplbl(char *rtlbl);    //Get Top Label and Return Type
+int  toplbl(char *rtlbl);   //Get Top Label and Return Type
 
