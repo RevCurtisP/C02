@@ -1,0 +1,109 @@
+;Apple 1 program initialization code for c02 programs
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $5F     ;Delete/Backspace Key (Left Arrow/Underscore)
+ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
+
+;Locations used by Monitor 
+XAML    EQU $24     ;Examine Index
+XAMH    EQU $25     ;
+STL     EQU $26     ;Store Index
+STH     EQU $27     ;
+HEXL    EQU $28     ;Hex Data
+HEXH    EQU $29     ;
+YSAVE   EQU $2A     ;Y Register Storage
+MODE    EQU $2B     ;Mode: Store, Examine, Block Examine
+BUFFER  EQU $200    ;Input Buffer
+
+;Standard Library Variables
+SRCLO   EQU $30     ;Source String Pointer (stdio.a02)
+SRCHI   EQU $31
+DSTLO   EQU $32     ;Destination String Pointer (string.a02)
+DSTHI   EQU $33
+BLKLO   EQU $34     ;Block Segment Pointer (block.a02)
+BLKHI   EQU $35
+PTRLO   EQU $35     ;System Pointer (pointer.a02)
+PTRHI   EQU $36
+
+RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
+RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
+
+TEMP0   EQU $40     ;Temporary Storage
+TEMP1   EQU $41
+TEMP2   EQU $42
+TEMP3   EQU $43
+
+BLKSLO  EQU $4A     ;Block Start Address
+BLKSHI  EQU $4B
+BLKELO  EQU $4C     ;Block End Address
+BLKEHI  EQU $4D
+BLKLEN  EQU $4E     ;Block Segment Length    
+
+
+;PIA 6820 Registers
+KBD     EQU $D010   ;Keyboard Data
+KBDCR   EQU $D011   ;Keyboard Control Register
+DSP     EQU $D012   ;Display Data
+DSPCR   EQU $D013   ;Display Control Register
+
+EXIT    EQU $FF00   ;Monitor Entry Point
+ECHO    EQU $FFEF   ;Subroutine - Print Character in Accumulator
+PRBYTE  EQU $FFDC   ;Subroutine - Print Accumulator as Hexadadecimal number
+PRHEX   EQU $FFE5   ;Subroutine - Print Low Nybble of Accumulator as Hex Digit
+
+        ORG $0300   ;Start one page above Monitor input buffer
+
+START:  LDX #$FF    ;Reset stack - the monitor doesn't do this
+        TXS         ;  (probably because of lack of space) 
+        LDA #$0D    ;Move cursor to next line before 
+        JSR ECHO    ;  executing program
+        JMP MAIN    ;Execute Program
+
+
+;Subroutine Poll Keyboard
+PLKEY:  INC RDSEED  ;Cycle Keypress Counter       
+        BIT KBDCR   ;Check the Keyboard Control Register
+        BMI RDKEYA  ;If Key Pressed, Read Key 
+        LDA #0      ;Otherwise Return ASCII NUL
+        RTS
+
+RDKEY:  INC RDSEED  ;Cycle Keypress Counter
+RDKEYC: BIT KBDCR   ;Check the Keyboard Control Register
+        BPL RDKEYC  ;  and loop if key not pressed
+RDKEYA: LDA KBD     ;  Read key into Accumulator
+        RTS
+
+GETKEY: JSR RDKEY   ;Subroutine - Read ASCII from Keyboard
+GETKEA: AND #$7F    ;Strip High Bit
+        BIT GETKEM  ;If Character is in   
+        BEQ GETKEX  ;  Alpha Block ($40-$74)
+        AND #$5F    ;  Strip Bit 5
+GETKEX: RTS 
+GETKEM: DC  $40     ;Character Block Bit Mask        
+
+PRCHR   EQU ECHO    ;Alias to Monitor Routine
+
+;Delete Previous Character
+DELCHR: LDA #DELKEY ;Load Underscore Character
+        JMP PRCHR   ;  and Print it
+
+;Advance Character to Next line
+NEWLIN: LDA #$0D    ;Load C/R into Accumulator
+        JMP PRCHR   ;  and Print it
+
+;Initialize Destination String Pointer and Index
+SETDST: STX DSTLO       ;Save Destination String Pointer
+        STY DSTHI
+        RTS
+
+;Initialize Source String Pointer and Index
+SETSRC: STX SRCLO       ;Save Source String Pointer
+        STY SRCHI
+        LDY #$00        ;Initialize Index Into String
+        RTS
+
+;Retrieve Source String Pointer
+GETSRC: LDX SRCLO
+        LDY SRCHI
+        RTS

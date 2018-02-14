@@ -1,0 +1,12 @@
+/* py65mon Header File */
+
+//Memory Mapped I/O
+char putc;        //Write Character to Console
+char getc;        //Read Character from Console
+
+//System Subroutines
+char plkey();     //Poll Console for character
+char rdkey();     //Wait for character from Console
+char getkey();    //Read ASCII character from Console
+void prchr();     //Print ASCII character to Console
+
