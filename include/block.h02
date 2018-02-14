@@ -16,7 +16,7 @@ void blkend();
 /* Read Bytes from Block                     * 
  * Args: n  - Number of bytes to read        *
  *       &m - Array containing bytes to read *
- * Returns: A=$FF if bytes were written      *
+ * Returns: A=$FF if bytes were read         *
  *            $00 if block was overflowed    */
 char blkget();
 

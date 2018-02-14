@@ -8,6 +8,7 @@
 #Files created when compiling a C02 program
 */*.asm
 */*.bin
+*/*.dbg
 */*.log
 */*.lst
 */*.prg
@@ -19,3 +20,6 @@
 *.s9
 *.wav
 
+#Deprecated Files
+*/oldclude
+*/*.zip
