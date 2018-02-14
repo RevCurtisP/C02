@@ -1,0 +1,212 @@
+/************************************************
+ * TESTSL - Test Library stdlib.h02 for py65mon *
+ ************************************************/
+ 
+#include <py65.h02>
+#include <stdlib.h02>
+
+main:
+
+tstabs: //Test abs()
+char onum, anum, cnum;
+
+prchr('a');
+prchr('b');
+prchr('s');
+prchr(' ');
+
+//test abs() positive numbers
+onum = 0;
+aploop:
+  anum = abs(onum);
+  if (onum <> anum) goto abserr;
+  onum++;
+  if (onum < $80) goto aploop;
+
+//test abs() negative numbers
+anloop:
+  anum = abs(onum);
+  cnum = -onum;
+  if (anum <> cnum) goto abserr;
+  onum++;
+  if (onum > $00) goto anloop;
+  prchr('O');
+  prchr('K');
+  newlin(); 
+
+tstmlt: //Test mult()
+char mltplr, mltpnd, prodct, acmltr;
+
+mltplr = 1;
+mrloop:
+  prbyte(mltplr);
+  mltpnd = 1;
+  acmltr = 0;
+  mdloop:
+    acmltr = acmltr + mltplr;
+    prodct = mult(mltplr,mltpnd);
+    if (prodct <> acmltr) goto merror;
+    mltpnd++;
+    if (mltpnd > 0) goto mdloop;
+  mltplr++;
+  if (mltplr > 0) goto mrloop; 
+  newlin(); 
+  prchr('m');
+  prchr('u');
+  prchr('l');
+  prchr('t');
+  prchr(' ');
+  prchr('O');
+  prchr('K');
+  newlin(); 
+
+tstdiv: //Test div()
+char maxmpd, divdnd, divisr, quotnt;
+
+mltplr = 255;
+maxmpd = 1;
+drloop:
+  prbyte(mltplr);
+  mltpnd = 1;
+  acmltr = 0;
+  ddloop:
+    prbyte(mltpnd);
+    acmltr = acmltr + mltplr;
+    prodct = mult(mltplr, mltpnd);
+    quotnt = div(prodct, mltpnd);
+    if (quotnt <> mltplr) goto derror;
+    mltpnd++;
+    if (mltpnd < maxmpd) goto ddloop;
+  newlin();
+  mltplr>>;
+  maxmpd<<;
+  if (mltplr <> 0) goto drloop; 
+  newlin(); 
+  prchr('d');
+  prchr('i');
+  prchr('v');
+  prchr(' ');
+  prchr('O');
+  prchr('K');
+  newlin(); 
+
+
+tstrnd: //Test rand() and rands()
+char countr, rndnum, rndtbl[255];
+
+rands(1); //Seed Random Number Generator;
+
+countr = 0;
+
+riloop:
+  rndtbl[countr] = 0;
+  countr++;
+  if (countr <> 0) goto riloop;
+
+rnloop:
+  rndnum = rand();
+  if (rndtbl[rndnum] > 0) goto rnderr;
+  rndtbl[rndnum] = $FF;
+  prbyte(rndnum);
+  prchr(' ');
+  countr++;
+  if (countr < 255) goto rnloop;
+  newlin(); 
+  prchr('r');
+  prchr('a');
+  prchr('n');
+  prchr('d');
+  prchr(' ');
+  prchr('O');
+  prchr('K');
+  newlin(); 
+
+tstc2a: //Test ctoa();
+char srcchr, dstchr, tststr[4];
+
+srcchr = 0;
+caloop:
+  prbyte(srcchr);
+  prchr(' ');
+  ctoa(srcchr, &tststr);
+  dstchr = atoc(&tststr);
+  if (srcchr <> dstchr) goto c2aerr;
+  srcchr++;
+  if (srcchr <> 0) goto caloop;
+  newlin(); 
+  prchr('c');
+  prchr('t');
+  prchr('o');
+  prchr('a');
+  prchr(' ');
+  prchr('O');
+  prchr('K');
+  newlin(); 
+
+goto exit;
+
+abserr:
+  prchr('a');
+  prchr('b');
+  prchr('s');
+  prchr('(');
+  prbyte(onum);
+  prchr(')');
+  prchr('=');
+  prbyte(anum);
+  prchr(',');
+  prbyte(cnum);
+  newlin();
+  goto exit;
+
+merror:
+  newlin();
+  prbyte(mltplr);
+  prchr('*');
+  prbyte(mltpnd);
+  prchr('=');
+  prbyte(prodct);
+  prchr(',');
+  prbyte(acmltr);
+  newlin();
+goto exit;
+
+derror:
+  newlin();
+  prbyte(divdnd);
+  prchr('/');
+  prbyte(divisr);
+  prchr('=');
+  prbyte(quotnt);
+  prchr(',');
+  prbyte(mltplr);
+  newlin();
+goto exit;
+
+rnderr:
+  prchr('r');
+  prchr('a');
+  prchr('n');
+  prchr('d');
+  prchr('(');
+  prchr(')');
+  prchr('=');
+  prbyte(rndnum);
+  prchr(',');
+  prbyte(countr);
+  newlin();
+  goto exit;
+
+c2aerr:
+  prchr('c');
+  prchr('t');
+  prchr('o');
+  prchr('a');
+  prchr('(');
+  prbyte(srcchr);
+  prchr(')');
+  prchr('=');
+  prbyte(dstchr);
+  newlin();
+  goto exit;
+

@@ -1,0 +1,18 @@
+/****************************************
+ * TESTIF - Test C02 If/Then Statements *
+ ****************************************/
+ 
+#include <py65.h02>
+#include <stdio.h02>
+
+char true = $FF;
+char false = $00;
+char pass = " Passed";
+char fail = " Failed";
+
+main:
+puts("if (true):  "); if (true) putln(&pass); else putln(&fail);
+puts("if (false): "); if (false) putln(&fail); else putln(&pass);
+
+goto exit;
+

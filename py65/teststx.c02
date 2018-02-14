@@ -1,0 +1,115 @@
+/********************************************
+ * TESTSTX - Test Extended String Functions *
+ ********************************************/
+ 
+#include <py65.h02>
+#include <stdio.h02>
+#include <string.h02>
+#include <stringx.h02>
+
+char slen, sres;
+char span = "abcdef";
+char smax[128];
+char scba = "cba";
+char sfed = "fed";
+char sxyz = "xyz";
+char snul = "";
+char pass = "Pass  ";
+char fail = "Fail  ";
+
+
+void tests(slen) {
+
+  //Test scba
+  puts("strspn(&scba): ");
+  sres = strspn(&scba);
+  if (sres == 3) puts(&pass); else puts(&fail);
+
+  puts("strbrk(&scba): ");
+  sres = strbrk(&scba);
+  if (sres == 0) puts(&pass); else puts(&fail);
+
+  puts("strpbk(&scba): ");
+  sres = strpbk(&scba);
+  if (sres == 0) putln(&pass); else putln(&fail);
+
+  //Test span
+  puts("strspn(&span): ");
+  sres = strspn(&span);
+  if (sres == 6) puts(&pass); else puts(&fail);
+
+  puts("strbrk(&span): ");
+  sres = strbrk(&span);
+  if (sres == 0) puts(&pass); else puts(&fail);
+
+  puts("strpbk(&span): ");
+  sres = strpbk(&span);
+  if (sres == 0) putln(&pass); else putln(&fail);
+
+  //Test sfed
+  puts("strspn(&sfed): ");
+  sres = strspn(&sfed);
+  if (sres == 0) puts(&pass); else puts(&fail);
+
+  puts("strbrk(&sfed): ");
+  sres = strbrk(&sfed);
+  if (sres == 3) puts(&pass); else puts(&fail);
+
+  puts("strpbk(&sfed): ");
+  sres = strpbk(&sfed);
+  if (sres == 3) putln(&pass); else putln(&fail);
+
+  //Test sxyz
+  puts("strspn(&sxyz): ");
+  sres = strspn(&sxyz);
+  if (sres == 0) puts(&pass); else puts(&fail);
+
+  puts("strbrk(&sxyz): ");
+  sres = strbrk(&sxyz); 
+  if (sres == slen) puts(&pass); else puts(&fail);
+
+  puts("strpbk(&sxyz): ");
+  sres = strpbk(&sxyz);
+  if (sres == 255) putln(&pass); else putln(&fail);
+
+  //Test snull
+  puts("strspn(&snul): ");
+  sres = strspn(&snul);
+  if (sres == 0) puts(&pass); else puts(&fail);
+
+  puts("strbrk(&snul): ");
+  sres = strbrk(&snul);
+  if (sres == slen) puts(&pass); else puts(&fail);
+
+  puts("strpbk(&snul): ");
+  sres = strpbk(&snul);
+  if (sres == 255) putln(&pass); else puts(&fail);
+  newlin();
+
+}
+
+main:
+  //Initialize smax
+  char i;
+  for (i=0; i<128; i++) smax[i] = i & 15 + 'a';
+
+  //Display Test Strings
+  puts("span="); putln(&span);
+  puts("smax="); putln(&smax);
+  puts("scba="); putln(&scba);
+  puts("sxyz="); putln(&sxyz);
+  puts("snul="); putln(&snul);
+  newlin();
+
+  //Test span
+  putln("strdst(&span);");
+  strdst(&span);
+  tests(strlen(&span));
+
+  //Test smax
+  putln("strdst(&smax);");
+  strdst(&smax);
+  tests(strlen(&smax));
+  
+goto exit;
+

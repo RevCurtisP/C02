@@ -1,0 +1,124 @@
+/******************************************
+ * TESTSTR - Test Common String Functions *
+ ******************************************/
+ 
+#include <py65.h02>
+#include <stdio.h02>
+#include <string.h02>
+
+char slen, scmp, spos, stot;
+char frst  = "string one.";
+char scnd  = "string two.";
+char temp[32];
+char dest[32];
+char less = "less";
+char more = "more";
+char most = "most";
+char test = "test";
+char pass = "Pass  ";
+char fail = "Fail  ";
+
+main:
+  //Test strchr
+  puts("test="); putln(&test);
+  
+  puts("strchr('t', &test): ");
+  spos = strchr('t', &test); 
+  if (spos = 0) puts(&pass); else puts(&fail);
+
+  puts("strchr('s', &test): ");
+  spos = strchr('s', &test); 
+  if (spos = 2) puts(&pass); else puts(&fail);
+
+  puts("strchr('x', &test): ");
+  spos = strchr('x', &test);
+  if (spos = $FF) putln(&pass); else putln(&fail);
+
+  //Test strrch
+  
+  puts("strrch('t', &test): ");
+  spos = strrch('t', &test);
+  if (spos = 3) puts(&pass); else puts(&fail);
+
+  puts("strrch('s', &test): ");
+  spos = strrch('s', &test);
+  if (spos = 2) puts(&pass); else puts(&fail);
+
+  puts("strchr('x', &test): ");
+  spos = strchr('x', &test);
+  if (spos = $FF) putln(&pass); else putln(&fail);
+
+  //Test strlen 
+  puts("strlen(&test):      ");
+  slen = strlen(&test);
+  if (slen = 4) putln(&pass);
+  else putln(&fail);
+  newlin();
+  
+  //Test strcmp
+  puts("less="); puts(&less);
+  puts("  more="); puts(&more);
+  puts("  most="); putln(&most);
+
+  putln("strdst(&more)");
+  strdst(&more);
+  
+  puts("strcmp(&most): ");
+  scmp = strcmp(&most);
+  if (scmp :-) puts(&pass); else puts(&fail);
+  
+  puts("strcmp(&more): ");
+  scmp = strcmp(&more);
+  if (!scmp) puts(&pass); else puts(&fail);
+  
+  puts("strcmp(&less): ");
+  scmp = strcmp(&less);
+  if (scmp > 0) putln(&pass); else putln(&fail);
+  newlin();
+    
+  //Test strcpy, strcat, strstr
+  temp[0] = 0; //Clear temp
+  puts("temp="); puts(&temp);
+  puts("  frst="); puts(&frst);
+  puts("  scnd="); putln(&scnd);
+
+  putln("strdst(&temp)");
+  strdst(&temp);
+
+  puts("strcpy(&frst): ");
+  strcpy(&frst);
+  scmp = strcmp(&frst);
+  if (scmp = 0) puts(&pass); else puts(&fail);
+
+  puts("strcmp(&frst): ");
+  scmp = strcmp(&frst);
+  if (scmp = 0) puts(&pass); else puts(&fail);
+
+  puts("strcat(&scnd): ");
+  slen = strlen(&temp);
+  stot = strlen(&scnd) + slen;
+  strcat(&scnd);
+  if (strlen(&temp) == stot) putln(&pass); else putln(&fail);
+
+  puts("strstr(&frst): ");
+  spos = strstr(&frst);
+  if (spos = 0) puts(&pass); else puts(&fail);
+  
+  puts("strstr(&scnd): ");
+  spos = strstr(&scnd);
+  if (spos = slen) puts(&pass); else puts(&fail);
+  
+  puts("strstr(&test): ");
+  spos = strstr(&test);
+  if (spos = $FF) putln(&pass); else putln(&fail);
+
+  putln("strdst(&dest);");
+  strdst(&dest);
+  puts("strcut(slen, &temp): ");
+  stot = strcut(slen, &temp);
+  scmp = strcmp(&scnd);
+  if (scmp = 0) putln(&pass);
+  else putln(&fail);
+  
+goto exit;
+

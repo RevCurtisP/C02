@@ -1,0 +1,60 @@
+/**********************************************
+ * TESTCT - Test Library ctype.h02 in py65mon *
+ **********************************************/
+ 
+#include <py65.h02>
+#include <ctype.h02>
+
+char c, i;
+
+main:
+  i = 0; 
+
+head:
+  prchr(' ');
+  prchr(' ');
+  prchr(' ');
+  prchr(' ');
+  prchr(' ');
+  prchr('C'); //Control
+  prchr('S'); //White Space
+  prchr('P'); //Punctuation
+  prchr('D'); //Digit
+  prchr('H'); //Hex Digit
+  prchr('U'); //Upper Case
+  prchr('L'); //Lower Case  
+  prchr('A'); //Alphabetic
+  prchr('N'); //Alphanumeric
+  prchr('G'); //Graphic
+  prchr('R'); //Printable
+  prchr('B'); //Binary
+  newlin();
+
+loop:
+  prbyte(i);
+  prchr(' ');
+  c = i;
+  if (c < $20) c = $20;
+  if (c >= $7F) c = $20;
+  prchr(c);   
+  prchr(' ');
+  c = isctrl(i) & $0A | $20; prchr(c);
+  c = isspce(i) & $0A | $20; prchr(c);
+  c = ispnct(i) & $0A | $20; prchr(c);
+  c = isdigt(i) & $0A | $20; prchr(c);
+  c = ishdgt(i) & $0A | $20; prchr(c);
+  c = isuppr(i) & $0A | $20; prchr(c);
+  c = islowr(i) & $0A | $20; prchr(c);
+  c = isalph(i) & $0A | $20; prchr(c);
+  c = isalnm(i) & $0A | $20; prchr(c);
+  c = isgrph(i) & $0A | $20; prchr(c);
+  c = isprnt(i) & $0A | $20; prchr(c);
+  c = isbdgt(i) & $0A | $20; prchr(c);
+  newlin();
+  i++;
+  if (i == 0) goto exit;
+  if (i & $0F <> 0) goto loop;
+  newlin();
+  c = getkey(); 
+  if (c == $1B) goto exit;
+  goto head;

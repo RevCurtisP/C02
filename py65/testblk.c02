@@ -1,0 +1,163 @@
+/*******************************************
+ * TESTBLK - Test Array Handling Functions *
+ *******************************************/
+ 
+//todo: Test blknxt() and blkprv()
+ 
+#include <py65.h02>
+#include <stdio.h02>
+#include <stdlib.h02>
+#include <string.h02>
+#include <memory.h02>
+#include <block.h02>
+
+char TRUE=$FF, FALSE=$00;
+
+char c, i, n, r, z;
+char savlo,savhi,tmplo,tmphi; //Address Pointer
+char number[5];
+char numbrs = "zero one  two  threefour five six  seveneightnine ten";
+char name1 = "Dick", name2 = "Jane";
+char temp[127];
+
+char seglen = 7; 
+char sgmt[6]; //Structure: [0-5]=Text, [6]=Binary
+char seg1[6],seg2[6];
+
+char pass = " Pass ";
+char fail = " Fail ";
+
+//Copy Textual Representation of n to temp
+void numcpy(n) {
+  strdst(&temp); 
+  strcut(mult(n,5), &numbrs); //Copy Representation
+  temp[5] = 0; //Cut off remainder of String
+  z = strchr(' ', &temp);
+  if (z:+) //Search for space in string
+    temp[z] = 0;  //and terminate at that point
+}
+
+//Build String Segment in Temp
+void numtmp(n) {
+  numcpy(n); //Copy Textual Representation to temp[0:5]
+  temp[6] = i; //Set   
+}
+
+//Print Addresses
+void pradrs() {
+  tmplo=srclo;tmphi=srchi;
+  puts(" SRC: $");prbyte(tmphi);prbyte(tmplo);
+  puts(" DST: $");prbyte(dsthi);prbyte(dstlo);
+  puts(" BLK: $");prbyte(blkhi);prbyte(blklo);
+  newlin();
+}
+
+//Print Block Addresses
+void prbadr() {
+  prbyte(blkshi);prbyte(blkslo);putc(' ');
+  prbyte(blkehi);prbyte(blkelo);putc(' ');
+  prbyte(blkhi);prbyte(blklo);newlin();
+}
+
+main:
+
+puts("blkbgn(&$4000);");
+blkbgn(&$4000); //Set Block Start
+if (blkshi == $40) putln(&pass); else putln(&fail);
+
+puts("blkend(&$4400);");
+blkend(&$4400); //Set Block End
+if (blkehi == $44) putln(&pass); else putln(&fail);
+
+puts("blkseg(seglen);");
+blkseg(seglen);
+if (blklen == seglen) putln(&pass); else putln(&fail);
+
+puts("blkrst();      ");
+blkrst();
+if (blkhi == $40) putln(&pass); else putln(&fail);
+
+puts("blkset('@');   ");
+blkset('@');
+r = $FF;
+blkrst();
+while (blkget(1,&sgmt)) {
+  if (sgmt <> '@') r = $00;
+}
+if (r) putln(&pass); else putln(&fail);
+
+setdst(&seg1); strcpy(&name1);seg1[6] = 1;
+setdst(&seg2); strcpy(&name2);seg2[6] = 2; 
+puts("blkswp(seglen, &seg2);");
+blkrst();
+blkput(seglen, &seg1);
+blkrst();
+setdst(&temp);
+blkswp(seglen, &seg2);
+r = $FF;
+blkget(seglen, &sgmt);
+if (strcmp(&name2)) r = $00;
+if (sgmt[6] <> 2) r = $00;
+setdst(&seg2);
+if (strcmp(&name1)) r = $00;
+if (seg2[6] <> 1) r = $00;
+if (r) putln(&pass); else putln(&fail);
+
+blkset(0);
+puts("blkput(seglen, &temp);");
+r = TRUE;
+blkrst();
+for (i=0; i<10; i++) {
+  numtmp(i);
+  savlo=blklo;savhi=blkhi;
+  blkput(seglen, &temp);
+  dstlo=savlo;dsthi=savhi;
+  if (memcmp(seglen,&temp)) r = FALSE;
+}
+if (blklo <> 70) r = TRUE;
+if (r) putln(&pass); else putln(&fail);
+
+puts("blkmem(seglen, &temp);");
+r = $FF;
+for (i=9; i:+; i--) {
+  numtmp(i);
+  r = blkmem(seglen, &temp);
+  if (mult(seglen,i) <> dstlo) r = 0;
+}
+if (r) putln(&pass); else putln(&fail);
+
+puts("blkstr(seglen, &temp);");
+r = $FF;
+for (i=0; i<10; i++) {
+  numtmp(i);
+  setdst(&sgmt);
+  r = blkstr(seglen, &temp);
+  if (sgmt[6] <> i) r = 0;
+}
+if (r) putln(&pass); else putln(&fail);
+
+blkrst();
+puts("blkget(seglen, &sgmt);");
+r = $FF;
+for (i=0; i<10; i++) {
+  numtmp(i);
+  setdst(&sgmt);
+  r = blkget(seglen, &sgmt);
+  if (memcmp(seglen, &temp)) r = 0;
+}
+if (r) putln(&pass); else putln(&fail);
+
+puts("blksrt(&temp);");
+blksrt(&temp);
+r = TRUE;
+seg1[0] = 0;
+blkrst();
+while(blkget(seglen, &seg2)) {
+  if (!seg2[0]) break;
+  if (strcmp(&seg1)<>1) r = FALSE; 
+  strdst(&seg1);strcpy(&seg2);
+}
+if (r) putln(&pass); else putln(&fail);
+
+goto exit;
+

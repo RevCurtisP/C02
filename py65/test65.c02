@@ -1,0 +1,19 @@
+/**********************************************
+ * TEST65 - Test Library py65.h02 for py65mon *
+ **********************************************/
+ 
+#include <py65.h02>
+
+char c;        //Character
+char key;      //Key read from keyboard
+
+main:
+  key = getkey();  //Read key from console
+  if (key = $1B)   //If Escape was pressed
+    goto exit;     //  return to monitor 
+  prbyte(key);     //Print ASCII value of key
+  prchr(' ');      //  and a space
+  prchr(key);      //Print key character
+  prchr(' ');      //  and another space
+  goto main;      //Loop
+
