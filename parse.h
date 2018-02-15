@@ -20,6 +20,7 @@ int  defcnt;                     //Number of Definitions Defined
 int  defidx;                     //Index into Definition Tables
 
 int invasc;                    //Invert ASCII Flag
+int mskasc;                    //Set High Bit Flag
 
 int match(char c);             //Does Next Character match c
 int isalph();                  //Is Next Character Alphabetic

@@ -36,6 +36,7 @@ int isxpre() {return TF(isvpre() || match('-'));}
 
 /* Conversion Functions */
 char invchr(char c) {return isalpha(c)?(islower(c)?toupper(c):tolower(c)):c;}
+char mskchr(char c) {return c | 0x80;}
 
 /* if Word is s then return TRUE else return FALSE*/
 int wordis(char *s)
@@ -268,6 +269,7 @@ int prschr()
   c = getnxt();
   DEBUG("Extracted character %c\n", c);
   if (invasc) c = invchr(c);
+  if (mskasc) c = mskchr(c);
   word[wrdlen++] = c;
   expect('\'');
   word[wrdlen++] = '\'';

@@ -45,6 +45,7 @@ void init()
   vrwrtn = FALSE;
   zpaddr = 0;
   invasc = FALSE;
+  mskasc = FALSE;
   fcase = FALSE;
 }
 
