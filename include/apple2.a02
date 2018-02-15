@@ -5,7 +5,7 @@ DELKEY  EQU $08     ;Delete/Backspace Key (Left Arrow)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Return)
 
-;Standard Library Variables
+;Zero Page Variables (*=System Variable)
 DSTLO   EQU $06     ;Destination String Pointer (string.a02)
 DSTHI   EQU $07
 BLKLO   EQU $08     ;Block Segment Pointer (block.a02)
@@ -13,7 +13,8 @@ BLKHI   EQU $09
 PTRLO   EQU $1D     ;System Pointer (pointer.a02)
 PTRHI   EQU $1E
 RANDOM  EQU $1F     ;Random Number
-RDSEED  EQU $4E     ;O/S Random Number Low Byte 
+INVFLG  EQU $32     ;*Inverse Flag: $3F=Blinking, $7F=Inverse, $FF=Normal 
+RDSEED  EQU $4E     ;O/S Random Number Low Byte
 ;       EQU $4F     ;O/S Random Number High Byte
 SRCLO   EQU $71     ;Source String Pointer (stdio.a02)
 SRCHI   EQU $72
@@ -28,11 +29,18 @@ TEMP1   EQU $FD
 TEMP2   EQU $FE
 TEMP3   EQU $FF
 
+;Page 3 Vectors
+WARMST  EQU $3D0    ;Jump vector to DOS warm start
+COLDST  EQU $3D3    ;Jump vector to DOS cold start
+
 ;I/O Locations
 KBD     EQU $C000   ;Keyboard Data
 AKD     EQU $C010   ;Keyboard Strobe Register
 
 ;Monitor Routines
+PRBLNK  EQU $F94C   ;Print 3 blanks
+PRBLNX  EQU $F94C   ;Print X blanks
+PRBLAX  EQU $F94C   ;Print character in A followed by X-1 blanks
 RDKEY   EQU $FD0C   ;Waits for keypress and return in A
 KEYIN   EQU $FD1B   ;Waits for keypress and cycle random-number generator
 RDCHAR  EQU $FD35   ;Read keyboard (processing escapes)
@@ -40,17 +48,17 @@ GETLIN  EQU $FD6A   ;Get Line from Keyboard into Input Buffer
 CROUT   EQU $FD8E   ;Performs a carriage return
 PRBYTE  EQU $FDDA   ;Print Accumulator as Hexadecimal Number
 PRHEX   EQU $FDE3   ;Print Low Nybble of Accumulator as Hex Digit
-COUT    EQU $FDED   ;Print Character in Accumulator
+COUT    EQU $FDED   ;Print Character to Current Output Device
+COUT1   EQU $FDF0   ;Print Character to Screen
 BELL    EQU $FF3A   ;Ring Bell through COUT
 MONZ    EQU $FF69   ;Enter monitor (<Control-C>, <Return> leaves the monitor)
 
-ECHO    EQU COUT    ;Print Character
-EXIT    EQU MONZ    ;Return to Monitor
+ECHO    EQU COUT1   ;Print Character
+EXIT    EQU WARMST  ;Return to Monitor
 
         ORG $0C00   ;Safe Area for Machine Language
 
 START:  JMP MAIN    ;Execute Program
-
 
 ;Subroutine Poll Keyboard
 PLKEY:  LDA #0      ;Clear Accumulator
@@ -63,12 +71,17 @@ PLKEYR: RTS
 ;Read Keyboard
 GETKEY  EQU KEYIN   ;Alias to Monitor Routine
 
-PRCHR   EQU ECHO    ;Alias to Monitor Routine
+;Print Character to Screen
+PRCHR:  ORA #$80    ;Set High Bit
+        CMP #$E0    ;
+        BCC PRCHRX  ;If Lower Case 
+        AND #$DF    ;  Convert to Upper Case
+PRCHRX: JMP ECHO    ;Alias to Monitor Routine
 
 ;Delete Previous Character
 DELCHR: LDX #2      ;Two Characters Total
         LDA #$88    ;Load Backspace Character
-        JSR PRBLNX  ;Print Accumulator and X-1 Blanks
+        JSR PRBLAX  ;Print Accumulator and X-1 Blanks
         LDA #$88    ;Load Backspace Character
         JMP PRCHR   ;and Print it
 

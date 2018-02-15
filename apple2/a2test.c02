@@ -1,0 +1,12 @@
+/* C02 Apple II Test Program */
+
+#include <apple2.h02>
+
+char i;
+
+main:
+  for (i=32; i:+; i++) {
+    if (!i&31) newlin();
+    prchr(i);
+  }
+goto exit;

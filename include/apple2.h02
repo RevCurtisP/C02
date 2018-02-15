@@ -14,7 +14,10 @@ char blklen;            //Block Segment Length
 
 char temp0, temp1, temp2, temp3;  //Temporary Variables
 
-//PIA 6820 Registers
+//System Variables
+char invflg;    //Video Invert Mask
+
+//Keyboard I/O
 char kbd;         //Keyboard Data
 char abd;         //Keyboard Strobe
 

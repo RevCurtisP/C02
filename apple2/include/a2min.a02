@@ -1,0 +1,34 @@
+;Apple 1 program initialization code for c02 programs
+
+;Locations used by Operating System
+PROMPT  EQU $33     ;ASCII character for INPUT prompt symbol
+LOMEM   EQU $4A     ;
+HIMEM   EQU $4C
+BASIC   $67         ;Start of BASIC program
+VARBLS  $69         ;End of BASIC program and start of variable space
+ARRAYS  $6B         ;Start of defined array space
+ARRAYE  $6D         ;End of defined array space
+STRNGS  $6F         ;Start of string storag
+
+TIMEDM  EQU $BF90   ;Day/month
+TIMEYR  EQU $BF91   ;Year
+TIMEMN  EQU $BF92   ;Minute
+TIMEHR  EQU $BF93   ;Hour
+
+;ROM Routines
+EXIT    EQU $3D0    ;Return to BASIC
+RDKEY   EQU $FD0C   ;Waits for keypress and return in A
+KEYIN   EQU $FD1B   ;Waits for keypress and cycle random-number generator
+RDCHAR  EQU $FD35   ;Read keyboard (processing escapes)
+GETLIN  EQU $FD6A   ;Get Line from Keyboard into Input Buffer
+CROUT   EQU $FD8E   ;Performs a carriage return
+PRBYTE  EQU $FDDA   ;Print Accumulator as Hexadecimal Number
+PRHEX   EQU $FDE3   ;Print Low Nybble of Accumulator as Hex Digit
+COUT    EQU $FDED   ;Print Character in Accumulator
+BELL    EQU $FF3A   ;Ring Bell through COUT
+
+        ORG $0C00   ;Safe Area for Machine Language
+
+START:  JMP MAIN	;Execute Program
+
+

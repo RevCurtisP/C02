@@ -1,0 +1,15 @@
+/* C02 Minimal Header File for Apple II */
+
+/* Monitor Variables */
+
+//PIA 6820 Registers
+char kbd;         //Keyboard Data
+char kbdcr;       //Keyboard Control Register
+
+//Monitor Subroutines
+void echo();      //Print Character in Accumulator
+void prbyte();    //Print Accumulator as Hexadadecimal number
+void prhex();     //Print Low Nybble of Accumulator as Hex Digit
+
+//System Subroutines
+char rdkey();     //Wait for raw character from Keyboard
