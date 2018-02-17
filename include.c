@@ -167,14 +167,26 @@ void setinc() {
   alcvar = FALSE;
 }
 
+/* Set Include File Name */
+void setinm(char* filext) {
+  strcpy(incnam, incdir);
+  strcat(incnam, hdrnam);
+  strcat(incnam, filext);
+}
+
+/* Set Input to Souyrce File */
+void setsrc() {
+  inpfil = srcfil;
+  strcpy(inpnam, srcnam);
+}
+
 /* Restore Source File Pointer*/
 void rstsrc() {
   nxtchr = savchr;
   nxtupc = toupper(nxtchr);
   curcol = savcol;
   curlin = savlin;
-  inpfil = srcfil;
-  strcpy(inpnam, srcnam);
+  setsrc();
   alcvar = TRUE;
 }
 
@@ -203,6 +215,17 @@ void inchdr() {
   clsinc();
   rstsrc();
   nxtchr = savchr;
+}
+
+/* Process Header File specified on Command Line */
+void phdrfl()
+{
+  if (hdrnam[0] == 0) return;
+  DEBUG("Processing Header '%s'\n", hdrnam);
+  setinm(".h02");
+  inchdr();
+  setinm(".a02");
+  incasm();
 }
 
 /* Process include file                    */

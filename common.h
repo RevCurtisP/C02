@@ -50,8 +50,9 @@ char word[LINELEN];   //Word parsed from source file
 char uword[LINELEN];  //Word converted too uppercase
 char cmtasm[LINELEN]; //Assembly Language Comment Text
 
+char hdrnam[FNAMLEN]; //Header File Name
 char incdir[FNAMLEN]; //Include File Directory
-char inpnam[FNAMLEN]; //Include File Name 
+char inpnam[FNAMLEN]; //Input File Name 
 
 int alcvar; //Allocate Variables Flag
 int inblck; //Multiline Block Flag

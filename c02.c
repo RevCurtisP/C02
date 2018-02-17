@@ -34,8 +34,6 @@ void init()
   lblcnt = 0;
   curcol = 0;
   curlin = 0;
-  inpfil = srcfil;
-  strcpy(inpnam, srcnam);
   strcpy(incdir, "../include/");
   alcvar = TRUE;
   inblck = FALSE;
@@ -103,8 +101,8 @@ void epilog()
 void compile()
 {
   DEBUG("Starting Compilation\n", 0);
-  init();
   prolog();
+  phdrfl(); //Process Header File specified on Command Line
   skpchr();
   DEBUG("Parsing Code\n", 0);
   while (TRUE)  
@@ -134,16 +132,31 @@ void usage()
   exit(EXIT_FAILURE);      
 }
 
-/* Parse Command Line Argument */
+/* Parse Command Line Option */
 int popt(int arg, int argc, char *argv[])
 {
-  char opt; //Option
+  char argstr[32]; //Argument String
+  char opt;        //Option
   char optarg[32]; //Option Argument
-  opt = argv[arg][1];
-  //if strchr(opt, "i") {
-  //if (strlen(argv[arg] > 2)
-  //}
-  ERROR("Illegal option -%c\n", opt, EXIT_FAILURE);
+  strncpy (argstr, argv[arg], 31);
+  if (strlen(argstr) != 2) 
+    ERROR("malformed option %s\n", argstr, EXIT_FAILURE);
+  opt = toupper(argstr[1]);
+  if (strchr("H", opt)) {
+    if (++arg >= argc)
+      ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE);
+    strncpy(optarg, argv[arg], 31);
+  }
+  DEBUG("Processing Command Line Option -%c\n", argstr[1]);
+  switch (opt) {
+    case 'H':
+      strcpy(hdrnam, optarg);
+      DEBUG("Header Name set to '%s'\n", hdrnam);
+      break;
+    default:
+      ERROR("Illegal option -%c\n", opt, EXIT_FAILURE);
+  }
+  return arg;
 }
 
 /* Parse Command Line Arguments                                 *   
@@ -180,12 +193,16 @@ int main(int argc, char *argv[])
   gencmt = TRUE; //Generate Assembly Language Comments
   
   printf("C02 Compiler (C) 2012 Curtis F Kaylor\n" );
+
+  init(); //Initialize Global Variables
   
   pargs(argc, argv); //Parse Command Line Arguments
   
   opnsrc();  //Open Source File
   opnout();  //Open Output File
   opnlog();  //Open Log File
+
+  setsrc();  //Set Input to Source File
 
   compile();
 
