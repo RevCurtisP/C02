@@ -1,4 +1,4 @@
-/* Apple 1 Header File */
+/* Apple ][ Header File */
 
 /* Monitor Variables */
 
@@ -18,8 +18,8 @@ char temp0, temp1, temp2, temp3;  //Temporary Variables
 char invflg;    //Video Invert Mask
 
 //Keyboard I/O
-char kbd;         //Keyboard Data
-char abd;         //Keyboard Strobe
+char kbd;         //Keyboard Data Register
+char abd;         //Keyboard Strobe Register
 
 //Monitor Subroutines
 void echo();      //Print Character in Accumulator

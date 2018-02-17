@@ -71,6 +71,7 @@ PLKEYR: RTS
 ;Read Keyboard
 GETKEY  EQU KEYIN   ;Alias to Monitor Routine
 
+
 ;Print Character to Screen
 PRCHR:  ORA #$80    ;Set High Bit
         CMP #$E0    ;

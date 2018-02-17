@@ -1,6 +1,6 @@
 /* C02 Apple II Test Program */
 
-#include <apple2.h02>
+#include <appl2std.h02>
 
 char i;
 
@@ -10,3 +10,4 @@ main:
     prchr(i);
   }
 goto exit;
+
