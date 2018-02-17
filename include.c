@@ -77,7 +77,7 @@ void pascii()
   getwrd(); //Get Pragma Subdirective
   if (wordis("INVERT"))
     invasc = TRUE;
-  if (wordis("MASK"))
+  if (wordis("HIGH"))
     mskasc = TRUE;
   else {
     fprintf(stderr, "Unrecognized option '%s'\n", word);

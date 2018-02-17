@@ -34,9 +34,13 @@ int isspc()  {return isspace(nxtchr);}
 int isvpre() {return TF(isalph() || iscpre());}
 int isxpre() {return TF(isvpre() || match('-'));}
 
-/* Conversion Functions */
-char invchr(char c) {return isalpha(c)?(islower(c)?toupper(c):tolower(c)):c;}
-char mskchr(char c) {return c | 0x80;}
+/* Process ASCII Character */
+char prcchr(char c) {
+  if (invasc) c = isalpha(c) ? (islower(c)?toupper(c):tolower(c)) : c;
+  if (mskasc) c = c | 0x80;
+  if (invasc || mskasc) DEBUG("Character converted to '%c'\n", c);
+  return c;
+}
 
 /* if Word is s then return TRUE else return FALSE*/
 int wordis(char *s)
@@ -170,8 +174,7 @@ void getstr() {
       if (match('\\')) 
         escnxt = TRUE;
       else
-		if (invasc) nxtchr = invchr(nxtchr);
-        word[wrdlen++] = nxtchr;
+        word[wrdlen++] = prcchr(nxtchr);
       skpchr();
     }  
   }
@@ -268,9 +271,7 @@ int prschr()
     word[wrdlen++] = getnxt();
   c = getnxt();
   DEBUG("Extracted character %c\n", c);
-  if (invasc) c = invchr(c);
-  if (mskasc) c = mskchr(c);
-  word[wrdlen++] = c;
+  word[wrdlen++] = prcchr(c);
   expect('\'');
   word[wrdlen++] = '\'';
   word[wrdlen] = 0;
