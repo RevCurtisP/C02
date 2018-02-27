@@ -54,7 +54,6 @@ void prsvar(int alwreg)
   if (valtyp != FUNCTION) chksym(alwreg, word);
   strcpy(value, word);
   DEBUG("Parsed variable '%s'\n", value);
-  ACMNT(word);
 }
 
 /* Require and Parse Variable Name                         *

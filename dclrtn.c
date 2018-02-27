@@ -20,7 +20,6 @@
 /* Add Function Definition */
 void addfnc()
 {
-  ACMNT(word);
   expect('(');
   strcpy(fncnam, word);   //Save Function Name
   prmcnt = 0;             //Set Number of Parameters

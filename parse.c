@@ -145,6 +145,7 @@ void getwrd()
     word[wrdlen++] = toupper(getnxt());
   }
   word[wrdlen] = 0;
+  ACMNT(word);
 }
 
 /* Escape Character */
@@ -194,7 +195,7 @@ int prsbin()
   int digit;
   int number = 0;
   if (!match('%'))
-    expctd("hexadecimal number"); 
+    expctd("binary number"); 
   word[wrdlen++] = nxtchr;
   getnxt();
   while (isbin()) {
@@ -281,6 +282,7 @@ int prschr()
 /* Parse numeric value                      *
  * Args: maxval - maximum allowed value     *
  * Sets: value - parsed number (as string)  *
+ *       word - parses text of value        *
  * Returns: parsed number                   */
 int prsnum(int maxval) 
 {
@@ -360,7 +362,6 @@ void prscon()
   else
     cnstnt = prsbyt();
   valtyp = CONSTANT;
-  ACMNT(word);
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");
   strcat(value, word);

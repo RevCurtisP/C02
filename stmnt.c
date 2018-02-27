@@ -145,7 +145,6 @@ void pasm()
 void prsasn(char trmntr) 
 {
   getwrd();               //Get Variable to be Assigned
-  ACMNT(word);
   prcvar(trmntr);
 }
 
@@ -177,7 +176,6 @@ void pdo()
 void pdowhl() {
   DEBUG("Parsing WHILE after DO '%c'\n", nxtchr);
   getwrd();                //Check for While
-  ACMNT(word);
   if (!wordis("WHILE"))
      expctd("while statement");
   expect('(');
@@ -239,7 +237,6 @@ void pelse() {
 void pgoto() {
   DEBUG("Parsing GOTO statement\n", 0);
   getwrd();
-  ACMNT(word);
   expect(';');  
   asmlin("JMP", word);
 }

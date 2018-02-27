@@ -67,6 +67,7 @@ void pdefin()
   setlbl(word); //Set label Assembler Line
   expect('=');
   defval[defcnt++] = prsbyt(); //Get Value
+  ACMNT(word); //comment value
   asmlin(EQUOP, value); //Write Definition
   DEBUG("Defined as '%s'\n", value);
 }

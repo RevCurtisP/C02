@@ -52,7 +52,6 @@ void pword()
 {
   lsrtrn = FALSE; //Clear RETURN flag
   getwrd();
-  ACMNT(word);
   DEBUG("Parsing Word '%s'\n", word);
   if (xstmnt[0]) {
     if (wordis(xstmnt))
@@ -68,6 +67,7 @@ void pword()
 void pdrctv()
 {
   skpchr();            //skip '#'
+  CCMNT('#');
   getwrd();           //read directive into word
   DEBUG("Processing directive '%s'\n", word);
   if (wordis("DEFINE"))
