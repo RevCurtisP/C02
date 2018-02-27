@@ -72,6 +72,8 @@ void pdrctv()
   DEBUG("Processing directive '%s'\n", word);
   if (wordis("DEFINE"))
     pdefin();  //Parse Define
+  else if (wordis("ENUM"))
+	penumd();  //Parse Enum Directive
   else if (wordis("INCLUDE"))
     pincfl();  //Parse Include File
   else if (wordis("ERROR")) {

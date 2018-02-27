@@ -72,6 +72,23 @@ void pdefin()
   DEBUG("Defined as '%s'\n", value);
 }
 
+/* Process enum directive */
+void penumd() 
+{
+  int enmval = 0;
+  do {
+    getwrd(); //get defined identifier
+    DEBUG("Enumerating '%s'\n", word);
+    strncpy(defnam[defcnt], word, VARLEN);
+    setlbl(word); //Set label Assembler Line
+    defval[defcnt++] = enmval; //Set Value
+    sprintf(value, "%d", enmval);
+    asmlin(EQUOP, value); //Write Definition
+    DEBUG("Defined as '%s'\n", value);
+    enmval++;
+  } while (look(','));
+}
+
 /* Parse ASCII Subdirective */
 void pascii()
 {
@@ -135,7 +152,7 @@ void pincdr()
   DEBUG("Processing include file directive '%s'\n", word);
   if (wordis("DEFINE")) 
     pdefin();
-  if (wordis("PRAGMA")) 
+  else if (wordis("PRAGMA")) 
     pprgma();
   else {
     fprintf(stderr, "Unrecognized directive '%s'\n", word);
