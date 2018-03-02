@@ -45,6 +45,8 @@ void init()
   invasc = FALSE;
   mskasc = FALSE;
   fcase = FALSE;
+  xsnvar[0] = 0;
+  ysnvar[0] = 0;
 }
 
 /* Reads and parses the next Word in Source File */

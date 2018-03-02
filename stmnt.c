@@ -59,61 +59,115 @@ void prssif(char trmntr) {
   setlbl(tmplbl);         //Emit End of Expression Label
 }
 
+/* Process Array Index */
+void prcidx(int idxtyp, char *name, char *index)
+{
+    if (strlen(index)) { 
+      if (idxtyp == CONSTANT) {
+        strcat(name, "+");
+        strcat(name, index);
+      }
+      else {
+        asmlin("LDX", index);
+        strcat(name,",X");
+      }
+    }
+}
 
 /* Process Assignment */
 void prcasn(char trmntr)
 {
   expect('=');
-  DEBUG("Processing assignment of variable '%s'\n", asnvar);
   if (look('(')) 
     prssif(trmntr); //Parse Shortcut If 
   else
     prsxpr(trmntr); //Parse Expression
+  DEBUG("Processing X assignment variable '%s'\n", xsnvar);
+  if (xsnvar[0]) {
+    asmlin("STX", xsnvar);
+    xsnvar[0] = 0;
+  }
+  DEBUG("Processing Y assignment variable '%s'\n", ysnvar);
+  if (ysnvar[0]) {
+    if (strlen(ysnidx)) 
+      prcidx(ysnivt, ysnvar, ysnidx);
+    asmlin("STY", ysnvar);
+    ysnvar[0] = 0;
+  }
+  DEBUG("Processing assignment variable '%s'\n", asnvar);
   if (strcmp(asnvar, "X")==0)
     asmlin("TAX", "");
   else if (strcmp(asnvar, "Y")==0)
     asmlin("TAY", "");
   else if ((strcmp(asnvar, "A")!=0))
   {
-    if (strlen(asnidx)) { 
-      if (asnivt == CONSTANT) {
-        strcat(asnvar, "+");
-        strcat(asnvar, asnidx);
-      }
-      else {
-        asmlin("LDX", asnidx);
-        strcat(asnvar,",X");
-      }
-    }
+    if (strlen(asnidx)) 
+      prcidx(asnivt, asnvar, asnidx);
     asmlin("STA", asnvar);
   }
 }
 
-/* Process Variable at Beginning of Statement */
+/* Parse and Return Array Index and Type */
+int getidx(char* idx)
+{
+    prsidx();  //Parse Array Index
+    if (valtyp == CONSTANT) 
+	    strncpy(idx, word, VARLEN);
+	else
+    	strncpy(idx, value, VARLEN);
+    DEBUG("Set assigned index to %s\n", asnidx);
+    return valtyp;
+}
+
+/* Process Assignment Variable(s) */
 void prcvar(char trmntr)
 {
   chksym(TRUE, word);
-  strcpy(asnvar, word);  //sav variable to assign to
-  if (valtyp == VARIABLE && look(';')) {
+  strcpy(asnvar, word);  //save variable to assign to
+  asntyp = valtyp; //Set Assigned Varable Type
+  DEBUG("Set STA variable to %s\n", asnvar);
+  if (asntyp == VARIABLE && look(';')) {
     asmlin("STA", asnvar);
     return;
   }
-  if (valtyp == ARRAY) {
-    prsidx();  //Parse Array Index
-    asnivt = valtyp;
-    if (asnivt == CONSTANT) 
-	    strncpy(asnidx, word, VARLEN);
-	else
-    	strncpy(asnidx, value, VARLEN);
+  if (asntyp == ARRAY) {
+    asnivt = getidx(asnidx); //Get Array Index and Type
+    DEBUG("Set STA index to %s\n", asnidx);
+    DEBUG("Set STA index type to %d\n", asnivt);
   }
   else
     asnidx[0] = 0;
   if (ispopr()) {
     if (prspst(trmntr, asnvar, asnidx)) //Parse Post Operator
       expctd("post operator");
+	/*refactor - put a return here and remove followig else*/
   }
-  else
+  else {
+    if (look(',')) {     
+      if (asntyp == REGISTER) {
+        ERROR("Register %s not allowed in plural assignment\n", asnvar, EXIT_FAILURE);
+      }
+      prsvar(FALSE); //get variable name
+      strcpy(ysnvar, word);
+      DEBUG("Set STY variable to %s\n", ysnvar);
+      if (valtyp == ARRAY) {
+        ysnivt = getidx(ysnidx); //Get Array Index and Type
+        DEBUG("Set STY index to %s\n", ysnidx);
+        DEBUG("Set STY index type to %d\n", ysnivt);
+      }
+      else
+        ysnidx[0] = 0;
+      if (look(',')) {
+        prsvar(FALSE); //get variable name
+        strcpy(xsnvar, word);
+        DEBUG("Set STX variable to %s\n", xsnvar);
+        if (valtyp == ARRAY) {
+          ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE);
+	    }
+      }
+    }
     prcasn(trmntr);
+  }
 }
 
 /* Parse 'asm' String Parameter */
@@ -141,7 +195,7 @@ void pasm()
   asmlin(opcode, word);
 }
 
-/* Parse and Compile and Assignment */
+/* Parse and Compile an Assignment */
 void prsasn(char trmntr) 
 {
   getwrd();               //Get Variable to be Assigned

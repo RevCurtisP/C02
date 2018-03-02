@@ -1,4 +1,4 @@
-INTRODUCTION
+﻿INTRODUCTION
 
 C02 is a simple C-syntax language designed to generate highly optimized
 code for the 6502 microprocessor. The C02 specification is a highly
@@ -60,7 +60,12 @@ DIRECTIVES
 
 Directives are special instructions to the compiler. They do not directy
 generate compiled code. A directive is denoted by a leading # character. 
-C02 currently supports only one directive.
+
+DEFINE
+
+The #define directive creates a named constant. 
+
+INCLUDE
 
 The #include directive causes the compiler to read and process and external
 file. In most cases, #include directives will be used with libraries of
@@ -110,7 +115,7 @@ A decimal number consists of one to three decimal digits (0 through 9).
 A hexadecimal number consists of a $ followed by two hexadecimal digits 
 (0 through 9 or A through F).
 
-A character literals consists of a single character surrounded by ' symbols.
+A character literal consists of a single character surrounded by ' symbols.
 A ' character may be specified by escaping it with a \. 
 
 Examples:
@@ -478,6 +483,24 @@ Examples:
 Note: An implicit assignment generates an STA opcode with the variable
 as the operand.
 
+PLURAL ASSIGNMENTS
+
+C02 allows a function to return up to three values by specifying multiple
+variables, separated by commas, to the left of the assignment operator (=).
+
+The first and second variables to be assigned may be either simple variables
+or subscripted array elements. The third variable, if used, may only be a 
+simple variable. Registers are not allowed in plural assignments.
+
+Examples:
+  row, col = scnpos();             //Get current screen position
+  cr, mn, mx = cpmnmx(a, b);       //Compare two values, return min and max
+  lwr[i], upr[i] = tolwup(txt[i]); //Convert char to lower and upper case  
+
+Note: When compiled, a plural assignment generates an STX for the third
+assignment (if specified), an STY for the second assignment and an STA for
+the first assignment. 
+
 GOTO STATEMENT
 
 A goto statement unconditionally transfers program execution to the 
@@ -512,9 +535,9 @@ Examples:
 Note: In order to optimize the compiled code, the if and else statements 
 are to 6502 relative branch instructions. This limits the amount of 
 generated code between the if statement and the end of the if/else block
-to slightly less than 127 characters. This should be sufficient in most
-cases, but larger code blocks can be accommodated using function calls or
-goto statements.
+to slightly less than 127 bytes. This should be sufficient in most cases, 
+but larger code blocks can be accommodated using function calls or goto 
+statements.
 
 SELECT, CASE, AND DEFAULT STATEMENTS
 

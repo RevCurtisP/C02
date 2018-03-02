@@ -36,8 +36,11 @@ int fndvar(char *name)
 void chksym(int alwreg, char *name) 
 {
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
-    if (alwreg) return;
-    else ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE);
+    if (alwreg && valtyp != ARRAY) {
+      valtyp = REGISTER;
+  	  return;
+    }
+    ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE);
   }
   if (!fndvar(name))
     ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE);

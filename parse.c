@@ -71,7 +71,7 @@ char getnxt()
 void skpspc() 
 {
   //DEBUG("Skipping Spaces\n", 0);
-  if (isspc()) CCMNT(' ');
+  if (isspc()) CCMNT(' '); //Add only the first space to comments
   while (isspc()) 
     getnxt();
 }
@@ -387,14 +387,6 @@ void prsopr()
   skpspc();
 }
 
-/* Process Array Index */
-void prcidx(char *name, char *index)
-{
-  if (strlen(index)) { 
-      asmlin("LDX", index);
-      strcat(name,",X");
-  }
-}
 
 /* Generate Post-Operation Error */
 void poperr(char* name) 
@@ -407,7 +399,10 @@ void poperr(char* name)
 void prcpst(char* name, char *index) 
 {
   DEBUG("Processing post operation '%c'\n", oper);
-  prcidx(name, index);
+  if (strlen(index)) { 
+      asmlin("LDX", index);
+      strcat(name,",X");
+  }
   switch(oper)
   {    
     case '+': 
