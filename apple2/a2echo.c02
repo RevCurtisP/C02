@@ -1,0 +1,18 @@
+/* C02 Apple II Test Program */
+
+#include <appl2std.h02>
+
+char c;
+
+main:
+
+loop:
+  c = plkey();
+  if (!c) goto loop;
+  newlin();
+  prbyte(c);
+  prchr(' ');
+  echo(c);
+  prchr(' ');
+  prchr(c);
+  goto loop;

@@ -1,0 +1,24 @@
+/* C02 Apple II Test Program */
+
+#include <appl2std.h02>
+
+char h,i;
+
+main:
+  prchr(' ');
+  for (i=0; i<16; i++)
+    prhex(i);
+  h=0; i=0;
+  do {
+    if (!i&15) { 
+      newlin();
+      prhex(h);
+      h++;
+      prchr(' ');
+    }
+    if (i&$F0==$80) echo($A0);
+    else echo(i);
+    i++;
+  } while(i);
+goto exit;
+
