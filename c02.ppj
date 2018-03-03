@@ -4,7 +4,7 @@
 # 
 
 POC_PROJECT_VERSION = 7.00#
-POC_PROJECT_TYPE = 3#
+POC_PROJECT_TYPE = 13#
 POC_PROJECT_OUTPUTDIR = output#
 POC_PROJECT_RESULTDIR = .#
 POC_PROJECT_ARGUMENTS = #
@@ -16,186 +16,184 @@ AS = poasm.exe#
 RC = porc.exe#
 LINK = polink.exe#
 SIGN = posign.exe#
-CCFLAGS = -std:C11 -Tx86-coff -Ot -Ob1 -fp:precise -W0 -Gd -Zx -Go#
-ASFLAGS = -AIA32#
+CCFLAGS = -Tx64-coff -Ot -W1 -std:C11#
+ASFLAGS = -AAMD64#
 RCFLAGS = -r#
-LINKFLAGS = -machine:x86 -subsystem:console kernel32.lib advapi32.lib delayimp.lib#
+LINKFLAGS = -machine:amd64 -subsystem:console kernel32.lib advapi32.lib delayimp64.lib#
 SIGNFLAGS = -location:CU -store:MY -timeurl:http://timestamp.verisign.com/scripts/timstamp.dll -errkill#
 INCLUDE = $(PellesCDir)\Include\Win;$(PellesCDir)\Include#
-LIB = $(PellesCDir)\Lib\Win;$(PellesCDir)\Lib#
+LIB = $(PellesCDir)\Lib\Win64;$(PellesCDir)\Lib#
 
 # 
 # Build c02.exe.
 # 
 c02.exe: \
-	output\asm.obj \
 	output\c02.obj \
+	output\asm.obj \
 	output\common.obj \
 	output\cond.obj \
+	output\dclrtn.obj \
 	output\expr.obj \
 	output\files.obj \
 	output\include.obj \
 	output\label.obj \
 	output\parse.obj \
 	output\stmnt.obj \
-	output\vars.obj \
-	output\dclrtn.obj
+	output\vars.obj
 	$(LINK) $(LINKFLAGS) -out:"$@" $**
 
 # 
 # Build c02.obj.
 # 
 output\c02.obj: \
-	c02.c \
-	asm.h \
-	common.h \
-	cond.h \
-	dclrtn.h \
-	expr.h \
-	files.h \
-	include.h \
-	label.h \
-	parse.h \
-	stmnt.h \
-	vars.h
+	src\c02.c \
+	src\asm.h \
+	src\common.h \
+	src\cond.h \
+	src\dclrtn.h \
+	src\expr.h \
+	src\files.h \
+	src\include.h \
+	src\label.h \
+	src\parse.h \
+	src\stmnt.h \
+	src\vars.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 
 # Build asm.obj.
 # 
 output\asm.obj: \
-	asm.c \
-	asm.h \
-	common.h \
-	files.h
+	src\asm.c \
+	src\asm.h \
+	src\common.h \
+	src\files.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 
 # Build common.obj.
 # 
 output\common.obj: \
-	common.c \
-	common.h
+	src\common.c \
+	src\common.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 
 # Build cond.obj.
 # 
 output\cond.obj: \
-	cond.c \
-	asm.h \
-	common.h \
-	cond.h \
-	expr.h \
-	label.h \
-	parse.h \
-	vars.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build expr.obj.
-# 
-output\expr.obj: \
-	expr.c \
-	asm.h \
-	common.h \
-	expr.h \
-	label.h \
-	parse.h \
-	vars.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build files.obj.
-# 
-output\files.obj: \
-	files.c \
-	common.h \
-	files.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build include.obj.
-# 
-output\include.obj: \
-	include.c \
-	asm.h \
-	common.h \
-	dclrtn.h \
-	files.h \
-	include.h \
-	label.h \
-	parse.h \
-	stmnt.h \
-	vars.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build label.obj.
-# 
-output\label.obj: \
-	label.c \
-	asm.h \
-	common.h \
-	label.h \
-	parse.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build parse.obj.
-# 
-output\parse.obj: \
-	parse.c \
-	asm.h \
-	common.h \
-	files.h \
-	parse.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build stmnt.obj.
-# 
-output\stmnt.obj: \
-	stmnt.c \
-	asm.h \
-	common.h \
-	cond.h \
-	expr.h \
-	label.h \
-	parse.h \
-	stmnt.h \
-	vars.h
-	$(CC) $(CCFLAGS) "$!" -Fo"$@"
-
-# 
-# Build vars.obj.
-# 
-output\vars.obj: \
-	vars.c \
-	asm.h \
-	common.h \
-	files.h \
-	label.h \
-	parse.h \
-	vars.h
+	src\cond.c \
+	src\asm.h \
+	src\common.h \
+	src\cond.h \
+	src\expr.h \
+	src\label.h \
+	src\parse.h \
+	src\vars.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 
 # Build dclrtn.obj.
 # 
 output\dclrtn.obj: \
-	dclrtn.c \
-	asm.h \
-	common.h \
-	cond.h \
-	dclrtn.h \
-	expr.h \
-	label.h \
-	parse.h \
-	stmnt.h \
-	vars.h
+	src\dclrtn.c \
+	src\asm.h \
+	src\common.h \
+	src\cond.h \
+	src\dclrtn.h \
+	src\expr.h \
+	src\label.h \
+	src\parse.h \
+	src\stmnt.h \
+	src\vars.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build expr.obj.
+# 
+output\expr.obj: \
+	src\expr.c \
+	src\asm.h \
+	src\common.h \
+	src\expr.h \
+	src\label.h \
+	src\parse.h \
+	src\vars.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build files.obj.
+# 
+output\files.obj: \
+	src\files.c \
+	src\common.h \
+	src\files.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build include.obj.
+# 
+output\include.obj: \
+	src\include.c \
+	src\asm.h \
+	src\common.h \
+	src\dclrtn.h \
+	src\files.h \
+	src\include.h \
+	src\label.h \
+	src\parse.h \
+	src\stmnt.h \
+	src\vars.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build label.obj.
+# 
+output\label.obj: \
+	src\label.c \
+	src\asm.h \
+	src\common.h \
+	src\label.h \
+	src\parse.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build parse.obj.
+# 
+output\parse.obj: \
+	src\parse.c \
+	src\asm.h \
+	src\common.h \
+	src\files.h \
+	src\parse.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build stmnt.obj.
+# 
+output\stmnt.obj: \
+	src\stmnt.c \
+	src\asm.h \
+	src\common.h \
+	src\cond.h \
+	src\expr.h \
+	src\label.h \
+	src\parse.h \
+	src\stmnt.h \
+	src\vars.h
+	$(CC) $(CCFLAGS) "$!" -Fo"$@"
+
+# 
+# Build vars.obj.
+# 
+output\vars.obj: \
+	src\vars.c \
+	src\asm.h \
+	src\common.h \
+	src\files.h \
+	src\label.h \
+	src\parse.h \
+	src\vars.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 .SILENT:
-
-.EXCLUDEDFILES:

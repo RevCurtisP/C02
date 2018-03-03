@@ -192,7 +192,7 @@ void setinm(char* filext) {
   strcat(incnam, filext);
 }
 
-/* Set Input to Souyrce File */
+/* Set Input to Source File */
 void setsrc() {
   inpfil = srcfil;
   strcpy(inpnam, srcnam);

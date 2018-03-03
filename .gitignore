@@ -1,9 +1,10 @@
 #Compiled source code
 *.exe
 
-#Pelles C Auxillary Files
+#Pelles C Auxiliary Files & Folders
 *.ppx
 *.tag
+output
 
 #Files created when compiling a C02 program
 */*.asm
@@ -16,6 +17,7 @@
 
 #Converted Object Files
 *.asc
+*.dsk
 *.out
 *.s9
 *.wav
