@@ -37,6 +37,11 @@ COLDST  EQU $3D3    ;Jump vector to DOS cold start
 KBD     EQU $C000   ;Keyboard Data
 AKD     EQU $C010   ;Keyboard Strobe Register
 
+;BASIC Routines
+SHWCUR  EQU $CC4C   ;Display Cursor
+UPDATE  EQU $CC70   ;Flash Cursor
+STORY   EQU $C3B3   ;Store Accumulator at Current Screen Position
+
 ;Monitor Routines
 PRBLNK  EQU $F94C   ;Print 3 blanks
 PRBLNX  EQU $F94C   ;Print X blanks
@@ -69,14 +74,16 @@ PLKEY:  LDA #0      ;Clear Accumulator
 PLKEYR: RTS
 
 ;Read Keyboard
-GETKEY  EQU KEYIN   ;Alias to Monitor Routine
-
+GETKEY  JSR PLKEY   ;Poll Keyboard
+        BEQ GETKEY  ;Loop if No Key	
+        AND #$7F    ;Strip High Bit
+        RTS
 
 ;Print Character to Screen
 PRCHR:  ORA #$80    ;Set High Bit
         CMP #$E0    ;
         BCC PRCHRX  ;If Lower Case 
-        AND #$DF    ;  Convert to Upper Case
+        AND #$1F    ;  Convert to Inverse
 PRCHRX: JMP ECHO    ;Alias to Monitor Routine
 
 ;Delete Previous Character

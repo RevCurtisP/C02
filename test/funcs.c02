@@ -1,0 +1,63 @@
+/****************************
+ * Test C02 Function Calls  *
+ * Test file for Compiler   *
+ ****************************/
+
+/* Variables */
+char b , 
+     i , j;  
+char c,d,f;  
+char r[15];  
+char z[15];
+char t = {1, 2, 3, 4, 5};  
+char s = "This is a string.";
+char aa,xx,yy ; //Function parameter variables
+char aaa,xxx,yyy ; //Function return variables
+char STROBE; //Strobe Register
+
+
+/* Function Declaration */
+char myfunc();
+  return b-c-d;
+  return;
+
+main:
+
+funcx:
+f = testfn(b);           //Simple Variable
+f = testfn(r[i]);        //Array Element
+f = testfn(r[i],b);      //Two Parameters
+f = testfn(r[1],r[2]);   //Two Array Elements
+f = testfn(r[1],r[2],b); //Three Parameters
+f = testfn(&s);          //Pointer
+f = testfn(b,&s);        //Byte and Pointer
+f = testfn(r[i],&s);     //Array Element and Pointer
+f = testfn(r[1],&s);     //Array Element and Pointer
+f = testfn(b+c+d,&s);    //Expression in Function Call 
+f = testfn(getkey(b)+c); //Nested Function Call 
+
+funcs:
+prchr(b+c+d);
+testfn(prchr(b));
+testfn(b,c,d);
+testfn(b+c+d,r[i],f);
+testfn(&s); //Print a String
+dofn(*,yy);
+dofn(*,yy,xx);
+dofn(aa,*,xx);
+dofn(*,*,XX);
+
+
+funcyx:
+aaa = testfn();           //Return 1 Value 
+aaa, yyy = testfn();      //Return 2 Values
+aaa, yyy, xxx = testfn(); //Return 3 Values 
+r[i], d = testfn();       //Return 2 Values with Array
+c, z[i] = testfn();       //Return 2 Values with Array
+r[i], d, f = testfn();    //Return 3 Values with Array
+c, z[i], f = testfn();    //Return 3 Values with Array
+r[i], z[j] = testfn();    //Return 2 Values with Arrays
+r[i], z[j], f = testfn(); //Return 2 Values with Arrays
+
+//A, Y = testfn(); //Error - Registers not Allowed when returning multiple values 
+//r[i], z[j], f[b] = testfn(); //Error - Array Element not Allowed with STX assignment

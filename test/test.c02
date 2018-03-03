@@ -3,7 +3,6 @@
  * Test file for Compiler                   *
  ********************************************/
 
-#include "testhdr.h02"
 
 //#define CR $0D -- DEFINE needs to be reimplimented
 

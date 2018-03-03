@@ -1,8 +1,15 @@
 /* Test C02 define directive */
 
+#pragma origin 1000
+
 #define TRUE = $FF
 #define FALSE = 0
 
+#enum ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN
+
+char a = {#TRUE, #FALSE};
 char b;
+char f = #FALSE;
+char t = #TRUE;
 
 b = #TRUE;

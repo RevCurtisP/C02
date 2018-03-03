@@ -1,5 +1,5 @@
 ; C02 library stdio.h02 assembly language subroutines
-; Requires external routines GETKEY, prchr, delchr, and NEWLIN
+; Requires external routines GETKEY, PRCHR, DELCHR, and NEWLIN
 ; external zero page locations SRCLO and SRCHI
 ; and external constants DELKEY, ESCKEY, and RTNKEY
 ;char getc()
