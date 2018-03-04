@@ -59,9 +59,9 @@ void pdecl(int m, int t) {
   while(TRUE) {
     getwrd();
     if (match('(')) {
-      if (m != MTNONE) {
-        ERROR("Illegal Modifier %d in Function Definion", m, EXIT_FAILURE);
-      }
+      if (m != MTNONE)
+        ERROR("Illegal Modifier %d in Function Definion", m, EXIT_FAILURE)
+      
       addfnc();  //Add Function Call
       return;
     }  

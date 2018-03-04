@@ -38,10 +38,10 @@ void chksym(int alwreg, char *name) {
       valtyp = REGISTER;
   	  return;
     }
-    ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE);
+    ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE)
   }
   if (!fndvar(name))
-    ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE);
+    ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE)
 }
 
 /* Parse next word as variable or function name *
@@ -153,9 +153,9 @@ void setvar(int m, int t) {
 void addvar(int m, int t) {
   strcpy(vrname, word); //Save Variable Name
   if (fndvar(vrname))
-    ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE);
+    ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE)
   if (t == VTVOID)
-    ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
+    ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m == MTZP) {
     setlbl(vrname);
     sprintf(word, "$%hhX", zpaddr++);

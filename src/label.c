@@ -49,7 +49,7 @@ void setlbl(char *lblset) {
     asmlin("",""); //Emit Block End Label on it's own line
   }
   if (strlen(lblset) > LABLEN) 
-    ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE);
+    ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE)
   strcpy(lblasm, lblset);
 }
 

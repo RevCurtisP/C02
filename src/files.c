@@ -91,7 +91,7 @@ void opninc(void)
 
 /* Close Include File                      *
  * Uses: incfil - Include File Handle    */
-void clsinc() { 
+void clsinc(void) { 
   fclose(incfil); 
 }
 

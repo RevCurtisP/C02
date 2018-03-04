@@ -67,9 +67,9 @@ void chkidx(void) {
 void prstrm(void) {
   DEBUG("Parsing term\n", 0);
   prsval(FALSE);
-  if (valtyp == FUNCTION) {
-    ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE);
-  }
+  if (valtyp == FUNCTION) 
+    ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
+  
   strcpy(term, value);
   DEBUG("Parsed term %s\n", term);
   chkidx();  //Check for Array Index
@@ -137,7 +137,7 @@ int chkadr(int adract) {
 void prsfnc(char trmntr) {
   DEBUG("Processing Function Call '%s'...\n", term);
   if (fnscnt >= MAXFNS)
-    ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE);
+    ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE)
   strcpy(fnstck[fnscnt++], term);
   skpchr(); //skip open paren
   CCMNT('(');

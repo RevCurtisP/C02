@@ -38,7 +38,7 @@ void endblk(int blkflg) {
   expect('}'); //Block End Character
   DEBUG("Found inblck set to %d\n", inblck);
   if (inblck != blkflg)
-    ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE);
+    ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE)
   lbtype = poplbl();
   if (lbtype == LTDO)
     pdowhl(); //Parse While at End of Do Loop
@@ -139,9 +139,9 @@ void prcvar(char trmntr) {
   }
   else {
     if (look(',')) {     
-      if (asntyp == REGISTER) {
-        ERROR("Register %s not allowed in plural assignment\n", asnvar, EXIT_FAILURE);
-      }
+      if (asntyp == REGISTER) 
+        ERROR("Register %s not allowed in plural assignment\n", asnvar, EXIT_FAILURE)
+      
       prsvar(FALSE); //get variable name
       strcpy(ysnvar, word);
       DEBUG("Set STY variable to %s\n", ysnvar);
@@ -156,9 +156,9 @@ void prcvar(char trmntr) {
         prsvar(FALSE); //get variable name
         strcpy(xsnvar, word);
         DEBUG("Set STX variable to %s\n", xsnvar);
-        if (valtyp == ARRAY) {
-          ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE);
-	    }
+        if (valtyp == ARRAY) 
+          ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE)
+	    
       }
     }
     prcasn(trmntr);
@@ -199,7 +199,7 @@ void pbrcnt(int lbflag)
 {
   DEBUG("Parsing BREAK/CONTINUE statement\n", 0);
   if (lstlbl(lbflag) < 0)
-    ERROR("Break/continue statement outside of loop\n", 0, EXIT_FAILURE);
+    ERROR("Break/continue statement outside of loop\n", 0, EXIT_FAILURE)
   DEBUG("Found Label '%s'\n", tmplbl);
   asmlin("JMP", tmplbl);
   expect(';'); 
@@ -372,9 +372,9 @@ void pslct(void) {
 void ecase(void) {
   DEBUG("Processing end of CASE block\n", 0);
   if (poplbl(cndlbl) != LTCASE)
-    ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE);  
+    ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE)
   if (toplbl(endlbl) != LTSLCT)
-    ERROR("Illegal nesting in SELECT statement\n", 0, EXIT_FAILURE);  
+    ERROR("Illegal nesting in SELECT statement\n", 0, EXIT_FAILURE)  
   asmlin("JMP", endlbl);  //Emit jump over default case
   setlbl(cndlbl);  //Set entry point label to emit
 }
@@ -432,7 +432,7 @@ void pwhile(void) {
 
 /* generate unimplemented statement error */
 void punimp(void) {
-  ERROR("Unimplemented statement '%s' encountered\n", word, EXIT_FAILURE);  
+  ERROR("Unimplemented statement '%s' encountered\n", word, EXIT_FAILURE) 
 }
 
 /* Parse Function Call as Statement */
@@ -472,7 +472,7 @@ void pstmnt(void) {
     return;
   }
   if (wordis("SWITCH")) {
-    ERROR("SWITCH not implemented. Use SELECT.\n", word, EXIT_FAILURE);  
+    ERROR("SWITCH not implemented. Use SELECT.\n", word, EXIT_FAILURE)  
   }
   if (wordis("SELECT")) {
     pslct();

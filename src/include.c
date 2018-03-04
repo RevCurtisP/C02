@@ -31,7 +31,7 @@ void pincnm(void) {
     dlmtr = '>';
   }
   else if (dlmtr != '"')
-    ERROR("Unexpected character '%c' after include\n", dlmtr, EXIT_FAILURE);
+    ERROR("Unexpected character '%c' after include\n", dlmtr, EXIT_FAILURE)
   while (!match(dlmtr))
   {
     incnam[inclen++] = nxtchr;
@@ -114,9 +114,9 @@ void prszpg(void) {
 
 /* Process Vartable Subdirective */
 void pvrtbl(void) {
-  if (vrwrtn) {
-    ERROR("Variable table already written", 0, EXIT_FAILURE);
-  }
+  if (vrwrtn) 
+    ERROR("Variable table already written", 0, EXIT_FAILURE)
+  
   vartbl(); //Write Variable Table
 }
 
@@ -133,7 +133,7 @@ void pprgma(void) {
   else if (wordis("ZEROPAGE"))
     prszpg(); //Parse Origin
   else 
-    ERROR("Illegal pragma subdirective '%s'\n", word, EXIT_FAILURE);
+    ERROR("Illegal pragma subdirective '%s'\n", word, EXIT_FAILURE)
 }
 
 /* Process Include File Directive */

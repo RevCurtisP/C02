@@ -54,10 +54,10 @@ void pword(void) {
   getwrd();
   DEBUG("Parsing Word '%s'\n", word);
   if (xstmnt[0]) {
-    if (wordis(xstmnt))
+    if (wordis(xstmnt)) 
       xstmnt[0] = 0;  //Clear xstmnt
     else
-      ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE);
+      ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE)
   }
   if (!pmodfr() && !ptype(MTNONE))
     pstmnt();     //Parse Statement
@@ -69,19 +69,12 @@ void pdrctv(void) {
   CCMNT('#');
   getwrd();           //read directive into word
   DEBUG("Processing directive '%s'\n", word);
-  if (wordis("DEFINE"))
-    pdefin();  //Parse Define
-  else if (wordis("ENUM"))
-	penumd();  //Parse Enum Directive
-  else if (wordis("INCLUDE"))
-    pincfl();  //Parse Include File
-  else if (wordis("ERROR")) {
-    ERROR("Error \n", 0, EXIT_FAILURE);
-  }
-  else if (wordis("PRAGMA"))
-    pprgma();
-  else
-    ERROR("Illegal directive %s encountered\n", word, EXIT_FAILURE);
+  if      (wordis("DEFINE"))  pdefin();  //Parse Define
+  else if (wordis("ENUM"))    penumd();  //Parse Enum Directive
+  else if (wordis("INCLUDE")) pincfl();  //Parse Include File
+  else if (wordis("ERROR"))   ERROR("Error \n", 0, EXIT_FAILURE)
+  else if (wordis("PRAGMA"))  pprgma();
+  else ERROR("Illegal directive %s encountered\n", word, EXIT_FAILURE)
 }
 
 void prolog(void) {
@@ -117,7 +110,7 @@ void compile(void) {
     else if (isalph()) 
       pword();       //Parse Word
     else
-      ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE);
+      ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE)
   }    
   epilog();
 }
@@ -135,11 +128,11 @@ int popt(int arg, int argc, char *argv[]) {
   char optarg[32]; //Option Argument
   strncpy (argstr, argv[arg], 31);
   if (strlen(argstr) != 2) 
-    ERROR("malformed option %s\n", argstr, EXIT_FAILURE);
+    ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
   opt = toupper(argstr[1]);
   if (strchr("H", opt)) {
     if (++arg >= argc)
-      ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE);
+      ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
   DEBUG("Processing Command Line Option -%c\n", argstr[1]);
@@ -149,7 +142,7 @@ int popt(int arg, int argc, char *argv[]) {
       DEBUG("Header Name set to '%s'\n", hdrnam);
       break;
     default:
-      ERROR("Illegal option -%c\n", opt, EXIT_FAILURE);
+      ERROR("Illegal option -%c\n", opt, EXIT_FAILURE)
   }
   return arg;
 }
@@ -177,7 +170,7 @@ void pargs(int argc, char *argv[]) {
        DEBUG("outnam set to '%s'\n", outnam);
     }
     else
-      ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE);
+      ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE)
   }
 }
 

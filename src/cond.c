@@ -77,7 +77,7 @@ void prccmp(void) {
       asmlin("BNE", cndlbl);
       break;
     default:
-      ERROR("Unsupported comparison operator index %d\n", cmprtr, EXIT_FAILURE);
+      ERROR("Unsupported comparison operator index %d\n", cmprtr, EXIT_FAILURE)
   }
 }
 

@@ -295,9 +295,9 @@ int prsnum(int maxval) {
   DEBUG("Parsed number '%s' ", word);
   DETAIL("with value '%d'\n", number);
 
-  if (number > maxval) {
-    ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE);
-  }
+  if (number > maxval) 
+    ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE)
+  
   if (maxval > 255)
     sprintf(value, "$%04X", number);
   else
@@ -323,9 +323,9 @@ int prsdef(void) {
   expect('#');
   getwrd(); //Get Constant Name
   fnddef(word);
-  if (defidx < 0) {
-    ERROR("Undefined constant '%s'\n", word, EXIT_FAILURE); 
-  }
+  if (defidx < 0) 
+    ERROR("Undefined constant '%s'\n", word, EXIT_FAILURE)
+  
   strcpy(value, word);
   return defval[defidx];
 }
