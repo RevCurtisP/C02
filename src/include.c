@@ -49,7 +49,7 @@ void incasm(void) {
   addcmt(" =======");
   cmtlin();
   while (fgets(line, sizeof line, incfil) != NULL) {
-    DEBUG("Writing line: %s", line);
+    DEBUG("Writing line: %s", line)
     fputs(line, outfil);
   }
   setcmt("==========================================");
@@ -60,14 +60,14 @@ void incasm(void) {
 /* Process define directive */
 void pdefin(void) {
   getwrd(); //get defined identifier
-  DEBUG("Defining '%s'\n", word);
+  DEBUG("Defining '%s'\n", word)
   strncpy(defnam[defcnt], word, VARLEN);
   setlbl(word); //Set label Assembler Line
   expect('=');
   defval[defcnt++] = prsbyt(); //Get Value
   ACMNT(word); //comment value
   asmlin(EQUOP, value); //Write Definition
-  DEBUG("Defined as '%s'\n", value);
+  DEBUG("Defined as '%s'\n", value)
 }
 
 /* Process enum directive */
@@ -75,13 +75,13 @@ void penumd(void) {
   int enmval = 0;
   do {
     getwrd(); //get defined identifier
-    DEBUG("Enumerating '%s'\n", word);
+    DEBUG("Enumerating '%s'\n", word)
     strncpy(defnam[defcnt], word, VARLEN);
     setlbl(word); //Set label Assembler Line
     defval[defcnt++] = enmval; //Set Value
     sprintf(value, "%d", enmval);
     asmlin(EQUOP, value); //Write Definition
-    DEBUG("Defined as '%s'\n", value);
+    DEBUG("Defined as '%s'\n", value)
     enmval++;
   } while (look(','));
 }
@@ -103,13 +103,13 @@ void pascii(void) {
 void porign(void) {
   prsnum(0xFFFF); //Get Origin Address
   asmlin(ORGOP, value); //Emit Origin Instruction
-  DEBUG("Set origin to %s\n", value);
+  DEBUG("Set origin to %s\n", value)
 }
 
 /* Parse Zeropage Subdirective */
 void prszpg(void) {
   zpaddr = prsnum(0xFF); //Set Zero Page Address to Constant
-  DEBUG("Set zero page address to %d\n", zpaddr);
+  DEBUG("Set zero page address to %d\n", zpaddr)
 }
 
 /* Process Vartable Subdirective */
@@ -123,7 +123,7 @@ void pvrtbl(void) {
 /* Parse Pragma Directive */
 void pprgma(void) {
   getwrd(); //Get Pragma Subdirective
-  DEBUG("Parsing pragma directive '%s'\n", word);
+  DEBUG("Parsing pragma directive '%s'\n", word)
   if (wordis("ASCII"))
     pascii(); //Parse Ascii
   else if (wordis("ORIGIN"))
@@ -140,7 +140,7 @@ void pprgma(void) {
 void pincdr(void) {
   skpchr();            //skip '#'
   getwrd();            //read directive into word
-  DEBUG("Processing include file directive '%s'\n", word);
+  DEBUG("Processing include file directive '%s'\n", word)
   if (wordis("DEFINE")) 
     pdefin();
   else if (wordis("PRAGMA")) 
@@ -209,7 +209,7 @@ void inchdr(void) {
   {
     skpspc();
     if (match(EOF)) break;
-    DEBUG("Checking next character '%c'\n", nxtchr);
+    DEBUG("Checking next character '%c'\n", nxtchr)
     if (match('#'))
       pincdr();
     else if (match('/')) 
@@ -217,7 +217,7 @@ void inchdr(void) {
     else if (isalph()) 
       phdwrd();
     else {
-      fprintf(stderr, "Unexpected character '%c'\n", nxtchr);	 
+      fprintf(stderr, "Unexpected character '%c'\n", nxtchr);
 	  exterr(EXIT_FAILURE);
 	}
   }    
@@ -229,7 +229,7 @@ void inchdr(void) {
 /* Process Header File specified on Command Line */
 void phdrfl(void) {
   if (hdrnam[0] == 0) return;
-  DEBUG("Processing Header '%s'\n", hdrnam);
+  DEBUG("Processing Header '%s'\n", hdrnam)
   setinm(".h02");
   inchdr();
   setinm(".a02");
@@ -239,7 +239,7 @@ void phdrfl(void) {
 /* Process include file                    */
 void pincfl(void) {
   pincnm(); //Parse Include File Name
-  DEBUG("Processing include file '%s'\n", incnam);
+  DEBUG("Processing include file '%s'\n", incnam)
   char *dot = strrchr(incnam, '.'); //find extension
   if (dot == NULL) {
     fprintf(stderr, "Invalid include file name '%sn", incnam);

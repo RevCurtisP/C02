@@ -22,10 +22,10 @@ void extsys(char *s) {
  * Uses: srcnam - Source File Name      *
  * Sets: srcfil - Source File Handle    */
 void opnsrc(void) {
-  DEBUG("Processing Source File Name '%s'\n", srcnam);
+  DEBUG("Processing Source File Name '%s'\n", srcnam)
   if (strrchr(srcnam, '.') == NULL)   //if no extension
     strcat(srcnam, ".c02");           // add ".c02"
-  DEBUG("opening Source File '%s'\n", srcnam);
+  DEBUG("opening Source File '%s'\n", srcnam)
   srcfil = fopen(srcnam, "r");      //open file
   if (srcfil == NULL) extsys(srcnam);
 }
@@ -39,17 +39,17 @@ void clssrc(void) {
  * Uses: outnam - Output File Name  *
  * Sets: outfil - Output File Handle    */
 void opnout(void) {
-  DEBUG("Processing Output File Name '%s'\n", outnam);
+  DEBUG("Processing Output File Name '%s'\n", outnam)
   if (strlen(outnam) == 0)  //if Output File not specified
   {
     strcpy(outnam, srcnam);         //copy Source Name to Ouput Name
     char *dot = strrchr(outnam, '.'); //find extension
     if (dot != NULL) *dot = 0;          //and remove it
-    DEBUG("Set Output File Name to '%s'\n", outnam);
+    DEBUG("Set Output File Name to '%s'\n", outnam)
   } 
   if (strrchr(outnam, '.') == NULL)   //if no extension
     strcat(outnam, ".asm");           // add ".asm"
-  DEBUG("Opening Output File '%s'\n", outnam);
+  DEBUG("Opening Output File '%s'\n", outnam)
   outfil = fopen(outnam, "w");      //open file
   if (outfil == NULL) extsys(outnam);
 }
@@ -68,7 +68,7 @@ void opnlog(void) {
   char *dot = strrchr(lognam, '.'); //find file extension
   if (dot != NULL) *dot = 0;          //and remove it
   strcat(lognam, ".log");           //add extension ".asm"
-  DEBUG("Opening Log File '%s'\n", lognam);
+  DEBUG("Opening Log File '%s'\n", lognam)
   logfil = fopen(lognam, "w");
   if (logfil == NULL)  extsys(lognam);
 }
@@ -84,7 +84,7 @@ void clslog(void) {
  * Sets: incfil - Include File Handle    */
 void opninc(void)
 {
-  DEBUG("Opening include file '%s'\n", incnam);
+  DEBUG("Opening include file '%s'\n", incnam)
   incfil = fopen(incnam, "r");
   if (incfil == NULL) extsys(incnam);
 }

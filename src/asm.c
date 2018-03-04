@@ -35,7 +35,7 @@ void asmlin(char *opcode, char *oprnd) {
 
 /* output a single comment line */
 void cmtlin(void) {
-  DEBUG("Writing Comment Line: %s\n", cmtasm);
+  DEBUG("Writing Comment Line: %s\n", cmtasm)
   fprintf(outfil, "; %s\n", cmtasm);
   setcmt("");
 }

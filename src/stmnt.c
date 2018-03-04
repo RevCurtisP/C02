@@ -19,14 +19,14 @@
 
 /* Begin Program Block */
 void bgnblk(char blkchr) {
-  DEBUG("Begining program block\n", 0);
+  DEBUG("Begining program block\n", 0)
   if (blkchr) {
     expect(blkchr);
     inblck = TRUE;
   }
   else
     inblck = look('{');
-  DEBUG("Set inblck to %d\n", inblck);
+  DEBUG("Set inblck to %d\n", inblck)
   setblk(inblck);
 }
 
@@ -34,9 +34,9 @@ void bgnblk(char blkchr) {
  * Args: blkflg: End of Multiline Block     */
 void endblk(int blkflg) {
   int lbtype;
-  DEBUG("Ending program block with flag %d\n", blkflg);
+  DEBUG("Ending program block with flag %d\n", blkflg)
   expect('}'); //Block End Character
-  DEBUG("Found inblck set to %d\n", inblck);
+  DEBUG("Found inblck set to %d\n", inblck)
   if (inblck != blkflg)
     ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE)
   lbtype = poplbl();
@@ -79,19 +79,19 @@ void prcasn(char trmntr) {
     prssif(trmntr); //Parse Shortcut If 
   else
     prsxpr(trmntr); //Parse Expression
-  DEBUG("Processing X assignment variable '%s'\n", xsnvar);
+  DEBUG("Processing X assignment variable '%s'\n", xsnvar)
   if (xsnvar[0]) {
     asmlin("STX", xsnvar);
     xsnvar[0] = 0;
   }
-  DEBUG("Processing Y assignment variable '%s'\n", ysnvar);
+  DEBUG("Processing Y assignment variable '%s'\n", ysnvar)
   if (ysnvar[0]) {
     if (strlen(ysnidx)) 
       prcidx(ysnivt, ysnvar, ysnidx);
     asmlin("STY", ysnvar);
     ysnvar[0] = 0;
   }
-  DEBUG("Processing assignment variable '%s'\n", asnvar);
+  DEBUG("Processing assignment variable '%s'\n", asnvar)
   if (strcmp(asnvar, "X")==0)
     asmlin("TAX", "");
   else if (strcmp(asnvar, "Y")==0)
@@ -111,7 +111,7 @@ int getidx(char* idx) {
 	    strncpy(idx, word, VARLEN);
 	else
     	strncpy(idx, value, VARLEN);
-    DEBUG("Set assigned index to %s\n", asnidx);
+    DEBUG("Set assigned index to %s\n", asnidx)
     return valtyp;
 }
 
@@ -120,15 +120,15 @@ void prcvar(char trmntr) {
   chksym(TRUE, word);
   strcpy(asnvar, word);  //save variable to assign to
   asntyp = valtyp; //Set Assigned Varable Type
-  DEBUG("Set STA variable to %s\n", asnvar);
+  DEBUG("Set STA variable to %s\n", asnvar)
   if (asntyp == VARIABLE && look(';')) {
     asmlin("STA", asnvar);
     return;
   }
   if (asntyp == ARRAY) {
     asnivt = getidx(asnidx); //Get Array Index and Type
-    DEBUG("Set STA index to %s\n", asnidx);
-    DEBUG("Set STA index type to %d\n", asnivt);
+    DEBUG("Set STA index to %s\n", asnidx)
+    DEBUG("Set STA index type to %d\n", asnivt)
   }
   else
     asnidx[0] = 0;
@@ -144,18 +144,18 @@ void prcvar(char trmntr) {
       
       prsvar(FALSE); //get variable name
       strcpy(ysnvar, word);
-      DEBUG("Set STY variable to %s\n", ysnvar);
+      DEBUG("Set STY variable to %s\n", ysnvar)
       if (valtyp == ARRAY) {
         ysnivt = getidx(ysnidx); //Get Array Index and Type
-        DEBUG("Set STY index to %s\n", ysnidx);
-        DEBUG("Set STY index type to %d\n", ysnivt);
+        DEBUG("Set STY index to %s\n", ysnidx)
+        DEBUG("Set STY index type to %d\n", ysnivt)
       }
       else
         ysnidx[0] = 0;
       if (look(',')) {
         prsvar(FALSE); //get variable name
         strcpy(xsnvar, word);
-        DEBUG("Set STX variable to %s\n", xsnvar);
+        DEBUG("Set STX variable to %s\n", xsnvar)
         if (valtyp == ARRAY) 
           ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE)
 	    
@@ -197,17 +197,17 @@ void prsasn(char trmntr) {
 /* parse and compile 'break'/'continue' statement */
 void pbrcnt(int lbflag) 
 {
-  DEBUG("Parsing BREAK/CONTINUE statement\n", 0);
+  DEBUG("Parsing BREAK/CONTINUE statement\n", 0)
   if (lstlbl(lbflag) < 0)
     ERROR("Break/continue statement outside of loop\n", 0, EXIT_FAILURE)
-  DEBUG("Found Label '%s'\n", tmplbl);
+  DEBUG("Found Label '%s'\n", tmplbl)
   asmlin("JMP", tmplbl);
   expect(';'); 
 }
 
 /* parse and compile 'do' statement */
 void pdo(void) {
-  DEBUG("Parsing DO statement '%c'\n", nxtchr);
+  DEBUG("Parsing DO statement '%c'\n", nxtchr)
   newlbl(endlbl);          //Create End Label
   pshlbl(LTDWHL, endlbl);   //and Push onto Stack
   reqlbl(loplbl);          //Get or Create/Set Loop Label
@@ -219,7 +219,7 @@ void pdo(void) {
 
 /* parse and compile 'while' after 'do' statement */
 void pdowhl(void) {
-  DEBUG("Parsing WHILE after DO '%c'\n", nxtchr);
+  DEBUG("Parsing WHILE after DO '%c'\n", nxtchr)
   getwrd();                //Check for While
   if (!wordis("WHILE"))
      expctd("while statement");
@@ -258,7 +258,7 @@ void pfor(void) {
 
 /* parse and compile if statement */
 void pif(void) {
-  DEBUG("Parsing IF statement\n", 0);
+  DEBUG("Parsing IF statement\n", 0)
   expect('(');
   newlbl(cndlbl);      //Create New Label
   pshlbl(LTIF,cndlbl); //Push Onto Stack
@@ -268,7 +268,7 @@ void pif(void) {
 
 /* parse and compile else statement */
 void pelse(void) {
-  DEBUG("Parsing ELSE statement\n", 0);
+  DEBUG("Parsing ELSE statement\n", 0)
   strcpy(lbltmp, lblasm);   //Save Line Label
   lblasm[0] = 0;            //and Clear It
   newlbl(skplbl);           //Create Skip Label
@@ -280,7 +280,7 @@ void pelse(void) {
 
 /* parse and compile if statement */
 void pgoto(void) {
-  DEBUG("Parsing GOTO statement\n", 0);
+  DEBUG("Parsing GOTO statement\n", 0)
   getwrd();
   expect(';');  
   asmlin("JMP", word);
@@ -288,9 +288,9 @@ void pgoto(void) {
 
 /* parse and compile inline statement */
 void pinlne(void) {
-  DEBUG("Parsing INLINE statement\n", 0);
+  DEBUG("Parsing INLINE statement\n", 0)
   do { 
-    DEBUG("Parsing inline parameter\n", 0);
+    DEBUG("Parsing inline parameter\n", 0)
     if (look('&')) {
       reqvar(FALSE); //Get Variable Name
       strcpy(word, "<");
@@ -322,7 +322,7 @@ void pinlne(void) {
 
 /* parse and compile pop statement */
 void ppop(void) {
-  DEBUG("Parsing POP statement\n", 0);
+  DEBUG("Parsing POP statement\n", 0)
   do {  
     asmlin("PLA", "");     //Pop Value off Stack
     if (!look('*')) {
@@ -337,7 +337,7 @@ void ppop(void) {
 
 /* parse and compile push statement */
 void ppush(void) {
-  DEBUG("Parsing PUSH statement\n", 0);
+  DEBUG("Parsing PUSH statement\n", 0)
   do { 
     if (!chkadr(1)) {
       prsxpr(0);        //Parse Expression
@@ -349,7 +349,7 @@ void ppush(void) {
 
 /* parse and compile return statement */
 void pretrn(void) {
-  DEBUG("Parsing RETURN statement\n", 0);
+  DEBUG("Parsing RETURN statement\n", 0)
   if (!look(';'))
     prsxpr(';');
   asmlin("RTS", "");
@@ -358,7 +358,7 @@ void pretrn(void) {
 
 /* parse and compile select statement */
 void pslct(void) {
-  DEBUG("Parsing SELECT statement\n", 0);
+  DEBUG("Parsing SELECT statement\n", 0)
   expect('(');
   prsxpr(')');            //Parse Expression
   newlbl(endlbl);         //Create New Label
@@ -370,7 +370,7 @@ void pslct(void) {
 
 /* process end of case block */
 void ecase(void) {
-  DEBUG("Processing end of CASE block\n", 0);
+  DEBUG("Processing end of CASE block\n", 0)
   if (poplbl(cndlbl) != LTCASE)
     ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE)
   if (toplbl(endlbl) != LTSLCT)
@@ -413,7 +413,7 @@ void pdflt(void) {
 
 /* parse and compile while statement */
 void pwhile(void) {
-  DEBUG("Parsing WHILE statement '%c'\n", nxtchr);
+  DEBUG("Parsing WHILE statement '%c'\n", nxtchr)
   expect('(');
   newlbl(endlbl);          //Create End Label
   pshlbl(LTEND, endlbl);   //and Push onto Stack
@@ -444,7 +444,7 @@ void prsfns(void) {
 
 /* parse and compile identifier (variable or function call) */
 void prssym(void) {
-  DEBUG("Parsing Identifier %s\n", word);
+  DEBUG("Parsing Identifier %s\n", word)
   valtyp = gettyp();
   if (valtyp == FUNCTION)
     prsfns();  //Parse Statement Function Call
@@ -454,7 +454,7 @@ void prssym(void) {
 
 /* parse and compile program statement */
 void pstmnt(void) {
-  DEBUG("Parsing statement '%s'\n", word);
+  DEBUG("Parsing statement '%s'\n", word)
   if (wordis("DO")) {
     pdo();
     return;
@@ -513,7 +513,7 @@ void pstmnt(void) {
   else
     prssym();
   if (lblcnt && !inblck) {
-    DEBUG("Ending implied block\n", 0);
+    DEBUG("Ending implied block\n", 0)
     if (poplbl() == LTDO)
       pdowhl(); //Parse While at End of Do Loop
   }

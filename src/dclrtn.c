@@ -55,7 +55,7 @@ void addfnc(void) {
 
 /* (Check For and) Parse Variable Declaration*/
 void pdecl(int m, int t) {
-  DEBUG("Processing variable declarations(s) of type %d\n", t);
+  DEBUG("Processing variable declarations(s) of type %d\n", t)
   while(TRUE) {
     getwrd();
     if (match('(')) {
@@ -70,7 +70,7 @@ void pdecl(int m, int t) {
       break;
   }    
   expect(';');
-  DEBUG("Variable Declaration Completed\n", 0);
+  DEBUG("Variable Declaration Completed\n", 0)
   SCMNT("");  //Clear Assembler Comment
 }
 
@@ -89,7 +89,7 @@ int ptype(int m) {
 
 /* Check for and Parse Modifier */
 int pmodfr(void) {
-  DEBUG("Parsing modifier '%s'\n", word);
+  DEBUG("Parsing modifier '%s'\n", word)
   int result = TRUE;
   if (wordis("ALIGNED")) {
     getwrd();

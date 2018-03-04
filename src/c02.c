@@ -27,7 +27,7 @@
 
 /* Initilize Compiler Variables */
 void init(void) {
-  DEBUG("Initializing Compiler Variables\n",0);
+  DEBUG("Initializing Compiler Variables\n",0)
   defcnt = 0;
   varcnt = 0;
   lblcnt = 0;
@@ -52,15 +52,12 @@ void init(void) {
 void pword(void) {
   lsrtrn = FALSE; //Clear RETURN flag
   getwrd();
-  DEBUG("Parsing Word '%s'\n", word);
+  DEBUG("Parsing Word '%s'\n", word)
   if (xstmnt[0]) {
-    if (wordis(xstmnt)) 
-      xstmnt[0] = 0;  //Clear xstmnt
-    else
-      ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE)
+    if (wordis(xstmnt)) xstmnt[0] = 0;  //Clear xstmnt
+    else ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE)
   }
-  if (!pmodfr() && !ptype(MTNONE))
-    pstmnt();     //Parse Statement
+  if (!pmodfr() && !ptype(MTNONE)) pstmnt();     //Parse Statement
 }
 
 /* Process a directive */
@@ -68,7 +65,7 @@ void pdrctv(void) {
   skpchr();            //skip '#'
   CCMNT('#');
   getwrd();           //read directive into word
-  DEBUG("Processing directive '%s'\n", word);
+  DEBUG("Processing directive '%s'\n", word)
   if      (wordis("DEFINE"))  pdefin();  //Parse Define
   else if (wordis("ENUM"))    penumd();  //Parse Enum Directive
   else if (wordis("INCLUDE")) pincfl();  //Parse Include File
@@ -78,7 +75,7 @@ void pdrctv(void) {
 }
 
 void prolog(void) {
-  DEBUG("Writing Assembly Prolog\n", 0);
+  DEBUG("Writing Assembly Prolog\n", 0)
   asmlin(CPUOP,CPUARG);
   setcmt("Program ");
   addcmt(srcnam);
@@ -91,26 +88,19 @@ void epilog(void) {
 
 /* Compile Source Code*/
 void compile(void) {
-  DEBUG("Starting Compilation\n", 0);
+  DEBUG("Starting Compilation\n", 0)
   prolog();
   phdrfl(); //Process Header File specified on Command Line
   skpchr();
-  DEBUG("Parsing Code\n", 0);
+  DEBUG("Parsing Code\n", 0)
   while (TRUE) {
     skpspc();
-    //DEBUG("Checking next character '%c'\n", nxtchr);
-    if (match(EOF)) 
-      break;
-    else if (match('}'))
-      endblk(TRUE);  //End Multi-Line Program Block
-    else if (match('#'))
-      pdrctv();      //Parse Directive
-    else if (match('/')) 
-      skpcmt();      //Skip Comment
-    else if (isalph()) 
-      pword();       //Parse Word
-    else
-      ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE)
+    if      (match(EOF)) break;         //Stop Parsing (End of File)
+    else if (match('}')) endblk(TRUE);  //End Multi-Line Program Block
+    else if (match('#')) pdrctv();      //Parse Directive
+    else if (match('/')) skpcmt();      //Skip Comment
+    else if (isalph())   pword();       //Parse Word
+    else ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE)
   }    
   epilog();
 }
@@ -127,19 +117,17 @@ int popt(int arg, int argc, char *argv[]) {
   char opt;        //Option
   char optarg[32]; //Option Argument
   strncpy (argstr, argv[arg], 31);
-  if (strlen(argstr) != 2) 
-    ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
+  if (strlen(argstr) != 2) ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
   opt = toupper(argstr[1]);
   if (strchr("H", opt)) {
-    if (++arg >= argc)
-      ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
+    if (++arg >= argc) ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
-  DEBUG("Processing Command Line Option -%c\n", argstr[1]);
+  DEBUG("Processing Command Line Option -%c\n", argstr[1])
   switch (opt) {
     case 'H':
       strcpy(hdrnam, optarg);
-      DEBUG("Header Name set to '%s'\n", hdrnam);
+      DEBUG("Header Name set to '%s'\n", hdrnam)
       break;
     default:
       ERROR("Illegal option -%c\n", opt, EXIT_FAILURE)
@@ -154,24 +142,17 @@ void pargs(int argc, char *argv[]) {
   int arg;
   srcnam[0] = 0;
   outnam[0] = 0;
-  DEBUG("Parsing %d arguments\n", argc);
+  DEBUG("Parsing %d arguments\n", argc)
   if (argc == 0) usage(); //at least one argument is required
   for (arg = 1; arg<argc; arg++) {
     DEBUG("Parsing argument %d\n", arg);
-    if (argv[arg][0] == '-') {
-      arg = popt(arg, argc, argv);
-    }
-    else if (srcnam[0] == 0) {
-      strcpy(srcnam, argv[arg]); //set Source File Name to first arg
-      DEBUG("srcnam set to '%s'\n", srcnam);
-    }
-    else if (outnam[0] == 0) {
-       strcpy(outnam, argv[arg]); //set Out File Name to second arg
-       DEBUG("outnam set to '%s'\n", outnam);
-    }
-    else
-      ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE)
+    if (argv[arg][0] == '-') arg = popt(arg, argc, argv); //Process Command Line Option
+    else if (srcnam[0] == 0) strcpy(srcnam, argv[arg]);   //set Source File Name to first arg    
+    else if (outnam[0] == 0) strcpy(outnam, argv[arg]);   //set Out File Name to second arg
+    else ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE)
   }
+  if (srcnam[0]) DEBUG("srcnam set to '%s'\n", srcnam)
+  if (outnam[0]) DEBUG("outnam set to '%s'\n", outnam)
 }
 
 int main(int argc, char *argv[]) {

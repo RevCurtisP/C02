@@ -38,7 +38,7 @@ int isxpre(void) {return TF(isvpre() || match('-'));}
 char prcchr(char c) {
   if (invasc) c = isalpha(c) ? (islower(c)?toupper(c):tolower(c)) : c;
   if (mskasc) c = c | 0x80;
-  if (invasc || mskasc) DEBUG("Character converted to '%c'\n", c);
+  if (invasc || mskasc) DEBUG("Character converted to '%c'\n", c)
   return c;
 }
 
@@ -66,7 +66,7 @@ char getnxt(void) {
 
 /* Advance Input File to next printable character */
 void skpspc(void) {
-  //DEBUG("Skipping Spaces\n", 0);
+  //DEBUG("Skipping Spaces\n", 0)
   if (isspc()) CCMNT(' '); //Add only the first space to comments
   while (isspc()) 
     getnxt();
@@ -100,7 +100,7 @@ void expect(char c) {
 /* Advance Input File to next printable character */
 void skpchr(void) {
 	char skip = getnxt();
-	DEBUG("Skipped character '%c'\n", skip);
+	DEBUG("Skipped character '%c'\n", skip)
 }
 
 /* Advance Input File to end of line */
@@ -110,7 +110,7 @@ void skpeol(void) {while (!isnl()) getnxt();}
  * Recognizes both C and C++ style comments */
 void skpcmt(void)
 {
-  DEBUG("Skipping Comment\n", 0);     
+  DEBUG("Skipping Comment\n", 0) 
   skpchr();               //skip initial /
   if (match('/'))         //if C style comment
     skpeol();        //  skip rest of line
@@ -146,7 +146,7 @@ void getwrd(void) {
 
 /* Escape Character */
 char escape(char c) {
-  DEBUG("Escaping character '%c'\n", c);
+  DEBUG("Escaping character '%c'\n", c)
   switch (c) {
     case 'r': return 0x0d;
     default: return c;
@@ -157,7 +157,7 @@ char escape(char c) {
 void getstr(void) {
   char strdel;
   int wrdlen = 0, escnxt = FALSE;
-  DEBUG("Parsing string\n", 0);
+  DEBUG("Parsing string\n", 0)
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
   while(match(strdel) == escnxt) {
@@ -230,7 +230,7 @@ int prshex(void) {
   int wrdlen = 0;
   int digit;
   int number = 0;
-  DEBUG("Parsing hexadecimal constant '", 0);
+  DEBUG("Parsing hexadecimal constant '", 0)
   if (!match('$'))
     expctd("hexadecimal number"); 
   word[wrdlen++] = getnxt();
@@ -256,13 +256,13 @@ int prshex(void) {
 int prschr(void) {
   int wrdlen = 0;
   char c;
-  DEBUG("Parsing character constant\n", 0);
+  DEBUG("Parsing character constant\n", 0)
   expect('\'');
   word[wrdlen++] = '\'';
   if (match('\\')) 
     word[wrdlen++] = getnxt();
   c = getnxt();
-  DEBUG("Extracted character %c\n", c);
+  DEBUG("Extracted character %c\n", c)
   word[wrdlen++] = prcchr(c);
   expect('\'');
   word[wrdlen++] = '\'';
@@ -292,8 +292,8 @@ int prsnum(int maxval) {
     default:
       number = prsdec();
   }
-  DEBUG("Parsed number '%s' ", word);
-  DETAIL("with value '%d'\n", number);
+  DEBUG("Parsed number '%s' ", word)
+  DETAIL("with value '%d'\n", number)
 
   if (number > maxval) 
     ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE)
@@ -310,7 +310,7 @@ int prsbyt(void) {return prsnum(0xFF);}
 
 /* Find Defined Constant */
 void fnddef(char *name) {
-  DEBUG("Looking up defined constant '%s'\n", word);
+  DEBUG("Looking up defined constant '%s'\n", word)
   for (defidx=0; defidx<defcnt; defidx++) {
     if (strcmp(defnam[defidx], name) == 0)
       return;
@@ -349,7 +349,7 @@ void prscon(void) {
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");
   strcat(value, word);
-  DEBUG("Generated constant '%s'\n", value);
+  DEBUG("Generated constant '%s'\n", value)
 }
 
 /* Get Value Type */
@@ -364,7 +364,7 @@ void prsopr(void) {
   if (!isoper())
     expctd("Arithmetic or bitwise operator");
   oper = getnxt();
-  DEBUG("Parsed operator '%c'\n", oper);
+  DEBUG("Parsed operator '%c'\n", oper)
   CCMNT(oper);
   skpspc();
 }
@@ -378,7 +378,7 @@ void poperr(char* name) {
 
 /* Process Post Operator */
 void prcpst(char* name, char *index) {
-  DEBUG("Processing post operation '%c'\n", oper);
+  DEBUG("Processing post operation '%c'\n", oper)
   if (strlen(index)) { 
       asmlin("LDX", index);
       strcat(name,",X");
@@ -434,7 +434,7 @@ void prcpst(char* name, char *index) {
 int prspst(char trmntr, char* name, char* index) {
   oper = getnxt();
   CCMNT(oper);
-  DEBUG("Checking for post operation '%c'\n", oper);
+  DEBUG("Checking for post operation '%c'\n", oper)
   if (nxtchr == oper) {
     skpchr();
     CCMNT(oper);
@@ -443,7 +443,7 @@ int prspst(char trmntr, char* name, char* index) {
     oper = 0;
   }
   else {
-    DEBUG("Not a post operation\n", 0);
+    DEBUG("Not a post operation\n", 0)
   }
   return oper;
 }

@@ -30,8 +30,8 @@
 #define FALSE 0
 
 void prtpos();  //Print current file name and position
-#define DEBUG(fmt, val) if (debug) {prtpos(); printf(fmt, val);}
-#define DETAIL(fmt, val) if (debug) {printf(fmt, val);}
+#define DEBUG(fmt, val) {if (debug) {prtpos(); printf(fmt, val);}}
+#define DETAIL(fmt, val) {if (debug) printf(fmt, val);}
 #define ERROR(fmt, val, err) {fprintf(stderr, fmt, val);exterr(err);}
 
 int debug;  //Print Debug Info (TRUE or FALSE)

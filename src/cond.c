@@ -22,7 +22,7 @@ int  cmpenc;    //Encoded Comparator Character
  * Returns: Comparison Operator Bit Mask */
 int enccmp(char c) {
   int e;
-  DEBUG("Encoding Comparison Character '%c'", c);
+  DEBUG("Encoding Comparison Character '%c'", c)
   switch(c) {
     case '=': e = 1; break;
     case '<': e = 2; break;
@@ -42,7 +42,7 @@ int enccmp(char c) {
  * Uses: term - Term Being Compared Against           *
  *       label - Branch Target if Comparison is FALSE */
 void prccmp(void) {
-  DEBUG("Processing comparitor %d\n", cmprtr);
+  DEBUG("Processing comparitor %d\n", cmprtr)
   switch(cmprtr) {
     case 0: // Raw Expression (Skip)
       asmlin("BEQ", cndlbl);
@@ -96,12 +96,12 @@ void prscmp(int revrse) {
     prstrm();
   cmprtr = (cmprtr ^ revrse) & 7;
   prccmp();
-  DEBUG("Parsed comparator %d\n", cmprtr);
+  DEBUG("Parsed comparator %d\n", cmprtr)
 }
 
 /* Parse Flag Operator */
 void prsflg(int revrse) {
-  DEBUG("Parsing Flag Operator '%c'\n", nxtchr);
+  DEBUG("Parsing Flag Operator '%c'\n", nxtchr)
   if (match('+')) 
     cmprtr = 0;
   else if (match('-'))
@@ -119,10 +119,10 @@ void prsflg(int revrse) {
 /* Parse and Compile Conditional Expression     *
  * Condition = <expression> <comparator> <term> */
 void prscnd(char trmntr, int revrse) {
-  DEBUG("Parsing condition with revrse=%d\n", revrse);
+  DEBUG("Parsing condition with revrse=%d\n", revrse)
   if (look('!')) {
     revrse = (revrse) ? FALSE: TRUE;
-    DEBUG("Set revrse to %d\n", revrse);      
+    DEBUG("Set revrse to %d\n", revrse)    
   }
   if (!look('*'))
     prsxpr(0);

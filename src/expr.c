@@ -18,7 +18,7 @@
  * Sets: value - the value (as a string) *
  *       valtyp - value type           */
 void prsval(int alwreg) {
-  DEBUG("Parsing value\n", 0);
+  DEBUG("Parsing value\n", 0)
   skpspc();
   if (iscpre())
     prscon(); //Parse Constant
@@ -27,7 +27,7 @@ void prsval(int alwreg) {
   }
   else
     expctd("constant or variable");
-  DEBUG("Parsed value of type %d\n", valtyp);
+  DEBUG("Parsed value of type %d\n", valtyp)
   skpspc();
 }
 
@@ -37,13 +37,13 @@ void prsval(int alwreg) {
 void prsidx(void) {
   expect('[');
   prsval(TRUE);
-  DEBUG("Parsed array index '%s'\n", value);
+  DEBUG("Parsed array index '%s'\n", value)
   expect(']');
 }
 
 /* Check for, Parse, and Process Index */
 void chkidx(void) {
-  //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp);
+  //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp)
   if (valtyp == ARRAY) {
     prsidx();
     if (valtyp == CONSTANT) {
@@ -65,20 +65,20 @@ void chkidx(void) {
 /* Parse Term in Expression           *
  * Sets: term - the term (as a string) */
 void prstrm(void) {
-  DEBUG("Parsing term\n", 0);
+  DEBUG("Parsing term\n", 0)
   prsval(FALSE);
   if (valtyp == FUNCTION) 
     ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   
   strcpy(term, value);
-  DEBUG("Parsed term %s\n", term);
+  DEBUG("Parsed term %s\n", term)
   chkidx();  //Check for Array Index
   skpspc();
 }
 
 /* Process Address Reference */
 void prcadr(int adract, char* symbol) {
-  DEBUG("Processing address '%s'\n", word);
+  DEBUG("Processing address '%s'\n", word)
   strcpy(word,"#>");
   strcat(word,symbol);
   if (adract == 1) {
@@ -99,7 +99,7 @@ void prcadr(int adract, char* symbol) {
 
 /* Parse and Compile Address of Operator */
 void prsadr(int adract) {
-  DEBUG("Parsing address\n", 0);
+  DEBUG("Parsing address\n", 0)
   if (isnpre()) 
     prsnum(0xFFFF);
   else
@@ -109,7 +109,7 @@ void prsadr(int adract) {
 
 /* Parse and Create Anonymous String */
 void prsstr(int adract) {
-  DEBUG("Parsing anonymous string\n", 0);
+  DEBUG("Parsing anonymous string\n", 0)
   newlbl(vrname);         //Generate Variable Name
   value[0] = 0;           //Use Variable Size 0
   setvar(MTNONE, VTCHAR); //Set Variable Name, Type, and Size
@@ -121,7 +121,7 @@ void prsstr(int adract) {
 
 /* Check for and Process Address or String */
 int chkadr(int adract) {
-  DEBUG("Checking for Address or String\n", 0);
+  DEBUG("Checking for Address or String\n", 0)
   int result = TRUE;
   if (look('&'))
     prsadr(adract);
@@ -135,7 +135,7 @@ int chkadr(int adract) {
 
 /* Parse function call */
 void prsfnc(char trmntr) {
-  DEBUG("Processing Function Call '%s'...\n", term);
+  DEBUG("Processing Function Call '%s'\n", term)
   if (fnscnt >= MAXFNS)
     ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE)
   strcpy(fnstck[fnscnt++], term);
@@ -168,7 +168,7 @@ void prsfnc(char trmntr) {
  * First term can include function calls    */
 void prsftm(void) {
   prsval(TRUE);
-  DEBUG("Processing first term '%s'...\n", value);
+  DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
   if (valtyp == FUNCTION) {
      prsfnc(0); //Parse Expression Function
@@ -189,7 +189,7 @@ void prsftm(void) {
 /* Process Arithmetic or Bitwise Operator *
  *   and the term that follows it         */
 void prcopr(void) {
-  DEBUG("Processing operator '%c'\n", oper);
+  DEBUG("Processing operator '%c'\n", oper)
   switch(oper)
   {
     case '+': 
@@ -219,10 +219,10 @@ void prcopr(void) {
 
 /* Parse and compile expression */
 void prsxpr(char trmntr) {
-  DEBUG("Parsing expression\n", 0);
+  DEBUG("Parsing expression\n", 0)
   skpspc();
   if (match('-')) {
-    DEBUG("Processing unary minus", 0);
+    DEBUG("Processing unary minus", 0)
     asmlin("LDA", "#$00");  //Handle Unary Minus
   } 
   else 

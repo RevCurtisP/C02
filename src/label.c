@@ -23,12 +23,12 @@ const char lblflg[] = {LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE
  *          (-1 if not found)         */
 int lstlbl(int lbflag) {
   int i;
-  DEBUG("Searching for label flag %d\n", lbflag);
+  DEBUG("Searching for label flag %d\n", lbflag)
   for (i = lblcnt - 1; i>-1; i--) {
-    //DEBUG("Comparing against flag %d", lblflg[lbltyp[i]]); 
+    //DEBUG("Comparing against flag %d", lblflg[lbltyp[i]])
     if (lblflg[lbltyp[i]] == lbflag) break;
   }
-  DEBUG("Search produced label index %d\n", i);
+  DEBUG("Search produced label index %d\n", i)
   if (i>=0) 
     strcpy(tmplbl, lblnam[i]);
   return i;
@@ -43,7 +43,7 @@ void setblk(int blkflg) {
  * Assembly Language Code     *
  * to word                    */
 void setlbl(char *lblset) {
-  DEBUG("Setting Label '%s'\n", lblset);
+  DEBUG("Setting Label '%s'\n", lblset)
   if (strlen(lblasm) > 0) {
     DEBUG("Emitting Label '%s'\n'", lblasm);
     asmlin("",""); //Emit Block End Label on it's own line
@@ -55,7 +55,7 @@ void setlbl(char *lblset) {
 
 /* parse label in code */
 void prslbl(void) {
-  DEBUG("Parsing Label '%s''\n", word);
+  DEBUG("Parsing Label '%s''\n", word)
   CCMNT(nxtchr);
   skpchr(); //skip ':'
   setlbl(word);
@@ -64,7 +64,7 @@ void prslbl(void) {
 /* generate new label */
 void newlbl(char* lbname) {
   sprintf(lbname, LABFMT, lblnxt++);
-  DEBUG("Generated new label '%s'\n", lbname);
+  DEBUG("Generated new label '%s'\n", lbname)
 }
 
 /* Check Label Contents             *
@@ -90,7 +90,7 @@ void reqlbl(char* lbname) {
 /* Pop Label from Stack and Emit on Next Line */
 int poplbl(void) {
   int lbtype = lbltyp[--lblcnt];
-  DEBUG("Popped label type %d\n", lbtype);
+  DEBUG("Popped label type %d\n", lbtype)
   if (lbtype == LTLOOP)
     asmlin("JMP", lblnam[lblcnt--]); //Jump to Beginning of Loop   
   if (lbtype == LTFUNC) {
@@ -114,7 +114,7 @@ int poplbl(void) {
 int toplbl(char *rtlbl) {
   if (lblcnt) {
     strcpy(rtlbl, lblnam[lblcnt-1]);
-    DEBUG("Found top label %s\n", rtlbl);
+    DEBUG("Found top label %s\n", rtlbl)
     return lbltyp[lblcnt-1];
   }
   rtlbl[0] = 0; //Clear Label
@@ -125,9 +125,9 @@ int toplbl(char *rtlbl) {
  * Args: lbltyp - Label type    *
  * Uses: curlbl - Label to push */
 void pshlbl(int lbtype, char* lbname) {
-  DEBUG("Pushing label type %d\n", lbtype);
+  DEBUG("Pushing label type %d\n", lbtype)
   strcpy(lblnam[lblcnt], lbname);
   lbltyp[lblcnt] = lbtype;
   lblblk[lblcnt++] = FALSE;
-  DEBUG("Pushed label '%s' onto stack\n", lbname);
+  DEBUG("Pushed label '%s' onto stack\n", lbname)
 }
