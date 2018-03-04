@@ -20,12 +20,10 @@ int  cmpenc;    //Encoded Comparator Character
 /* Encode Comparison Operator Character *
  * Args: Comparison Operator Character   *
  * Returns: Comparison Operator Bit Mask */
-int enccmp(char c) 
-{
+int enccmp(char c) {
   int e;
-  DEBUG("Encoding Comparison Character '%c'\n", c);
-  switch(c)
-  {
+  DEBUG("Encoding Comparison Character '%c'", c);
+  switch(c) {
     case '=': e = 1; break;
     case '<': e = 2; break;
     case '>': e = 4; break;
@@ -35,7 +33,7 @@ int enccmp(char c)
     CCMNT(c);
     skpchr();
   }
-  DEBUG("Encoded as %d\n", e);
+  DETAIL(", encoded as %d\n", e);
   return e;
 }
 
@@ -43,9 +41,8 @@ int enccmp(char c)
  * Args: comparator - Encoded Comparison Operator     *
  * Uses: term - Term Being Compared Against           *
  *       label - Branch Target if Comparison is FALSE */
-void prccmp() 
-{
-  DEBUG("Processing comparison operator %d\n", cmprtr);
+void prccmp(void) {
+  DEBUG("Processing comparitor %d\n", cmprtr);
   switch(cmprtr) {
     case 0: // Raw Expression (Skip)
       asmlin("BEQ", cndlbl);
@@ -80,14 +77,12 @@ void prccmp()
       asmlin("BNE", cndlbl);
       break;
     default:
-      fprintf(stderr, "Unsupported comparison operator index %d\n", cmprtr);
-      exterr(EXIT_FAILURE);
+      ERROR("Unsupported comparison operator index %d\n", cmprtr, EXIT_FAILURE);
   }
 }
 
 /* Parse Comparison */
-int prscmp(int revrse) 
-{
+void prscmp(int revrse) {
   skpspc();
   cmpenc = enccmp(nxtchr);      //Encode Comparison Character
   cmprtr = cmpenc;              //Set Encoded Comparator 
@@ -99,14 +94,13 @@ int prscmp(int revrse)
   skpspc();
   if (cmprtr)
     prstrm();
-  cmprtr = cmprtr ^ revrse & 7;
+  cmprtr = (cmprtr ^ revrse) & 7;
   prccmp();
   DEBUG("Parsed comparator %d\n", cmprtr);
 }
 
 /* Parse Flag Operator */
-void prsflg(int revrse)
-{
+void prsflg(int revrse) {
   DEBUG("Parsing Flag Operator '%c'\n", nxtchr);
   if (match('+')) 
     cmprtr = 0;
@@ -115,7 +109,7 @@ void prsflg(int revrse)
   else
     expctd("Flag operator");
   skpchr();
-  cmprtr = cmprtr ^ revrse & 1;
+  cmprtr = (cmprtr ^ revrse) & 1;
   if (cmprtr)
     asmlin("BPL", cndlbl);
   else
@@ -124,8 +118,7 @@ void prsflg(int revrse)
 
 /* Parse and Compile Conditional Expression     *
  * Condition = <expression> <comparator> <term> */
-void prscnd(char trmntr, int revrse) 
-{
+void prscnd(char trmntr, int revrse) {
   DEBUG("Parsing condition with revrse=%d\n", revrse);
   if (look('!')) {
     revrse = (revrse) ? FALSE: TRUE;

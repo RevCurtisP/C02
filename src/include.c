@@ -20,8 +20,7 @@
 
 /* Read next include file name from Source File  *
  * Sets: incnam - the include file name         */
-void pincnm()
-{
+void pincnm(void) {
   char dlmtr;
   int inclen = 0;
   skpspc();
@@ -43,7 +42,7 @@ void pincnm()
 }
 
 /* Process assembly language include file  */
-void incasm() {
+void incasm(void) {
   opninc();
   setcmt("======== Assembler File ");
   addcmt(incnam);
@@ -59,8 +58,7 @@ void incasm() {
 }
 
 /* Process define directive */
-void pdefin() 
-{
+void pdefin(void) {
   getwrd(); //get defined identifier
   DEBUG("Defining '%s'\n", word);
   strncpy(defnam[defcnt], word, VARLEN);
@@ -73,8 +71,7 @@ void pdefin()
 }
 
 /* Process enum directive */
-void penumd() 
-{
+void penumd(void) {
   int enmval = 0;
   do {
     getwrd(); //get defined identifier
@@ -90,8 +87,7 @@ void penumd()
 }
 
 /* Parse ASCII Subdirective */
-void pascii()
-{
+void pascii(void) {
   getwrd(); //Get Pragma Subdirective
   if (wordis("INVERT"))
     invasc = TRUE;
@@ -104,23 +100,20 @@ void pascii()
 }
 
 /* Parse Origin Subdirective */
-void porign()
-{
+void porign(void) {
   prsnum(0xFFFF); //Get Origin Address
   asmlin(ORGOP, value); //Emit Origin Instruction
   DEBUG("Set origin to %s\n", value);
 }
 
 /* Parse Zeropage Subdirective */
-void prszpg()
-{
+void prszpg(void) {
   zpaddr = prsnum(0xFF); //Set Zero Page Address to Constant
   DEBUG("Set zero page address to %d\n", zpaddr);
 }
 
 /* Process Vartable Subdirective */
-void pvrtbl()
-{
+void pvrtbl(void) {
   if (vrwrtn) {
     ERROR("Variable table already written", 0, EXIT_FAILURE);
   }
@@ -128,8 +121,7 @@ void pvrtbl()
 }
 
 /* Parse Pragma Directive */
-void pprgma()
-{
+void pprgma(void) {
   getwrd(); //Get Pragma Subdirective
   DEBUG("Parsing pragma directive '%s'\n", word);
   if (wordis("ASCII"))
@@ -145,8 +137,7 @@ void pprgma()
 }
 
 /* Process Include File Directive */
-void pincdr()
-{
+void pincdr(void) {
   skpchr();            //skip '#'
   getwrd();            //read directive into word
   DEBUG("Processing include file directive '%s'\n", word);
@@ -161,7 +152,7 @@ void pincdr()
 }
 
 /* Parse Header Word */
-void phdwrd() {
+void phdwrd(void) {
   getwrd();
   if (!ptype(MTNONE)) {
     fprintf(stderr, "Unexpected word '%s' in header\n", word);
@@ -170,14 +161,14 @@ void phdwrd() {
 }
 
 /* Save Source File Information */
-void savsrc() {
+void savsrc(void) {
   savchr = nxtchr;
   savcol = curcol;
   savlin = curlin;
 }
 
 /* Set Include File Information */
-void setinc() {
+void setinc(void) {
   curcol = 0;
   curlin = 0;
   inpfil = incfil;
@@ -193,13 +184,13 @@ void setinm(char* filext) {
 }
 
 /* Set Input to Source File */
-void setsrc() {
+void setsrc(void) {
   inpfil = srcfil;
   strcpy(inpnam, srcnam);
 }
 
 /* Restore Source File Pointer*/
-void rstsrc() {
+void rstsrc(void) {
   nxtchr = savchr;
   nxtupc = toupper(nxtchr);
   curcol = savcol;
@@ -209,7 +200,7 @@ void rstsrc() {
 }
 
 /* Process header include file  */
-void inchdr() {
+void inchdr(void) {
   savsrc();  //Save Source File Information
   opninc();  //Open Include File
   setinc();  //Set Include File Information
@@ -236,8 +227,7 @@ void inchdr() {
 }
 
 /* Process Header File specified on Command Line */
-void phdrfl()
-{
+void phdrfl(void) {
   if (hdrnam[0] == 0) return;
   DEBUG("Processing Header '%s'\n", hdrnam);
   setinm(".h02");
@@ -247,8 +237,7 @@ void phdrfl()
 }
 
 /* Process include file                    */
-void pincfl() 
-{
+void pincfl(void) {
   pincnm(); //Parse Include File Name
   DEBUG("Processing include file '%s'\n", incnam);
   char *dot = strrchr(incnam, '.'); //find extension
@@ -272,8 +261,7 @@ void pincfl()
 }
 
 /* Print Definition Table to Log File */
-void logdef()
-{
+void logdef(void) {
   int i;
   fprintf(logfil, "\n%-31s %5s\n", "Definition", "Value");
   for (i=0; i<defcnt; i++)

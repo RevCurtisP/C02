@@ -18,8 +18,7 @@
 #include "stmnt.h"
 
 /* Begin Program Block */
-void bgnblk(char blkchr)
-{
+void bgnblk(char blkchr) {
   DEBUG("Begining program block\n", 0);
   if (blkchr) {
     expect(blkchr);
@@ -33,8 +32,7 @@ void bgnblk(char blkchr)
 
 /* End Program Block                        *
  * Args: blkflg: End of Multiline Block     */
-void endblk(int blkflg)
-{
+void endblk(int blkflg) {
   int lbtype;
   DEBUG("Ending program block with flag %d\n", blkflg);
   expect('}'); //Block End Character
@@ -75,8 +73,7 @@ void prcidx(int idxtyp, char *name, char *index)
 }
 
 /* Process Assignment */
-void prcasn(char trmntr)
-{
+void prcasn(char trmntr) {
   expect('=');
   if (look('(')) 
     prssif(trmntr); //Parse Shortcut If 
@@ -108,8 +105,7 @@ void prcasn(char trmntr)
 }
 
 /* Parse and Return Array Index and Type */
-int getidx(char* idx)
-{
+int getidx(char* idx) {
     prsidx();  //Parse Array Index
     if (valtyp == CONSTANT) 
 	    strncpy(idx, word, VARLEN);
@@ -120,8 +116,7 @@ int getidx(char* idx)
 }
 
 /* Process Assignment Variable(s) */
-void prcvar(char trmntr)
-{
+void prcvar(char trmntr) {
   chksym(TRUE, word);
   strcpy(asnvar, word);  //save variable to assign to
   asntyp = valtyp; //Set Assigned Varable Type
@@ -171,8 +166,7 @@ void prcvar(char trmntr)
 }
 
 /* Parse 'asm' String Parameter */
-void pasmst(char trmntr)
-{
+void pasmst(char trmntr) {
   skpspc(); //Skip Spaces
   if (!match('"')) 
     expctd("string");
@@ -182,8 +176,7 @@ void pasmst(char trmntr)
 }
 
 /* Parse and Compile 'asm' statement */
-void pasm()
-{
+void pasm(void) {
   char opcode[LINELEN];
   expect('(');
   pasmst(',');    
@@ -196,8 +189,7 @@ void pasm()
 }
 
 /* Parse and Compile an Assignment */
-void prsasn(char trmntr) 
-{
+void prsasn(char trmntr) {
   getwrd();               //Get Variable to be Assigned
   prcvar(trmntr);
 }
@@ -214,8 +206,7 @@ void pbrcnt(int lbflag)
 }
 
 /* parse and compile 'do' statement */
-void pdo() 
-{
+void pdo(void) {
   DEBUG("Parsing DO statement '%c'\n", nxtchr);
   newlbl(endlbl);          //Create End Label
   pshlbl(LTDWHL, endlbl);   //and Push onto Stack
@@ -227,7 +218,7 @@ void pdo()
 }
 
 /* parse and compile 'while' after 'do' statement */
-void pdowhl() {
+void pdowhl(void) {
   DEBUG("Parsing WHILE after DO '%c'\n", nxtchr);
   getwrd();                //Check for While
   if (!wordis("WHILE"))
@@ -245,7 +236,7 @@ void pdowhl() {
 
 
 /* parse and compile for statement */
-void pfor() {
+void pfor(void) {
   DEBUG("Parsing FOR statement '%c'\n", nxtchr);
   expect('(');
   prsasn(';');            //Process Initial Assignment     
@@ -266,7 +257,7 @@ void pfor() {
 }
 
 /* parse and compile if statement */
-void pif() {
+void pif(void) {
   DEBUG("Parsing IF statement\n", 0);
   expect('(');
   newlbl(cndlbl);      //Create New Label
@@ -276,7 +267,7 @@ void pif() {
 }
 
 /* parse and compile else statement */
-void pelse() {
+void pelse(void) {
   DEBUG("Parsing ELSE statement\n", 0);
   strcpy(lbltmp, lblasm);   //Save Line Label
   lblasm[0] = 0;            //and Clear It
@@ -288,7 +279,7 @@ void pelse() {
 }
 
 /* parse and compile if statement */
-void pgoto() {
+void pgoto(void) {
   DEBUG("Parsing GOTO statement\n", 0);
   getwrd();
   expect(';');  
@@ -296,8 +287,7 @@ void pgoto() {
 }
 
 /* parse and compile inline statement */
-void pinlne()
-{
+void pinlne(void) {
   DEBUG("Parsing INLINE statement\n", 0);
   do { 
     DEBUG("Parsing inline parameter\n", 0);
@@ -331,8 +321,7 @@ void pinlne()
 }
 
 /* parse and compile pop statement */
-void ppop()
-{
+void ppop(void) {
   DEBUG("Parsing POP statement\n", 0);
   do {  
     asmlin("PLA", "");     //Pop Value off Stack
@@ -347,8 +336,7 @@ void ppop()
 }
 
 /* parse and compile push statement */
-void ppush()
-{
+void ppush(void) {
   DEBUG("Parsing PUSH statement\n", 0);
   do { 
     if (!chkadr(1)) {
@@ -360,7 +348,7 @@ void ppush()
 }
 
 /* parse and compile return statement */
-void pretrn() {
+void pretrn(void) {
   DEBUG("Parsing RETURN statement\n", 0);
   if (!look(';'))
     prsxpr(';');
@@ -369,7 +357,7 @@ void pretrn() {
 }
 
 /* parse and compile select statement */
-void pslct() {
+void pslct(void) {
   DEBUG("Parsing SELECT statement\n", 0);
   expect('(');
   prsxpr(')');            //Parse Expression
@@ -381,7 +369,7 @@ void pslct() {
 }
 
 /* process end of case block */
-void ecase() {
+void ecase(void) {
   DEBUG("Processing end of CASE block\n", 0);
   if (poplbl(cndlbl) != LTCASE)
     ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE);  
@@ -392,9 +380,9 @@ void ecase() {
 }
 
 /* parse and compile select statement */
-void pcase() {
+void pcase(void) {
   if (!fcase)
-	ecase("CASE");  //Process end of case block
+	ecase();               //Process end of case block
   skplbl[0] = 0;           //Clear Skip Label
   newlbl(cndlbl);          //Create Conditional Label
   pshlbl(LTCASE, cndlbl);  //and Push onto Stack
@@ -418,13 +406,13 @@ void pcase() {
 }
 
 /* parse and compile default statement */
-void pdflt() {
+void pdflt(void) {
   expect(':');
   ecase(); //Process end of case block
 }
 
 /* parse and compile while statement */
-void pwhile() {
+void pwhile(void) {
   DEBUG("Parsing WHILE statement '%c'\n", nxtchr);
   expect('(');
   newlbl(endlbl);          //Create End Label
@@ -443,21 +431,19 @@ void pwhile() {
 }
 
 /* generate unimplemented statement error */
-void punimp() {
+void punimp(void) {
   ERROR("Unimplemented statement '%s' encountered\n", word, EXIT_FAILURE);  
 }
 
 /* Parse Function Call as Statement */
-void prsfns()
-{
+void prsfns(void) {
   strcpy(term, word);  //Copy Function Name
   prsfnc(';');            //Parse Function Call
   return;
 }
 
 /* parse and compile identifier (variable or function call) */
-void prssym()
-{
+void prssym(void) {
   DEBUG("Parsing Identifier %s\n", word);
   valtyp = gettyp();
   if (valtyp == FUNCTION)
@@ -467,8 +453,7 @@ void prssym()
 }
 
 /* parse and compile program statement */
-void pstmnt()
-{
+void pstmnt(void) {
   DEBUG("Parsing statement '%s'\n", word);
   if (wordis("DO")) {
     pdo();

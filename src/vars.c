@@ -19,8 +19,7 @@
  * Sets: varidx = index into varnam array  *
  *                varcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
-int fndvar(char *name) 
-{
+int fndvar(char *name) {
   DEBUG("Looking up variable '%s'\n", word);
   for (varidx=0; varidx<varcnt; varidx++) {
     if (strcmp(varnam[varidx], name) == 0) 
@@ -33,8 +32,7 @@ int fndvar(char *name)
  * Generates error if variable is undefined *
  * Args: alwreg - allow register name       *
  *       name - variable name               */
-void chksym(int alwreg, char *name) 
-{
+void chksym(int alwreg, char *name) {
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
     if (alwreg && valtyp != ARRAY) {
       valtyp = REGISTER;
@@ -50,8 +48,7 @@ void chksym(int alwreg, char *name)
  * Args: alwreg - Allow Register Names          *
  * Sets: value - Identifier Name                *
  *       valtyp - Identifier Type               */
-void prsvar(int alwreg) 
-{
+void prsvar(int alwreg) {
   getwrd();
   valtyp = gettyp();
   if (valtyp != FUNCTION) chksym(alwreg, word);
@@ -62,8 +59,7 @@ void prsvar(int alwreg)
 /* Require and Parse Variable Name                         *
  * Parameters: alwary - Allow Array Reference *
  * Sets: vrname - operand for LDA/STA/LDY/STY */
-void reqvar(int alwary)
-{
+void reqvar(int alwary) {
   prsvar(FALSE);
   if (!alwary)
     if (valtyp != VARIABLE) 
@@ -71,8 +67,7 @@ void reqvar(int alwary)
 } 
 
 /* Parse Data Array */
-void prsdta()
-{
+void prsdta(void) {
   dtype = DTARRY;
   expect('{');
   dlen = 0;
@@ -86,8 +81,7 @@ void prsdta()
 }
 
 /* Parse Data String */
-void prsdts()
-{
+void prsdts(void) {
   dtype = DTSTR;
   getstr();
   strcpy(value, word);
@@ -98,8 +92,7 @@ void prsdts()
  * Uses: value    - Data to store   *
  * Sets: datvar[] - Variable Data   *
  *       datlen[] - Data Length     */
-void setdat()
-{
+void setdat(void) {
   int i;
   if (dtype == DTBYTE) {
     DEBUG("Setting variable data to '%d'\n", cnstnt);
@@ -123,8 +116,7 @@ void setdat()
 }
 
 /* Parse and store variable data */
-void prsdat()
-{
+void prsdat(void) {
   DEBUG("Checking for variable data\n", 0);
   if (!look('=')) {
     datlen[varcnt] = 0;
@@ -147,8 +139,7 @@ void prsdat()
 /* Add Variable to Variable table *
  * Uses: word - variable name     *
  *       value - variable size    */
-void setvar(int m, int t) 
-{
+void setvar(int m, int t) {
   DEBUG("Added variable '%s' ", word);
   strncpy(varnam[varcnt], vrname, VARLEN);
   varmod[varcnt] = m;
@@ -159,8 +150,7 @@ void setvar(int m, int t)
 
 /* Parse and Compile Variable Declaration *
  * Uses: word - variable name     */
-void addvar(int m, int t) 
-{
+void addvar(int m, int t) {
   strcpy(vrname, word); //Save Variable Name
   if (fndvar(vrname))
     ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE);
@@ -193,8 +183,7 @@ void addvar(int m, int t)
 
 
 /* Write Variable Table */
-void vartbl()
-{
+void vartbl(void) {
   int i, j;
   DEBUG("Writing Variable Table", 0);
   fprintf(logfil, "\n%-31s %s %s %s\n", "Variable", "Type", "Size", "Data");

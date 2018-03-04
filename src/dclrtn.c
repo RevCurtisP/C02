@@ -18,8 +18,7 @@
 #include "dclrtn.h"
 
 /* Add Function Definition */
-void addfnc()
-{
+void addfnc(void) {
   expect('(');
   strcpy(fncnam, word);   //Save Function Name
   prmcnt = 0;             //Set Number of Parameters
@@ -55,8 +54,7 @@ void addfnc()
 }
 
 /* (Check For and) Parse Variable Declaration*/
-void pdecl(int m, int t)
-{
+void pdecl(int m, int t) {
   DEBUG("Processing variable declarations(s) of type %d\n", t);
   while(TRUE) {
     getwrd();
@@ -77,8 +75,7 @@ void pdecl(int m, int t)
 }
 
 /* Check for and Parse Type Keyword */
-int ptype(int m) 
-{
+int ptype(int m) {
   int result = TRUE;
   if (wordis("VOID"))
     pdecl(m, VTVOID);   //Parse 'void' declaration
@@ -91,8 +88,7 @@ int ptype(int m)
 }
 
 /* Check for and Parse Modifier */
-int pmodfr() 
-{
+int pmodfr(void) {
   DEBUG("Parsing modifier '%s'\n", word);
   int result = TRUE;
   if (wordis("ALIGNED")) {

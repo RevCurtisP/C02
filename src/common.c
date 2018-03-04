@@ -11,8 +11,7 @@
 #include "common.h"
 
 /* Error - Print Input File name & position and exit */
-void exterr(int errnum)
-{
+void exterr(int errnum) {
   fprintf(stderr, "Line %d Column %d of File %s\n", curlin, curcol, inpnam);
   exit(errnum);
 }
@@ -20,33 +19,28 @@ void exterr(int errnum)
 /* Error - print "Expected" error message            *
            and exit with general failure code        *
    Args: expected - Description of what was expected */ 
-void expctd(char *expstr)
-{
+void expctd(char *expstr) {
   fprintf(stderr, "Expected %s, but found '%c'\n", expstr, nxtchr);
   exterr(EXIT_FAILURE);
 }
 
 /* Print current position in file */
-void prtpos() 
-{
+void prtpos(void) {
   printf("(%s: %d,%d) ", inpnam, curlin, curcol);
 }
 
 /* Set comment to string */
-void setcmt(char *s)
-{
+void setcmt(char *s) {
   strcpy(cmtasm, s);
 }
 
 /* Append string to comment */
-void addcmt(char *s)
-{
+void addcmt(char *s) {
   strcat(cmtasm, s);
 }
 
 /* Append character to comment */
-void chrcmt(char c)
-{
+void chrcmt(char c) {
   if (cmtasm[0] == 0 && c == ' ') return;
   int i = strlen(cmtasm);
   cmtasm[i++] = c;

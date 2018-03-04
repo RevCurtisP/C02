@@ -17,8 +17,7 @@
 /* Parse value (constant or identifier)  *
  * Sets: value - the value (as a string) *
  *       valtyp - value type           */
-void prsval(int alwreg)
-{
+void prsval(int alwreg) {
   DEBUG("Parsing value\n", 0);
   skpspc();
   if (iscpre())
@@ -35,8 +34,7 @@ void prsval(int alwreg)
 /* Parse array index                  *
  * Sets: value - array index or       *
  *             "" if no index defined */
-void prsidx()
-{
+void prsidx(void) {
   expect('[');
   prsval(TRUE);
   DEBUG("Parsed array index '%s'\n", value);
@@ -44,8 +42,7 @@ void prsidx()
 }
 
 /* Check for, Parse, and Process Index */
-void chkidx()
-{
+void chkidx(void) {
   //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp);
   if (valtyp == ARRAY) {
     prsidx();
@@ -67,8 +64,7 @@ void chkidx()
 
 /* Parse Term in Expression           *
  * Sets: term - the term (as a string) */
-void prstrm()
-{
+void prstrm(void) {
   DEBUG("Parsing term\n", 0);
   prsval(FALSE);
   if (valtyp == FUNCTION) {
@@ -81,8 +77,7 @@ void prstrm()
 }
 
 /* Process Address Reference */
-void prcadr(int adract, char* symbol)
-{
+void prcadr(int adract, char* symbol) {
   DEBUG("Processing address '%s'\n", word);
   strcpy(word,"#>");
   strcat(word,symbol);
@@ -103,8 +98,7 @@ void prcadr(int adract, char* symbol)
 } 
 
 /* Parse and Compile Address of Operator */
-void prsadr(int adract)
-{
+void prsadr(int adract) {
   DEBUG("Parsing address\n", 0);
   if (isnpre()) 
     prsnum(0xFFFF);
@@ -114,8 +108,7 @@ void prsadr(int adract)
 }
 
 /* Parse and Create Anonymous String */
-void prsstr(int adract)
-{
+void prsstr(int adract) {
   DEBUG("Parsing anonymous string\n", 0);
   newlbl(vrname);         //Generate Variable Name
   value[0] = 0;           //Use Variable Size 0
@@ -127,8 +120,7 @@ void prsstr(int adract)
 }
 
 /* Check for and Process Address or String */
-int chkadr(int adract)
-{
+int chkadr(int adract) {
   DEBUG("Checking for Address or String\n", 0);
   int result = TRUE;
   if (look('&'))
@@ -142,8 +134,7 @@ int chkadr(int adract)
 }
 
 /* Parse function call */
-void prsfnc(char trmntr) 
-{
+void prsfnc(char trmntr) {
   DEBUG("Processing Function Call '%s'...\n", term);
   if (fnscnt >= MAXFNS)
     ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE);
@@ -175,8 +166,7 @@ void prsfnc(char trmntr)
 
 /* Parse first term of expession            *
  * First term can include function calls    */
-void prsftm()
-{
+void prsftm(void) {
   prsval(TRUE);
   DEBUG("Processing first term '%s'...\n", value);
   strcpy(term, value);
@@ -198,8 +188,7 @@ void prsftm()
 
 /* Process Arithmetic or Bitwise Operator *
  *   and the term that follows it         */
-void prcopr()
-{
+void prcopr(void) {
   DEBUG("Processing operator '%c'\n", oper);
   switch(oper)
   {
@@ -229,8 +218,7 @@ void prcopr()
 }
 
 /* Parse and compile expression */
-void prsxpr(char trmntr)
-{
+void prsxpr(char trmntr) {
   DEBUG("Parsing expression\n", 0);
   skpspc();
   if (match('-')) {

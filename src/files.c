@@ -13,8 +13,7 @@
 
 /* Error - Print textual description of system error *
  *         and exit with system error code           */
-void extsys(char *s)
-{
+void extsys(char *s) {
   perror(s);
   exterr(errno);
 }
@@ -22,8 +21,7 @@ void extsys(char *s)
 /* Open Source File                       *
  * Uses: srcnam - Source File Name      *
  * Sets: srcfil - Source File Handle    */
-void opnsrc()
-{
+void opnsrc(void) {
   DEBUG("Processing Source File Name '%s'\n", srcnam);
   if (strrchr(srcnam, '.') == NULL)   //if no extension
     strcat(srcnam, ".c02");           // add ".c02"
@@ -33,16 +31,14 @@ void opnsrc()
 }
 
 /* Close Source File */
-void clssrc()
- { 
+void clssrc(void) { 
   fclose(srcfil); 
 }
 
 /* Open Output File                    *
  * Uses: outnam - Output File Name  *
  * Sets: outfil - Output File Handle    */
-void opnout()
-{
+void opnout(void) {
   DEBUG("Processing Output File Name '%s'\n", outnam);
   if (strlen(outnam) == 0)  //if Output File not specified
   {
@@ -59,8 +55,7 @@ void opnout()
 }
 
 /* Close Output File */
-void clsout() 
-{ 
+void clsout(void) { 
   fprintf(outfil, "\n");
   fclose(outfil); 
 }
@@ -68,8 +63,7 @@ void clsout()
 /* Open Log File                     *
  * Uses: srcnam - Source File Name   *
  * Sets: logfil - Log File Handle    */
-void opnlog()
-{
+void opnlog(void) {
   strcpy(lognam, srcnam); //set Log File Name to Source File Name
   char *dot = strrchr(lognam, '.'); //find file extension
   if (dot != NULL) *dot = 0;          //and remove it
@@ -81,14 +75,14 @@ void opnlog()
 
 /* Close Log File                      *
  * Uses: logfil - Log File Handle    */
-void clslog() { 
+void clslog(void) { 
   fclose(logfil); 
 }
 
 /* Open Include file                      *
  * Uses: incnam - Include File Name     *
  * Sets: incfil - Include File Handle    */
-void opninc()
+void opninc(void)
 {
   DEBUG("Opening include file '%s'\n", incnam);
   incfil = fopen(incnam, "r");

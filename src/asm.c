@@ -14,8 +14,7 @@
 #include "asm.h"
 
 /* Process comment */
-void prccmt()
-{
+void prccmt(void) {
   if (strlen(cmtasm)) {
     strcpy(asmcmt, ";");
     strcat(asmcmt, cmtasm);
@@ -26,8 +25,7 @@ void prccmt()
 }
 
 /* output a single line of assembly code */
-void asmlin(char *opcode, char *oprnd)
-{
+void asmlin(char *opcode, char *oprnd) {
   if (strlen(lblasm)) strcat(lblasm, LABSFX);
   prccmt();
   fprintf(outfil, ASMFMT, lblasm, opcode, oprnd, asmcmt);
@@ -36,8 +34,7 @@ void asmlin(char *opcode, char *oprnd)
 }
 
 /* output a single comment line */
-void cmtlin()
-{
+void cmtlin(void) {
   DEBUG("Writing Comment Line: %s\n", cmtasm);
   fprintf(outfil, "; %s\n", cmtasm);
   setcmt("");

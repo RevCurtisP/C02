@@ -26,8 +26,7 @@
 #include "include.h" //Include File Parsing
 
 /* Initilize Compiler Variables */
-void init()
-{
+void init(void) {
   DEBUG("Initializing Compiler Variables\n",0);
   defcnt = 0;
   varcnt = 0;
@@ -50,8 +49,7 @@ void init()
 }
 
 /* Reads and parses the next Word in Source File */
-void pword()
-{
+void pword(void) {
   lsrtrn = FALSE; //Clear RETURN flag
   getwrd();
   DEBUG("Parsing Word '%s'\n", word);
@@ -66,8 +64,7 @@ void pword()
 }
 
 /* Process a directive */
-void pdrctv()
-{
+void pdrctv(void) {
   skpchr();            //skip '#'
   CCMNT('#');
   getwrd();           //read directive into word
@@ -87,8 +84,7 @@ void pdrctv()
     ERROR("Illegal directive %s encountered\n", word, EXIT_FAILURE);
 }
 
-void prolog()
-{
+void prolog(void) {
   DEBUG("Writing Assembly Prolog\n", 0);
   asmlin(CPUOP,CPUARG);
   setcmt("Program ");
@@ -96,21 +92,18 @@ void prolog()
   cmtlin();
 }
 
-void epilog()
-{
+void epilog(void) {
   if (!vrwrtn) vartbl();  //Write Variable Table
 }
 
 /* Compile Source Code*/
-void compile()
-{
+void compile(void) {
   DEBUG("Starting Compilation\n", 0);
   prolog();
   phdrfl(); //Process Header File specified on Command Line
   skpchr();
   DEBUG("Parsing Code\n", 0);
-  while (TRUE)  
-  {
+  while (TRUE) {
     skpspc();
     //DEBUG("Checking next character '%c'\n", nxtchr);
     if (match(EOF)) 
@@ -130,15 +123,13 @@ void compile()
 }
 
 /* Display "Usage" text and exit*/ 
-void usage()
-{
+void usage(void) {
   printf("Usage: c02 sourcefile.c02\n");
   exit(EXIT_FAILURE);      
 }
 
 /* Parse Command Line Option */
-int popt(int arg, int argc, char *argv[])
-{
+int popt(int arg, int argc, char *argv[]) {
   char argstr[32]; //Argument String
   char opt;        //Option
   char optarg[32]; //Option Argument
@@ -166,8 +157,7 @@ int popt(int arg, int argc, char *argv[])
 /* Parse Command Line Arguments                                 *   
  *  Sets: srcnam - Source File Name (from first arg)           *
  *        outnam - Output File Name (from optional second arg) */
-void pargs(int argc, char *argv[])
-{ 
+void pargs(int argc, char *argv[]) { 
   int arg;
   srcnam[0] = 0;
   outnam[0] = 0;
@@ -191,8 +181,7 @@ void pargs(int argc, char *argv[])
   }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   debug = TRUE;  //Output Debug Info
   gencmt = TRUE; //Generate Assembly Language Comments
   
