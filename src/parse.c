@@ -91,10 +91,7 @@ int look(char c) {
 void expect(char c) {
   if (c == 0) return;
   if (look(c)) return;
-  else {
-    fprintf(stderr, "Expected Character '%c', but found '%c'\n", c, nxtchr);
-    exterr(EXIT_FAILURE);  
-  }
+  else ERROR("Expected Character '%c'\n", c, EXIT_FAILURE)
 }
 
 /* Advance Input File to next printable character */
@@ -425,8 +422,7 @@ void prcpst(char* name, char *index) {
        asmlin("LSR", name);
       break;
     default:
-      fprintf(stderr, "Unrecognized post operator '%c'\n", oper);
-      exterr(EXIT_FAILURE);
+      ERROR("Unrecognized post operator '%c'\n", oper, EXIT_FAILURE)
   }
 }
 

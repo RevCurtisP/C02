@@ -211,8 +211,7 @@ void prcopr(void) {
       asmlin("EOR", term);
       break;
     default:
-      fprintf(stderr, "Unrecognized operator '%c'\n", oper);
-      exterr(EXIT_FAILURE);
+      ERROR("Unrecognized operator '%c'\n", oper, EXIT_FAILURE)
   }
   oper = 0;
 }

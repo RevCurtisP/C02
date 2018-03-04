@@ -21,10 +21,8 @@
  * Returns: TRUE if found, otherwise FALSE */
 int fndvar(char *name) {
   DEBUG("Looking up variable '%s'\n", word)
-  for (varidx=0; varidx<varcnt; varidx++) {
-    if (strcmp(varnam[varidx], name) == 0) 
-      return TRUE;
-  }
+  for (varidx=0; varidx<varcnt; varidx++) 
+    if (strcmp(varnam[varidx], name) == 0) return TRUE;
   return FALSE;
 }
 
