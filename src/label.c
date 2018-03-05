@@ -24,20 +24,15 @@ const char lblflg[] = {LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE
 int lstlbl(int lbflag) {
   int i;
   DEBUG("Searching for label flag %d\n", lbflag)
-  for (i = lblcnt - 1; i>-1; i--) {
-    //DEBUG("Comparing against flag %d", lblflg[lbltyp[i]])
+  for (i = lblcnt - 1; i>-1; i--)
     if (lblflg[lbltyp[i]] == lbflag) break;
-  }
   DEBUG("Search produced label index %d\n", i)
-  if (i>=0) 
-    strcpy(tmplbl, lblnam[i]);
+  if (i>=0) strcpy(tmplbl, lblnam[i]);
   return i;
 }
 
 /* Set Block Flag for Last Label */
-void setblk(int blkflg) {
-  lblblk[lblcnt-1] = blkflg;
-}
+void setblk(int blkflg) { lblblk[lblcnt-1] = blkflg; }
 
 /* Set label for next line of *
  * Assembly Language Code     *
@@ -48,8 +43,7 @@ void setlbl(char *lblset) {
     DEBUG("Emitting Label '%s'\n'", lblasm);
     asmlin("",""); //Emit Block End Label on it's own line
   }
-  if (strlen(lblset) > LABLEN) 
-    ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE)
+  if (strlen(lblset) > LABLEN) ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE)
   strcpy(lblasm, lblset);
 }
 
@@ -79,34 +73,23 @@ void chklbl(char* lbname) {
  * if label is already set, returns that label *
  * else generates new label and sets it        */
 void reqlbl(char* lbname) {
-  if (lblasm[0])
-    strcpy(lbname, lblasm);
-  else {
-    newlbl(lbname);
-    setlbl(lbname);
-  }    
+  if (lblasm[0] == 0) newlbl(lbname);
+  setlbl(lbname);
 }
 
 /* Pop Label from Stack and Emit on Next Line */
 int poplbl(void) {
   int lbtype = lbltyp[--lblcnt];
   DEBUG("Popped label type %d\n", lbtype)
-  if (lbtype == LTLOOP)
-    asmlin("JMP", lblnam[lblcnt--]); //Jump to Beginning of Loop   
-  if (lbtype == LTFUNC) {
-    if (!lsrtrn) asmlin("RTS", "");  //Return From Subroutine
+  switch (lbtype) {
+    case LTFUNC: if (!lsrtrn) asmlin("RTS", ""); break;  //Return From Subroutine
+    case LTDO:   strcpy(loplbl, lblnam[lblcnt]); break;  
+    case LTDWHL: strcpy(endlbl, lblnam[lblcnt]); break;  
+    case LTCASE: strcpy(cndlbl, lblnam[lblcnt]); break;  
+    case LTLOOP: asmlin("JMP", lblnam[lblcnt--]);        //Jump to Beginning of Loop
+    default:     setlbl(lblnam[lblcnt]);                 //Emit End of Loop Label
   }
-  else if (lbtype == LTDO)
-    strcpy(loplbl, lblnam[lblcnt]);
-  else if (lbtype == LTDWHL)
-    strcpy(endlbl, lblnam[lblcnt]);
-    //strcpy(cndlbl, lblnam[lblcnt]);
-  else if (lbtype == LTCASE)
-    strcpy(cndlbl, lblnam[lblcnt]);
-  else
-    setlbl(lblnam[lblcnt]);
-  if (lbtype != LTCASE)
-    inblck = lblblk[lblcnt-1];
+  if (lbtype != LTCASE) inblck = lblblk[lblcnt-1];
   return lbtype;
 }
 

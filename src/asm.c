@@ -10,17 +10,12 @@
 
 #include "common.h"
 #include "files.h"
-//#include "parse.h"
 #include "asm.h"
 
 /* Process comment */
 void prccmt(void) {
-  if (strlen(cmtasm)) {
-    strcpy(asmcmt, ";");
-    strcat(asmcmt, cmtasm);
-  }
-  else
-    asmcmt[0] = 0;
+  if (strlen(cmtasm)) { strcpy(asmcmt, ";"); strcat(asmcmt, cmtasm); }
+  else asmcmt[0] = 0;
   setcmt("");
 }
 

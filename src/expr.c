@@ -20,13 +20,9 @@
 void prsval(int alwreg) {
   DEBUG("Parsing value\n", 0)
   skpspc();
-  if (iscpre())
-    prscon(); //Parse Constant
-  else if (isalph()) {
-    prsvar(alwreg);     //Parse Variable
-  }
-  else
-    expctd("constant or variable");
+  if      (iscpre()) prscon(); //Parse Constant
+  else if (isalph()) prsvar(alwreg);     //Parse Variable
+  else               expctd("constant or variable");
   DEBUG("Parsed value of type %d\n", valtyp)
   skpspc();
 }
@@ -53,10 +49,8 @@ void chkidx(void) {
     else if (strcmp(value, "Y")==0) 
       strcat(term, ",Y");
     else {
-      if (strcmp(value, "A")==0)
-        asmlin("TAX", "");
-      else if (strcmp(value, "X")!=0)
-        asmlin("LDX", value);
+      if      (strcmp(value, "A")==0) asmlin("TAX", "");
+      else if (strcmp(value, "X")!=0) asmlin("LDX", value);
       strcat(term, ",X");    
     }
   }
@@ -67,9 +61,7 @@ void chkidx(void) {
 void prstrm(void) {
   DEBUG("Parsing term\n", 0)
   prsval(FALSE);
-  if (valtyp == FUNCTION) 
-    ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
-  
+  if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
   DEBUG("Parsed term %s\n", term)
   chkidx();  //Check for Array Index
@@ -81,29 +73,19 @@ void prcadr(int adract, char* symbol) {
   DEBUG("Processing address '%s'\n", word)
   strcpy(word,"#>");
   strcat(word,symbol);
-  if (adract == 1) {
-    asmlin("LDA", word);
-    asmlin("PHA", "");
-  }
-  else
-    asmlin("LDY", word);
+  if (adract == 1) { asmlin("LDA", word); asmlin("PHA", ""); }
+  else asmlin("LDY", word);
   strcpy(word,"#<");
   strcat(word,symbol);
-  if (adract == 1) {
-    asmlin("LDA", word);
-    asmlin("PHA", "");
-  }
-  else
-  asmlin("LDX", word);
+  if (adract == 1) { asmlin("LDA", word); asmlin("PHA", ""); }
+  else asmlin("LDX", word);
 } 
 
 /* Parse and Compile Address of Operator */
 void prsadr(int adract) {
   DEBUG("Parsing address\n", 0)
-  if (isnpre()) 
-    prsnum(0xFFFF);
-  else
-    prsvar(FALSE);
+  if (isnpre()) prsnum(0xFFFF);
+  else prsvar(FALSE);
   prcadr(adract, value);  //Compile Address Reference
 }
 
@@ -123,12 +105,9 @@ void prsstr(int adract) {
 int chkadr(int adract) {
   DEBUG("Checking for Address or String\n", 0)
   int result = TRUE;
-  if (look('&'))
-    prsadr(adract);
-  else if (match('"'))
-    prsstr(adract);
-  else
-    result = FALSE;
+  if (look('&')) prsadr(adract);
+  else if (match('"')) prsstr(adract);
+  else result = FALSE;
   skpspc();
   return result;
 }
@@ -136,26 +115,15 @@ int chkadr(int adract) {
 /* Parse function call */
 void prsfnc(char trmntr) {
   DEBUG("Processing Function Call '%s'\n", term)
-  if (fnscnt >= MAXFNS)
-    ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE)
+  if (fnscnt >= MAXFNS) ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE)
   strcpy(fnstck[fnscnt++], term);
   skpchr(); //skip open paren
   CCMNT('(');
   if (!chkadr(0) && isxpre() || match('*')) {
     if (!look('*')) prsxpr(0);
-    if (look(',')) {
-      if (!chkadr(0)) {
-        if (!look('*')) {
-          prstrm();
-          asmlin("LDY", term);
-        }
-        if (look(',')) {
-          if (!look('*')) {
-            prsval(FALSE);
-            asmlin("LDX", value);
-          }
-        }
-      }
+    if (look(',') && !chkadr(0)) {
+      if (!look('*')) { prstrm(); asmlin("LDY", term); }
+      if (look(',')) { prsval(FALSE); asmlin("LDX", value); }
     }
   }
   expect(')');
@@ -170,48 +138,25 @@ void prsftm(void) {
   prsval(TRUE);
   DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
-  if (valtyp == FUNCTION) {
-     prsfnc(0); //Parse Expression Function
-     return;
-  }
-  if (wordis("A"))
-    return;
-  if (wordis("X"))
-    asmlin("TXA", "");
-  else if (wordis("Y"))
-    asmlin("TYA", "");
-  else {
-    chkidx(); //Check for Array Index
-    asmlin("LDA", term); 
-  }
+  if (valtyp == FUNCTION) prsfnc(0); //Parse Expression Function
+  else if (wordis("A"))   return;
+  else if (wordis("X"))   asmlin("TXA", "");
+  else if (wordis("Y"))   asmlin("TYA", "");
+  else                  { chkidx(); asmlin("LDA", term); }
 }
 
 /* Process Arithmetic or Bitwise Operator *
  *   and the term that follows it         */
 void prcopr(void) {
   DEBUG("Processing operator '%c'\n", oper)
-  switch(oper)
-  {
-    case '+': 
-      asmlin("CLC", "");
-      asmlin("ADC", term);
-      break;
-    case '-':
-      asmlin("SEC", "");
-      asmlin("SBC", term);
-      break;
-    case '&':
-      asmlin("AND", term);
-      break;
-    case '|':
+  switch(oper) {
+    case '+': asmlin("CLC", ""); asmlin("ADC", term); break;
+    case '-': asmlin("SEC", ""); asmlin("SBC", term); break;
+    case '&': asmlin("AND", term); break;
     case '!': //For systems that don't have pipe in character set
-      asmlin("ORA", term);
-      break;
-    case '^': //Looks like an up-arrow in some character sets
-      asmlin("EOR", term);
-      break;
-    default:
-      ERROR("Unrecognized operator '%c'\n", oper, EXIT_FAILURE)
+    case '|': asmlin("ORA", term); break;
+    case '^': asmlin("EOR", term); break;
+    default:  ERROR("Unrecognized operator '%c'\n", oper, EXIT_FAILURE)
   }
   oper = 0;
 }
@@ -224,11 +169,9 @@ void prsxpr(char trmntr) {
     DEBUG("Processing unary minus", 0)
     asmlin("LDA", "#$00");  //Handle Unary Minus
   } 
-  else 
-    prsftm(); //Parse First Term
+  else prsftm(); //Parse First Term
   skpspc();
-  while (isoper())
-  {
+  while (isoper()) {
     prsopr(); //Parse Operator
     prstrm(); //Parse Term
     prcopr(); //Process Operator

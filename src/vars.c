@@ -32,7 +32,7 @@ int fndvar(char *name) {
  *       name - variable name               */
 void chksym(int alwreg, char *name) {
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
-    if (alwreg && valtyp != ARRAY) {
+    if (alwreg && valtyp != ARRAY) { 
       valtyp = REGISTER;
   	  return;
     }
@@ -59,9 +59,7 @@ void prsvar(int alwreg) {
  * Sets: vrname - operand for LDA/STA/LDY/STY */
 void reqvar(int alwary) {
   prsvar(FALSE);
-  if (!alwary)
-    if (valtyp != VARIABLE) 
-      expctd("Variable");
+  if (!alwary && valtyp != VARIABLE) expctd("Variable");
 } 
 
 /* Parse Data Array */
@@ -69,12 +67,10 @@ void prsdta(void) {
   dtype = DTARRY;
   expect('{');
   dlen = 0;
-  while (TRUE) {
+  do {
     prscon();
     dattmp[dlen++] = cnstnt;
-    if (!look(',')) 
-      break;  
-  }
+  } while (look(','));
   expect('}');
 }
 
@@ -99,14 +95,12 @@ void setdat(void) {
   }
   else if (dtype == DTARRY) {
     DEBUG("Setting variable data to array of length %d\n", dlen)
-    for (i=0; i<dlen; i++) 
-      datvar[dsize++] = dattmp[i];   
+    for (i=0; i<dlen; i++)  datvar[dsize++] = dattmp[i];   
   }
   else {
     DEBUG("Setting variable data to '%s'\n", value)
     dlen = strlen(value);
-    for (i=0; i<dlen; i++) 
-      datvar[dsize++] = value[i];   
+    for (i=0; i<dlen; i++) datvar[dsize++] = value[i];   
   } 
   datlen[varcnt] = dlen;
   dattyp[varcnt] = dtype;
@@ -116,21 +110,12 @@ void setdat(void) {
 /* Parse and store variable data */
 void prsdat(void) {
   DEBUG("Checking for variable data\n", 0)
-  if (!look('=')) {
-    datlen[varcnt] = 0;
-    return;
-  }
+  if (!look('=')) { datlen[varcnt] = 0; return; }
   skpspc();
-  if (iscpre()) {
-    dtype = DTBYTE;
-    prscon(); //Parse Data Constant
-  }
-  else if (match('"'))
-    prsdts();       //Parse Data String
-  else if (match('{'))
-    prsdta();       //Parse Data Array
-  else
-    expctd("numeric or string constant");
+  if (iscpre()) {dtype = DTBYTE; prscon(); }//Parse Data Constant
+  else if (match('"')) prsdts();       //Parse Data String
+  else if (match('{')) prsdta();       //Parse Data Array
+  else expctd("numeric or string constant");
   setdat();   //Store Data Value
 }
 
@@ -150,10 +135,8 @@ void setvar(int m, int t) {
  * Uses: word - variable name     */
 void addvar(int m, int t) {
   strcpy(vrname, word); //Save Variable Name
-  if (fndvar(vrname))
-    ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE)
-  if (t == VTVOID)
-    ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
+  if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE)
+  if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m == MTZP) {
     setlbl(vrname);
     sprintf(word, "$%hhX", zpaddr++);
@@ -174,8 +157,7 @@ void addvar(int m, int t) {
     if (!alcvar) strcpy(value, "*");  
     setvar(m, t);  //Add to Variable Table
   }  
-  if (m != MTZP)
-    prsdat();   //Parse Variable Data
+  if (m != MTZP) prsdat();   //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 
@@ -190,10 +172,9 @@ void vartbl(void) {
     fprintf(logfil, "%-31s %4d %4s %1d-%d\n", varnam[i], vartyp[i], varsiz[i], dattyp[i], datlen[i]);
     strcpy(lblasm, varnam[i]);
     DEBUG("Set Label to '%s'\n", lblasm)
-    if (strcmp(varsiz[i], "*") == 0)
-      continue;
+    if (strcmp(varsiz[i], "*") == 0) continue;
     if (varmod[i] == MTALGN) {
-      DEBUG("Alligning variable '%s'\n", varnam[i])
+      DEBUG("Aligning variable '%s'\n", varnam[i])
       asmlin(ALNOP, "256");
     }
     if (datlen[i]) {

@@ -68,8 +68,7 @@ char getnxt(void) {
 void skpspc(void) {
   //DEBUG("Skipping Spaces\n", 0)
   if (isspc()) CCMNT(' '); //Add only the first space to comments
-  while (isspc()) 
-    getnxt();
+  while (isspc()) getnxt();
 }
 
 /* Check if the next printable character is c *
@@ -96,8 +95,7 @@ void expect(char c) {
 
 /* Advance Input File to next printable character */
 void skpchr(void) {
-	char skip = getnxt();
-	DEBUG("Skipped character '%c'\n", skip)
+	getnxt();
 }
 
 /* Advance Input File to end of line */
@@ -109,8 +107,7 @@ void skpcmt(void)
 {
   DEBUG("Skipping Comment\n", 0) 
   skpchr();               //skip initial /
-  if (match('/'))         //if C style comment
-    skpeol();        //  skip rest of line
+  if (match('/')) skpeol(); //if C style comment skip rest of line
   else if (match('*'))    //if C++ style comment
     while (TRUE)          //  skip to */
     {
@@ -122,8 +119,7 @@ void skpcmt(void)
       break;	
       //todo: add code to catch unterminated comment
   	}
-  else                    //if neither  
-    expctd("/ or *");   // error out
+  else expctd("/ or *");   //if neither error out
 }
 
 /* Reads next Word in current Input File, where      *
@@ -133,10 +129,7 @@ void getwrd(void) {
   int wrdlen = 0;
   skpspc();
   if (!isalph()) expctd("Alphabetic Character");
-  while (isanum())
-  {
-    word[wrdlen++] = toupper(getnxt());
-  }
+  while (isanum()) word[wrdlen++] = toupper(getnxt());
   word[wrdlen] = 0;
   ACMNT(word);
 }
@@ -164,10 +157,8 @@ void getstr(void) {
       escnxt = FALSE;    
     }
     else {
-      if (match('\\')) 
-        escnxt = TRUE;
-      else
-        word[wrdlen++] = prcchr(nxtchr);
+      if (match('\\')) escnxt = TRUE;
+      else word[wrdlen++] = prcchr(nxtchr);
       skpchr();
     }  
   }
@@ -185,8 +176,7 @@ int prsbin(void) {
   int wrdlen = 0;
   int digit;
   int number = 0;
-  if (!match('%'))
-    expctd("binary number"); 
+  if (!match('%')) expctd("binary number"); 
   word[wrdlen++] = nxtchr;
   getnxt();
   while (isbin()) {
@@ -228,16 +218,13 @@ int prshex(void) {
   int digit;
   int number = 0;
   DEBUG("Parsing hexadecimal constant '", 0)
-  if (!match('$'))
-    expctd("hexadecimal number"); 
+  if (!match('$')) expctd("hexadecimal number"); 
   word[wrdlen++] = getnxt();
   while (ishexd()) {
     DETAIL("%c", nxtchr);    
     word[wrdlen++] = nxtchr;
-    if (isdec())
-      digit = nxtchr - '0';
-    else
-      digit = nxtchr - 'A' + 10;
+    if (isdec()) digit = nxtchr - '0';
+    else digit = nxtchr - 'A' + 10;
     number = number * 16 + digit;
     skpchr();
   }
@@ -256,8 +243,7 @@ int prschr(void) {
   DEBUG("Parsing character constant\n", 0)
   expect('\'');
   word[wrdlen++] = '\'';
-  if (match('\\')) 
-    word[wrdlen++] = getnxt();
+  if (match('\\')) word[wrdlen++] = getnxt();
   c = getnxt();
   DEBUG("Extracted character %c\n", c)
   word[wrdlen++] = prcchr(c);
@@ -277,28 +263,16 @@ int prsnum(int maxval) {
   skpspc();
   if (!isbpre()) expctd("constant value");
   switch(nxtchr) {
-    case '%': 
-      number = prsbin();
-      break;
-    case '$': 
-      number = prshex();
-      break;
-    case '\'':
-      number = prschr();
-      break;
-    default:
-      number = prsdec();
+    case '%':  number = prsbin(); break;
+    case '$':  number = prshex(); break;
+    case '\'': number = prschr(); break;
+    default:   number = prsdec();
   }
   DEBUG("Parsed number '%s' ", word)
   DETAIL("with value '%d'\n", number)
-
-  if (number > maxval) 
-    ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE)
-  
-  if (maxval > 255)
-    sprintf(value, "$%04X", number);
-  else
-    sprintf(value, "$%02X", number);
+  if (number > maxval)  ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE)
+  if (maxval > 255) sprintf(value, "$%04X", number);
+  else sprintf(value, "$%02X", number);
   return number;
 }
 
@@ -308,10 +282,8 @@ int prsbyt(void) {return prsnum(0xFF);}
 /* Find Defined Constant */
 void fnddef(char *name) {
   DEBUG("Looking up defined constant '%s'\n", word)
-  for (defidx=0; defidx<defcnt; defidx++) {
-    if (strcmp(defnam[defidx], name) == 0)
-      return;
-  }
+  for (defidx=0; defidx<defcnt; defidx++) 
+    if (strcmp(defnam[defidx], name) == 0) return;
   defidx = -1;
 }
 
@@ -320,9 +292,7 @@ int prsdef(void) {
   expect('#');
   getwrd(); //Get Constant Name
   fnddef(word);
-  if (defidx < 0) 
-    ERROR("Undefined constant '%s'\n", word, EXIT_FAILURE)
-  
+  if (defidx < 0) ERROR("Undefined constant '%s'\n", word, EXIT_FAILURE)
   strcpy(value, word);
   return defval[defidx];
 }
@@ -338,10 +308,8 @@ int prsdef(void) {
  *       character arguments instead of 'c'    */
 void prscon(void) {
   skpspc();
-  if (ishash())
-    cnstnt = prsdef();
-  else
-    cnstnt = prsbyt();
+  if (ishash()) cnstnt = prsdef();
+  else cnstnt = prsbyt();
   valtyp = CONSTANT;
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");
@@ -358,8 +326,7 @@ int gettyp(void) {
 
 /* Parse arithmetic or bitwise operator */
 void prsopr(void) {
-  if (!isoper())
-    expctd("Arithmetic or bitwise operator");
+  if (!isoper()) expctd("Arithmetic or bitwise operator");
   oper = getnxt();
   DEBUG("Parsed operator '%c'\n", oper)
   CCMNT(oper);
@@ -382,44 +349,28 @@ void prcpst(char* name, char *index) {
   }
   switch(oper) {    
     case '+': 
-      if (strcmp(name, "X")==0)
-        asmlin("INX", "");
-      else if (strcmp(name, "Y")==0)
-        asmlin("INY", "");
-      else if (strcmp(name, "A")==0)
-        poperr(name); //65C02 supports implicit INC, 6502 does not
-      else 
-        asmlin("INC", name);
+      if      (strcmp(name, "X")==0) asmlin("INX", "");
+      else if (strcmp(name, "Y")==0) asmlin("INY", "");
+      else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit INC, 6502 does not
+      else asmlin("INC", name);
       break;
     case '-':
-      if (strcmp(name, "X")==0)
-        asmlin("DEX", "");
-      else if (strcmp(name, "Y")==0)
-        asmlin("DEY", "");
-      else if (strcmp(name, "A")==0)
-        poperr(name); //65C02 supports implicit DEC, 6502 does not
-      else 
-        asmlin("DEC", name);
+      if      (strcmp(name, "X")==0) asmlin("DEX", "");
+      else if (strcmp(name, "Y")==0) asmlin("DEY", "");
+      else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit DEC, 6502 does not
+      else asmlin("DEC", name);
       break;
     case '<':
-      if (strcmp(name, "X")==0)
-        poperr(name); //Index Register Shift not Supported
-      else if (strcmp(name, "Y")==0)
-        poperr(name); //Index Register Shift not Supported
-      else if (strcmp(name, "A")==0)
-        asmlin("ASL", "");
-      else
-        asmlin("ASL", name);
+      if      (strcmp(name, "X")==0) poperr(name); //Index Register Shift not Supported
+      else if (strcmp(name, "Y")==0) poperr(name); //Index Register Shift not Supported
+      else if (strcmp(name, "A")==0) asmlin("ASL", ""); 
+      else asmlin("ASL", name);
       break;
     case '>':
-      if (strcmp(name, "X")==0)
-        poperr(name); //Index Register Shift not Supported
-      else if (strcmp(name, "Y")==0)
-        poperr(name); //Index Register Shift not Supported
-      else if (strcmp(name, "A")==0)
-        asmlin("LSR", "");
-      else
-       asmlin("LSR", name);
+      if      (strcmp(name, "X")==0) poperr(name); //Index Register Shift not Supported
+      else if (strcmp(name, "Y")==0) poperr(name); //Index Register Shift not Supported
+      else if (strcmp(name, "A")==0) asmlin("LSR", "");
+      else asmlin("LSR", name);
       break;
     default:
       ERROR("Unrecognized post operator '%c'\n", oper, EXIT_FAILURE)
@@ -436,10 +387,8 @@ int prspst(char trmntr, char* name, char* index) {
     CCMNT(oper);
     expect(trmntr);
     prcpst(name, index);  //Process Post-Op
-    oper = 0;
+    return 0;
   }
-  else {
-    DEBUG("Not a post operation\n", 0)
-  }
+  DEBUG("Not a post operation\n", 0)
   return oper;
 }

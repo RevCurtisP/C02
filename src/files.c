@@ -23,17 +23,14 @@ void extsys(char *s) {
  * Sets: srcfil - Source File Handle    */
 void opnsrc(void) {
   DEBUG("Processing Source File Name '%s'\n", srcnam)
-  if (strrchr(srcnam, '.') == NULL)   //if no extension
-    strcat(srcnam, ".c02");           // add ".c02"
+  if (strrchr(srcnam, '.') == NULL) strcat(srcnam, ".c02"); //if no extension. add ".c02"
   DEBUG("opening Source File '%s'\n", srcnam)
   srcfil = fopen(srcnam, "r");      //open file
   if (srcfil == NULL) extsys(srcnam);
 }
 
 /* Close Source File */
-void clssrc(void) { 
-  fclose(srcfil); 
-}
+void clssrc(void) { fclose(srcfil); }
 
 /* Open Output File                    *
  * Uses: outnam - Output File Name  *
@@ -47,8 +44,7 @@ void opnout(void) {
     if (dot != NULL) *dot = 0;          //and remove it
     DEBUG("Set Output File Name to '%s'\n", outnam)
   } 
-  if (strrchr(outnam, '.') == NULL)   //if no extension
-    strcat(outnam, ".asm");           // add ".asm"
+  if (strrchr(outnam, '.') == NULL) strcat(outnam, ".asm"); //if no extension, add ".asm"
   DEBUG("Opening Output File '%s'\n", outnam)
   outfil = fopen(outnam, "w");      //open file
   if (outfil == NULL) extsys(outnam);
@@ -66,8 +62,8 @@ void clsout(void) {
 void opnlog(void) {
   strcpy(lognam, srcnam); //set Log File Name to Source File Name
   char *dot = strrchr(lognam, '.'); //find file extension
-  if (dot != NULL) *dot = 0;          //and remove it
-  strcat(lognam, ".log");           //add extension ".asm"
+  if (dot != NULL) *dot = 0;        //and remove it
+  strcat(lognam, ".log");           //add extension ".log"
   DEBUG("Opening Log File '%s'\n", lognam)
   logfil = fopen(lognam, "w");
   if (logfil == NULL)  extsys(lognam);
@@ -75,9 +71,7 @@ void opnlog(void) {
 
 /* Close Log File                      *
  * Uses: logfil - Log File Handle    */
-void clslog(void) { 
-  fclose(logfil); 
-}
+void clslog(void) { fclose(logfil); }
 
 /* Open Include file                      *
  * Uses: incnam - Include File Name     *
@@ -91,7 +85,4 @@ void opninc(void)
 
 /* Close Include File                      *
  * Uses: incfil - Include File Handle    */
-void clsinc(void) { 
-  fclose(incfil); 
-}
-
+void clsinc(void) { fclose(incfil); }

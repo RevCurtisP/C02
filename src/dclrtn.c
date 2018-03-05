@@ -23,6 +23,7 @@ void addfnc(void) {
   strcpy(fncnam, word);   //Save Function Name
   prmcnt = 0;             //Set Number of Parameters
   skpspc();               //Skip Spaces
+  /* QUESTION: Eliminate this in favor of Register Assignments inside Function Call? */
   if (isalph()) {         //Parse Parameters
     reqvar(FALSE);        //Get First Parameter
     strcpy(prmtra, value);
@@ -39,15 +40,11 @@ void addfnc(void) {
     }
   }
   expect(')');
-  if (look(';'))          //Forward Definition
-    return;
-	  setlbl(fncnam);         //Set Function Entry Point
-  if (prmcnt > 0)       
-    asmlin("STA", prmtra); //Store First Parameter
-  if (prmcnt > 1)
-    asmlin("STY", prmtry); //Store Second Parameter
-  if (prmcnt > 2)
-    asmlin("STX", prmtrx); //Store Third Parameter
+  if (look(';')) return;    //Forward Definition
+  setlbl(fncnam);         //Set Function Entry Point
+  if (prmcnt > 0) asmlin("STA", prmtra); //Store First Parameter
+  if (prmcnt > 1) asmlin("STY", prmtry); //Store Second Parameter
+  if (prmcnt > 2) asmlin("STX", prmtrx); //Store Third Parameter
   endlbl[0] = 0;          //Create Dummy End Label
   pshlbl(LTFUNC, endlbl); //and Push onto Stack
   bgnblk('{');           //Start Program Block
@@ -56,19 +53,15 @@ void addfnc(void) {
 /* (Check For and) Parse Variable Declaration*/
 void pdecl(int m, int t) {
   DEBUG("Processing variable declarations(s) of type %d\n", t)
-  while(TRUE) {
+  do {
     getwrd();
     if (match('(')) {
-      if (m != MTNONE)
-        ERROR("Illegal Modifier %d in Function Definion", m, EXIT_FAILURE)
-      
+      if (m != MTNONE) ERROR("Illegal Modifier %d in Function Definition", m, EXIT_FAILURE)
       addfnc();  //Add Function Call
       return;
     }  
     addvar(m, t);
-    if (!look(','))
-      break;
-  }    
+  } while (look(','));
   expect(';');
   DEBUG("Variable Declaration Completed\n", 0)
   SCMNT("");  //Clear Assembler Comment
@@ -77,13 +70,9 @@ void pdecl(int m, int t) {
 /* Check for and Parse Type Keyword */
 int ptype(int m) {
   int result = TRUE;
-  if (wordis("VOID"))
-    pdecl(m, VTVOID);   //Parse 'void' declaration
-  else if (wordis("CHAR"))
-    pdecl(m, VTCHAR);   //Parse 'char' declaration
-  else
-    result = FALSE;
-  //DEBUG("Returning %d from function ptype\n", result)'
+  if (wordis("VOID"))      pdecl(m, VTVOID);   //Parse 'void' declaration
+  else if (wordis("CHAR")) pdecl(m, VTCHAR);   //Parse 'char' declaration
+  else                     result = FALSE;
   return result;
 }
 
@@ -91,15 +80,8 @@ int ptype(int m) {
 int pmodfr(void) {
   DEBUG("Parsing modifier '%s'\n", word)
   int result = TRUE;
-  if (wordis("ALIGNED")) {
-    getwrd();
-    ptype(MTALGN);  
-  }
-  else if (wordis("ZEROPAGE")) {
-    getwrd();
-    ptype(MTZP);  
-  }
-  else
-    result = FALSE;
+  if      (wordis("ALIGNED"))  { getwrd(); ptype(MTALGN); }
+  else if (wordis("ZEROPAGE")) { getwrd(); ptype(MTZP); }
+  else                         result = FALSE;
   return result;
 }

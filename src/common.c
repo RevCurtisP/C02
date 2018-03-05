@@ -25,19 +25,13 @@ void expctd(char *expstr) {
 }
 
 /* Print current position in file */
-void prtpos(void) {
-  printf("(%s: %d,%d) ", inpnam, curlin, curcol);
-}
+void prtpos(void) { printf("(%s: %d,%d) ", inpnam, curlin, curcol); }
 
 /* Set comment to string */
-void setcmt(char *s) {
-  strcpy(cmtasm, s);
-}
+void setcmt(char *s) { strcpy(cmtasm, s); }
 
 /* Append string to comment */
-void addcmt(char *s) {
-  strcat(cmtasm, s);
-}
+void addcmt(char *s) { strcat(cmtasm, s); }
 
 /* Append character to comment */
 void chrcmt(char c) {

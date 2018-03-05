@@ -29,10 +29,7 @@ int enccmp(char c) {
     case '>': e = 4; break;
     default:  e = 0; 
   }
-  if (e) {
-    CCMNT(c);
-    skpchr();
-  }
+  if (e) { CCMNT(c); skpchr(); }
   DETAIL(", encoded as %d\n", e);
   return e;
 }
@@ -45,37 +42,21 @@ void prccmp(void) {
   DEBUG("Processing comparitor %d\n", cmprtr)
   switch(cmprtr) {
     case 0: // Raw Expression (Skip)
-      asmlin("BEQ", cndlbl);
-      break;
+      asmlin("BEQ", cndlbl); break;
     case 1: // = or ==
-      asmlin("CMP", term);
-      asmlin("BNE", cndlbl);
-      break;
+      asmlin("CMP", term); asmlin("BNE", cndlbl); break;
     case 2: // <
-      asmlin("CMP", term);
-      asmlin("BCS", cndlbl);
-      break;
+      asmlin("CMP", term); asmlin("BCS", cndlbl); break;
     case 3: // <= or =<
-      asmlin("CLC", "");
-      asmlin("SBC", term);
-      asmlin("BCS", cndlbl);
-      break;
+      asmlin("CLC", "");   asmlin("SBC", term);   asmlin("BCS", cndlbl); break;
     case 4: // >
-      asmlin("CLC", "");
-      asmlin("SBC", term);
-      asmlin("BCC", cndlbl);
-      break;
+      asmlin("CLC", "");   asmlin("SBC", term);   asmlin("BCC", cndlbl); break;
     case 5: // >= or =>
-      asmlin("CMP", term);
-      asmlin("BCC", cndlbl);
-      break;
+      asmlin("CMP", term); asmlin("BCC", cndlbl); break;
     case 6: // <> or ><
-      asmlin("CMP", term);
-      asmlin("BEQ", cndlbl);
-      break;
+      asmlin("CMP", term); asmlin("BEQ", cndlbl); break;
     case 7: // Raw Expression (Normal)
-      asmlin("BNE", cndlbl);
-      break;
+      asmlin("BNE", cndlbl); break;
     default:
       ERROR("Unsupported comparison operator index %d\n", cmprtr, EXIT_FAILURE)
   }
@@ -88,13 +69,11 @@ void prscmp(int revrse) {
   cmprtr = cmpenc;              //Set Encoded Comparator 
   if (cmprtr) {
     cmpenc = enccmp(nxtchr);    //Encode Next Comparison Character
-    if (cmpenc != 0)
-      cmprtr = cmprtr | cmpenc; //Combine Encoded Comparator
+    if (cmpenc != 0) cmprtr = cmprtr | cmpenc; //Combine Encoded Comparator
   }
   skpspc();
-  if (cmprtr)
-    prstrm();
-  cmprtr = (cmprtr ^ revrse) & 7;
+  if (cmprtr) prstrm();
+  cmprtr = (cmprtr ^ revrse) & 7; //Apply reversal
   prccmp();
   DEBUG("Parsed comparator %d\n", cmprtr)
 }
@@ -102,18 +81,13 @@ void prscmp(int revrse) {
 /* Parse Flag Operator */
 void prsflg(int revrse) {
   DEBUG("Parsing Flag Operator '%c'\n", nxtchr)
-  if (match('+')) 
-    cmprtr = 0;
-  else if (match('-'))
-    cmprtr = 1;
-  else
-    expctd("Flag operator");
+  if (match('+'))      cmprtr = 0;
+  else if (match('-')) cmprtr = 1;
+  else                 expctd("Flag operator");
   skpchr();
-  cmprtr = (cmprtr ^ revrse) & 1;
-  if (cmprtr)
-    asmlin("BPL", cndlbl);
-  else
-    asmlin("BMI", cndlbl);
+  cmprtr = (cmprtr ^ revrse) & 1;  //Apply Reversal
+  if (cmprtr) asmlin("BPL", cndlbl);
+  else        asmlin("BMI", cndlbl);
 }
 
 /* Parse and Compile Conditional Expression     *
@@ -124,11 +98,8 @@ void prscnd(char trmntr, int revrse) {
     revrse = (revrse) ? FALSE: TRUE;
     DEBUG("Set revrse to %d\n", revrse)    
   }
-  if (!look('*'))
-    prsxpr(0);
-  if (look(':'))
-    prsflg(revrse);  //Parse Flag Operator
-  else
-    prscmp(revrse);  //Parse Comparison Operator
+  if (!look('*')) prsxpr(0);
+  if (look(':')) prsflg(revrse);  //Parse Flag Operator
+  else           prscmp(revrse);  //Parse Comparison Operator
   expect(trmntr);
 }
