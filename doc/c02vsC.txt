@@ -22,8 +22,9 @@ In C02, all constant names are prefixed with a # symbol.
 
 ENUMERATION
 
-Instead of the enum keyword, C02 uses the #enum directive. Values may
-not be specified when defining enumerated constants.
+The syntax of an enum statement in C02 is similar to standard C, except 
+that no type name is specified and values may not be explicitly assigned
+to the enumerated constants.
 
 DECLARATIONS
 

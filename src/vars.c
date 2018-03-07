@@ -161,7 +161,6 @@ void addvar(int m, int t) {
   varcnt++;   //Increment Variable Counter
 }
 
-
 /* Write Variable Table */
 void vartbl(void) {
   int i, j;

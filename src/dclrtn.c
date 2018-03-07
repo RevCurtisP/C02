@@ -70,6 +70,29 @@ void pconst(int m) {
   DEBUG("Constant Declaration Completed\n", 0)
 }
 
+/* Parse Enum Declaration*/
+void penum(int m) {
+  int enmval = 0;
+  DEBUG("Processing Enum Declarations\n", 0)
+  if (m != MTNONE) ERROR("Illegal Modifier %d in Enum Definition", m, EXIT_FAILURE)
+  expect('{');
+  do {
+    getwrd(); //get defined identifier
+    DEBUG("Enumerating '%s'\n", word)
+    strncpy(defnam[defcnt], word, VARLEN);
+    setlbl(word); //Set label Assembler Line
+    defval[defcnt++] = enmval; //Set Value
+    sprintf(value, "%d", enmval);
+    asmlin(EQUOP, value); //Write Definition
+    DEBUG("Defined as '%s'\n", value)
+    enmval++;
+  } while (look(','));
+  expect('}');
+  expect(';');
+  DEBUG("Enum Declaration Completed\n", 0)
+}
+
+
 /* Parse Variable/Function Declaration*/
 void pdecl(int m, int t) {
   DEBUG("Processing variable declarations(s) of type %d\n", t)
@@ -91,6 +114,7 @@ void pdecl(int m, int t) {
 int ptype(int m) {
   int result = TRUE;
   if     (wordis("CONST")) pconst(m);        //Parse 'const' declaration
+  else if (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
   else if (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
   else if (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
   else                     result = FALSE;
