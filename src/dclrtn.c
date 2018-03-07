@@ -58,10 +58,10 @@ void pconst(int m) {
 	expect('#');  //Require # prefix
     getwrd();     //Get constant name
     DEBUG("Defining constant '%s',", word)
-    strncpy(defnam[defcnt], word, VARLEN);
+    strncpy(connam[concnt], word, VARLEN);
     setlbl(word); //Set label Assembler Line
     expect('=');
-    defval[defcnt++] = prsbyt(); //Get Value
+    conval[concnt++] = prsbyt(); //Get Value
     ACMNT(word); //comment value
     asmlin(EQUOP, value); //Write Definition
     DETAIL(" defined as '%s'\n", value)
@@ -79,9 +79,9 @@ void penum(int m) {
   do {
     getwrd(); //get defined identifier
     DEBUG("Enumerating '%s'\n", word)
-    strncpy(defnam[defcnt], word, VARLEN);
+    strncpy(connam[concnt], word, VARLEN);
     setlbl(word); //Set label Assembler Line
-    defval[defcnt++] = enmval; //Set Value
+    conval[concnt++] = enmval; //Set Value
     sprintf(value, "%d", enmval);
     asmlin(EQUOP, value); //Write Definition
     DEBUG("Defined as '%s'\n", value)

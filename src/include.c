@@ -227,12 +227,12 @@ void pincfl(void) {
   }   
 }
 
-/* Print Definition Table to Log File */
-void logdef(void) {
+/* Print Constant Table to Log File */
+void logcon(void) {
   int i;
   fprintf(logfil, "\n%-31s %5s\n", "Definition", "Value");
-  for (i=0; i<defcnt; i++)
+  for (i=0; i<concnt; i++)
   {
-    fprintf(logfil, "%-31s %5d\n", defnam[i], defval[i]);
+    fprintf(logfil, "%-31s %5d\n", connam[i], conval[i]);
   }
 }

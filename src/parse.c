@@ -282,19 +282,19 @@ int prsbyt(void) {return prsnum(0xFF);}
 /* Find Defined Constant */
 void fnddef(char *name) {
   DEBUG("Looking up defined constant '%s'\n", word)
-  for (defidx=0; defidx<defcnt; defidx++) 
-    if (strcmp(defnam[defidx], name) == 0) return;
-  defidx = -1;
+  for (conidx=0; conidx<concnt; conidx++) 
+    if (strcmp(connam[conidx], name) == 0) return;
+  conidx = -1;
 }
 
-/* Parse Definition */
-int prsdef(void) {
+/* Parse Constant */
+int prscon(void) {
   expect('#');
   getwrd(); //Get Constant Name
   fnddef(word);
-  if (defidx < 0) ERROR("Undefined constant '%s'\n", word, EXIT_FAILURE)
+  if (conidx < 0) ERROR("Undefined constant '%s'\n", word, EXIT_FAILURE)
   strcpy(value, word);
-  return defval[defidx];
+  return conval[conidx];
 }
 
 /* Parse numeric literal                       *
@@ -308,8 +308,8 @@ int prsdef(void) {
  *       character arguments instead of 'c'    */
 void prslit(void) {
   skpspc();
-  if (ishash()) litval = prsdef();
-  else litval = prsbyt();
+  if (ishash()) litval = prscon(); //Parse Constant
+  else litval = prsbyt();  //Parse Byte Value
   valtyp = LITERAL;
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");

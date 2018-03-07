@@ -4,7 +4,7 @@
 
 char line[255];     /*Entire line parsed from include file*/
 
-void logdef();  //Print Definition Table to Log File
+void logcon();  //Print Constant Table to Log File
 void pdefin();  //Process define directive
 void pdefin();  //Process define directive
 void penumd();  //Process enum directive

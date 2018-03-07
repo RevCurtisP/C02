@@ -4,8 +4,8 @@
 
 #define FNAMLEN 255       //Maximum File Name Length
 #define LINELEN 255       //Maximum Input/Output Line Length
-#define DEFLEN 6          //Maximum Definition Text Length
-#define MAXDEF 255        //Maximum Number of Definitions
+#define CONLEN 6          //Maximum Definition Text Length
+#define MAXCON 255        //Maximum Number of Definitions
 #define VARLEN 6          //Maximum Variable Length
 #define MAXVAR 255        //Maximum Number of Variables
 #define MAXFNS 16         //Maximum Functions in Stack

@@ -14,10 +14,10 @@ int  valtyp;          //Value Type
 char oper;            //Arithmetic or Bitwise Operator
 int  litval;          //Value of Parsed Literal  
 
-char defnam[MAXDEF+1][VARLEN+1]; //Definition Name Table
-int  defval[MAXDEF+1];           //Definition Value Table
-int  defcnt;                     //Number of Definitions Defined
-int  defidx;                     //Index into Definition Tables
+char connam[MAXCON+1][CONLEN+1]; //Definition Name Table
+int  conval[MAXCON+1];           //Definition Value Table
+int  concnt;                     //Number of Definitions Defined
+int  conidx;                     //Index into Definition Tables
 
 int invasc;                    //Invert ASCII Flag
 int mskasc;                    //Set High Bit Flag

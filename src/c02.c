@@ -28,7 +28,7 @@
 /* Initilize Compiler Variables */
 void init(void) {
   DEBUG("Initializing Compiler Variables\n",0)
-  defcnt = 0;
+  concnt = 0;
   varcnt = 0;
   lblcnt = 0;
   curcol = 0;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 
   compile();
 
-  logdef();
+  logcon();
 
   clssrc();  //Close Source File
   clsout();  //Close Output File
