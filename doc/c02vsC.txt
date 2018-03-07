@@ -10,6 +10,21 @@ C02 does not support pointer type variables or parameters. However, the
 address-of operator may be used in function calls and the inline 
 statement.
 
+DIRECTIVES
+
+C02 does not use a preprocessor. All directives are directly processed
+by the compiler.
+
+CONSTANTS
+
+Constant definitions use the same syntax as C, but when a constant is
+subsequently referenced in code, it must be prefixed with a # symbol.
+
+ENUMERATION
+
+Instead of the enum keyword, C02 uses the #enum directive. Values may
+not be specified when defining enumerated constants.
+
 DECLARATIONS
 
 Variable and function names may be no more than six characters in length. 
@@ -33,5 +48,4 @@ STATEMENTS
 
 Instead of the switch statement, C02 uses the select statement. The 
 select statement works almost identically to the switch statement except
-that case blocks do not fall through and the break statement does not
-exit a case block.
+that case blocks do not fall through.

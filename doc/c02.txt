@@ -58,14 +58,21 @@ comments my be nested inside C style comments.
 
 DIRECTIVES
 
-Directives are special instructions to the compiler. They do not directy
-generate compiled code. A directive is denoted by a leading # character. 
+Directives are special instructions to the compiler. Depending on the
+directive, it may or may not generate compiled code. A directive is 
+denoted by a leading # character. Unlike a statements, a directives is 
+not followed by a semicolon.
 
-DEFINE
+Note: Unlike standard C and C++, which use a preprocessor to process
+directives, the C02 compiler processes directives directly.
 
-The #define directive creates a named constant. 
+DEFINE DIRECTIVE
 
-INCLUDE
+The #define directive creates a named constant. A constant may be used 
+anywhere a literal would be used. Use of the #define directive is 
+explained in the CONSTANTS section below.
+
+INCLUDE DIRECTIVE
 
 The #include directive causes the compiler to read and process and external
 file. In most cases, #include directives will be used with libraries of
@@ -100,12 +107,49 @@ Assembly language files are denoted by the .asm extension. When the
 compiler processes an assembly language file, it simply inserts the contents
 of the file into the generated code.
 
-Note: Unlike standard C and C++, which use a preprocessor to process
-directives, the C02 compiler processes directives directly.
+PRAGMA DIRECTIVE
 
-CONSTANTS
+The #pragma directive is used to set various compiler options. When using
+a #pragma directive it is followed by the pragma name and possibly an 
+option, each separated by whitespace.
 
-A constant represents a value between 0 and 255. Values may be written as
+Note: The various pragma directives are specific to the cross-compiler and 
+may be changed or omitted in future versions of the compiler.
+
+PRAGMA ASCII 
+
+The #pragma ascii directive instructs the compiler to convert the characters
+in literal strings to a form expected by the target machine.
+
+Options:
+  #pragma ascii high    //Sets the high bit to 1 (e.g. Apple II)
+  #pragma ascii invert  //Swaps upper and lower case (e.g. PETSCII)
+  
+PRAGMA ORIGIN 
+
+The #pragma origin directive sets the target address of compiled code.
+
+Examples:
+  #pragma origin $0400  //Compiled code starts at address 1024
+  #pragma origin 8192   //Compiled code starts at address 8192
+
+PRAGMA VARTABLE
+
+The #pragma vartable directive forces the variable table to be written.
+It should be used before any #include directives that need to generate
+code following the table.
+
+PRAGMA ZEROPAGE
+
+The #pragma zeropage variable sets the base address for variables declared
+as zeropage.
+
+Example:
+  #Pragma zeropage $80  //Start zeropage variables at address 128
+
+LITERALS
+
+A literal represents a value between 0 and 255. Values may be written as
 a number (binary, decimal, osir hexadecimal) or a character literal.
 
 A binary number consists of a % followed by eight binary digits (0 or 1).
@@ -124,6 +168,42 @@ Examples:
   $FF       Hexadecimal Number
   'A'       Character Literal
   '\''      Escaped Character Literal
+
+CONSTANTS
+
+A constant may be used anywhere a literal would be used. Constants are
+generally used to make code easier to modify or more readable.
+
+A constant is defined by using the #define directive, followed by an equals
+sign, the name of the constant, and the literal value to assign to the
+constant. 
+
+When a constant is referenced in code, it is preceded with a # symbol.
+
+Examples:
+  #define TRUE = $FF
+  #define FALSE = 0
+  #define BITS = %01010101
+  #define ZED = 'Z'
+
+  if (c == #ZED) return #TRUE;
+
+ENUMERATIONS
+
+An enumeration is a sequential list of constants. Enumerations are used to
+generate sets of related but distinct values.
+
+An enumeration is defined using the #enum directive, followed by one or
+more constants separated by commas.
+
+Examples:
+  #enum BLACK, WHITE, RED, CYAN, PURPLE, GREEN, BLUE, YELLOW
+  #enum NONE, FIRST, SECOND, THIRD
+  #enum ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN
+
+Note: Values are automatically assigned to the constants in an enumeration.
+The first constant following an #enum directive is assigned the value 0,
+the second is assigned the value 1, and so on.
 
 STRINGS 
 
@@ -147,7 +227,6 @@ as a symbol without a suffix.
 
 A variable array represents a block of up to 256 continuous bytes in
 memory. An Array reference are written as a symbol suffixed a [ character,
-
 index, and ] character. The lowest index of an array is 0, and the highest
 index is one less than the number of bytes in the array. There is no bounds
 checking on arrays: referencing an element beyond the end of the array will 
@@ -186,12 +265,12 @@ Variables may only be of type char and all variable declaration statements
 are suffixed with a ; character.
 
 A simple variable declaration may include an initial value definition in
-the form of an = character and constant after the variable name. 
+the form of an = character and literal after the variable name. 
 
 A variable array may be declares in one of two ways: the variable name
-suffixed with a [ character, a constant specifying the upper bound of 
+suffixed with a [ character, a literal specifying the upper bound of 
 the array, and a ] character; or a variable name followed by an = character 
-and string literal or series of constants separated by , characters and 
+and string literal or series of literals separated by , characters and 
 surrounded by { or } characters.
 
 Variables are initialized at compile time. If a variable is changed during
@@ -200,11 +279,13 @@ reloaded into memory.
 
 Examples:
   char c;             //Defines variable c 
+  char debug = #TRUE; //Defines variable debug initialized to constant
+  char flag = 1;      //Defines variable flag initialized to 1
   char i, j;          //Defines variables i and j
   char r[7];          //Defines 8 byte array r 
   char s = "string";  //Defines 7 byte array s initialized to "string"
   char m = {1,2,3};   //Defines 3 byte array m initialized to 1, 2, and 3   
-
+  
 A function declaration consists of the function name suffixed with a (
 character, followed zero to three comma separated simple variables and 
 a ) character. A function declaration terminated with a ; character is
@@ -233,15 +314,15 @@ default, return the value of the last processed expression.
 
 EXPRESSIONS
 
-An expression is a sseries of one or more terms separated by operators. 
+An expression is a series of one or more terms separated by operators. 
 
 The first term in an expression may be a function call, subscripted array 
-element, simple variable, constant, or register (A, X, or Y). An expression 
+element, simple variable, literal, or register (A, X, or Y). An expression 
 may be preceded with a - character, in which case the first term is assumed 
-to be the constant 0.
+to be a literal 0.
 
-Additional terms are limited to subscripted array elements, simple variables
-and constants.
+Additional terms are limited to subscripted array elements, simple variables,
+literals, and constants.
 
 Operators:
   + — Add the following value.
@@ -269,7 +350,7 @@ A stand-alone expression evaluates to TRUE if the result is non-zero, or
 FALSE if the result is zero.
 
 A comparison consists of an expression, a comparator, and a term (subscripted
-array element, simple variable, or constant).
+array element, simple variable, literal, or constant).
 
 Comparators:
   =  — Evaluates to TRUE if expression is equal to term
@@ -309,17 +390,18 @@ instructions, which precludes their use inside expressions. Standalone
 expressions and test-ops generate a single branch instruction, and 
 therefore result in the most efficient code. Comparisons generate a
 compare instruction and one or two branch instructions (=. <. >=, and <> 
-generate one, while <= and > generate two). A preceding negation operator
+generate one, while <= and > generate two).  A preceding negation operator
 will switch the number of branch instructions used in a comparison, but
 otherwise does not change the size of the generated code.
 
 ARRAY SUBSCRIPTS
 
 Individual elements of an array are accessed using subscript notation.
-Subscripted array elements may be used as a terms in an expression, as well
-as the target variable in an assignments. They are written as the variable
-name suffixed with a [ character, followed by an index, and the ] character.
-The index may be a constant, a simple variable, or a register (A, X or Y).
+Subscripted array elements may be used as a terms in an expression, as 
+well as the target variable in an assignments. They are written as the 
+variable name suffixed with a [ character, followed by an index, and 
+the ] character. The index may be a literal, constant, simple variable, 
+or register (A, X or Y).
 
 Examples:
   z = r[i];  //Store the value from element i of array r into variable z
@@ -458,7 +540,7 @@ array elements.
 
 Examples:
   i++;    //Increment the contents variable i
-  b[i]<<; //Left shift the contenta of element i of array b
+  b[i]<<; //Left shift the contents of element i of array b
   
 Note: Post-operators may only be used in stand-alone statements, although
 this may change in the future.
@@ -529,7 +611,7 @@ of code to be executed if the evaluation was false.
 
 Examples:
   if (c = 27) goto end;
-  if (n) q = (n/d) else putstr("Division by 0!");
+  if (n) q = (n/d) else puts("Division by 0!");
   if (r[j]<r[i]) {t=r[i],r[i]=r[j],r[j]=t)}
   
 Note: In order to optimize the compiled code, the if and else statements 
@@ -549,7 +631,7 @@ by parenthesis) and an opening curly brace, which begins the select block.
 This must then be followed by a case statement.
 
 Each use of the case keyword is followed by one or more comma-separated
-terms and a colon. If the term is equal to select expression then the 
+terms and a colon. If the term is equal to the select expression then the 
 code immediately following the is executed, otherwise, program execution 
 transfers to the next case or default statement. 
 
@@ -613,7 +695,7 @@ select expression will be executed.
 WHILE LOOPS
 
 The while statement is used to conditionally execute code in a loop. When
-using the while keyword, it is followed by an evalution (surrounded by
+using the while keyword, it is followed by an evaluation (surrounded by
 parenthesis) and the the block of code to be executed while the evaluation
 is true. If the evaluation is false when the while statement is entered,
 the code in the block will never be executed.
@@ -622,8 +704,8 @@ Alternatively, the while keyword may be followed by a pair of empty
 parenthesis, in which case an evaluation of true is implied.
 
 Examples:
-  c = 'A' ; while (c <= 'Z') {putchr(c); c++;} //Print letters A-Z
-  while() if (rdkey()) break;                  //Wait for a keypress
+  c = 'A' ; while (c <= 'Z') {putc(c); c++;} //Print letters A-Z
+  while() if (rdkey()) break;                //Wait for a keypress
 
 Note: While loops are compiled using the 6502 JMP statements, so the code
 blocks may be arbitrarily large.
@@ -645,7 +727,7 @@ Examples:
 
 Note: Unlike the other loop structures do/while statements do not use
 6502 JMP instructions. This optimizes the compiled code, but limits
-the amount of code inside the loop.
+the code inside the loop to just under 127 bytes.
 
 FOR LOOPS
 
@@ -657,7 +739,7 @@ a set of values.
 When using the if keyword, it is followed by a pair of parenthesis 
 containing an initialization assignment statement (which is executed once), 
 a semicolon separator, an evaluation (which determines if the code block 
-is exectued), another semicolon separator, and an increment assignment 
+is executed), another semicolon separator, and an increment assignment 
 (which is executed after each iteration of the code block). This is then 
 followed by the block of code to be conditionally executed.
 
@@ -665,59 +747,47 @@ The assignments and conditional of a for loop must be populated. If an
 infinite loop is desired, use a while () statement.
 
 Examples:
-  for (c='A'; c<='Z'; c++) putchr(c);       //Print letters A-Z
-  for (i=strlen(s)-1;i:+;i--) putchr(s[i]); //Print string s backwards
-  for (i=0;c>0;i++) {c=getchr();s[i]=c}     //Read characters into string s  
+  for (c='A'; c<='Z'; c++) putc(c);       //Print letters A-Z
+  for (i=strlen(s)-1;i:+;i--) putc(s[i]); //Print string s backwards
+  for (i=0;c>0;i++) {c=getc();s[i]=c}     //Read characters into string s  
 
 Note: For loops are compiled using the 6502 JMP statements, so the code
-blocks may be abritrarily large.  A for loop generates less efficient code
+blocks may be arbitrarily large.  A for loop generates less efficient code
 more than a simple while loop, but will always execute the increment 
 assignment on a continue.
 
 BREAK AND CONTINUE
 
-The break and continue statements are used to jump to the beginning or
-end of a do, for, or while loop. Neither may be used outside of a loop.
+A break statement is used to exit out of a do, for, or while loop or a 
+case block. The continue statement is used to jump to the beginning of 
+a do, for, or while loop. Neither may be used outside it's corresponding
+control structures.
 
 When a break statement is encountered, program execution is transferred
 to the statement immediately following the end of the block associated 
-with the innermost for or while loop. When using the break keyword, it is
-followed with a trailing semicolon.
+with the innermost do, for, while, or case statement. When using the 
+break keyword, it is followed with a trailing semicolon.
 
 When a continue statement is encountered, program execution is transferred
-to the beginning of the block associated with the innermost for or while
-loop. In the case of a for statement, the increment assignment is executed,
-followed by the evaluation, and in the case of a while statement, the 
-evaluation is executed. When using the break keyword, it is followed with 
-a trailing semicolon.
+to the beginning of the block associated with the innermost do, for, or 
+while statement. In the case of a for statement, the increment assignment 
+is executed, followed by the evaluation, and in the case of a while 
+statement, the evaluation is executed. When using the continue keyword, it 
+is followed with a trailing semicolon.
 
 Examples:
   do {c=rdkey(); if (c=0) continue; if (c=27) break;} while (c<>13);`
   for (i=0;i<strlen(s);i++) {if (s[i]=0) break; putchr(s[i]);}
   while() {c=rdkey;if (c=0) continue;putchr(c);if (c=13) break;}
-  
-Note: The break and continue statements may not be used inside a do/while\
-loop. This may change in the future.
 
 UNIMPLEMENTED FEATURES
 
-The #define directive is recognized but generates an error. The exact
-implementation of this directive has not yet been determined, so it has
-been reserved for future use.
-
-The #pragma directive is currently unrecognized. It may be implemented in
-the future to allow the specification of assembler specific instructions.
-
 The only type recognized by the compiler is char. Since the 6502 is an
 8-bit processor, multi-byte types would generate over-complicated code. 
-For this reason, pointers are not currently implemented, athough the
-address of operator can be used with specific statements. In addition, 
-the signed and unsigned keywords are unrecognized, due to the 6502's 
-limited signed comparison functionality.
+In addition, the signed and unsigned keywords are unrecognized, due to the 
+6502's limited signed comparison functionality.
 
-The switch and case keywords are recognized, but generate an error. There
-are no plans to implement these keywords. Due to single pass nature of the
-compiler, the code generated by a switch/case structure would be no more
-efficient than an equivalent series of if/then/else statements.
-
+Because of the 6502's peculiar indirect addressing modes, pointers are not 
+currently implemented. Limited pointer operations may be implemented using
+zero page variables in the future.
 
