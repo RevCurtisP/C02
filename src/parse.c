@@ -21,7 +21,7 @@ int isanum(void) {return isalnum(nxtchr);}
 int isapos(void) {return match('\'');}
 int isbin(void)  {return inbtwn('0', '1');}
 int isbpre(void) {return TF(isnpre() || isapos());}
-int iscpre(void) {return TF(isbpre() || ishash());}
+int islpre(void) {return TF(isbpre() || ishash());}
 int isdec(void)  {return inbtwn('0', '9');}
 int ishash(void) {return match('#');}
 int ishexd(void) {return TF(isdec() || inbtwn('A', 'Z'));}
@@ -31,7 +31,7 @@ int isoper(void) {return TF(strchr("+-&|^", nxtchr));}
 int ispopr(void) {return TF(strchr("+-<>", nxtchr));}
 int isprnt(void) {return isprint(nxtchr);}
 int isspc(void)  {return isspace(nxtchr);}
-int isvpre(void) {return TF(isalph() || iscpre());}
+int isvpre(void) {return TF(isalph() || islpre());}
 int isxpre(void) {return TF(isvpre() || match('-'));}
 
 /* Process ASCII Character */
@@ -217,7 +217,7 @@ int prshex(void) {
   int wrdlen = 0;
   int digit;
   int number = 0;
-  DEBUG("Parsing hexadecimal constant '", 0)
+  DEBUG("Parsing hexadecimal literal '", 0)
   if (!match('$')) expctd("hexadecimal number"); 
   word[wrdlen++] = getnxt();
   while (ishexd()) {
@@ -233,14 +233,14 @@ int prshex(void) {
   return (number);
 }
 
-/* Reads Character constant from input file      *
- * Sets: word - Character constant including     *
- *              single quotes                    *
- * Returns: ASCII value of constant              */ 
+/* Read Character Literal from Input File   *
+ * Sets: word - Character literal including *
+ *              single quotes               *
+ * Returns: ASCII value of literal          */ 
 int prschr(void) {
   int wrdlen = 0;
   char c;
-  DEBUG("Parsing character constant\n", 0)
+  DEBUG("Parsing character literal\n", 0)
   expect('\'');
   word[wrdlen++] = '\'';
   if (match('\\')) word[wrdlen++] = getnxt();
@@ -261,16 +261,16 @@ int prschr(void) {
 int prsnum(int maxval) {
   int number;
   skpspc();
-  if (!isbpre()) expctd("constant value");
+  if (!isbpre()) expctd("literal value");
   switch(nxtchr) {
     case '%':  number = prsbin(); break;
     case '$':  number = prshex(); break;
     case '\'': number = prschr(); break;
     default:   number = prsdec();
   }
-  DEBUG("Parsed number '%s' ", word)
-  DETAIL("with value '%d'\n", number)
-  if (number > maxval)  ERROR("Out of bounds constant '%d';\n", number, EXIT_FAILURE)
+  DEBUG("Parsed number %s ", word)
+  DETAIL("with value %d\n", number)
+  if (number > maxval)  ERROR("Out of bounds literal '%d';\n", number, EXIT_FAILURE)
   if (maxval > 255) sprintf(value, "$%04X", number);
   else sprintf(value, "$%02X", number);
   return number;
@@ -297,24 +297,24 @@ int prsdef(void) {
   return defval[defidx];
 }
 
-/* Parse numeric constant                      *
+/* Parse numeric literal                       *
  * Args: maxval - maximum allowed value        *
- * Sets: cnstnt - the constant (as an integer) *
- *       value - the constant (as asm arg)     *
- *       valtyp - value type (CONSTANT)        *
- *       word - constant (as a string)         *
+ * Sets: litval - literal (as an integer)      *
+ *       value - literal (as asm arg)          *
+ *       valtyp - value type (LITERAL)         *
+ *       word - literal (as a string)          *
  * Note: Value is converted to hexadecimal     *
  *       because DASM uses the format 'c for   *
  *       character arguments instead of 'c'    */
-void prscon(void) {
+void prslit(void) {
   skpspc();
-  if (ishash()) cnstnt = prsdef();
-  else cnstnt = prsbyt();
-  valtyp = CONSTANT;
+  if (ishash()) litval = prsdef();
+  else litval = prsbyt();
+  valtyp = LITERAL;
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");
   strcat(value, word);
-  DEBUG("Generated constant '%s'\n", value)
+  DEBUG("Generated literal '%s'\n", value)
 }
 
 /* Get Value Type */

@@ -17,8 +17,8 @@ by the compiler.
 
 CONSTANTS
 
-Constant definitions use the same syntax as C, but when a constant is
-subsequently referenced in code, it must be prefixed with a # symbol.
+The syntax of the const keyword in C02 differs from that use in standard C.
+In C02, all constant names are prefixed with a # symbol.
 
 ENUMERATION
 

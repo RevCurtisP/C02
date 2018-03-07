@@ -14,15 +14,15 @@
 #include "label.h"
 #include "expr.h"
 
-/* Parse value (constant or identifier)  *
+/* Parse value (literal or identifier)  *
  * Sets: value - the value (as a string) *
  *       valtyp - value type           */
 void prsval(int alwreg) {
   DEBUG("Parsing value\n", 0)
   skpspc();
-  if      (iscpre()) prscon(); //Parse Constant
-  else if (isalph()) prsvar(alwreg);     //Parse Variable
-  else               expctd("constant or variable");
+  if      (islpre()) prslit();       //Parse Literal
+  else if (isalph()) prsvar(alwreg); //Parse Variable
+  else               expctd("literal or variable");
   DEBUG("Parsed value of type %d\n", valtyp)
   skpspc();
 }
@@ -42,7 +42,7 @@ void chkidx(void) {
   //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp)
   if (valtyp == ARRAY) {
     prsidx();
-    if (valtyp == CONSTANT) {
+    if (valtyp == LITERAL) {
       strcat(term, "+");
       strcat(term, word);
     }

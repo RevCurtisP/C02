@@ -68,8 +68,8 @@ void prsdta(void) {
   expect('{');
   dlen = 0;
   do {
-    prscon();
-    dattmp[dlen++] = cnstnt;
+    prslit(); //Parse Literal
+    dattmp[dlen++] = litval;
   } while (look(','));
   expect('}');
 }
@@ -89,9 +89,9 @@ void prsdts(void) {
 void setdat(void) {
   int i;
   if (dtype == DTBYTE) {
-    DEBUG("Setting variable data to '%d'\n", cnstnt)
+    DEBUG("Setting variable data to '%d'\n", litval)
     dlen = 1;
-    datvar[dsize++] = cnstnt;
+    datvar[dsize++] = litval;
   }
   else if (dtype == DTARRY) {
     DEBUG("Setting variable data to array of length %d\n", dlen)
@@ -112,10 +112,10 @@ void prsdat(void) {
   DEBUG("Checking for variable data\n", 0)
   if (!look('=')) { datlen[varcnt] = 0; return; }
   skpspc();
-  if (iscpre()) {dtype = DTBYTE; prscon(); }//Parse Data Constant
+  if (islpre()) {dtype = DTBYTE; prslit(); } //Parse Data Literal
   else if (match('"')) prsdts();       //Parse Data String
   else if (match('{')) prsdta();       //Parse Data Array
-  else expctd("numeric or string constant");
+  else expctd("numeric or string literal");
   setdat();   //Store Data Value
 }
 

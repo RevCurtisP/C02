@@ -68,9 +68,7 @@ directives, the C02 compiler processes directives directly.
 
 DEFINE DIRECTIVE
 
-The #define directive creates a named constant. A constant may be used 
-anywhere a literal would be used. Use of the #define directive is 
-explained in the CONSTANTS section below.
+The #define directive has been deprecated in favor of the const keyword.
 
 INCLUDE DIRECTIVE
 
@@ -169,25 +167,6 @@ Examples:
   'A'       Character Literal
   '\''      Escaped Character Literal
 
-CONSTANTS
-
-A constant may be used anywhere a literal would be used. Constants are
-generally used to make code easier to modify or more readable.
-
-A constant is defined by using the #define directive, followed by an equals
-sign, the name of the constant, and the literal value to assign to the
-constant. 
-
-When a constant is referenced in code, it is preceded with a # symbol.
-
-Examples:
-  #define TRUE = $FF
-  #define FALSE = 0
-  #define BITS = %01010101
-  #define ZED = 'Z'
-
-  if (c == #ZED) return #TRUE;
-
 ENUMERATIONS
 
 An enumeration is a sequential list of constants. Enumerations are used to
@@ -222,6 +201,9 @@ simple variables, variable arrays, and functions.
 A label specifies a target point for a goto statement. A label is written
 as a symbol suffixed by a : character.
 
+A constant represents a literal value. A constant is written as a symbol
+prefixed by the # character.
+
 A simple variable represents a single byte of memory. A variable is written 
 as a symbol without a suffix.
 
@@ -254,6 +236,19 @@ BLOCKS
 A program block is a series of statements surrounded by the { and }
 characters. They may only be used with function definitions and control
 structures. 
+
+CONSTANTS
+
+A constant is defined by using the const keyword followed by one or more
+constant assignments separated with commas and terminated with a semicolon.
+
+A constant assignment consists of the the constant name, an equals sign, 
+and the literal value to assign to the constant. 
+
+Examples:
+  const #TRUE = $FF, #FALSE = 0;
+  const #BITS = %01010101;
+  const #ZED = 'Z';
 
 DECLARATIONS
 
@@ -458,7 +453,7 @@ statements push, pop, and inline.
 
 The push statement is used to push arguments onto the machine stack prior
 to a function call. When using a push statement, it is followed by one or
-more arguments, separated by commas, and terminated with a semi-colon. An
+more arguments, separated by commas, and terminated with a semicolon. An
 argument may be an expression, in which case the single byte result is 
 pushed onto the stack, or it may be an address or string, in which case the
 address is pushed onto the stack, high byte first and low byte second.

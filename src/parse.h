@@ -4,7 +4,7 @@
 
 #define TF(x) (x) ? TRUE : FALSE;
 
-enum stypes {CONSTANT, VARIABLE, REGISTER, ARRAY, FUNCTION};  //Symbol Types
+enum stypes {LITERAL, VARIABLE, REGISTER, ARRAY, FUNCTION};  //Symbol Types
 enum etypes {ETDEF, ETMAC};                         //Definition Types
 
 char nxtwrd[LINELEN]; //Next Word (from DEFINE lookup)
@@ -12,7 +12,7 @@ int  nxtptr;          //Pointer to next character in nxtwrd
 char value[LINELEN];  //Term parsed from equation
 int  valtyp;          //Value Type
 char oper;            //Arithmetic or Bitwise Operator
-int  cnstnt;          //Value of Parsed Constant  
+int  litval;          //Value of Parsed Literal  
 
 char defnam[MAXDEF+1][VARLEN+1]; //Definition Name Table
 int  defval[MAXDEF+1];           //Definition Value Table
@@ -28,7 +28,7 @@ int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
 int isbin();                   //Is Next Character a Binary Digit
 int isbpre();                  //
-int iscpre();                  //Is Next Character a Constant
+int islpre();                  //Is Next Character a Constant
 int isdec();                   //Is Next Character a Decimal Digit
 int ishash();                  //Is Next Character a Byte Value
 int ishexd();                  //Is Next Character a Hexadecimal Digit
@@ -48,7 +48,7 @@ int  gettyp();              //Get Value Type
 void getwrd();              //Get Next Word
 int  look(char c);          //Look for Character 
 int  prsbyt();              //Parse Numeric Byte
-void prscon();              //Parse a Constant
+void prslit();              //Parse Literal
 int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
 int  prspst(char trmntr, char* name, char* index);  //Parse Post Operator

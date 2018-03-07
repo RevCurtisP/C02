@@ -59,7 +59,7 @@ void prssif(char trmntr) {
 void prcidx(int idxtyp, char *name, char *index)
 {
     if (strlen(index)) { 
-      if (idxtyp == CONSTANT) {
+      if (idxtyp == LITERAL) {
         strcat(name, "+");
         strcat(name, index);
       }
@@ -98,7 +98,7 @@ void prcasn(char trmntr) {
 /* Parse and Return Array Index and Type */
 int getidx(char* idx) {
     prsidx();  //Parse Array Index
-    if (valtyp == CONSTANT) strncpy(idx, word, VARLEN);
+    if (valtyp == LITERAL) strncpy(idx, word, VARLEN);
 	else strncpy(idx, value, VARLEN);
     DEBUG("Parsed index %s\n", idx)
     return valtyp;
@@ -278,8 +278,8 @@ void pinlne(void) {
       asmlin(BYTEOP, value);
     }
     else {
-      prscon(0xFF);
-      sprintf(word, "$%hhX", cnstnt); //not needed?
+      prslit(0xFF);  //Parse Literal
+      sprintf(word, "$%hhX", litval); //not needed?
       asmlin(BYTEOP, value);
     }
   } while (look(','));
@@ -350,7 +350,7 @@ void pcase(void) {
   pshlbl(LTCASE, cndlbl);  //and Push onto Stack
   while(TRUE) {
     prstrm();              //Parse CASE argument
-    if (!fcase || valtyp != CONSTANT || cnstnt) 
+    if (!fcase || valtyp != LITERAL || litval) 
       asmlin("CMP", term); //Emit Comparison
     if (look(',')) {
       chklbl(skplbl);      //Emit skip to beginning of CASE block

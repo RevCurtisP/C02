@@ -106,7 +106,7 @@ void porign(void) {
 
 /* Parse Zeropage Subdirective */
 void prszpg(void) {
-  zpaddr = prsnum(0xFF); //Set Zero Page Address to Constant
+  zpaddr = prsnum(0xFF); //Set Zero Page Address to Literal
   DEBUG("Set zero page address to %d\n", zpaddr)
 }
 

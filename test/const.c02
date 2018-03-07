@@ -2,11 +2,10 @@
 
 #pragma origin 1000
 
-#define TRUE = $FF
-#define FALSE = 0
+const #TRUE = $FF, #FALSE = 0;
 
-#define BITS = %01010101
-#define ZED = 'Z'
+const #BITS = %01010101;
+const #ZED = 'Z';
 
 #enum SOLO
 #enum ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN

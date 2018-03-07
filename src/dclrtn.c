@@ -50,7 +50,27 @@ void addfnc(void) {
   bgnblk('{');           //Start Program Block
 }
 
-/* (Check For and) Parse Variable Declaration*/
+/* Parse Constant Declaration*/
+void pconst(int m) {
+  DEBUG("Processing constant declarations(s)\n", 0)
+  if (m != MTNONE) ERROR("Illegal Modifier %d in Constant Definition", m, EXIT_FAILURE)
+  do {
+	expect('#');  //Require # prefix
+    getwrd();     //Get constant name
+    DEBUG("Defining constant '%s',", word)
+    strncpy(defnam[defcnt], word, VARLEN);
+    setlbl(word); //Set label Assembler Line
+    expect('=');
+    defval[defcnt++] = prsbyt(); //Get Value
+    ACMNT(word); //comment value
+    asmlin(EQUOP, value); //Write Definition
+    DETAIL(" defined as '%s'\n", value)
+  } while (look(','));
+  expect(';');
+  DEBUG("Constant Declaration Completed\n", 0)
+}
+
+/* Parse Variable/Function Declaration*/
 void pdecl(int m, int t) {
   DEBUG("Processing variable declarations(s) of type %d\n", t)
   do {
@@ -70,8 +90,9 @@ void pdecl(int m, int t) {
 /* Check for and Parse Type Keyword */
 int ptype(int m) {
   int result = TRUE;
-  if (wordis("VOID"))      pdecl(m, VTVOID);   //Parse 'void' declaration
-  else if (wordis("CHAR")) pdecl(m, VTCHAR);   //Parse 'char' declaration
+  if     (wordis("CONST")) pconst(m);        //Parse 'const' declaration
+  else if (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
+  else if (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
   else                     result = FALSE;
   return result;
 }
