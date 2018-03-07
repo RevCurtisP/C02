@@ -59,31 +59,7 @@ void incasm(void) {
 
 /* Process define directive */
 void pdefin(void) {
-  getwrd(); //get defined identifier
-  DEBUG("Defining '%s'\n", word)
-  strncpy(defnam[defcnt], word, VARLEN);
-  setlbl(word); //Set label Assembler Line
-  expect('=');
-  defval[defcnt++] = prsbyt(); //Get Value
-  ACMNT(word); //comment value
-  asmlin(EQUOP, value); //Write Definition
-  DEBUG("Defined as '%s'\n", value)
-}
-
-/* Process enum directive */
-void penumd(void) {
-  int enmval = 0;
-  do {
-    getwrd(); //get defined identifier
-    DEBUG("Enumerating '%s'\n", word)
-    strncpy(defnam[defcnt], word, VARLEN);
-    setlbl(word); //Set label Assembler Line
-    defval[defcnt++] = enmval; //Set Value
-    sprintf(value, "%d", enmval);
-    asmlin(EQUOP, value); //Write Definition
-    DEBUG("Defined as '%s'\n", value)
-    enmval++;
-  } while (look(','));
+  ERROR("Define directive not implemented\n", 0, EXIT_FAILURE)
 }
 
 /* Parse ASCII Subdirective */

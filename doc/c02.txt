@@ -779,6 +779,12 @@ Examples:
 
 UNIMPLEMENTED FEATURES
 
+The #define directive generates an error. Defining of constants is done
+using the const keyword, and defining of macros is not supported.
+
+The #if, #else, and #endif directives are not recognized at all by the
+compiler. They may be added in the future.
+
 The only type recognized by the compiler is char. Since the 6502 is an
 8-bit processor, multi-byte types would generate over-complicated code. 
 In addition, the signed and unsigned keywords are unrecognized, due to the 

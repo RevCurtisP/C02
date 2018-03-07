@@ -13,7 +13,9 @@ statement.
 DIRECTIVES
 
 C02 does not use a preprocessor. All directives are directly processed
-by the compiler.
+by the compiler. C02 supports the directives #include and #pragma. The
+directive #define is currently unimplemented and generates an error.
+The #if, #else, and #endif directives are not recognized by C02.
 
 CONSTANTS
 

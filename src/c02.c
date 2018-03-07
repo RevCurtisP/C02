@@ -67,7 +67,6 @@ void pdrctv(void) {
   getwrd();           //read directive into word
   DEBUG("Processing directive '%s'\n", word)
   if      (wordis("DEFINE"))  pdefin();  //Parse Define
-  else if (wordis("ENUM"))    penumd();  //Parse Enum Directive
   else if (wordis("INCLUDE")) pincfl();  //Parse Include File
   else if (wordis("ERROR"))   ERROR("Error \n", 0, EXIT_FAILURE)
   else if (wordis("PRAGMA"))  pprgma();

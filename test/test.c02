@@ -4,8 +4,6 @@
  ********************************************/
 
 
-#define CR = $0D //define is deprecated
-
 /* Constants */
 const #TRUE = $FF, #FALSE = 0;
 const #BITS = %01010101;
