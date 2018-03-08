@@ -333,7 +333,6 @@ void prsopr(void) {
   skpspc();
 }
 
-
 /* Generate Post-Operation Error */
 void poperr(char* name) {
   fprintf(stderr, "Illegal post-operation %c%c on register %s\n", oper, oper, name);

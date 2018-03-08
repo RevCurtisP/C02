@@ -26,6 +26,30 @@ int fndvar(char *name) {
   return FALSE;
 }
 
+/* Lookup structure name in struct table   *
+ * Sets: sctidx = index into sctnam array  *
+ *                sctcnt if not found      *
+ * Returns: TRUE if found, otherwise FALSE */
+int fndstc(char *name) {
+  DEBUG("Looking up struct '%s'\n", name)
+  for (stcidx=0; stcidx<stccnt; stcidx++) 
+    if (strcmp(strcts[stcidx].name, name) == 0) return TRUE;
+  return FALSE;
+}
+
+/* Lookup structure member name in table   *
+ * Sets: stmidx = index into stmnam array  *
+ *                stmcnt if not found      *
+ * Returns: TRUE if found, otherwise FALSE */
+int fndmbr(int idx, char *name) {
+  DEBUG("Looking up member '%s'\n", word)
+  for (mbridx=0; mbridx<mbrcnt; mbridx++) {
+    if (membrs[mbridx].strcti != idx) continue;
+    if (strcmp(membrs[mbridx].name, name) == 0) return TRUE;
+  }
+  return FALSE;
+}
+
 /* Check for variable                       *
  * Generates error if variable is undefined *
  * Args: alwreg - allow register name       *
@@ -42,16 +66,34 @@ void chksym(int alwreg, char *name) {
     ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE)
 }
 
+/* Parse next word as struct member *
+ * Args: name - Struct Variable    *
+ * Sets: name - Variable + Offset  *
+ *       valtyp - Member Type       */
+void prsmbr(char* name) {
+  expect('.'); //Check for and Skip Period
+  stcidx = varstc[varidx]; //Get Struct Index
+  if (stcidx < 0) ERROR("Variable %s is Not a Structure\n", value, EXIT_FAILURE)
+  getwrd(); //Get Membert Name
+  valtyp = gettyp(); //Determine Variable Type
+  if (valtyp == FUNCTION) ERROR("Illegal Function Reference\n", 0, EXIT_FAILURE)  
+  DEBUG("Checking for member %s", word) DETAIL(" with struct index %d\n", stcidx)
+  if (!fndmbr(stcidx, word)) ERROR("Struct does Not Contain Member %s\n", word, EXIT_FAILURE)
+  sprintf(word, "+$%hhX", membrs[mbridx].offset); //Get Member Offet in Struct
+  strcat(name, word); //Add Offset to Struct
+}
+
 /* Parse next word as variable or function name *
  * Args: alwreg - Allow Register Names          *
  * Sets: value - Identifier Name                *
  *       valtyp - Identifier Type               */
 void prsvar(int alwreg) {
-  getwrd();
-  valtyp = gettyp();
+  getwrd(); //Get Variable Name
+  valtyp = gettyp(); //Determine Variable Type
   if (valtyp != FUNCTION) chksym(alwreg, word);
   strcpy(value, word);
   DEBUG("Parsed variable '%s'\n", value)
+  if (valtyp == VARIABLE && match('.')) prsmbr(value);
 }
 
 /* Require and Parse Variable Name                         *
@@ -168,10 +210,10 @@ void addvar(int m, int t) {
 void vartbl(void) {
   int i, j;
   DEBUG("Writing Variable Table", 0)
-  fprintf(logfil, "\n%-31s %s %s %s\n", "Variable", "Type", "Size", "Data");
+  fprintf(logfil, "\n%-31s %s %s %s %s\n", "Variable", "Type", "Size", "Struct", "Data");
   dlen = 0;
   for (i=0; i<varcnt; i++) {
-    fprintf(logfil, "%-31s %4d %4s %1d-%d\n", varnam[i], vartyp[i], varsiz[i], dattyp[i], datlen[i]);
+    fprintf(logfil, "%-31s %4d %4s %6d %1d-%d\n", varnam[i], vartyp[i], varsiz[i], varstc[i], dattyp[i], datlen[i]);
     strcpy(lblasm, varnam[i]);
     DEBUG("Set Label to '%s'\n", lblasm)
     if (strcmp(varsiz[i], "*") == 0) continue;
@@ -201,29 +243,6 @@ void vartbl(void) {
     }
   }
   vrwrtn = TRUE;
-}
-
-/* Lookup structure name in struct table   *
- * Sets: sctidx = index into sctnam array  *
- *                sctcnt if not found      *
- * Returns: TRUE if found, otherwise FALSE */
-int fndstc(char *name) {
-  DEBUG("Looking up struct '%s'\n", name)
-  for (stcidx=0; stcidx<stccnt; stcidx++) 
-    if (strcmp(strcts[stcidx].name, name) == 0) return TRUE;
-  return FALSE;
-}
-
-/* Lookup structure member name in table   *
- * Sets: stmidx = index into stmnam array  *
- *                stmcnt if not found      *
- * Returns: TRUE if found, otherwise FALSE */
-int fndmbr(int stcidx, char *name) {
-  DEBUG("Looking up member '%s'\n", word)
-  for (mbridx=0; mbridx<mbrcnt; mbridx++) 
-    if (membrs[mbridx].strcti != stcidx) continue;
-    if (strcmp(membrs[mbridx].name, name) == 0) return TRUE;
-  return FALSE;
 }
 
 /* Parse and Compile Struct Declaration */
@@ -271,7 +290,7 @@ void defstc(void) {
   } while (!look('}'));
   expect(';');
   if (strct.size > 256) ERROR("Structure Size %d Exceeds Limit of 256 bytes.\n", strct.size, EXIT_FAILURE);  
-  DEBUG("Adding struct with size %d\n", strct.size) DETAIL("at index %d\n", stccnt);
+  DEBUG("Adding struct with size %d", strct.size) DETAIL("at index %d\n", stccnt);
   strcts[stccnt++] = strct;
 }
 

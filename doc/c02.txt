@@ -264,7 +264,7 @@ are suffixed with a ; character.
 A simple variable declaration may include an initial value definition in
 the form of an = character and literal after the variable name. 
 
-A variable array may be declares in one of two ways: the variable name
+A variable array may be declared in one of two ways: the variable name
 suffixed with a [ character, a literal specifying the upper bound of 
 the array, and a ] character; or a variable name followed by an = character 
 and string literal or series of literals separated by , characters and 
@@ -308,6 +308,40 @@ statement with an explicit expression will simply process that expression
 (which leaves the result in the A register) before returning. A return
 statement without an expression (including an implicit return) will, by
 default, return the value of the last processed expression.
+
+STRUCTS
+
+A struct is a special type of variable which is composed of one or more
+unique variables called members. Each member may be either a simple
+variable or an array. However, the total size of the struct may not
+exceed 256 characters.
+
+Member names are local to a struct: each member within a struct must have 
+a unique name, but the same member name can be used in different structs 
+and may also have the same name as a global variable.
+
+The struct keyword is used for both defining the members of a struct type
+as well as declaring struct type variables.
+
+When defining a struct type, the struct keyword is followed by the name of
+the struct type, the { character, the member definitions separated by 
+commas, and the } character. The struct definition is terminated with a
+semicolon. Each member definition is composed of the optional char keyword,
+and the member name. If the member is an array, the member name is suffixed 
+the [ character, the upper bound of the array, and the ] character. Each
+member definition is terminated with a semicolon.
+
+When declaring a struct variable, the struct keyword is followed by the struct
+type name, and the name of the struct variable. The struct declaration is
+terminated with a semicolon.
+
+Examples:
+
+  struct record {char name[8]; char index; data[128];};
+  struct record rec;
+
+Note: Unlike simple and array variable, the members of a struct variable
+may not be initialized during declaration.
 
 EXPRESSIONS
 
@@ -408,6 +442,25 @@ Note: After a subscripted array reference, the 6502 X register will contain
 the value of the index (unless the register Y was used as the index, in 
 which X register is not changed).
 
+STRUCTS
+
+Individual members of a struct variable are specified using the struct 
+variable name, a period, and the member name. If a member is an array,
+it's elements are accessed using the same syntax as an array variable.
+
+A struct variable can also be treated like an array variable, with each
+byte of the variable accessed as an array index.
+
+Examples:
+
+  i = rec.index;      //Get Struct Member
+  rec.data[i] = i;    //Set Struct Member Element
+  arr[i] = rec[i];    //Copy Struct Byte into Array
+
+Note: Unlike standard C, structs may not be assigned using an equals 
+sign. One struct variable may be copied to another byte by byte or
+through a function call.
+
 FUNCTION CALLS
 
 A function call may be used as a stand-alone statement, or as the first
@@ -426,9 +479,10 @@ The third argument may only be a simple variable or constant.
 If the first or second argument is an address or string, then no more 
 arguments may be passed.
 
-To pass the address of a variable or array into a function, precede the
-variable name with the address-of operator &. To pass a string, simply
-specify the string as the argument.
+When passing the address of a variable, array, struct, or struct member 
+into a function, the variable specification is prefixed with the 
+address-of operator &. Wjen passing a string, the string is simply 
+specified as the argument with.
 
 Examples:
   c = getc();            //Get character from keyboard
@@ -438,6 +492,9 @@ Examples:
   p = strchr(c, &s);     //Return position of character c in string s
   putc(getc());          //Echo typed characters to screen
   puts("Hello World");   //Write "Hello World" to screen
+  memdst(&dstrec);       //Set struct variable as destination
+  memcpy(140, &srcrec);  //Copy struct variable to destination struct
+  puts(&rec.name);       //Write struct membet to screen
 
 Note: This particular argument passing convention has been chosen because 
 of the 6502's limited number of registers and stack processing instructions. 

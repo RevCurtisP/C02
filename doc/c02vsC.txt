@@ -39,13 +39,48 @@ time, so no re-initialization will occur during code execution.
 
 Array declarations using bracket syntax specify the upper bound, rather
 than the array size. Therefore, the array will be allocated with one more
-element than the specified number.
+element than the specified number. 
+
+Only one-dimensional arrays of type char are allowed and are limited to 
+a total of 256 elements. Multi-dimensional arrays, arrays of arrays, and 
+arrays of structs are not supported.
+
+Struct definition and syntax is similar to standard C. When defining a 
+struct, the char keyword is optional, since char the char type is implied.
+Struct members may only be simple variables or arrays. The maximum total
+size of a struct is 256 bytes. Initialization of members during declaration 
+of a struct variable is not supported.  
+
+REGISTERS
+
+The 6502 registers may be explicitly referenced by name, i.e. A, X, and Y.
+These may only be used in specific places due to the nature of the compiled
+code a well as the limitations of the 6502 instruction set.
 
 EXPRESSIONS
 
 C02 supports the addition, subtraction, bitwise-and, bitwise-or, and 
 exclusive-or operators. The multiplication, division, and binary shift
 operators are not supported. These can be implemented through functions. 
+
+FUNCTIONS
+
+Parameter passing uses the 6502's A, Y, and X registers. This limits 
+function calls to a maximum of three char variables or address reference
+plus and optional char variable. However this also allows the return
+of up to three char variables (see assignments below). However, the
+non-standard push and pop statements allow explicit parameter passing
+via the stack, and the inline keyword has been re-purposed to allow 
+explicit passing of inline parameters. 
+
+ASSIGNMENTS
+
+Unlike standard C, struct contents may not be copied via simple assignment.
+Struct variables may be copied byte by byte or using memory move functions.
+
+Up to three comma-separated variables may be specified on the left side of
+the = assignment operator. This is generally only useful when the expression
+contains a function with multiple return values. 
 
 STATEMENTS
 

@@ -4,7 +4,7 @@
 
 #define TF(x) (x) ? TRUE : FALSE;
 
-enum stypes {LITERAL, VARIABLE, REGISTER, ARRAY, STRUCT, FUNCTION};  //Symbol Types
+enum stypes {LITERAL, VARIABLE, REGISTER, ARRAY, FUNCTION};  //Symbol Types
 enum etypes {ETDEF, ETMAC};                         //Definition Types
 
 char nxtwrd[LINELEN]; //Next Word (from DEFINE lookup)

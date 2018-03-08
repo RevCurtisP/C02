@@ -7,7 +7,7 @@ char varnam[MAXVAR+1][VARLEN+1]; //Variable Name Table
 char varmod[MAXVAR+1];           //Variable Modifier
 char vartyp[MAXVAR+1];           //Variable Type
 char varsiz[MAXVAR+1][4];        //Variable Array Size
-char varstc[MAXVAR+1];           //Variable Struct Type
+char varstc[MAXVAR+1];           //Variable Struct Index
 int  varcnt;                     //Number of Variables in Table
 int  varidx;                     //Index into Variable Tables
 char vrname[MAXVAR+1];           //Variable Name
@@ -68,6 +68,7 @@ void setdat();                       //Set Variable Data
 void setvar(int m, int t);           //Set Variable Name and Size
 void prsdts();                       //Parse Data String
 void prsvar(int alwreg);             //Parse Variable
+void prsmbr(char* name);             //Parse Variable
 void reqvar(int alwary);             //Require and Parse Variable Name
 void setdat();                       //Store variable data
 void setvar(int m, int t);           //Add Variable to Variable table

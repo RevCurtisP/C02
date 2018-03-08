@@ -108,6 +108,7 @@ int getidx(char* idx) {
 void prcvar(char trmntr) {
   chksym(TRUE, word);
   strcpy(asnvar, word);  //save variable to assign to
+  if (valtyp == VARIABLE && match('.')) prsmbr(asnvar);
   asntyp = valtyp; //Set Assigned Varable Type
   DEBUG("Set STA variable to %s\n", asnvar)
   if (asntyp == VARIABLE && look(';')) {

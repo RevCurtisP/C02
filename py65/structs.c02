@@ -1,0 +1,57 @@
+/**********************************************
+ * STRINGS - Demonstrate string.h02 functions *
+ **********************************************/
+ 
+#include <py65.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <stdlib.h02>
+#include <memory.h02>
+#include <string.h02>
+
+char d, i;
+
+//Define Structure
+struct record {
+  char name[8];
+  char index;
+  data[128];
+};
+
+//Declare Structure Variable
+struct record srcrec;
+struct record dstrec;
+
+main:
+
+//Set Structure Members
+strdst(&srcrec.name); strcpy("RECNAME");
+srcrec.index = 1;
+for (i = 0; i<129; i++)
+  srcrec.data[i] = i;
+
+//Clear Destination Record
+for (i=0; i<140; i++)
+  dstrec[i] = 0;
+prtdst();
+
+//Copy Source Record into Destination Record
+memdst(&dstrec);
+memcpy(129, &srcrec);
+
+prtdst();
+
+goto exit;
+
+//Print Destination Record
+void prtdst() {
+  puts("REC.NAME="); putln(&dstrec.name);
+  puts("REC.INDEX="); putdec(dstrec.index); newlin();
+  puts("REC.DATA={");
+  for (i = 0; i<129; i++) {
+    if (i) putc(',');
+    putdec(dstrec.data[i]);
+  }
+  putln("}");
+  newlin();
+}

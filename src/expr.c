@@ -71,12 +71,14 @@ void prstrm(void) {
 /* Process Address Reference */
 void prcadr(int adract, char* symbol) {
   DEBUG("Processing address '%s'\n", word)
-  strcpy(word,"#>");
+  strcpy(word,"#>(");
   strcat(word,symbol);
+  strcat(word,")");
   if (adract == 1) { asmlin("LDA", word); asmlin("PHA", ""); }
   else asmlin("LDY", word);
-  strcpy(word,"#<");
+  strcpy(word,"#<(");
   strcat(word,symbol);
+  strcat(word,")");
   if (adract == 1) { asmlin("LDA", word); asmlin("PHA", ""); }
   else asmlin("LDX", word);
 } 
