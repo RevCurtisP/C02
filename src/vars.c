@@ -146,8 +146,8 @@ void addvar(int m, int t) {
   }
   else {
     if (t == VTSTRUCT) {
-      DEBUG("Setting variable size to %d\n", stcsiz[stcidx])
-      sprintf(value, "%d", stcsiz[stcidx]);
+      DEBUG("Setting variable size to %d\n", strct.size)
+      sprintf(value, "%d", strct.size);
     } else if (match('[')) {
       skpchr();
       if (alcvar) {
@@ -210,7 +210,7 @@ void vartbl(void) {
 int fndstc(char *name) {
   DEBUG("Looking up struct '%s'\n", name)
   for (stcidx=0; stcidx<stccnt; stcidx++) 
-    if (strcmp(stcnam[stcidx], name) == 0) return TRUE;
+    if (strcmp(strcts[stcidx].name, name) == 0) return TRUE;
   return FALSE;
 }
 
@@ -218,17 +218,18 @@ int fndstc(char *name) {
  * Sets: stmidx = index into stmnam array  *
  *                stmcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
-int fndstm(int stcidx, char *name) {
+int fndmbr(int stcidx, char *name) {
   DEBUG("Looking up member '%s'\n", word)
-  for (stmidx=0; stmidx<stmcnt; stmidx++) 
-    if (stmstc[stmidx] != stcidx) continue;
-    if (strcmp(stmnam[stmidx], name) == 0) return TRUE;
+  for (mbridx=0; mbridx<mbrcnt; mbridx++) 
+    if (membrs[mbridx].strcti != stcidx) continue;
+    if (strcmp(membrs[mbridx].name, name) == 0) return TRUE;
   return FALSE;
 }
 
 /* Parse and Compile Struct Declaration */
 void addstc(void) {
   if (!fndstc(word)) ERROR("Undefined Struct '%s\n", word,EXIT_FAILURE)
+  strct = strcts[stcidx]; //Retrieve Structure
   getwrd(); //Get Variable Name
   addvar(MTNONE, VTSTRUCT);
   expect(';');
@@ -237,39 +238,55 @@ void addstc(void) {
 /* Parse Struct Definition  *
  * Uses: word - Struct Name */
 void defstc(void) {
-  DEBUG("Parsing Struct Definition\n", 0)
+  DEBUG("Parsing struct definition\n", 0)
   if (fndstc(word)) ERROR("Duplicate Declaration of Struct '%s\n", word,EXIT_FAILURE)
-  strncpy(stcnam[stccnt], word, STCLEN);
-  DEBUG("Added struct '%s' ", word); DETAIL("at index %d\n", stccnt);
-  stclen = 0; //Initialize Struct Length
+  strncpy(strct.name, word, STCLEN);
+  DEBUG("Set struct name to '%s'\n", word);
+  strct.size = 0; //Initialize Struct Length
   do {
 	getwrd(); //Get Member Name
     if (wordis("CHAR")) getwrd(); //Skip Optional Type Declaration
-    if (fndstm(stccnt, word)) ERROR("Duplicate Declaration of Struct Member '%s\n", word,EXIT_FAILURE)
-    DEBUG("Adding member %s ", word) DETAIL("at index %d\n", stmcnt);
-    strncpy(stmnam[stmcnt], word, STMLEN);
+    if (fndmbr(stccnt, word)) ERROR("Duplicate Declaration of Struct Member '%s\n", word,EXIT_FAILURE)
+    DEBUG("Parsing member %s", word)
+    strncpy(membr.name, word, STMLEN); //Set Member Name
+    membr.strcti = stcidx;             //Set Parent Struct Index
+    membr.offset = strct.size;         //Set Offset into Struct
     DEBUG("Checking for array definition\n", 0)
     if (match('[')) {
       skpchr();
-      stmtyp[stmcnt] = ARRAY;
+      membr.stype = ARRAY;
       DEBUG("Parsing array size\n", 0)
-      stmsiz[stmcnt] = prsnum(0xFF) + 1;
+      membr.size = prsnum(0xFF) + 1;
       expect(']');
     }
     else { 
-	  stmtyp[stmcnt] = VARIABLE;
-      stmsiz[stmcnt] = 1;
+	  membr.stype = VARIABLE;
+      membr.size = 1;
     }
-    DEBUG("Set member type to %d", stmtyp[stmcnt]) DETAIL(" and size to %d\n", stmsiz[stmcnt]);
-    stclen += stmsiz[stmcnt];
+    DEBUG("Set member type to %d", membr.stype) DETAIL(" and size to %d\n", membr.size);
+    DEBUG("Adding member at index %d\n", mbrcnt);
+    membrs[mbrcnt++] = membr;
+    strct.size += membr.size;
     expect(';');
-    stmcnt++;
   } while (!look('}'));
   expect(';');
-  //set stcsiz[
-  if (stclen > 256) ERROR("Structure Size %d Exceeds Limit of 256 bytes.\n", stclen, EXIT_FAILURE);  
-  stcsiz[stccnt] = stclen;
-  DEBUG("Set struct size to %d\n", stclen);
-  stccnt++;
-  DEBUG("Struct Declaration Completed\n", 0)
+  if (strct.size > 256) ERROR("Structure Size %d Exceeds Limit of 256 bytes.\n", strct.size, EXIT_FAILURE);  
+  DEBUG("Adding struct with size %d\n", strct.size) DETAIL("at index %d\n", stccnt);
+  strcts[stccnt++] = strct;
+}
+
+/* Print Struc Tables to Log File */
+void logstc(void) {
+  fprintf(logfil, "\n%-8s %5s\n", "Struct", "Size");
+  for (stcidx=0; stcidx<stccnt; stcidx++) {
+    fprintf(logfil, "%-8s %5d\n", strcts[stcidx].name, strcts[stcidx].size);
+  }
+  fprintf(logfil, "\n%-8s %-8s", "Struct", "Member");
+  fprintf(logfil, " %5s %6s %5s\n", "Type", "Offset", "Size");
+  for (mbridx=0; mbridx<mbrcnt; mbridx++) {
+    membr = membrs[mbridx];
+    fprintf(logfil, "%-8s %-8s", strcts[membr.strcti].name, membr.name);
+    fprintf(logfil, " %5d %6d %5d\n", membr.stype, membr.offset, membr.size);
+  }
+
 }

@@ -230,9 +230,8 @@ void pincfl(void) {
 /* Print Constant Table to Log File */
 void logcon(void) {
   int i;
-  fprintf(logfil, "\n%-31s %5s\n", "Definition", "Value");
-  for (i=0; i<concnt; i++)
-  {
-    fprintf(logfil, "%-31s %5d\n", connam[i], conval[i]);
+  fprintf(logfil, "\n%-10s %5s\n", "Constant", "Value");
+  for (i=0; i<concnt; i++) {
+    fprintf(logfil, "%-10s %5d\n", connam[i], conval[i]);
   }
 }

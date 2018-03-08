@@ -13,18 +13,28 @@ int  varidx;                     //Index into Variable Tables
 char vrname[MAXVAR+1];           //Variable Name
 int  vrwrtn;                     //Variables Written Flag
 
-char stcnam[MAXSTC+1][STCLEN+1]; //Structure Name Table
-int  stcsiz[MAXSTC+1];           //Structure Size Table
+struct strctd {                  //Struct Definition
+  char name[STCLEN+1];           //Struct Name
+  int  size;                     //Total Length of Struct
+};                               
+
+struct strctd strcts[MAXSTC+1];  //Table of Defined Structs
+struct strctd strct;             //Defined Struct
 int  stccnt;                     //Number of Structs Defined
 int  stcidx;                     //Index into Struct Tables
-int  stclen;                     //Size of Current Struct
 
-char stmnam[MAXSTM+1][STCLEN+1]; //Structure Member Name Table
-int  stmstc[MAXSTM+1];           //Structure Member Parent Struct
-char stmtyp[MAXVAR+1];           //Structure Member Variable Type
-int  stmsiz[MAXVAR+1];           //Structure Member Array Size
-int  stmcnt;                     //Number of Struct Members Defined
-int  stmidx;                     //Index into Struct Member Tables
+struct membrd {                  //Struct Membetr Definition
+  char name[STMLEN+1];           //Member Name
+  int  strcti;                   //Parent Struct Index
+  int  stype;                    //Member Symbol Type
+  int  offset;                   //Offset into Struct
+  int  size;                     //Member Size
+};
+
+struct membrd membrs[MAXSTM+1];  //Table of Defined Members
+struct membrd membr;             //Defined Member
+int mbrcnt;                      //Number of Struct Members Defined
+int mbridx;                      //Index into Struct Member Tables
 
 enum vtypes {VTVOID, VTCHAR, VTSTRUCT}; //Variable Types
 
@@ -62,3 +72,4 @@ void reqvar(int alwary);             //Require and Parse Variable Name
 void setdat();                       //Store variable data
 void setvar(int m, int t);           //Add Variable to Variable table
 void vartbl();                       //Create Variable Table
+void logstc(void);                   //Print Struct Tables to Log File

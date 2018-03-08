@@ -172,6 +172,7 @@ int main(int argc, char *argv[]) {
 
   compile();
 
+  logstc();
   logcon();
 
   clssrc();  //Close Source File
