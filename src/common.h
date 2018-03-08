@@ -4,9 +4,13 @@
 
 #define FNAMLEN 255       //Maximum File Name Length
 #define LINELEN 255       //Maximum Input/Output Line Length
-#define CONLEN 6          //Maximum Definition Text Length
-#define MAXCON 255        //Maximum Number of Definitions
-#define VARLEN 6          //Maximum Variable Length
+#define CONLEN 6          //Maximum Constant Name Length
+#define MAXCON 255        //Maximum Number of Constants
+#define STCLEN 6          //Maximum Struct Name Length
+#define MAXSTC 32         //Maximum Number of Stuctures
+#define STMLEN 6          //Maximum Struct Member Name Length
+#define MAXSTM 255        //Maximum Number of Stucture Members
+#define VARLEN 6          //Maximum Variable Name Length
 #define MAXVAR 255        //Maximum Number of Variables
 #define MAXFNS 16         //Maximum Functions in Stack
 #define DATASPC 2048      //Space to Allocate for Variable Data

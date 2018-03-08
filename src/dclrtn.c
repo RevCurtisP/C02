@@ -92,6 +92,14 @@ void penum(int m) {
   DEBUG("Enum Declaration Completed\n", 0)
 }
 
+/* Parse Enum Declaration*/
+void pstrct(int m) {
+  DEBUG("Processing Struct Declarations\n", 0)
+  getwrd(); //Parse Structure Name
+  if (look('{')) defstc();  //Parse Struct Definition
+  else           addstc();  //Parse and Compile Struct Declaration
+  SCMNT("");                //Clear Assembler Comment
+}
 
 /* Parse Variable/Function Declaration*/
 void pdecl(int m, int t) {
@@ -113,7 +121,8 @@ void pdecl(int m, int t) {
 /* Check for and Parse Type Keyword */
 int ptype(int m) {
   int result = TRUE;
-  if     (wordis("CONST")) pconst(m);        //Parse 'const' declaration
+  if    (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration
+  else if (wordis("CONST")) pconst(m);       //Parse 'const' declaration
   else if (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
   else if (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
   else if (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration

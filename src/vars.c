@@ -20,7 +20,7 @@
  *                varcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
 int fndvar(char *name) {
-  DEBUG("Looking up variable '%s'\n", word)
+  DEBUG("Looking up variable '%s'\n", name)
   for (varidx=0; varidx<varcnt; varidx++) 
     if (strcmp(varnam[varidx], name) == 0) return TRUE;
   return FALSE;
@@ -120,14 +120,15 @@ void prsdat(void) {
 }
 
 /* Add Variable to Variable table *
- * Uses: word - variable name     *
+ * Uses: vrname - variable name   *
  *       value - variable size    */
 void setvar(int m, int t) {
-  DEBUG("Added variable '%s' ", word);
+  DEBUG("Added variable '%s' ", vrname);
   strncpy(varnam[varcnt], vrname, VARLEN);
   varmod[varcnt] = m;
   vartyp[varcnt] = t;
   strncpy(varsiz[varcnt], value, 3);
+  varstc[varcnt] = (t == VTSTRUCT) ? stcidx : -1;
   DETAIL("at index %d\n", varcnt);
 }
 
@@ -135,7 +136,7 @@ void setvar(int m, int t) {
  * Uses: word - variable name     */
 void addvar(int m, int t) {
   strcpy(vrname, word); //Save Variable Name
-  if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", word,EXIT_FAILURE)
+  if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m == MTZP) {
     setlbl(vrname);
@@ -144,9 +145,10 @@ void addvar(int m, int t) {
     strcpy(value, "*"); //Set Variable Type to Zero Page  
   }
   else {
-    DEBUG("Checking for array definition\n", 0)
-    value[0] = 0;
-    if (match('[')) {
+    if (t == VTSTRUCT) {
+      DEBUG("Setting variable size to %d\n", stcsiz[stcidx])
+      sprintf(value, "%d", stcsiz[stcidx]);
+    } else if (match('[')) {
       skpchr();
       if (alcvar) {
         DEBUG("Parsing array size\n", 0)
@@ -154,10 +156,11 @@ void addvar(int m, int t) {
       }
       expect(']');
     }
+    else value[0] = 0;
     if (!alcvar) strcpy(value, "*");  
     setvar(m, t);  //Add to Variable Table
   }  
-  if (m != MTZP) prsdat();   //Parse Variable Data
+  if (m != MTZP && t != VTSTRUCT ) prsdat();   //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 
@@ -198,4 +201,75 @@ void vartbl(void) {
     }
   }
   vrwrtn = TRUE;
+}
+
+/* Lookup structure name in struct table   *
+ * Sets: sctidx = index into sctnam array  *
+ *                sctcnt if not found      *
+ * Returns: TRUE if found, otherwise FALSE */
+int fndstc(char *name) {
+  DEBUG("Looking up struct '%s'\n", name)
+  for (stcidx=0; stcidx<stccnt; stcidx++) 
+    if (strcmp(stcnam[stcidx], name) == 0) return TRUE;
+  return FALSE;
+}
+
+/* Lookup structure member name in table   *
+ * Sets: stmidx = index into stmnam array  *
+ *                stmcnt if not found      *
+ * Returns: TRUE if found, otherwise FALSE */
+int fndstm(int stcidx, char *name) {
+  DEBUG("Looking up member '%s'\n", word)
+  for (stmidx=0; stmidx<stmcnt; stmidx++) 
+    if (stmstc[stmidx] != stcidx) continue;
+    if (strcmp(stmnam[stmidx], name) == 0) return TRUE;
+  return FALSE;
+}
+
+/* Parse and Compile Struct Declaration */
+void addstc(void) {
+  if (!fndstc(word)) ERROR("Undefined Struct '%s\n", word,EXIT_FAILURE)
+  getwrd(); //Get Variable Name
+  addvar(MTNONE, VTSTRUCT);
+  expect(';');
+}
+
+/* Parse Struct Definition  *
+ * Uses: word - Struct Name */
+void defstc(void) {
+  DEBUG("Parsing Struct Definition\n", 0)
+  if (fndstc(word)) ERROR("Duplicate Declaration of Struct '%s\n", word,EXIT_FAILURE)
+  strncpy(stcnam[stccnt], word, STCLEN);
+  DEBUG("Added struct '%s' ", word); DETAIL("at index %d\n", stccnt);
+  stclen = 0; //Initialize Struct Length
+  do {
+	getwrd(); //Get Member Name
+    if (wordis("CHAR")) getwrd(); //Skip Optional Type Declaration
+    if (fndstm(stccnt, word)) ERROR("Duplicate Declaration of Struct Member '%s\n", word,EXIT_FAILURE)
+    DEBUG("Adding member %s ", word) DETAIL("at index %d\n", stmcnt);
+    strncpy(stmnam[stmcnt], word, STMLEN);
+    DEBUG("Checking for array definition\n", 0)
+    if (match('[')) {
+      skpchr();
+      stmtyp[stmcnt] = ARRAY;
+      DEBUG("Parsing array size\n", 0)
+      stmsiz[stmcnt] = prsnum(0xFF) + 1;
+      expect(']');
+    }
+    else { 
+	  stmtyp[stmcnt] = VARIABLE;
+      stmsiz[stmcnt] = 1;
+    }
+    DEBUG("Set member type to %d", stmtyp[stmcnt]) DETAIL(" and size to %d\n", stmsiz[stmcnt]);
+    stclen += stmsiz[stmcnt];
+    expect(';');
+    stmcnt++;
+  } while (!look('}'));
+  expect(';');
+  //set stcsiz[
+  if (stclen > 256) ERROR("Structure Size %d Exceeds Limit of 256 bytes.\n", stclen, EXIT_FAILURE);  
+  stcsiz[stccnt] = stclen;
+  DEBUG("Set struct size to %d\n", stclen);
+  stccnt++;
+  DEBUG("Struct Declaration Completed\n", 0)
 }

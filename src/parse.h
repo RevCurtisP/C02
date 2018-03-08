@@ -4,7 +4,7 @@
 
 #define TF(x) (x) ? TRUE : FALSE;
 
-enum stypes {LITERAL, VARIABLE, REGISTER, ARRAY, FUNCTION};  //Symbol Types
+enum stypes {LITERAL, VARIABLE, REGISTER, ARRAY, STRUCT, FUNCTION};  //Symbol Types
 enum etypes {ETDEF, ETMAC};                         //Definition Types
 
 char nxtwrd[LINELEN]; //Next Word (from DEFINE lookup)
@@ -14,10 +14,10 @@ int  valtyp;          //Value Type
 char oper;            //Arithmetic or Bitwise Operator
 int  litval;          //Value of Parsed Literal  
 
-char connam[MAXCON+1][CONLEN+1]; //Definition Name Table
-int  conval[MAXCON+1];           //Definition Value Table
-int  concnt;                     //Number of Definitions Defined
-int  conidx;                     //Index into Definition Tables
+char connam[MAXCON+1][CONLEN+1]; //Constant Name Table
+int  conval[MAXCON+1];           //Constant Value Table
+int  concnt;                     //Number of Constants Defined
+int  conidx;                     //Index into Constant Tables
 
 int invasc;                    //Invert ASCII Flag
 int mskasc;                    //Set High Bit Flag
