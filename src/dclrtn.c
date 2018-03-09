@@ -98,7 +98,7 @@ void pstrct(int m) {
   getwrd(); //Parse Structure Name
   if (look('{')) defstc();  //Parse Struct Definition
   else           addstc();  //Parse and Compile Struct Declaration
-  SCMNT("");                //Clear Assembler Comment
+  cmtlin();    //Write out declaration comment
 }
 
 /* Parse Variable/Function Declaration*/
@@ -115,7 +115,7 @@ void pdecl(int m, int t) {
   } while (look(','));
   expect(';');
   DEBUG("Variable Declaration Completed\n", 0)
-  SCMNT("");  //Clear Assembler Comment
+  cmtlin();    //Write out declaration comment
 }
 
 /* Check for and Parse Type Keyword */

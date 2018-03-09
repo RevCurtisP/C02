@@ -461,6 +461,25 @@ Note: Unlike standard C, structs may not be assigned using an equals
 sign. One struct variable may be copied to another byte by byte or
 through a function call.
 
+SIZE-OF OPERATOR
+
+The size-of operator @ generates a literal value equal to the size in bytes
+of a specified variable. It is allowed anywhere a literal would be and 
+should be used anytime the size of an array, struct, or member is required.
+
+When using the size-of operator, it is prefixed to the variable name or
+member specification.
+
+Examples:
+
+  for (i=0; i<=@z; i++) z[i] = r[i]; //Copy elements from r[] to z[]
+  blkput(@rec ,&rec);                //Copy struct rec to next block segment
+  memcpy(@rec.data, &rec.data);      //Copy member data to destination array
+
+Note: The size-of operator is evaluated at compile time and generates two
+bytes of machine language code. It is the most efficient method of specifying
+a variable length.
+
 FUNCTION CALLS
 
 A function call may be used as a stand-alone statement, or as the first

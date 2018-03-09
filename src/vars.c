@@ -74,13 +74,13 @@ void prsmbr(char* name) {
   expect('.'); //Check for and Skip Period
   stcidx = varstc[varidx]; //Get Struct Index
   if (stcidx < 0) ERROR("Variable %s is Not a Structure\n", value, EXIT_FAILURE)
-  getwrd(); //Get Membert Name
+  getwrd(); //Get Member Name
   valtyp = gettyp(); //Determine Variable Type
   if (valtyp == FUNCTION) ERROR("Illegal Function Reference\n", 0, EXIT_FAILURE)  
   DEBUG("Checking for member %s", word) DETAIL(" with struct index %d\n", stcidx)
   if (!fndmbr(stcidx, word)) ERROR("Struct does Not Contain Member %s\n", word, EXIT_FAILURE)
   sprintf(word, "+$%hhX", membrs[mbridx].offset); //Get Member Offet in Struct
-  strcat(name, word); //Add Offset to Struct
+  strcat(name, word); //Add Offset to Struct  
 }
 
 /* Parse next word as variable or function name *
@@ -103,6 +103,31 @@ void reqvar(int alwary) {
   prsvar(FALSE);
   if (!alwary && valtyp != VARIABLE) expctd("Variable");
 } 
+
+/* Parse SizeOf Operator                    *
+ * Sets: value - variable size (as string)  * 
+ * Returns: variable size (as integer       */
+int psizof(void) { 
+  expect('@');   //Check for and Skip SizeOf Operator
+  DEBUG("Parsing sizeof operator", 0);
+  mbridx = -1; //Set Member Index to None
+  reqvar(FALSE); //Parse Variable Name to get Size Of
+  if (mbridx > 0) {
+    sprintf(value, "$%hhX", membrs[mbridx].size);
+    return membrs[mbridx].size;
+  }
+  if (datlen[varidx]) {
+    sprintf(value, "$%hhX", datlen[varidx]);
+    return datlen[varidx];
+  }
+  if (strlen(varsiz[varidx]) == 0) {
+    strcpy(value,"1");
+    return 1;
+  }
+  strcpy(value, varsiz[varidx]);
+  if (strcmp(value, "*") == 0) ERROR("Unable to Determine Size of Variable %s\n", vrname, EXIT_FAILURE);
+  return atoi(value);
+}
 
 /* Parse Data Array */
 void prsdta(void) {
@@ -191,6 +216,7 @@ void addvar(int m, int t) {
       DEBUG("Setting variable size to %d\n", strct.size)
       sprintf(value, "%d", strct.size);
     } else if (match('[')) {
+      CCMNT('[')
       skpchr();
       if (alcvar) {
         DEBUG("Parsing array size\n", 0)
@@ -272,7 +298,8 @@ void defstc(void) {
     membr.offset = strct.size;         //Set Offset into Struct
     DEBUG("Checking for array definition\n", 0)
     if (match('[')) {
-      skpchr();
+      CCMNT('[');
+	  skpchr();
       membr.stype = ARRAY;
       DEBUG("Parsing array size\n", 0)
       membr.size = prsnum(0xFF) + 1;

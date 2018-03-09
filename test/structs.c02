@@ -22,7 +22,10 @@ for (i = 0; i<=128; i++)
   rec.data[i] = d;
 
 //Pass Entire Structure into Function
-blkadd(&rec);
+blkput(@rec, &rec);
+
+//Copy Struct Member
+memdst(&data); memcpy(@rec.data, &rec.data);
 
 //Get Structure Members
 index = rec.index;

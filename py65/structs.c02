@@ -27,7 +27,7 @@ main:
 //Set Structure Members
 strdst(&srcrec.name); strcpy("RECNAME");
 srcrec.index = 1;
-for (i = 0; i<129; i++)
+for (i = 0; i<=@srcrec.data; i++)
   srcrec.data[i] = i;
 
 //Clear Destination Record
@@ -37,7 +37,7 @@ prtdst();
 
 //Copy Source Record into Destination Record
 memdst(&dstrec);
-memcpy(129, &srcrec);
+memcpy(@srcrec, &srcrec);
 
 prtdst();
 
@@ -48,7 +48,7 @@ void prtdst() {
   puts("REC.NAME="); putln(&dstrec.name);
   puts("REC.INDEX="); putdec(dstrec.index); newlin();
   puts("REC.DATA={");
-  for (i = 0; i<129; i++) {
+  for (i = 0; i<@dstrec.data; i++) {
     if (i) putc(',');
     putdec(dstrec.data[i]);
   }

@@ -21,16 +21,17 @@ int isanum(void) {return isalnum(nxtchr);}
 int isapos(void) {return match('\'');}
 int isbin(void)  {return inbtwn('0', '1');}
 int isbpre(void) {return TF(isnpre() || isapos());}
-int islpre(void) {return TF(isbpre() || ishash());}
 int isdec(void)  {return inbtwn('0', '9');}
-int ishash(void) {return match('#');}
+int iscpre(void) {return match('#');}
 int ishexd(void) {return TF(isdec() || inbtwn('A', 'Z'));}
+int islpre(void) {return TF(isbpre() || iscpre() || isszop());}
 int isnl(void)   {return TF(match('\n') || match('\r'));}
 int isnpre(void) {return TF(isdec() || match('$') || match('%'));}
 int isoper(void) {return TF(strchr("+-&|^", nxtchr));}
 int ispopr(void) {return TF(strchr("+-<>", nxtchr));}
 int isprnt(void) {return isprint(nxtchr);}
 int isspc(void)  {return isspace(nxtchr);}
+int isszop(void) {return match('@');}
 int isvpre(void) {return TF(isalph() || islpre());}
 int isxpre(void) {return TF(isvpre() || match('-'));}
 
@@ -241,14 +242,13 @@ int prschr(void) {
   int wrdlen = 0;
   char c;
   DEBUG("Parsing character literal\n", 0)
-  expect('\'');
-  word[wrdlen++] = '\'';
+  word[wrdlen++] = getnxt(); //Initial Single Quote
   if (match('\\')) word[wrdlen++] = getnxt();
   c = getnxt();
   DEBUG("Extracted character %c\n", c)
   word[wrdlen++] = prcchr(c);
-  expect('\'');
-  word[wrdlen++] = '\'';
+  if (!match('\'')) expctd("character delimiter");
+  word[wrdlen++] = getnxt();
   word[wrdlen] = 0;
   return (int)c;
 }
@@ -256,7 +256,7 @@ int prschr(void) {
 /* Parse numeric value                      *
  * Args: maxval - maximum allowed value     *
  * Sets: value - parsed number (as string)  *
- *       word - parses text of value        *
+ *       word - parsed text of value        *
  * Returns: parsed number                   */
 int prsnum(int maxval) {
   int number;
@@ -273,6 +273,7 @@ int prsnum(int maxval) {
   if (number > maxval)  ERROR("Out of bounds literal '%d';\n", number, EXIT_FAILURE)
   if (maxval > 255) sprintf(value, "$%04X", number);
   else sprintf(value, "$%02X", number);
+  ACMNT(word)
   return number;
 }
 
@@ -308,8 +309,9 @@ int prscon(void) {
  *       character arguments instead of 'c'    */
 void prslit(void) {
   skpspc();
-  if (ishash()) litval = prscon(); //Parse Constant
-  else litval = prsbyt();  //Parse Byte Value
+  if      (iscpre()) litval = prscon(); //Parse Constant
+  else if (isszop()) litval = psizof(); //Parese SizeOf Operator
+  else               litval = prsbyt(); //Parse Byte Value
   valtyp = LITERAL;
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");

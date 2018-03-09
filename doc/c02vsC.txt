@@ -63,6 +63,9 @@ C02 supports the addition, subtraction, bitwise-and, bitwise-or, and
 exclusive-or operators. The multiplication, division, and binary shift
 operators are not supported. These can be implemented through functions. 
 
+The sizeof operator in C02 is the at sign @. It may only be used with
+declared variables and struct members, not types.
+
 FUNCTIONS
 
 Parameter passing uses the 6502's A, Y, and X registers. This limits 
@@ -81,6 +84,7 @@ Struct variables may be copied byte by byte or using memory move functions.
 Up to three comma-separated variables may be specified on the left side of
 the = assignment operator. This is generally only useful when the expression
 contains a function with multiple return values. 
+
 
 STATEMENTS
 

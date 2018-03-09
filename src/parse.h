@@ -27,10 +27,10 @@ int isalph();                  //Is Next Character Alphabetic
 int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
 int isbin();                   //Is Next Character a Binary Digit
-int isbpre();                  //
-int islpre();                  //Is Next Character a Constant
+int isbpre();                  //Is Next Character a Binary Prefix
+int islpre();                  //Is Next Character a Literal Prefix
 int isdec();                   //Is Next Character a Decimal Digit
-int ishash();                  //Is Next Character a Byte Value
+int iscpre();                  //Is Next Character a Constant Prefix
 int ishexd();                  //Is Next Character a Hexadecimal Digit
 int isnl();                    //Is Next Character a NewLine
 int isnpre();                  //Is Next Character a Numeric Prfix
@@ -38,6 +38,7 @@ int isoper();                  //Is Next Character an Operator
 int ispopr();                  //Is Next Character a Post-Operator
 int isprnt();                  //Is Next Character Printable
 int isspc();                   //Is Next Character a Space
+int isszop();                  //Is Next Character the SizeOf Operator
 int isvpre();                  //Is Next Character a Value Prefix
 int isxpre();                  //Is Next Character an Expression Prefix
 
@@ -52,8 +53,8 @@ void prslit();              //Parse Literal
 int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
 int  prspst(char trmntr, char* name, char* index);  //Parse Post Operator
+int  psizof(void);          //Parse SizeOf Operator
 void skpchr();              //Skip Next Character
 void skpcmt();              //Skip to End of Comment
 void skpspc();              //Advance to Next Printable Character
 int  wordis(char *s);       //Does word match s
-
