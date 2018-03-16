@@ -19,14 +19,14 @@
 
 /* Begin Program Block */
 void bgnblk(char blkchr) {
-  DEBUG("Begining program block\n", 0)
+  DEBUG("Beginning program block\n", 0)
   if (blkchr) {
     expect(blkchr);
     inblck = TRUE;
   }
   else
     inblck = look('{');
-  DEBUG("Set inblck to %d\n", inblck)
+  DEBUG("Set INBLCK to %d\n", inblck)
   setblk(inblck);
 }
 
@@ -238,8 +238,10 @@ void pelse(void) {
   DEBUG("Parsing ELSE statement\n", 0)
   strcpy(lbltmp, lblasm);   //Save Line Label
   lblasm[0] = 0;            //and Clear It
-  newlbl(skplbl);           //Create Skip Label
-  pshlbl(LTIF, skplbl);     //Push Onto Stack
+  if (toplbl(skplbl) != LTELSE) { //Get Chained ELSE Label or
+    newlbl(skplbl);               //Create Skip Label
+    pshlbl(LTELSE, skplbl);       //Push Onto Stack
+  }
   asmlin("JMP", skplbl);    //Emit Jump over Block Code
   strcpy(lblasm, lbltmp);   //Restore Line Label
   bgnblk(FALSE);            //Check For and Begin Block

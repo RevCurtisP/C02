@@ -16,7 +16,7 @@ int  lblcnt;                       //Number of Labels in stack
 int  lblnxt;                       //Sequence of next label to be generated
 char lbltmp[LABLEN+1];             //Label Temporary Storage
 
-enum ltypes {LTNONE, LTIF, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
+enum ltypes {LTNONE, LTIF, LTELSE, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
 enum lflags {LFNONE, LFBGN, LFEND}; //Label Flag Types
 
 void chklbl(char* lbname);  //Check Label Contents

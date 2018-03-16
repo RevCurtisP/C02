@@ -39,7 +39,7 @@ int enccmp(char c) {
  * Uses: term - Term Being Compared Against           *
  *       label - Branch Target if Comparison is FALSE */
 void prccmp(void) {
-  DEBUG("Processing comparitor %d\n", cmprtr)
+  DEBUG("Processing comparator %d\n", cmprtr)
   switch(cmprtr) {
     case 0: // Raw Expression (Skip)
       asmlin("BEQ", cndlbl); break;
@@ -93,10 +93,10 @@ void prsflg(int revrse) {
 /* Parse and Compile Conditional Expression     *
  * Condition = <expression> <comparator> <term> */
 void prscnd(char trmntr, int revrse) {
-  DEBUG("Parsing condition with revrse=%d\n", revrse)
+  DEBUG("Parsing condition with REVRSE=%d\n", revrse)
   if (look('!')) {
     revrse = (revrse) ? FALSE: TRUE;
-    DEBUG("Set revrse to %d\n", revrse)    
+    DEBUG("Set REVRSE to %d\n", revrse)
   }
   if (!look('*')) prsxpr(0);
   if (look(':')) prsflg(revrse);  //Parse Flag Operator
