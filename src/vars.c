@@ -235,7 +235,7 @@ void addvar(int m, int t) {
 /* Write Variable Table */
 void vartbl(void) {
   int i, j;
-  DEBUG("Writing Variable Table", 0)
+  DEBUG("Writing Variable Table\n", 0)
   fprintf(logfil, "\n%-31s %s %s %s %s\n", "Variable", "Type", "Size", "Struct", "Data");
   dlen = 0;
   for (i=0; i<varcnt; i++) {
