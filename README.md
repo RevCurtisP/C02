@@ -1,4 +1,4 @@
-# C02
+![C02 6502 Compiler](https://github.com/RevCurtisP/C02/raw/master/art/logo.png)
 
 C02 is a simple C-syntax language designed to generate highly optimized
 code for the 6502 microprocessor. The C02 specification is a highly
