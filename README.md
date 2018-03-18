@@ -57,11 +57,11 @@ char min(tmp1, tmp2) {
 }
 
 /* Assignments */
-hmove; s80vid;             //Implicit Assignments
-x = 0; y = a; a = 1;       //Register Assignments
-b = c + d - e & f | g ^ h; //Assignment and Expression
-d[j] = r[i], s[x], t[y];   //Array Indexing
-a<< ;b[i]>>; x++; y--;     //Post-Operations
+hmove; s80vid;              //Implicit Assignments
+x = 0; y = a; a = 1;        //Register Assignments
+b = c + d - e & f | g ^ h;  //Assignment and Expression
+d[j] = r[i] + s[x] + t[y];  //Array Indexing
+a<< ;b[i]>>; x++; y--;      //Post-Operations
 
 /* Function Calls */
 i = abs(n); j = min(b,c), k = max(d,e); plot(h,v,c);
