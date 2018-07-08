@@ -1,0 +1,56 @@
+/****************************************
+ * TESTMIO - Test Memory File Functions *
+ ****************************************/
+ 
+#include <py65.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memio.h02>
+
+char zp = $80; //Zero Page Location for Memory Pointer
+char lsb, msb; //Memory Pointer Contents
+char passed;   //Flags
+char c, e, i, mp, s[128];
+
+main:
+
+mp = 0; //Initialize Memory Pointer
+
+putln("Opening memory file at $8000.");
+mp = mopen(zp, &$8000);
+
+puts("  Memory pointer: ");
+prbyte(mp);
+if (mp == zp) pass(); else fail();
+
+puts("  Address: ");
+lsb, msb = maddr(mp);
+prbyte(msb); prbyte(lsb);
+passed = 1;
+if (msb <> $80) passed = 0;
+if (lsb <> $00) passed = 0;
+if (passed) pass(); else fail();
+
+puts("  Error? ");
+e = merror(mp);
+prbyte(e); 
+if (e) { puts(" Yes"); fail(); }
+else { puts(" No "); pass(); }
+
+newlin();
+putln("Reading File using mgetc()");
+do {
+  lsb, msb = maddr(mp);
+  c = mgetc(mp);
+  e = meof(mp);
+  prbyte(msb); prbyte(lsb); puts(": ");
+  prbyte(c); putc(' ');
+  if (c>' ') putc(c); else putc(' ');
+  puts(" EOF: "); prbyte(e); newlin();
+} while (!e);
+
+goto exit;
+
+void pass() { putln(" Passed"); }
+void fail() { putln(" Failed"); }
