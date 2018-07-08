@@ -2,8 +2,9 @@
  * pointer - Pointer Manipulation Functions for C02 *
  ****************************************************/
 
-/* Set Pointer Address                 *
- * Args: &a - Address                  */
+/* Set Pointer Address                  *
+ * Args: &a - Address                   *
+ * Args: zp - zero page pointer address */
 void ptrset();
 
 /* Write byte to pointer address *

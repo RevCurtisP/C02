@@ -98,7 +98,7 @@ PRHEXC: ADC #$30    ;Convert to ASCII Character
 ;Functions to set String Pointers
 ;Used by memory, stdio, stdlin, string, and stringx libraries
 
-;Initialize Destination String Pointer and Index
+;Initialize Destination String Pointer
 SETDST: STX DSTLO       ;Save Destination String Pointer
         STY DSTHI
         RTS

@@ -1,5 +1,5 @@
 ; C02 library stdio.h02 assembly language subroutines
-; Requires external routines GETKEY, PRCHR, DELCHR, and NEWLIN
+; Requires external routines GETKEY, PRCHR, DELCHR, NEWLIN, and SETSRC
 ; external zero page locations SRCLO and SRCHI
 ; and external constants DELKEY, ESCKEY, and RTNKEY
 ;char getc()
@@ -22,7 +22,7 @@ GETSE:  CMP #ESCKEY    ;Else If Escape
         BNE GETSC     ;Then  
         LDY #$FF       ;  Return -1
         BNE GETSY     
-GETSC: CMP #RTNKEY    ;Else If Not Carriage Return 
+GETSC:  CMP #RTNKEY    ;Else If Not Carriage Return 
         BEQ GETSX
         JSR PUTC       ;  Echo Character
         STA (SRCLO),Y  ;  Store Character at offset
@@ -50,4 +50,4 @@ PUTSUX: TAY            ;Return number of
 
 ;char putln(&s)
 PUTLN:  JSR PUTS       ;Write string to screen
-        JMP NEWLIN     ;Call external NEWLINe routine and return
+\        JMP NEWLIN     ;Execute external NEWLINe routine and return

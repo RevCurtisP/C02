@@ -2,11 +2,12 @@
 ;Requires External Zero Page Variables PTRLO, PTRHI
 ;External Routines MSETSRC
 
-;ptrset(&a) - Set Pointer Address
-;Args: X,Y = Address
+;ptrset(&a) - Store Address in Pointer
+;Args: A = Zero Page Pointer Locatione
+;      X,Y = Address
 ;Sets: PTRLO, PTRHI = Pointer
-PTRSET: STX PTRLO  ;Save Block Start Low Byte
-        STY PTRHI  ;Save Block Start High Byte
+PTRSET: STX PTRLO  ;Pointer Low Byte
+        STY PTRHI  ;Pointer Start High Byte
         RTS
 
 ;ptrcmp(&a) - Compare Pointer to Address

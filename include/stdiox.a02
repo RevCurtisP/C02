@@ -1,26 +1,43 @@
 ; C02 library stdiox.h02 assembly language subroutines
 
 ;Print Byte as Left Justified Decimal Number
-;putdel(b)
+;void putdel(b)
+;Args: A = number to print
+;Sets: TEMP0 - ones digit
+;      TEMP1 - tens digit
+;      TEMP2 - hundreds digit
+;      TEMP3 - number that was printed
+;putdem - Alternate Entry Point if number is already in TEMP3
+;putdeh - Alternate Entry Point to print only padding spaces
 PUTDEL: STA TEMP3
-PUTDEM: JSR PUTDEC      ;Alternate Entry Point
-        LDA TEMP3
-PUTDEH: CMP #100
-        BCS PUTDET
-        JSR PUTSPC
-        LDA TEMP3
-PUTDET: CMP #10
-        BCS PUTDEX
-        JSR PUTSPC
+PUTDEM: JSR PUTDEC      ;Print Decimal Representation of number
+        LDA TEMP3       ;
+PUTDEH: CMP #100        ;If Number < 100
+        BCS PUTDET      ;
+        JSR PUTSPC      ;  Print a Space
+        LDA TEMP3       ;
+PUTDET: CMP #10         ;  If Number < 10  
+        BCS PUTDEX      ;
+        JSR PUTSPC      ;    Print another Space
 PUTDEX: RTS
 
 ;Print Byte as Right Justified Decimal Number
-;putder(b)
+;void putder(b)
+;Args: A = number to print
+;Sets: TEMP0 - ones digit
+;      TEMP1 - tens digit
+;      TEMP2 - hundreds digit
+;      TEMP3 - number that was printed
 PUTDER: STA TEMP3
 PUTDES: JSR PUTDEH
         LDA TEMP3
+
 ;Print Byte as Decimal Number
-;putdec(b)
+;void putdec(b)
+;Args: A = number to print
+;Sets: TEMP0 - ones digit
+;      TEMP1 - tens digit
+;      TEMP2 - hundreds digit
 PUTDEC: JSR CUBCD       ;Convert Accumulator to Unpacked BCD
         LDA TEMP2       ;Get High Byte
         BEQ PUTDE1      ;If Not Zero
@@ -40,7 +57,10 @@ PUTSPC: LDA #32         ;Load Space Character
         JMP PRCHR       ;and Print it
         
 ;Print Byte in Formatted String
-;printf(b, &s)
+;void printf(b, &s)
+;Args: A = number to format
+;      Y,X = address of formatting string
+;Sets: TEMP3 - number to format
 PRINTF: JSR SETSRC     ;Initialize Source String
         STA TEMP3      ;Save Byte to Format
 PRINTL: LDA (SRCLO),Y  ;Read next character in string
@@ -58,12 +78,12 @@ PRINTS: INY            ;Increment Offset
         CMP #'%        ;If Percent Sign
         BEQ PRINTC     ;  Print it and Continue
         AND #$DF       ;Convert to Upper Case
-        CMP #'L        ;If "d" or "D"
+        CMP #'L        ;If "l" or "L"
         BNE PRINTR
         LDA TEMP3      ;  Load Byte to Format
         JSR PUTDEM     ;  Print Left Justified
         JMP PRINTY     ;  and Continue Printing Screen
-PRINTR: CMP #'R        ;If "d" or "D"
+PRINTR: CMP #'R        ;If "r" or "R"
         BNE PRINTD
         LDA TEMP3      ;  Load Byte to Format
         JSR PUTDES     ;  Print Right Justified

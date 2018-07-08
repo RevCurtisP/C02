@@ -1,0 +1,234 @@
+; C02 library memio.h02 assembly language subroutines
+; Requires external routines SETDST, SETSRC
+; zero page locations DSTLO, DSTHI, SRCLO and SRCHI
+; location TEMP0
+; and constant RTNKEY
+
+;char maddr(mp) - Return Contents of Memory Pointer
+;Args: A = Zero Page Memory Pointer
+;Affects: N,Z reflect Y register
+;Returns: A = Memory Pointer LSB
+;         Y = Memory Pointer MSB
+;         X = Zero Page Memory Pointet Address
+MADDR:  TAX             ;Copy Pointer Address to X Register
+        LDA 0,X         ;Load Pointer LSB into Accumulator
+        LDY 1,X         ;Load Pointer MSB into Y Register
+        RTS
+
+;char mopen(mp, &a) - Open Memory File: Set Memory Pointer to specified Address
+;Args: A = Zero Page Memory Pointer
+;      X,Y = Address
+;Sets: TEMP0 = Memory Pointer Address
+;Affects: N,Z reflect Accumulator
+;Returns: A = Zero Page Memory Pointer, otherwise
+;             0 if Error Illegal Address (within Zero Page)
+MOPEN:  STX TEMP0       ;Save Address LSB
+        TAX             ;Copy Memory Pointer to X register
+        LDA TEMP0       ;Retrieve Address LSB
+        STA 0,X         ;Store in Memory Pointer LSB
+        STY 1,X         ;Store Address MSB in Memory Pointer MSB
+        LDA 1,X         ;Load Address MSB into Accumulator (Setting Flags)
+        BEQ MERROX      ;If 0, Return as Result (Failure)
+        TXA             ;Else
+        RTS             ;  Return Memory Pointer as Result
+
+;char meof(mp) - Check for End of Memory File
+;Args: A = Zero Page Memory Pointer
+;Affects: N,Z reflect Accumulator 
+;Returns: A,Y = 255 if at End of File or invalid Memory Pointer
+;               0 otherwise
+;         X = Zero Page Memory Pointer
+MEOF:   JSR MERROR      ;Check Memory Pointer
+        BNE MCLOSX      ;If Error, Return Else Y will contain 0
+        LDA (0,X)       ;If NUL Character at Memory Pointer
+        BEQ MERROY      ;  Return 255
+        BNE MERROX      ;Else Return 0
+        
+
+;char merror(mp) - Check for Memory File Error
+;Args: A = Zero Page Memory Pointer
+;Affects: N,Z reflect Accumulator 
+;Returns: A,Y = 255 if Memory Pointer contains Zero Page Address
+;               0 if no error
+;         X = Zero Page Memory Pointer
+MERRON: STY TEMP1       ;Alternate Entry Point - Save Byte Argument
+MERROM: STA TEMP0       ;Alternate Entry Point - Save Memory Pointer
+MERROR: TAX             ;Copy Memory Pointer to X register
+MERROA: LDY #0          ;Set Error Indicator to 0
+        LDA 1,X         ;Load Memory Address High Byte
+        BEQ MERROY      ;If 0 
+        CMP #255        ;   or
+        BNE MERROX      ;   255 
+MERROY: DEY             ;  Change Error Indicator to 255
+MERROX: TYA             ;Copy Error Indicator to Accumulator
+        RTS
+
+;char mclose(mp) - Close Memory File: Write EOF and Clear Memory Pointer
+;Args: A = Zero Page Memory Pointer
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if Memory Pointer contains Zero Page Address
+;               0 if no error
+;         X = Zero Page Memory Pointer
+MCLOSE: JSR MFLUSH      ;Check Memory Pointer
+        BNE MCLOSX      ;If No Error
+        STA 0,X         ;  Write to Addess LSB
+        STA 1,X         ;  Write to Addess LSB
+MCLOSX: RTS
+
+;char mflush(mp) - Flush Memory File: Write NUL at Memory Pointer
+;Args: A = Zero Page Memory Pointer
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if Memory Pointer contains Zero Page Address
+;               0 if no error
+;         X = Zero Page Memory Pointer
+MFLUSH: JSR MERROR      ;Check Memory Pointer
+        BNE MCLOSX      ;If No Error
+        STA (0,X)       ;  to Current Memory Location
+MFLUSX: RTS
+
+;char mgetc(mp) - Read Character from Memory File
+;Args: A = Zero Page Memory Pointer
+;Affects: N,Z reflect Accumulator
+;Returns: A = Character read from memory
+;         Y = 255 if Error or EOF
+;             0 if no error
+;         X = Zero Page Memory Pointer
+MGETC:  JSR MERROR      ;Check Memory Pointer
+        BNE MGETCX      ;If No Error 
+        LDA (0,X)       ;  Load Character at Memory Location
+MGETCI: PHP             ;  Save Flags
+        INC 0,X         ;  Increment Memory Pointer Low Byte
+        BNE MGETCP      ;  If 0
+        INC 1,X         ;    Increment Memory Pointer High Byte
+MGETCP: PLP             ;  Restore Flags
+MGETCX: RTS
+
+;char mputc(mp, c) - Write Character to Memory File
+;Args: A = Zero Page Memory Pointer
+;      Y = Character to Write to Memory
+;Sets: TEMP0 = Character to Write
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if invalid Memory Pointer
+;               0 if no error
+;         X = Zero Page Memory Pointer
+MPUTC:  JSR MERRON      ;Save Argumebts & Check Memory Pointer
+        BNE MGETCX      ;If Error, then Return 
+        LDA TEMP1       ;Retrieve Character to Write
+        STA (0,X)       ;Store in Memory
+        LDA #0          ;Clear Accumulator, Z and N flags
+        BEQ MGETCI      ;and Increment Memory Pointer
+
+;char mgets(mp, &s) - Read from Memory File into String
+;Args: A = Zero Page Memory Pointer
+;      Y,X = Address of String to Read into
+;Sets: TEMP0 = Memory Pointer
+;      TEMP1 = Number of characters read
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if invalid Memory Pointer
+;               otherwise length of string read
+;         X = Zero Page Memory Pointer
+MGETS:  JSR SETDST      ;Set String Address as Destination
+        JSR MERROM      ;Save Memory Pointer & Check Memory Pointer
+        BNE MGETCX      ;If Error then Return, Else Y will be 0
+        LDA 0,X         ;Copy Memory Pointer LSB 
+        STA SRCLO       ;to Source Pointer LSB
+        LDA 1,X         ;Copy Memory Pointer MSB
+        STA SRCHI       ;to Source Pointer MSB
+MGETSL: LDA (SRCLO),Y   ;Get Character from Memory
+        BEQ MGETSX      ;If Not NUL (End of File)
+        CMP #$0A        ;  If Control Character
+        BNE MGETSS
+        INY             ;    Increment Past Carriage Return
+        BNE MGETSX      ;  Else
+MGETSS: STA (DSTLO),Y   ;    Store Character in String
+        INY             ;    increment offset and
+        BPL MGETSL      ;    loop if less than 128
+MGETSX: LDA #$00        ;Terminate String        
+        STA (DSTLO),Y   ;        
+        BEQ MPUTSX      ;Update Memory Pointer and Return String Length
+
+;char mputs(mp, &s) - Write String to Memory File
+;Args: A = Zero Page Memory Pointer
+;      Y,X = Address of String to Read into
+;Sets: TEMP0 = Memory Pointer
+;      TEMP1 = Number of characters written
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if invalid Memory Pointer
+;               otherwise length of string written
+;         X = Zero Page Memory Pointer
+MPUTS:  JSR SETSRC      ;Set Source Pointer
+        JSR MERROM      ;Save Memory Pointer & Check Memory Pointer
+        BNE MGETCX      ;If Error then Return, Else Y will be 0
+        LDA 0,X         ;Copy Memory Pointer LSB 
+        STA DSTLO       ;to Source Pointer LSB
+        LDA 1,X         ;Copy Memory Pointer MSB
+        STA DSTHI       ;to Source Pointer MSB
+MPUTSL: LDA (SRCLO),Y   ;Get Character from Memory
+        BEQ MPUTSX      ;If Not End of String 
+        STA (DSTLO),Y   ;    Store Character in Memory
+        INY             ;    increment offset and
+        BPL MPUTSL      ;    loop if less than 128
+MPUTSX: LDX TEMP0       ;Retrieve Memory Pointer
+        STY TEMP1       ;Copy String Length to Accumulator
+MPUTSY: LDA 0,X         ;Get to Memory Pointer LSB
+        CLC
+        ADC TEMP1       ;Add String Length
+        STA 0,X
+        BCC MGETSZ      ;If Carry
+        INC 1,X         ;  Increment Memory Pointer MSB
+MGETSZ: LDA TEMP1       ;Load String Length and Set Flags
+        RTS
+
+;char mputln(&s) - Write Line to Memory File
+MPUTLN: JSR PUTS        ;Write string to screen
+        LDA TEMP0       ;Retrieve Memory Pointer
+        LDY #RTNKEY     ;Load Carriage Return
+        JMP MPUTC       ;Write to Memory File
+
+;mdst(&a) - Set Destination Array for mread()
+MDST    EQU SETDST   
+
+;msrc(&a) - Set Source Array for mwrite()
+MSRC    EQU SETSRC   
+
+;char mread(mp, n) - Read from Memory File into Array
+;Args: A = Zero Page Memory Pointer
+;      Y = Number of Bytes to Read
+;Sets: TEMP0 = Memory Pointer
+;      TEMP1 = Number of characters read
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if invalid Memory Pointer
+;               otherwise number of bytes read
+;         X = Zero Page Memory Pointer
+MREAD:  JSR MERRON      ;Save Argumebts & Check Memory Pointer
+        BNE MGETCX      ;If Error then Return, Else Y will be 0
+        LDA 0,X         ;Copy Memory Pointer LSB 
+        STA SRCLO       ;to Source Pointer LSB
+        LDA 1,X         ;Copy Memory Pointer MSB
+        STA SRCHI       ;to Source Pointer MSB
+        BNE MWRITC      ;Execute Copy
+
+;msrc(&a) - Set Source Array for mwrite()
+MSRC    EQU SETSRC   
+
+;char mwrite(mp, n) - Read from Memory File into Array
+;Args: A = Zero Page Memory Pointer
+;      Y = Number of Bytes to Read
+;Sets: TEMP0 = Memory Pointer
+;      TEMP1 = Number of characters read
+;Affects: N,Z reflect Accumulator
+;Returns: A,Y = 255 if invalid Memory Pointer
+;               otherwise number of bytes written
+;         X = Zero Page Memory Pointer
+MWRITE: JSR MERRON      ;Save Argumebts & Check Memory Pointer
+        BNE MGETCX      ;If Error then Return, Else Y will be 0
+        LDA 0,X         ;Copy Memory Pointer LSB 
+        STA DSTLO       ;to Destination Pointer LSB
+        LDA 1,X         ;Copy Memory Pointer MSB
+        STA DSTHI       ;to Destination Pointer MSB
+MWRITC: LDY TEMP1       ;Set Index to Number of Bytes to Read
+MWRITL: DEY             ;Decrement Index
+        BEQ MPUTSY      ;If Zero, Update Memory Pointer and Return
+        LDA (SRCLO),Y   ;Read Byte from Memory
+        STA (DSTLO),Y   ;Write Byte to Array
+        JMP MWRITL      ;and Loop

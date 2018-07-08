@@ -1,0 +1,110 @@
+/******************************************
+ * memio - Functions to read/write memory *
+ ******************************************/
+
+/* Return Memory File Pointer Contents    *
+ * Args: mp - memory file pointer         *
+ * Returns: address contained in pointer  *
+            LSB, MSB as a tuple           */
+char mclose();
+
+
+/* Open Memory File                       *
+ *   Sets starting address to read/write  *
+ * Args: zp - zero page pointer address   *
+ *       &a - base address to read/write  *
+ * Returns: memory file pointer           *
+ *          0 if base address is invalid  */
+char mopen();
+
+/* Close Memory File                      *
+ *   Writes EOF at current memory byte    *
+ *   and cleares memory pointer           *
+ * Args: mp - memory file pointer         *
+ * Returns: 0 if successful               *
+            255 if memory pointer invalid */
+char mclose();
+
+/* End of Memory File                     *
+ *   Checks for EOF in next memory byte   *
+ * Args: mp - memory file pointer         *
+ * Returns: 0 if not at end of file       *
+            255 if end of file reached    */
+char meof();
+
+/* Memory File Error                      *
+ *   Checks for valid memory pointer      *
+ * Args: mp - memory file pointer         *
+ * Returns: 0 if successful               *
+            255 if memory pointer invalid */
+char merror();
+
+/* Flush File Buffer                      *
+ *   Writes EOF at current memory byte    *
+ * Args: mp - memory file pointer         *
+ * Returns: 0 if successful               *
+            255 if memory pointer invalid */
+char mflush();
+
+/* Read Character from Memory File        *
+ * Args: mp - memory file pointer         *
+ * Returns: ASCII value of character      *
+ *          system dependent garbage      *
+            character if past end of file *
+            255 if memory pointer invalid */
+char mgetc();
+
+/* Write Character to Memory File         *
+ * Args: mp - memory file pointer         *
+ *       c - ASCII character to write     *
+ * Returns: 0 if successful               *
+            255 if memory pointer invalid */
+char mputc(); 
+
+/* Read String from Memory File           *
+ *   Buffers up to 128 characters         *
+ *   until C/R or EOF is found            *
+ * Args: mp - memory file pointer         *
+ *       &s - string read from memory     *
+ * Returns: length of string              *
+ *          255 if error during read      */
+char mgets(); 
+
+/* Write String to Memory File            *
+ *   Writes up to 128 characters of a     *
+ *   null terminated string               *
+ * Args: mp - memory file pointer         *
+ *       &s - string to write from        *
+ * Returns: ending position in string     *
+ *          255 if error during write     */
+char mputs();
+
+/* Write Line to Memory File              *
+ *   Write String to File followed by C/R *
+ * Args: mp - memory file pointer         *
+ *       &s - string to print from        *
+ * Returns: ending position in string     *
+ *          255 if error during write     */
+char mputln();
+
+/* Set Destination Array for fread()      *
+ * Args: &a - Destination array           */
+void mdst();
+
+/* Read Bytes from Memory File            *
+ *   Reads until End of Memory is reached *
+ * Args: mp - memory file pointer         *
+ *       n - number of bytes to read      *
+ * Returns: number of bytes read          */
+char mread(); 
+
+/* Set Source Array for fwrite()          *
+ * Args: &a - Source array                */
+void msrc();
+
+
+/* Write Bytes to Memory File             *
+ * Args: mp - memory file pointer         *
+ *       n - number of bytes to write     *
+ * Returns: number of bytes written       */
+char mwrite();
