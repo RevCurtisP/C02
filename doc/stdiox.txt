@@ -32,6 +32,16 @@ The following functions are defined:
                       Note: Calls putdec() and putspc(). Leaves the value
                       of b in varible temp3.
 
+  putdst();           Prints the destination string set by the setdst() or
+                      setstr() functions. 
+                      
+                      This can be used to print the results of any function
+                      call that stores it's result in the destination string,
+                      such as strcat(), strcpy(), and strcut() in string,
+
+                      Note: calls putc() and is called by printf() when
+                      processing a %S formatting tag.
+                      
   putspc(b);          Writes a space character to the screen. 
 
                       Note: Used by the putdel() and putder() functions.
@@ -55,13 +65,26 @@ The following functions are defined:
                       one value argument may be passed and that value is
                       used for each formatting tag in the format string.
                       
+                      One additional formatting tag is supported:
+                      %S - output the destination string 
+                      
+                      The destination string is set using the setdst() or
+                      strdst() functions (from the "string" library) before
+                      calling printf(). Multiple occurances of the %S tag
+                      will cause the destination string to be repeated.
+                      
+                      When tag types are mixed, the %S tag will output the
+                      destination string, while the other tags will output
+                      the formatted byte. If only the %S tag is used, then
+                      the byte argument may be excluded from the call.
+
                       The letter in the formatting tag may be upper or 
                       lower case with either a 0 or 1 in the high bit.
                       Unrecognized formatting tags are interpreted as %C.
                       
-                      Note: Calls putdec(), putdel(), putder(), or prbyte()
-                      depending on which formatting tags are used. The value
-                      of b is left in variable temp3.
+                      Note: Calls putdec(), putdel(), putder(), prbyte(), or
+                      putdst() depending on which formatting tags are used. 
+                      The value of b is left in variable temp3.
 
 Note: This library expects the following functions to be defined:
 

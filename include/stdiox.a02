@@ -55,48 +55,65 @@ PUTDEP: ORA #$30        ;Convert to ASCII digit
 ;Print a Space
 PUTSPC: LDA #32         ;Load Space Character
         JMP PRCHR       ;and Print it
-        
+
 ;Print Byte in Formatted String
 ;void printf(b, &s)
 ;Args: A = number to format
 ;      Y,X = address of formatting string
 ;Sets: TEMP3 - number to format
-PRINTF: JSR SETSRC     ;Initialize Source String
-        STA TEMP3      ;Save Byte to Format
-PRINTL: LDA (SRCLO),Y  ;Read next character in string
-        BEQ PRINTX     ;If Not 0
-        CMP #'%        ;  If Format Specified
-        BEQ PRINTS     ;    Jump to Formatter
-PRINTC: JSR PRCHR      ;  Print character at offset,
-PRINTY: INY            ;  increment offset, and
-        BPL PRINTL     ;  loop if less than 128
-PRINTX: RTS            ;  characters printed
+PRINTF: JSR SETSRC      ;Initialize Source String
+        STA TEMP3       ;Save Byte to Format
+PRINTL: LDA (SRCLO),Y   ;Read next character in string
+        BEQ PRINTX      ;If Not 0
+        CMP #'%         ;'  If Format Specified 
+        BEQ PRINTP      ;    Jump to Formatter
+PRINTC: JSR PRCHR       ;  Print character at offset,
+PRINTY: INY             ;  increment offset, and
+        BPL PRINTL      ;  loop if less than 128
+PRINTX: RTS             ;  characters printed
 ;Process Format Specifier
-PRINTS: INY            ;Increment Offset
-        LDA (SRCLO),Y  ;Get Formatting Character
-        BEQ PRINTX     ;If NUL, then Exit
-        CMP #'%        ;If Percent Sign
-        BEQ PRINTC     ;  Print it and Continue
-        AND #$DF       ;Convert to Upper Case
-        CMP #'L        ;If "l" or "L"
+PRINTP: INY             ;Increment Offset
+        LDA (SRCLO),Y   ;Get Formatting Character
+        BEQ PRINTX      ;If NUL, then Exit
+        CMP #'%         ;'If Percent Sign 
+        BEQ PRINTC      ;  Print it and Continue
+        AND #$DF        ;Convert to Upper Case
+        CMP #'L         ;'If "l" or "L" 
         BNE PRINTR
-        LDA TEMP3      ;  Load Byte to Format
-        JSR PUTDEM     ;  Print Left Justified
-        JMP PRINTY     ;  and Continue Printing Screen
-PRINTR: CMP #'R        ;If "r" or "R"
+        LDA TEMP3       ;  Load Byte to Format
+        JSR PUTDEM      ;  Print Left Justified
+        JMP PRINTY      ;  and Continue Printing Screen
+PRINTR: CMP #'R         ;'If "r" or "R" 
         BNE PRINTD
-        LDA TEMP3      ;  Load Byte to Format
-        JSR PUTDES     ;  Print Right Justified
-        JMP PRINTY     ;  and Continue Printing Screen
-PRINTD: CMP #'D        ;If "d" or "D"
+        LDA TEMP3       ;  Load Byte to Format
+        JSR PUTDES      ;  Print Right Justified
+        JMP PRINTY      ;  and Continue Printing Screen
+PRINTD: CMP #'D         ;'Else If "d" or "D" 
         BNE PRINTH
-        LDA TEMP3      ;  Load Byte to Format
-        JSR PUTDEC     ;  Print as Decimal
-        JMP PRINTY     ;  and Continue Printing Screen
-PRINTH: CMP #'H         ;Else If "h" or "H"
+        LDA TEMP3       ;  Load Byte to Format
+        JSR PUTDEC      ;  Print as Decimal
+        JMP PRINTY      ;  and Continue Printing Screen
+PRINTH: CMP #'H         ;'Else If "h" or "H" 
+        BNE PRINTS
+        LDA TEMP3       ;  Load Byte to Format
+        JSR PRBYTE      ;  Print as Hexadecimal
+        JMP PRINTY      ;  and Continue Printing Screen
+PRINTS: CMP #'S         ;'Else If "s" or "s" 
         BNE PRINTB
-        LDA TEMP3      ;  Load Byte to Format
-        JSR PRBYTE     ;  Print as Hexadecimal
-        JMP PRINTY     ;  and Continue Printing Screen
-PRINTB: LDA TEMP3      ;Otherwise
-        JMP PRINTC     ;  Print Raw Byte and Continue
+        STY TEMP0       ;  Save Index
+        JSR PUTDST      ;  Print Destination String
+        LDY TEMP0       ;  Restore Index
+        JMP PRINTY      ;
+PRINTB: LDA TEMP3       ;Else
+        JMP PRINTC      ;  Print Raw Byte and Continue
+
+                       ;and fall into putsub
+;char putdst()
+PUTDST: LDY #0         ;Initialize character offset
+PUTDSL: LDA (DSTLO),Y  ;Read next character in string
+        BEQ PUTDSX     ;If Not 0
+        JSR PUTC       ;  Print character at offset,
+        INY            ;  increment offset, and
+        BPL PUTDSL     ;  loop if less than 128
+PUTDSX: TYA            ;Return number of
+        RTS            ;  characters printed

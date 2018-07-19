@@ -8,6 +8,7 @@
 #include <stdiox.h02>
 
 char c, i;
+char s = "string";
 
 main:
 
@@ -47,6 +48,10 @@ do {
   i++;
   if (!i&15) anykey();
 } while (i<128);    
+
+setdst(&s);
+printf("S=\"%s\"");
+newlin();
 
 done:
   goto exit;

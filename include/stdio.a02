@@ -34,7 +34,7 @@ GETSX:  JSR NEWLIN     ;Else Advance Cursor to Next Line
 GETSY:  TYA            ;  Return String Length
         RTS
 
-;char puts(n, &s)
+;char puts(&s)
 PUTS:   LDA #$00       ;Set Start Position to 0
                        ;and fall into putsub
 ;char putsub(n, &s)
@@ -45,9 +45,9 @@ PUTSUL: LDA (SRCLO),Y  ;Read next character in string
         JSR PUTC       ;  Print character at offset,
         INY            ;  increment offset, and
         BPL PUTSUL     ;  loop if less than 128
-PUTSUX: TAY            ;Return number of
+PUTSUX: TYA            ;Return number of
         RTS            ;  characters printed
 
 ;char putln(&s)
 PUTLN:  JSR PUTS       ;Write string to screen
-\        JMP NEWLIN     ;Execute external NEWLINe routine and return
+        JMP NEWLIN     ;Execute external NEWLINe routine and return

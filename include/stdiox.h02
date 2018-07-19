@@ -14,6 +14,9 @@ void putdel();
  * Args: b - Number to print             */
 void putder(); 
 
+/* Print Destination String */
+void putdst(); 
+
 /* Print a Space Character */
 void putspc(); 
 
