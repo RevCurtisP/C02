@@ -1,0 +1,104 @@
+Memory File I/O Functions
+
+This library contains functions that mimic file input/ouput operations,
+but read and write directly to RAM. It is intended to allow for the
+design of programs using these functions even on systems that do not
+include any sort of filesystem support, but do allow blocks of memory
+to be loaded from and saved to external storage. For this reason, each
+function has the same signature it's equivalent in the file library.
+
+At the beginning of the program use the directives
+
+  #include <memio.h02>
+
+The following functions are defined:
+
+  m = mopen(z, &a);     Open memory file, using zero-page bytes z and z+1
+                        as a pointer and a as the starting address of the
+                        file. The starting address must be at least $0100.
+
+                        Returns the the z as the "file pointer", or 0 if an
+                        invalid address is specified. 
+
+  r = mclose(m);        Close memory file pointed to by m, by writing an
+                        EOF and clearing the memory pointer.
+
+                        Returns 0 if successful or 255 if m contains an 
+                        invalid address.
+
+                        Note: Calls mflush() then sets the bytes at`m and
+                        m+1 to 0.
+
+  r = mflush(m);        Flush memory file pointed to by m, by writing a
+                        NUL character at the memory pointer to 0.
+                      
+                        Returns 0 if successful or 255 if m contains an 
+                        invalid address.
+
+                        Note: The NUL character (ASCII code 0) is use as the
+                        EOF marker because many systems initialize RAM to 0,
+                        it's the easiest character to test for, and it can
+                        never be part of a C style string.
+
+  c = mgetc(m);         Read character from memory file pointed to by m. 
+                      
+                        Returns character read from file.
+                      
+                        Note: Returns 255 if m contains an invalid address.
+                      
+                        Returns a system dependent garbage character if end
+                        of file has been reached or any other I/O error. Use
+                        meof(f) and merror(f) to check for these conditions.
+
+  r = mputc(m, c);      Write character c to memory file opened to m.
+                      
+                        Returns 0 if successful or 255 if m contains an 
+                        invalid address.
+
+  n, c = mgets(m, &s);  Reads a maximum of 128 characters from keyboard until
+                        a newline or EOF character is encountered, storing the 
+                        entered characters as null-terminated string s.
+
+                        Returns number of characters entered ( 255 if m 
+                        contains an invalid address) and the final character
+                        of the returned atring.
+
+                        Note: Any ASCII control character between EOF (code 0)
+                        and Space (code 32) is interpreted as a newline. This
+                        character will be included as the last character of
+                        the string.
+
+  n, c = mputs(m, &s):  Writes up to 128 characters of null-terminated string
+                        s to the memory file. Does not write a trailing C/R.
+
+                        Returns number of characters written, or 255 if m
+                        contains an invalid address.
+
+  r = mputln(m, &s):    Writes up to 128 characters of null-terminated string
+                        s followed by a C/R to the memory file.
+
+                        Returns 0 if successful or 255 if m contains an 
+                        invalid address.
+
+                        Note: Calls mputs() followed by mputc().
+
+  l, h = maddr(m);      Returns the address contained in memory pointer m
+                        as two bytes in LSB, MSB format.
+
+                        This non-standard function is included for debugging
+                        purposes.
+
+Note: This library expects the following functions to be defined:
+
+  setdst(&s);         Set destination string pointer
+  setsrc(&s);         Set source string pointer and initialize index
+
+along with the zero page variable pairs
+  
+  dstlo,dsthi:        Destination string pointer
+  srclo,srchi:        Source string pointer
+
+and the assembler constant
+  
+  EOFCHR              End of File character code`
+  RTNCHR              Carriage Return character code

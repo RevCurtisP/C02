@@ -1,0 +1,79 @@
+Extended Input/Output Functions for C02 Programs
+
+At the beginning of the program use the directives
+
+  #include <stdlib.h02>
+  #include <stdiox.h02>
+  
+The following functions are defined:
+
+  putdec(b);          Writes the decimal representation of byte b to the
+                      screen. The output will be between one and three 
+                      digits with no leading spaces.
+                      
+                      Note: Calls part of the ctoa() routine from stdlib
+                      which leaves the binary values of the ones, tens,
+                      and hundreds digits in variables temp0, temp1, and 
+                      temp2, respectively.
+
+  putdel(b);          Writes the decimal representation of byte b to the
+                      screen. The output is left justified by appending it 
+                      with 1 space if b is between 10 and 99, or two spaces
+                      if b is less than 10.
+                      
+                      Note: Calls putdec() and putspc(). Leaves the value
+                      of b in varible temp3.
+
+  putder(b);          Writes the decimal representation of byte b to the
+                      screen. The output is right justified by prepending it
+                      with 1 space if b is between 10 and 99, or two spaces
+                      if b is less than 10.
+                      
+                      Note: Calls putdec() and putspc(). Leaves the value
+                      of b in varible temp3.
+
+  putspc(b);          Writes a space character to the screen. 
+
+                      Note: Used by the putdel() and putder() functions.
+
+  r = printf(b, &s):  Writes the value of byte b to screen, formatting
+                      the output according the contents of string s. 
+                      
+                      The output consists of the characters in s, but with
+                      any formatting tags replaced with an ASCII 
+                      representation of the value of b.
+                      
+                      The recognized formatting tags are:
+                      %C - output the ASCII character represented by b
+                      %D - output b as a an unjustified decimal number
+                      %H - output b as a two-digit hexadecimal number
+                      %L - output b as a left justified decimal number
+                      %R - output b as a right justified decimal number
+                      %% - output a single % character
+                      
+                      Unlike the printf() function in standard C, only
+                      one value argument may be passed and that value is
+                      used for each formatting tag in the format string.
+                      
+                      The letter in the formatting tag may be upper or 
+                      lower case with either a 0 or 1 in the high bit.
+                      Unrecognized formatting tags are interpreted as %C.
+                      
+                      Note: Calls putdec(), putdel(), putder(), or prbyte()
+                      depending on which formatting tags are used. The value
+                      of b is left in variable temp3.
+
+Note: This library expects the following functions to be defined:
+
+  cubcd();          Convert byte to BCD and unpack into three bytes
+  prbyte();         Print byte to screen as hexadecimal number
+  prchr(c);         Print ASCII character to screen
+  setsrc(&s);       Set source string pointer and initialize index
+
+along with the zero page variable pairs:
+  
+  srclo,srchi:      Source string pointer
+
+and the temporary variables
+
+  temp0,temp1,temp2,temp3

@@ -101,7 +101,7 @@ in order to successfully assemble the compiler generated code. Details
 on the structure and implementation of a typical header file can be
 found in the file header.txt.
 
-Assembly language files are denoted by the .asm extension. When the
+Assembly language files are denoted by the .a02 extension. When the
 compiler processes an assembly language file, it simply inserts the contents
 of the file into the generated code.
 
@@ -343,8 +343,27 @@ Examples:
 Note: Unlike simple and array variable, the members of a struct variable
 may not be initialized during declaration.
 
-EXPRESSIONS
+MODIFIERS
 
+A modifier is used with a declaration to override the default properties of
+an object. Modifiers may currently only be used with simple variable and
+array declarations, although this may be expanded in the future.
+
+The zeropage modifier specifies that the variable will be defined in page
+zero (addresses 0 through 255). It should be used in conjunction with the
+pragma zeropage directive.
+
+The aligned directive specifies that the the variable or array will start on
+a page variable. This is used to ensure that accessing an array element will
+not cross a page boundary, which requires extra CPU cycles to execute.
+
+Examples:
+
+  zeropage char ptr, tmp;
+  aligned char table[240], fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
+
+EXPRESSIONS
+        
 An expression is a series of one or more terms separated by operators. 
 
 The first term in an expression may be a function call, subscripted array 
@@ -500,7 +519,7 @@ arguments may be passed.
 
 When passing the address of a variable, array, struct, or struct member 
 into a function, the variable specification is prefixed with the 
-address-of operator &. Wjen passing a string, the string is simply 
+address-of operator &. When passing a string, the string is simply 
 specified as the argument with.
 
 Examples:
@@ -684,7 +703,7 @@ of code to be executed if the evaluation was false.
 
 Examples:
   if (c = 27) goto end;
-  if (n) q = (n/d) else puts("Division by 0!");
+  if (n) q = div(n,d) else puts("Division by 0!");
   if (r[j]<r[i]) {t=r[i],r[i]=r[j],r[j]=t)}
   
 Note: In order to optimize the compiled code, the if and else statements 
