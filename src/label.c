@@ -13,7 +13,8 @@
 #include "parse.h"
 #include "label.h"
 
-const char lblflg[] = {LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE, LFNONE}; //Label Type Flags
+const char lblflg[] = {LFNONE, LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE, LFNONE}; //Label Type Flags
+//        enum ltypes {LTNONE, LTIF, LTELSE, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
 
 /* Find Last Label of Specified Types *
  * Args: lbtyp1: First label type     *

@@ -381,7 +381,7 @@ void pwhile(void) {
   expect('(');
   newlbl(endlbl);          //Create End Label
   pshlbl(LTEND, endlbl);   //and Push onto Stack
-  reqlbl(loplbl);           //Get or Create/Set Loop Label
+  reqlbl(loplbl);          //Get or Create/Set Loop Label
   pshlbl(LTLOOP, loplbl);  //Push onto Stack
   if (!look(')')) {  
     newlbl(cndlbl);          //Create Conditional Skip Label

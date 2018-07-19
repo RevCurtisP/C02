@@ -209,7 +209,16 @@ void addvar(int m, int t) {
     setlbl(vrname);
     sprintf(word, "$%hhX", zpaddr++);
     asmlin(EQUOP, word);
-    strcpy(value, "*"); //Set Variable Type to Zero Page  
+    strcpy(value, "*"); //Set Variable to Non Allocated  
+  }
+  else if (m == MTALS) {
+    setlbl(vrname);
+    skpspc();
+    expect('=');
+    skpspc();
+    if (isnpre()) prsnum(0xFFFF); else prsvar(FALSE);
+    asmlin(EQUOP, word);
+    strcpy(value, "*"); //Set Variable to Non Allocated  	
   }
   else {
     if (t == VTSTRUCT) {
@@ -226,9 +235,9 @@ void addvar(int m, int t) {
     }
     else value[0] = 0;
     if (!alcvar) strcpy(value, "*");  
-    setvar(m, t);  //Add to Variable Table
   }  
-  if (m != MTZP && t != VTSTRUCT ) prsdat();   //Parse Variable Data
+  setvar(m, t);  //Add to Variable Table
+  if (m < MTZP && t != VTSTRUCT ) prsdat();   //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 

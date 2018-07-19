@@ -136,6 +136,7 @@ int pmodfr(void) {
   int result = TRUE;
   if      (wordis("ALIGNED"))  { getwrd(); ptype(MTALGN); }
   else if (wordis("ZEROPAGE")) { getwrd(); ptype(MTZP); }
+  else if (wordis("ALIAS"))    { getwrd(); ptype(MTALS); }
   else                         result = FALSE;
   return result;
 }

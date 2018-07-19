@@ -69,6 +69,19 @@ for (i=0;i<10;i++) {
 }
 newlin();
 
+/* Test Do with Break and Continue*/
+i = 0;
+puts("DO BC ");
+do {
+  i++;
+  if (!i&1) continue;
+  if (i>15) break;
+  prbyte(i);
+  putc(' ');
+} while ($FF);
+newlin();
+
+
 newlin();
 
 /* Test Block If */

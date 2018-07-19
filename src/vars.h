@@ -48,7 +48,7 @@ int  dsize;                    //Total Data Length
 
 enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 
-enum mtypes {MTNONE, MTALGN, MTZP}; //Variable Modifier Types
+enum mtypes {MTNONE, MTALGN, MTZP, MTALS}; //Variable Modifier Types
 
 int symdef(char *name);         //Is Variable defined (TRUE or FALSE)
 int zpaddr;                     //Current Zero-Page Address
