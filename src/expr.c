@@ -14,6 +14,19 @@
 #include "label.h"
 #include "expr.h"
 
+/* Push Term and Operator onto Stack */
+void pshtrm(void) {
+  if (trmidx >= MAXTRM) ERROR("Maximum Function Call/Array Index Depth Exceeded", 0, EXIT_FAILURE)
+  oprstk[trmidx] = oper; 
+  strcpy(trmstk[trmidx++], term);
+}
+
+/* Pop Term and Operator off Stack */
+void poptrm(void) {
+  strcpy(term, trmstk[--trmidx]);
+  oper = oprstk[trmidx];
+}
+
 /* Parse value (literal or identifier)  *
  * Sets: value - the value (as a string) *
  *       valtyp - value type           */
@@ -27,21 +40,24 @@ void prsval(int alwreg) {
   skpspc();
 }
 
+/* Process Unary Minus */
+void prcmns(void) {
+    DEBUG("Processing unary minus", 0)
+    asmlin("LDA", "#$00");  //Handle Unary Minus
+}
+
 /* Parse array index                  *
  * Sets: value - array index or       *
  *             "" if no index defined */
-void prsidx(void) {
+void prsidx(int clbrkt) {
   expect('[');
   prsval(TRUE);
   DEBUG("Parsed array index '%s'\n", value)
-  expect(']');
+  if (clbrkt) expect(']');
 }
 
-/* Check for, Parse, and Process Index */
-void chkidx(void) {
-  //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp)
-  if (valtyp == ARRAY) {
-    prsidx();
+/* Process Simple Array Index */
+void prcsix(void) {
     if (valtyp == LITERAL) {
       strcat(term, "+");
       strcat(term, word);
@@ -52,6 +68,34 @@ void chkidx(void) {
       if      (strcmp(value, "A")==0) asmlin("TAX", "");
       else if (strcmp(value, "X")!=0) asmlin("LDX", value);
       strcat(term, ",X");    
+    }
+}
+
+/* Process Expression Array Index */
+void prcxix(void) {
+  pshtrm(); //Push Array Variable onto Term Stack
+  if (trmcnt) asmlin("PHA", ""); //Save Accumulator if not first term
+  prcftm();    //Process First Term of Expression
+  prsrxp(']'); //Parse Rest of Expression
+  asmlin("TAX", ""); //Transfer Result of Expression to Index Register
+  if (trmcnt) asmlin("PLA", ""); //Restore Accumator if not first term
+  poptrm(); //Pop Array Variable off Term Stack
+  strcat(term, ",X");
+}
+
+/* Check for, Parse, and Process Index */
+void chkidx(void) {
+  //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp)
+  if (valtyp == ARRAY) {
+    if (look('-')) {
+      prcmns();
+	  prcxix();
+    }
+    else {
+      prsidx(FALSE);
+      if (valtyp > REGISTER) prcxix();
+      else if (look(']')) prcsix();
+      else prcxix();
     }
   }
 }
@@ -117,8 +161,7 @@ int chkadr(int adract) {
 /* Parse function call */
 void prsfnc(char trmntr) {
   DEBUG("Processing Function Call '%s'\n", term)
-  if (fnscnt >= MAXFNS) ERROR("Maximum Function Call Depth Exceeded", 0, EXIT_FAILURE)
-  strcpy(fnstck[fnscnt++], term);
+  pshtrm(); //Push Function Name onto Term Stack
   skpchr(); //skip open paren
   CCMNT('(');
   if (!chkadr(0) && isxpre() || match('*')) {
@@ -130,14 +173,13 @@ void prsfnc(char trmntr) {
   }
   expect(')');
   expect(trmntr);
-  asmlin("JSR", fnstck[--fnscnt]);
+  poptrm(); //Pop Function Name off Term Stack
+  asmlin("JSR", term);
   skpspc();
 }
 
-/* Parse first term of expession            *
- * First term can include function calls    */
-void prsftm(void) {
-  prsval(TRUE);
+/* Process first term of expression */
+void prcftm(void) {
   DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
   if (valtyp == FUNCTION) prsfnc(0); //Parse Expression Function
@@ -145,6 +187,13 @@ void prsftm(void) {
   else if (wordis("X"))   asmlin("TXA", "");
   else if (wordis("Y"))   asmlin("TYA", "");
   else                  { chkidx(); asmlin("LDA", term); }
+}
+
+/* Parse first term of expession            *
+ * First term can include function calls    */
+void prsftm(void) {
+  prsval(TRUE);
+  prcftm();
 }
 
 /* Process Arithmetic or Bitwise Operator *
@@ -163,20 +212,25 @@ void prcopr(void) {
   oper = 0;
 }
 
+/* Parse Remainder of Expression */
+void prsrxp(char trmntr) {
+  skpspc();
+  while (isoper()) {
+	trmcnt++;
+    prsopr(); //Parse Operator
+    prstrm(); //Parse Term
+    prcopr(); //Process Operator
+	trmcnt--;
+  } 
+  expect(trmntr);
+}
+
 /* Parse and compile expression */
 void prsxpr(char trmntr) {
   DEBUG("Parsing expression\n", 0)
   skpspc();
-  if (match('-')) {
-    DEBUG("Processing unary minus", 0)
-    asmlin("LDA", "#$00");  //Handle Unary Minus
-  } 
+  trmcnt = 0;
+  if (match('-')) prcmns();
   else prsftm(); //Parse First Term
-  skpspc();
-  while (isoper()) {
-    prsopr(); //Parse Operator
-    prstrm(); //Parse Term
-    prcopr(); //Process Operator
-  } 
-  expect(trmntr);
+  prsrxp(trmntr);
 }

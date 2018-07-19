@@ -110,10 +110,13 @@ if (i=0)
   i++; 
 else
   i--;
-
+  
 here: if (getkey() & $7F == $1B) goto exit;  
 
 there: goto flwctl;
+
+if (#TRUE) putln("TRUE");
+else if (#FALSE) putln("FALSE");
 
 i = 0;
 while (i < 10) {
@@ -122,8 +125,6 @@ while (i < 10) {
 while (i:+) {
   i--;
 }
-
-
 
 do {
   c = rdkey();
@@ -138,7 +139,11 @@ do {
 
 for (i=1; i<9; i++)
   prchr(i);
- 
+
+if (@z == @r)
+  for (i=0; i<=@z; i++) 
+    z[i] = r[i];
+
 if (d<f) i=b; else i=c; //Regular IF
 i = (d<f) ? b : c;      //Shortcut IF
 

@@ -97,7 +97,7 @@ void prcasn(char trmntr) {
 
 /* Parse and Return Array Index and Type */
 int getidx(char* idx) {
-    prsidx();  //Parse Array Index
+    prsidx(TRUE);  //Parse Array Index
     if (valtyp == LITERAL) strncpy(idx, word, VARLEN);
 	else strncpy(idx, value, VARLEN);
     DEBUG("Parsed index %s\n", idx)
@@ -293,13 +293,14 @@ void pinlne(void) {
 void ppop(void) {
   DEBUG("Parsing POP statement\n", 0)
   do {  
-    asmlin("PLA", "");     //Pop Value off Stack
-    if (!look('*')) {
+    if (look('*')) term[0]=0; 
+    else {
       reqvar(TRUE);
       strcpy(term, value);
       chkidx();
-      asmlin("STA", term);
     } 
+    asmlin("PLA", "");     //Pop Value off Stack
+    if (term[0]) asmlin("STA", term);
   } while (look(','));
   expect(';');  
 }
