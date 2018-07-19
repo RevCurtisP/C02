@@ -1,13 +1,13 @@
-/******************************************
- * memio - Functions to read/write memory *
+/*****************+*************************
+    * memio - Functions to read/write memory *
  ******************************************/
 
 /* Return Memory File Pointer Contents    *
  * Args: mp - memory file pointer         *
- * Returns: address contained in pointer  *
-            LSB, MSB as a tuple           */
-char mclose();
-
+ * Returns: Tuple                         *
+             memory pointer address LSB   * 
+             memory pointer address MSB   */
+char maddr();
 
 /* Open Memory File                       *
  *   Sets starting address to read/write  *
@@ -66,8 +66,10 @@ char mputc();
  *   until C/R or EOF is found            *
  * Args: mp - memory file pointer         *
  *       &s - string read from memory     *
- * Returns: length of string              *
- *          255 if error during read      */
+ * Returns: Tuple                         *
+ *           length of string             *
+ *           (255 if error during read)   *
+ *           last character read          */
 char mgets(); 
 
 /* Write String to Memory File            *
@@ -101,7 +103,6 @@ char mread();
 /* Set Source Array for fwrite()          *
  * Args: &a - Source array                */
 void msrc();
-
 
 /* Write Bytes to Memory File             *
  * Args: mp - memory file pointer         *

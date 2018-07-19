@@ -6,12 +6,22 @@
 #include <stdlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
+#include <memory.h02>
 #include <memio.h02>
+#include <string.h02>
 
 char zp = $80; //Zero Page Location for Memory Pointer
 char lsb, msb; //Memory Pointer Contents
 char passed;   //Flags
-char c, e, i, mp, s[128];
+char f[255];   //Array to use as file
+char fp,mp,op; //Memory File Pointers
+char c, e, i;  //Testing Variables
+char s[128];    //Array for String Read/Writes
+char digits = "0123456789";
+char upcase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+char locase = "abcdefghijklmnopqrstuvwxyz";
+
+alias char outfil = $9000; //Output File
 
 main:
 
@@ -37,20 +47,136 @@ e = merror(mp);
 prbyte(e); 
 if (e) { puts(" Yes"); fail(); }
 else { puts(" No "); pass(); }
-
 newlin();
+
 putln("Reading File using mgetc()");
-do {
-  lsb, msb = maddr(mp);
+while (!meof(mp)) {
   c = mgetc(mp);
-  e = meof(mp);
-  prbyte(msb); prbyte(lsb); puts(": ");
-  prbyte(c); putc(' ');
-  if (c>' ') putc(c); else putc(' ');
-  puts(" EOF: "); prbyte(e); newlin();
-} while (!e);
+  if (c < 32 ) c = 32;
+  putc(c);
+}
+newlin();
+
+anykey();
+
+putln("Reading File using mgets()");
+mp = mopen(zp, &$8000);
+while (!meof(mp)) {
+  lsb, msb = maddr(mp);
+  prbyte(msb); prbyte(lsb);
+  i, c = mgets(mp, &s);
+  printf(i, " %r");
+  printf(c, " %h: ");
+  puts(&s);
+  if (c <> $0A) newlin();
+}
+
+anykey();
+
+/* Test mputc() with mopen() to array */
+
+putln("Opening array f as memory file");
+fp = mopen(zp+2, &f);
+puts("  Memory pointer: "); prbyte(fp);
+if (merror(fp)) fail(); else pass();
+
+putln("Writing file using mgetc()");
+for (i=32; i<127; i++) {putc(i); mputc(fp,i);}
+newlin(); mputc(fp, 13); //Carriage Return
+
+putln("Checking Array Contents");
+passed = 1;
+for (i=0; i<95; i++) {c = f[i]; putc(c); if (i+32<>c) passed = 0;}
+newlin(); //if (f[95]<>13) passed = 0;
+if (passed) pass(); else fail();
+
+anykey();
+
+/* Test mputs(), mputln(), and mclose() with mopen() to alias */
+
+putln("Filling memory area outfil");
+for (i = 0; i<255; i++) outfil[i] = '@';
+
+putln("Opening location outfil as memory file");
+op = mopen(zp+4, &outfil);
+puts("  Memory pointer: "); prbyte(op);
+if (merror(op)) fail(); else pass();
+
+puts("Writing upcase to file using mputln():");
+mputln(op, &upcase);
+if (merror(op)) fail(); else pass();
+
+puts("Writing locase to file using mputln():");
+mputln(op, &locase);
+if (merror(op)) fail(); else pass();
+
+puts("Writing digits to file using mputs():");
+mputs(op, &digits);
+if (merror(op)) fail(); else pass();
+
+puts("Flushing file:");
+if (mflush(op)) fail(); else pass();
+
+anykey();
+
+/* Test mgetc(), and mgets() with mopen() to alias */
+
+putln("Opening location outfil as memory file");
+op = mopen(zp+4, &outfil);
+puts("  Memory pointer: "); prbyte(op);
+if (merror(op)) fail(); else pass();
+
+puts("Reading from file using mgetc(): ");
+i=0; while () {c=mgetc(op);s[i]=c;if (c<' ') break; i++;} s[i]=0;
+puts(&s); strdst(&upcase); if (strcmp(&s)) fail(); else pass();
+
+puts("Reading from file using mgets(): ");
+i,c = mgets(op, &s); putln(&s);
+printf(i, " Characters read: %d"); if (strlen(&locase)+1 == i) pass(); else fail();
+printf(c, " Last char read: %h"); if (c == 13) pass(); else fail();
+
+puts("Reading from file using mgets(): ");
+i,c = mgets(op, &s); putln(&s);
+printf(i, " Characters read: %d"); if (strlen(&digits) == i) pass(); else fail();
+printf(c, " Last char read: %h"); if (c) fail(); else pass();
+
+puts("Checking for End of File: ");
+e = meof(op); putdec(e); if (e) pass(); else fail();
+
+puts("Closing File:");
+mclose(op); if (merror(op)) pass(); else fail();
+
+anykey();
+
+putln("Clearing memory at $9000.");
+memdst(&$9000);
+memset(0, 255);
+
+mp = 0; //Initialize Memory Pointer
+
+putln("Opening memory file at $9000.");
+mp = mopen(zp, &$9000);
+
+putln("Writing to memory file using mwrite()");
+msrc(&digits); mwrite(mp, 10);
+msrc(&upcase); mwrite(mp, 26);
+msrc(&locase); mwrite(mp, 26);
+newlin();
+
+putln("Opening memory file at $9000.");
+mp = mopen(zp, &$9000);
+
+putln("Reading from memory file using mread()");
+iarray(&s); mread(mp, 10); puts(&s); putc(':'); if (strcmp(&digits)) pass(); else fail();
+iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&upcase)) pass(); else fail();
+iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&locase)) pass(); else fail();
+mread(mp,0); putdec(s); putc(':'); if (s) fail(); else pass();
 
 goto exit;
 
+void anykey() {newlin(); putln("Press any key..."); getc(); newlin();}
+
 void pass() { putln(" Passed"); }
 void fail() { putln(" Failed"); }
+
+void iarray() { memdst(); memset(0, 255); }

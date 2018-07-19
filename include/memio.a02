@@ -124,8 +124,9 @@ MPUTC:  JSR MERRON      ;Save Argumebts & Check Memory Pointer
 ;Sets: TEMP0 = Memory Pointer
 ;      TEMP1 = Number of characters read
 ;Affects: N,Z reflect Accumulator
-;Returns: A,Y = 255 if invalid Memory Pointer
-;               otherwise length of string read
+;Returns: A = 255 if invalid Memory Pointer
+;             otherwise length of string read
+;         Y = Last character in string
 ;         X = Zero Page Memory Pointer
 MGETS:  JSR SETDST      ;Set String Address as Destination
         JSR MERROM      ;Save Memory Pointer & Check Memory Pointer
@@ -136,14 +137,13 @@ MGETS:  JSR SETDST      ;Set String Address as Destination
         STA SRCHI       ;to Source Pointer MSB
 MGETSL: LDA (SRCLO),Y   ;Get Character from Memory
         BEQ MGETSX      ;If Not NUL (End of File)
-        CMP #$0A        ;  If Control Character
-        BNE MGETSS
-        INY             ;    Increment Past Carriage Return
-        BNE MGETSX      ;  Else
-MGETSS: STA (DSTLO),Y   ;    Store Character in String
-        INY             ;    increment offset and
+        CMP #32         ;  Check for Control Character
+MGETSS: STA (DSTLO),Y   ;  Store Character in String
+        INY             ;  increment offset and
+        BCC MGETSX      ;  If Not Control character
         BPL MGETSL      ;    loop if less than 128
-MGETSX: LDA #$00        ;Terminate String        
+MGETSX: TAX             ;Copy Final Character to X
+        LDA #$00        ;Terminate String        
         STA (DSTLO),Y   ;        
         BEQ MPUTSX      ;Update Memory Pointer and Return String Length
 
@@ -153,8 +153,9 @@ MGETSX: LDA #$00        ;Terminate String
 ;Sets: TEMP0 = Memory Pointer
 ;      TEMP1 = Number of characters written
 ;Affects: N,Z reflect Accumulator
-;Returns: A,Y = 255 if invalid Memory Pointer
-;               otherwise length of string written
+;Returns: A = 255 if invalid Memory Pointer
+;             otherwise length of string written
+;         Y = Last character in string
 ;         X = Zero Page Memory Pointer
 MPUTS:  JSR SETSRC      ;Set Source Pointer
         JSR MERROM      ;Save Memory Pointer & Check Memory Pointer
@@ -165,12 +166,15 @@ MPUTS:  JSR SETSRC      ;Set Source Pointer
         STA DSTHI       ;to Source Pointer MSB
 MPUTSL: LDA (SRCLO),Y   ;Get Character from Memory
         BEQ MPUTSX      ;If Not End of String 
-        STA (DSTLO),Y   ;    Store Character in Memory
-        INY             ;    increment offset and
-        BPL MPUTSL      ;    loop if less than 128
-MPUTSX: LDX TEMP0       ;Retrieve Memory Pointer
-        STY TEMP1       ;Copy String Length to Accumulator
-MPUTSY: LDA 0,X         ;Get to Memory Pointer LSB
+        STA (DSTLO),Y   ;  Store Character in Memory
+        TAX             ;  and copy into X Register
+        INY             ;  Increment offset and
+        BPL MPUTSL      ;  loop if less than 128
+MPUTSX: TXA             ;Copy Final Character into Accumulator
+        LDX TEMP0       ;Retrieve Memory Pointer
+        STY TEMP1       ;Save String Length in TEMP1
+        TAY             ;Copy Final Character into Y-Register
+MPUTSY: LDA 0,X         ;Get Memory Pointer LSB
         CLC
         ADC TEMP1       ;Add String Length
         STA 0,X
@@ -180,16 +184,13 @@ MGETSZ: LDA TEMP1       ;Load String Length and Set Flags
         RTS
 
 ;char mputln(&s) - Write Line to Memory File
-MPUTLN: JSR PUTS        ;Write string to screen
+MPUTLN: JSR MPUTS       ;Write String to Memory File
         LDA TEMP0       ;Retrieve Memory Pointer
         LDY #RTNKEY     ;Load Carriage Return
         JMP MPUTC       ;Write to Memory File
 
 ;mdst(&a) - Set Destination Array for mread()
 MDST    EQU SETDST   
-
-;msrc(&a) - Set Source Array for mwrite()
-MSRC    EQU SETSRC   
 
 ;char mread(mp, n) - Read from Memory File into Array
 ;Args: A = Zero Page Memory Pointer
@@ -206,7 +207,7 @@ MREAD:  JSR MERRON      ;Save Argumebts & Check Memory Pointer
         STA SRCLO       ;to Source Pointer LSB
         LDA 1,X         ;Copy Memory Pointer MSB
         STA SRCHI       ;to Source Pointer MSB
-        BNE MWRITC      ;Execute Copy
+        BNE MWRITL      ;Execute Copy
 
 ;msrc(&a) - Set Source Array for mwrite()
 MSRC    EQU SETSRC   
@@ -226,9 +227,9 @@ MWRITE: JSR MERRON      ;Save Argumebts & Check Memory Pointer
         STA DSTLO       ;to Destination Pointer LSB
         LDA 1,X         ;Copy Memory Pointer MSB
         STA DSTHI       ;to Destination Pointer MSB
-MWRITC: LDY TEMP1       ;Set Index to Number of Bytes to Read
-MWRITL: DEY             ;Decrement Index
-        BEQ MPUTSY      ;If Zero, Update Memory Pointer and Return
-        LDA (SRCLO),Y   ;Read Byte from Memory
+MWRITL: LDA (SRCLO),Y   ;Read Byte from Memory
         STA (DSTLO),Y   ;Write Byte to Array
-        JMP MWRITL      ;and Loop
+        INY             ;Increment Index
+        CPY TEMP1       ;If Not Equal to Number of Bytes to Read
+        BNE MWRITL      ;  Loop
+        BEQ MPUTSY      ;Else Update Memory Pointer
