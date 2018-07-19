@@ -391,6 +391,12 @@ not appear anywere a | would.
 After an expression has been evaluated, the A register will contain the
 result. 
 
+Note: Function calls are allowed in the first term of an expression
+because upon return from the function the return value will be in the 
+Accumulator. However, due to the 6502 having only one Accumulatorm which 
+is used for all operations between two bytes, there is no simple system 
+agnostic method for allowing function calls in subsequent terms.
+
 EVALUATIONS
 
 An evaluation is a construct which generates either TRUE or FALSE condition.
@@ -450,16 +456,24 @@ Individual elements of an array are accessed using subscript notation.
 Subscripted array elements may be used as a terms in an expression, as 
 well as the target variable in an assignments. They are written as the 
 variable name suffixed with a [ character, followed by an index, and 
-the ] character. The index may be a literal, constant, simple variable, 
-or register (A, X or Y).
+the ] character. 
+
+When assigning to an array element, the index may be a literal, constant, 
+or simple variable.
+
+When using an array element in an expression or pop statement, the index 
+may be any expression.
 
 Examples:
-  z = r[i];  //Store the value from element i of array r into variable z
-  r[0] = z;  //Store the value of variable z into the first element of r
+  z = r[i];      //Store the value from element i of array r into variable z
+  r[0] = z;      //Store the value of variable z into the first element of r
+  z = d[15-i];   //Store the value element 15-i of array d into variable z
+  c = t[getc()]; //Get a character, translate using array t and store in c 
 
 Note: After a subscripted array reference, the 6502 X register will contain
 the value of the index (unless the register Y was used as the index, in 
-which X register is not changed).
+which X register is not changed). When evaluating an expression used as an
+index, the Accumulator is tempororaly pushed onto the 6502 stack.
 
 STRUCTS
 
@@ -557,17 +571,18 @@ address is pushed onto the stack, high byte first and low byte second.
 
 The pop statement is likewise used to pop arguments off of the machine
 stack after a function call. When using a pop statement, it is followed
-with one or more simple variables, separated by commas, and terminated
-with a semicolon. If any of the arguments are to be discarded, an asterisk
-can be specified instead of a variable name.
+with one or more simple variables or subscripted array elements , separated 
+by commas, and terminated with a semicolon. If any of the arguments are to 
+be discarded, an asterisk can be specified instead of a variable name.
 
 The number of arguments pushed and popped may or may not be the same,
 depending on how the machine language routine manipulates the stack pointer.
 
 Examples:
-  push d,r; mult(); pop p;
-  push x1,y1,x2,y2; rect(); pop *,*,*,*;
-  push &s, "tail"; strcat();
+  push d,r; mult(); pop p; //multiply d times r and store in p
+  push x1,y1,x2,y2; rect(); pop *,*,*,*; //draw rectangle from x1,y1 to x2,y2
+  push &s, "tail"; strcat();  //concatenate "tail" onto string s
+  push x[i],y[i]; rotate(d); pop x[i],y[i]; //rotate point x[1],y[i] by d
 
 Note: The push and pop statements could also be used to manipulate the
 stack inside or separate from a function, but this should be done with
@@ -667,9 +682,10 @@ or subscripted array elements. The third variable, if used, may only be a
 simple variable. Registers are not allowed in plural assignments.
 
 Examples:
-  row, col = scnpos();             //Get current screen position
-  cr, mn, mx = cpmnmx(a, b);       //Compare two values, return min and max
-  lwr[i], upr[i] = tolwup(txt[i]); //Convert char to lower and upper case  
+  row, col = scnpos();              //Get current screen position
+  cr, mn, mx = cpmnmx(a, b);        //Compare two values, return min and max
+  x[i], y[i] = rotate(x[i],y[i],d); //Rotate x[i] and y[i] by d degrees
+  
 
 Note: When compiled, a plural assignment generates an STX for the third
 assignment (if specified), an STY for the second assignment and an STA for

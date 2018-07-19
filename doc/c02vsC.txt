@@ -63,6 +63,18 @@ C02 supports the addition, subtraction, bitwise-and, bitwise-or, and
 exclusive-or operators. The multiplication, division, and binary shift
 operators are not supported. These can be implemented through functions. 
 
+Unary minus may only be used at the beginning of an expression, in which
+case it is treated as a literal 0 and the subtraction operater, and the
+term following the minus is used as the second term of the expression.
+
+Functions calls may only be used in the first term of an expression.
+However, the first argument of any function call may be any expression
+(including one with a function call as the first term).
+
+As in standard C, subscripted array elements may be used in any term of
+an exptression  and the index may be any expression (including one with
+a function call as the first term). 
+
 The sizeof operator in C02 is the at sign @. It may only be used with
 declared variables and struct members, not types.
 
