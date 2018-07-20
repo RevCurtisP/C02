@@ -6,6 +6,7 @@ char term[255]; //Term parsed from equation
 
 char oprstk[MAXTRM];	         //Operator Stack
 char trmstk[MAXTRM][VARLEN+1];   //Function/Index Terms Stack
+int  typstk[MAXTRM];             //Value Type Stack
 int  trmidx;                     //Next Index in Stack
 
 int  trmcnt;  //Number of total terms in current expression

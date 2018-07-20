@@ -17,14 +17,16 @@
 /* Push Term and Operator onto Stack */
 void pshtrm(void) {
   if (trmidx >= MAXTRM) ERROR("Maximum Function Call/Array Index Depth Exceeded", 0, EXIT_FAILURE)
-  oprstk[trmidx] = oper; 
-  strcpy(trmstk[trmidx++], term);
+  oprstk[trmidx] = oper;          //Save Operator
+  typstk[trmidx] = valtyp;        //Save Value Type
+  strcpy(trmstk[trmidx++], term); //Save Term
 }
 
 /* Pop Term and Operator off Stack */
 void poptrm(void) {
-  strcpy(term, trmstk[--trmidx]);
-  oper = oprstk[trmidx];
+  strcpy(term, trmstk[--trmidx]); //Restore Term
+  valtyp = typstk[trmidx];        //Restore Value Type
+  oper = oprstk[trmidx];          //Restore Operator
 }
 
 /* Parse value (literal or identifier)  *
@@ -100,15 +102,34 @@ void chkidx(void) {
   }
 }
 
+/* Process Function in Term */
+void prcfnc(void) {
+  asmlin("PHA", "");       //Save Accumulator
+  prsfnc(0);               //Parse Function Call
+  asmlin("PHA", "");       //Push Result of Function Call onto Stack
+  asmlin("TSX", "");       //X will be one byte before Result
+  asmlin("LDA", "$102,X"); //Get Original Accumulator Value from Stack
+  strcpy(term, "$101,X");  //Set Term to Return Value on Stack
+}
+
+/* Post Function Call Processing */
+void pstfnc(void) {
+  asmlin("INX", ""); //Increment Past Return Value
+  asmlin("INX", ""); //Increment Past Saved Accumutator Value
+  asmlin("TXS", ""); //Return Stack Pointer to Original State
+}
+
 /* Parse Term in Expression           *
  * Sets: term - the term (as a string) */
 void prstrm(void) {
   DEBUG("Parsing term\n", 0)
   prsval(FALSE);
-  if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
   DEBUG("Parsed term %s\n", term)
-  chkidx();  //Check for Array Index
+  strcpy(term, value);
+  DEBUG("Parsed term %s\n", term)
+  if (valtyp == FUNCTION) prcfnc(); //Process Function Call
+  else chkidx();  //Check for Array Index
   skpspc();
 }
 
@@ -220,6 +241,7 @@ void prsrxp(char trmntr) {
     prsopr(); //Parse Operator
     prstrm(); //Parse Term
     prcopr(); //Process Operator
+	if (valtyp == FUNCTION) pstfnc(); //Do Post Function Processing
 	trmcnt--;
   } 
   expect(trmntr);
