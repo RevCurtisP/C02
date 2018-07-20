@@ -59,5 +59,7 @@ c, z[i], f = testfn();    //Return 3 Values with Array
 r[i], z[j] = testfn();    //Return 2 Values with Arrays
 r[i], z[j], f = testfn(); //Return 2 Values with Arrays
 
+f = fnx(b) + fny(c);  //Function in regular term
+
 //A, Y = testfn(); //Error - Registers not Allowed when returning multiple values 
 //r[i], z[j], f[b] = testfn(); //Error - Array Element not Allowed with STX assignment
