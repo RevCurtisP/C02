@@ -363,7 +363,7 @@ Examples:
   aligned char table[240], fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
 
 EXPRESSIONS
-        
+
 An expression is a series of one or more terms separated by operators. 
 
 The first term in an expression may be a function call, subscripted array 
@@ -371,8 +371,8 @@ element, simple variable, literal, or register (A, X, or Y). An expression
 may be preceded with a - character, in which case the first term is assumed 
 to be a literal 0.
 
-Additional terms are limited to subscripted array elements, simple variables,
-literals, and constants.
+Additional terms are limited to function calls, subscripted array elements, 
+simple variables, literals, and constants.
 
 Operators:
   + — Add the following value.
@@ -391,11 +391,12 @@ not appear anywere a | would.
 After an expression has been evaluated, the A register will contain the
 result. 
 
-Note: Function calls are allowed in the first term of an expression
-because upon return from the function the return value will be in the 
-Accumulator. However, due to the 6502 having only one Accumulatorm which 
-is used for all operations between two bytes, there is no simple system 
-agnostic method for allowing function calls in subsequent terms.
+Note: Function calls are implemented using LDA, LDY, and LDX to passed
+arguments and JSR for the function call itself, which uses two bytes on
+the stack. Function calls in the first term of an expression incur no 
+extra overhead, even when nested. Function calls in any other term, however
+require an extra eight bytes of machine code using twenty machine cycles,
+as well as one extra byte of the stack.
 
 EVALUATIONS
 
@@ -471,9 +472,11 @@ Examples:
   c = t[getc()]; //Get a character, translate using array t and store in c 
 
 Note: After a subscripted array reference, the 6502 X register will contain
-the value of the index (unless the register Y was used as the index, in 
-which X register is not changed). When evaluating an expression used as an
-index, the Accumulator is tempororaly pushed onto the 6502 stack.
+the value of the index (unless a constant, literal, or the Y register was 
+used as the index, in which X register is not changed). Using an expression 
+as an array index incurs two extra bytes of machine code totalling five 
+machine cycles, and uses one byte of stack space (to temporarily store the 
+accumulator).
 
 STRUCTS
 

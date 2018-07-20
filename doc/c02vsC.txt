@@ -67,12 +67,8 @@ Unary minus may only be used at the beginning of an expression, in which
 case it is treated as a literal 0 and the subtraction operater, and the
 term following the minus is used as the second term of the expression.
 
-Functions calls may only be used in the first term of an expression.
-However, the first argument of any function call may be any expression
-(including one with a function call as the first term).
-
 As in standard C, subscripted array elements may be used in any term of
-an exptression  and the index may be any expression (including one with
+an exptression and the index may be any expression (including one with
 a function call as the first term). 
 
 The sizeof operator in C02 is the at sign @. It may only be used with
@@ -81,12 +77,17 @@ declared variables and struct members, not types.
 FUNCTIONS
 
 Parameter passing uses the 6502's A, Y, and X registers. This limits 
-function calls to a maximum of three char variables or address reference
-plus and optional char variable. However this also allows the return
+function calls to a maximum of three char variables or an optional char 
+variable plus an address reference. However this also allows the return
 of up to three char variables (see assignments below). However, the
 non-standard push and pop statements allow explicit parameter passing
 via the stack, and the inline keyword has been re-purposed to allow 
 explicit passing of inline parameters. 
+
+Due to this covention, the first char argument of a function call may be 
+any expression, while the second is limited to a literal, constant, 
+variable, or array element, and the third is limited to a literal, 
+constant, or variable.
 
 ASSIGNMENTS
 
