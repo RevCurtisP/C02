@@ -17,19 +17,22 @@
 /* Push Term and Operator onto Stack */
 void pshtrm(void) {
   if (trmidx >= MAXTRM) ERROR("Maximum Function Call/Array Index Depth Exceeded", 0, EXIT_FAILURE)
-  oprstk[trmidx] = oper; 
-  strcpy(trmstk[trmidx++], term);
+  oprstk[trmidx] = oper;  //Put Current Operator on Stack
+  strcpy(trmstk[], term); //Put Current Term on Stack
+  trmidx++;               //Increment Stack Pointer
 }
 
 /* Pop Term and Operator off Stack */
 void poptrm(void) {
-  strcpy(term, trmstk[--trmidx]);
-  oper = oprstk[trmidx];
+  trmidx--;                     //Decrement Stack Pointer
+  strcpy(term, trmstk[trmidx]); //Restore Current Term from Stack
+  oper = oprstk[trmidx];        //Restore Current Operator from Stack
 }
 
-/* Parse value (literal or identifier)  *
+/* Parse value (literal or identifier)   *
+ * Args: alwreg - allow registers        *
  * Sets: value - the value (as a string) *
- *       valtyp - value type           */
+ *       valtyp - value type             */
 void prsval(int alwreg) {
   DEBUG("Parsing value\n", 0)
   skpspc();
@@ -46,17 +49,23 @@ void prcmns(void) {
     asmlin("LDA", "#$00");  //Handle Unary Minus
 }
 
-/* Parse array index                  *
- * Sets: value - array index or       *
- *             "" if no index defined */
+/* Parse array index                      *
+ * Args: clbrkt - require closing bracket *
+ * Sets: value - array index or           *
+ *             "" if no index defined     */
 void prsidx(int clbrkt) {
   expect('[');
-  prsval(TRUE);
+  prsval(TRUE); //Parse Value, Allowing Registers
   DEBUG("Parsed array index '%s'\n", value)
   if (clbrkt) expect(']');
 }
 
-/* Process Simple Array Index */
+/* Process Simple Array Index            *
+ * Uses: term - array variable name      *
+ *       valtyp - array index value type *
+ *       value - array index as string   *
+ *       word - array index raw string   *
+ * Sets: term - modified variable name   */
 void prcsix(void) {
     if (valtyp == LITERAL) {
       strcat(term, "+");
@@ -104,7 +113,7 @@ void chkidx(void) {
  * Sets: term - the term (as a string) */
 void prstrm(void) {
   DEBUG("Parsing term\n", 0)
-  prsval(FALSE);
+  prsval(FALSE); //Parse Term - Disallow Registers
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
   DEBUG("Parsed term %s\n", term)
@@ -192,7 +201,7 @@ void prcftm(void) {
 /* Parse first term of expession            *
  * First term can include function calls    */
 void prsftm(void) {
-  prsval(TRUE);
+  prsval(TRUE); //Parse Value, Allowing Registers
   prcftm();
 }
 
@@ -201,12 +210,12 @@ void prsftm(void) {
 void prcopr(void) {
   DEBUG("Processing operator '%c'\n", oper)
   switch(oper) {
-    case '+': asmlin("CLC", ""); asmlin("ADC", term); break;
-    case '-': asmlin("SEC", ""); asmlin("SBC", term); break;
-    case '&': asmlin("AND", term); break;
+    case '+': asmlin("CLC", ""); asmlin("ADC", term); break;  //Addition
+    case '-': asmlin("SEC", ""); asmlin("SBC", term); break;  //Subtraction
+    case '&': asmlin("AND", term); break;  //Bitwise AND
     case '!': //For systems that don't have pipe in character set
-    case '|': asmlin("ORA", term); break;
-    case '^': asmlin("EOR", term); break;
+    case '|': asmlin("ORA", term); break;  //Bitwise OR
+    case '^': asmlin("EOR", term); break;  //Bitwise XOR
     default:  ERROR("Unrecognized operator '%c'\n", oper, EXIT_FAILURE)
   }
   oper = 0;
@@ -216,11 +225,11 @@ void prcopr(void) {
 void prsrxp(char trmntr) {
   skpspc();
   while (isoper()) {
-	trmcnt++;
+	trmcnt++; //Increment Expression Depth
     prsopr(); //Parse Operator
     prstrm(); //Parse Term
     prcopr(); //Process Operator
-	trmcnt--;
+	trmcnt--; //Decrement Expression Depth
   } 
   expect(trmntr);
 }
@@ -229,8 +238,8 @@ void prsrxp(char trmntr) {
 void prsxpr(char trmntr) {
   DEBUG("Parsing expression\n", 0)
   skpspc();
-  trmcnt = 0;
-  if (match('-')) prcmns();
-  else prsftm(); //Parse First Term
-  prsrxp(trmntr);
+  trmcnt = 0; //Initialize Expression Depth
+  if (match('-')) prcmns(); //Process Unary Minus
+  else prsftm();  //Parse First Term
+  prsrxp(trmntr); //Parse Remainder of Express
 }
