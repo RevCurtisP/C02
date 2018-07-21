@@ -139,7 +139,14 @@ void getwrd(void) {
 char escape(char c) {
   DEBUG("Escaping character '%c'\n", c)
   switch (c) {
-    case 'r': return 0x0d;
+    case 'a': return 0x07; //Alert (Beep/Bell)
+    case 'b': return 0x08; //Backspace
+    case 'e': return 0x08; //Escape
+    case 'f': return 0x0C; //Form Feed
+    case 'n': return 0x0A; //Newline (Line Feed)
+    case 'r': return 0x0D; //Return (Carriage Return)
+    case 't': return 0x09; //Tab (Horizontal)
+    case 'v': return 0x0B; //Vertical Tab
     default: return c;
   }
 }
@@ -151,7 +158,7 @@ void getstr(void) {
   DEBUG("Parsing string\n", 0)
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
-  while(match(strdel) == escnxt) {
+  while(!match(strdel) || escnxt) {
     CCMNT(nxtchr);
     if (escnxt) {
       word[wrdlen++] = escape(getnxt());

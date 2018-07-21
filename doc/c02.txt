@@ -173,7 +173,20 @@ A string is a consecutive series of characters terminated by an ASCII null
 character (a byte with the value 0).
 
 A string literal is written as up to 255 printable characters. prefixed and 
-suffixed with " characters.
+suffixed with " characters. 
+
+The " character and a subset of ASCII control characters can be specified
+in a string literal by using escape sequences prefixed with the \ symbol:
+
+  \b  $08  Backspace
+  \e  $08  Escape
+  \f  $0C  Form Feed
+  \n  $0A  Line Feed
+  \r  $0D  Carriage Return
+  \t  $09  Tab
+  \v  $0B  Vertical Tab
+  \"  $22  Double Quotation Mark
+  \\  $5C  Backslash
 
 SYMBOLS
 
