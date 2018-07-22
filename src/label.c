@@ -78,12 +78,20 @@ void reqlbl(char* lbname) {
   setlbl(lbname);
 }
 
+/* End Function Block */
+void endfnc(void) {
+  DEBUG("Ending function definition with lsrtrn set to %d\n", lsrtrn)
+  if (!lsrtrn) asmlin("RTS", ""); 
+  infunc = FALSE;
+  DEBUG("Set infunc to %d\n", infunc)
+}
+
 /* Pop Label from Stack and Emit on Next Line */
 int poplbl(void) {
   int lbtype = lbltyp[--lblcnt];
   DEBUG("Popped label type %d\n", lbtype)
   switch (lbtype) {
-    case LTFUNC: if (!lsrtrn) asmlin("RTS", ""); break;  //Return From Subroutine
+    case LTFUNC: endfnc(); break; //Return From Subroutine
     case LTDO:   strcpy(loplbl, lblnam[lblcnt]); break;  
     case LTDWHL: strcpy(endlbl, lblnam[lblcnt]); break;  
     case LTCASE: strcpy(cndlbl, lblnam[lblcnt]); break;  

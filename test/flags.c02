@@ -1,0 +1,46 @@
+/* Test C02 evaluations */
+
+#pragma origin 1000
+
+char aa, yy, xx;
+char var;
+
+doflgs(:+C :+D :+I);
+doflgs(:-C :-D :-I :-V);    
+//doflgs(:+V);
+
+doargs(aa, yy, xx :+C :-V);
+
+if (?:+C) putln("Carry Set");
+if (?:-C) putln("Carry Clear");
+if (!?:+C) putln("Carry Not Set");
+if (!?:-C) putln("Carry Not Clear");
+if (?:+N) putln("Negative Set");
+if (?:-N) putln("Negative Clear");
+if (!?:+N) putln("Negative Not Set");
+if (!?:-N) putln("Negative Not Clear");
+if (?:+V) putln("Overflow Set");
+if (?:-V) putln("Overflow Clear");
+if (!?:+V) putln("Overflow Not Set");
+if (!?:-V) putln("Overflow Not Clear");
+if (?:+Z) putln("Zero Set");
+if (?:-Z) putln("Zero Clear");
+if (!?:+Z) putln("Zero Not Set");
+if (!?:-Z) putln("Zero Not Clear");
+
+if (?:+C:+N:+V:+Z) putln("Carry, Negative, Overflow, and Zero Set");
+if (!?:+C:+N:+V:+Z) putln("Carry, Negative, Overflow, or Zero Not Set");
+if (?:-C:-N:-V:-Z) putln("Carry, Negative, Overflow, and Zero Clear");
+if (!?:-C:-N:-V:-Z) putln("Carry, Negative, Overflow, or Zero Not Clear");
+
+if (VAR:+N) putln("VAR is negative");
+if (VAR:+Z) putln("VAR is zero");
+if (VAR:-N:-Z) putln("VAR is positive");
+
+char sign() {
+  if (?:+N) return -1;
+  if (?:+Z) return 0;
+  return 1;
+}
+
+goto exit;

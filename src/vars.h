@@ -48,16 +48,10 @@ int  dsize;                    //Total Data Length
 
 enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 
-enum mtypes {MTNONE, MTALGN, MTZP, MTALS}; //Variable Modifier Types
+enum mtypes {MTNONE, MTALGN, MTZP, MTALS, MTLOCAL}; //Variable Modifier Types
 
 int symdef(char *name);         //Is Variable defined (TRUE or FALSE)
 int zpaddr;                     //Current Zero-Page Address
-
-char fncnam[VARLEN+1];          //Function Name
-char prmtra[VARLEN+1];          //Function Parameter A
-char prmtrx[VARLEN+1];          //Function Parameter X
-char prmtry[VARLEN+1];          //Function Parameter Y
-int  prmcnt;                    //Number of Parameters
 
 void addvar(int m, int t);           //Parse and Compile Variable Declaration
 void addstc();                       //Parse and Compile Structure Declaration

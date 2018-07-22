@@ -28,24 +28,25 @@
 /* Initilize Compiler Variables */
 void init(void) {
   DEBUG("Initializing Compiler Variables\n",0)
-  concnt = 0;
-  varcnt = 0;
-  lblcnt = 0;
-  curcol = 0;
-  curlin = 0;
+  concnt = 0;     //Number of Constants Defined
+  varcnt = 0;     //Number of Variables in Table
+  lblcnt = 0;     //Number of Labels in stack
+  curcol = 0;     //Current Column in Source Code
+  curlin = 0;     //Current Line in Source Code
+  alcvar = TRUE;  //Allocate Variables Flag
+  inblck = FALSE; //Multiline Block Flag
+  infunc = FALSE; //Inside Function Definition
+  xstmnt[0] = 0;  //Expected Statement
+  nxtwrd[0] = 0;  //Next Word (from DEFINE lookup)
+  nxtptr = 0;     //Pointer to next character in nxtwrd
+  vrwrtn = FALSE; //Variables Written Flag
+  zpaddr = 0;     //Current Zero-Page Address
+  invasc = FALSE; //Invert ASCII Flag
+  mskasc = FALSE; //Set High Bit Flag
+  fcase = FALSE;  //First Case Statement Flag
+  xsnvar[0] = 0;  //Assigned X Variable Name
+  ysnvar[0] = 0;  //Assigned Y Variable Name
   strcpy(incdir, "../include/");
-  alcvar = TRUE;
-  inblck = FALSE;
-  xstmnt[0] = 0;
-  nxtwrd[0] = 0;
-  nxtptr = 0;
-  vrwrtn = FALSE;
-  zpaddr = 0;
-  invasc = FALSE;
-  mskasc = FALSE;
-  fcase = FALSE;
-  xsnvar[0] = 0;
-  ysnvar[0] = 0;
 }
 
 /* Reads and parses the next Word in Source File */

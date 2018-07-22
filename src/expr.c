@@ -17,9 +17,9 @@
 /* Push Term and Operator onto Stack */
 void pshtrm(void) {
   if (trmidx >= MAXTRM) ERROR("Maximum Function Call/Array Index Depth Exceeded", 0, EXIT_FAILURE)
-  oprstk[trmidx] = oper;  //Put Current Operator on Stack
-  strcpy(trmstk[], term); //Put Current Term on Stack
-  trmidx++;               //Increment Stack Pointer
+  oprstk[trmidx] = oper;        //Put Current Operator on Stack
+  strcpy(trmstk[trmidx], term); //Put Current Term on Stack
+  trmidx++;                     //Increment Stack Pointer
 }
 
 /* Pop Term and Operator off Stack */

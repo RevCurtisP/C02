@@ -17,25 +17,27 @@
 #include "stmnt.h"
 #include "dclrtn.h"
 
+void addprm(char* prmtr) {
+  reqvar(FALSE);          //Get Variable Name
+  strcpy(prmtr, value);   //Copy to Parameter Variable
+  prmcnt++;               //Increment # of Parameters
+}
+
 /* Add Function Definition */
 void addfnc(void) {
+  if (infunc) ERROR("Nested Function Definitions Not Allowed\n", 0, EXIT_FAILURE)
   expect('(');
+  infunc = TRUE;          //Set Inside Function Definition Flag
+  DEBUG("Set infunc to %d\n", infunc)
   strcpy(fncnam, word);   //Save Function Name
-  prmcnt = 0;             //Set Number of Parameters
+  prmcnt = 0;             //Initialze Number of Parameters
   skpspc();               //Skip Spaces
-  /* QUESTION: Eliminate this in favor of Register Assignments inside Function Call? */
   if (isalph()) {         //Parse Parameters
-    reqvar(FALSE);        //Get First Parameter
-    strcpy(prmtra, value);
-    prmcnt++;     
-    if (look(',')) {
-      reqvar(FALSE);      //Get Second Parameter
-      strcpy(prmtry, value);
-      prmcnt++;     
-      if (look(',')) {
-        reqvar(FALSE);    //Third Parameter
-        strcpy(prmtrx, value);
-        prmcnt++;     
+    addprm(prmtra);       //Get First Parameter
+    if (look(',')) {      //Look for Comma
+      addprm(prmtry);     //Get Second Parameter
+      if (look(',')) {    //Look for Comma
+        addprm(prmtrx);   //Get Third Parameter
       }
     }
   }
@@ -107,7 +109,7 @@ void pdecl(int m, int t) {
   do {
     getwrd();
     if (match('(')) {
-      if (m != MTNONE) ERROR("Illegal Modifier %d in Function Definition", m, EXIT_FAILURE)
+      if (m != MTNONE) ERROR("Illegal Modifier %d in Function Definition\n", m, EXIT_FAILURE)
       addfnc();  //Add Function Call
       return;
     }  
@@ -118,7 +120,8 @@ void pdecl(int m, int t) {
   cmtlin();    //Write out declaration comment
 }
 
-/* Check for and Parse Type Keyword */
+/* Check for and Parse Type Keyword *
+ * Args: m - Modifier Type          */
 int ptype(int m) {
   int result = TRUE;
   if    (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration

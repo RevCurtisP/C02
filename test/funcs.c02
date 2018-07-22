@@ -13,13 +13,24 @@ char t = {1, 2, 3, 4, 5};
 char s = "This is a string.";
 char aa,xx,yy ; //Function parameter variables
 char aaa,xxx,yyy ; //Function return variables
-char STROBE; //Strobe Register
+char STROBE;     //Strobe Register
 
-
-/* Function Declaration */
+/* Function Declarations */
 char myfunc();
   return b-c-d;
   return;
+
+char func1(aa) {
+  return aa;
+}
+
+char func2(aa, yy) {
+  return aa + yy;
+}
+
+char func3(aa, yy, xx) {
+  return aa + yy - xx;
+}
 
 main:
 
@@ -59,5 +70,7 @@ c, z[i], f = testfn();    //Return 3 Values with Array
 r[i], z[j] = testfn();    //Return 2 Values with Arrays
 r[i], z[j], f = testfn(); //Return 2 Values with Arrays
 
+
+//void fnoutr() {char fninnr() {} } 
 //A, Y = testfn(); //Error - Registers not Allowed when returning multiple values 
 //r[i], z[j], f[b] = testfn(); //Error - Array Element not Allowed with STX assignment
