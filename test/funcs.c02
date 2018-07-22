@@ -69,8 +69,8 @@ r[i], d, f = testfn();    //Return 3 Values with Array
 c, z[i], f = testfn();    //Return 3 Values with Array
 r[i], z[j] = testfn();    //Return 2 Values with Arrays
 r[i], z[j], f = testfn(); //Return 2 Values with Arrays
+r[i], z[j], f[b] = testfn(); //Error - Array Element not Allowed with STX assignment
 
 
 //void fnoutr() {char fninnr() {} } 
 //A, Y = testfn(); //Error - Registers not Allowed when returning multiple values 
-//r[i], z[j], f[b] = testfn(); //Error - Array Element not Allowed with STX assignment

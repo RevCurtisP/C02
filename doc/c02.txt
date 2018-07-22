@@ -475,7 +475,7 @@ When assigning to an array element, the index may be a literal, constant,
 or simple variable.
 
 When using an array element in an expression or pop statement, the index 
-may be any expression.
+may be any expression. 
 
 Examples:
   z = r[i];      //Store the value from element i of array r into variable z
@@ -483,10 +483,17 @@ Examples:
   z = d[15-i];   //Store the value element 15-i of array d into variable z
   c = t[getc()]; //Get a character, translate using array t and store in c 
 
-Note: After a subscripted array reference, the 6502 X register will contain
-the value of the index (unless the register Y was used as the index, in 
-which X register is not changed). When evaluating an expression used as an
-index, the Accumulator is tempororaly pushed onto the 6502 stack.
+Note: Register references may be used as array indexes within expressions, 
+but the contents of each registers may change with each term evaluation. 
+Using a constant, literal, or the X or Y registers as an array index will 
+generates the same amount of code as a simple variable reference and leave 
+both the X and Y registers unchanged. Using the A register as an index will
+generate one extra byte of code, while using a simple variable as index 
+will generate 1 to 2 extra bytes of code. In either case, the index value
+will be left in the X register. When an expression is used as an index,
+one extra byte of stack space is used, and an additional three bytes of 
+code is generated. The X register will contain the result of the expression 
+and the Y register will be left in an unknown state.
 
 STRUCTS
 
@@ -690,19 +697,19 @@ PLURAL ASSIGNMENTS
 C02 allows a function to return up to three values by specifying multiple
 variables, separated by commas, to the left of the assignment operator (=).
 
-The first and second variables to be assigned may be either simple variables
-or subscripted array elements. The third variable, if used, may only be a 
-simple variable. Registers are not allowed in plural assignments.
+All three variables to be assigned may be either simple variables or
+subscripted array elements. Registers are not allowed in plural assignments.
 
 Examples:
   row, col = scnpos();              //Get current screen position
   cr, mn, mx = cpmnmx(a, b);        //Compare two values, return min and max
   x[i], y[i] = rotate(x[i],y[i],d); //Rotate x[i] and y[i] by d degrees
-  
+  x[i], y[i], z[i] = get3d(i);      //Generate 3d coordinate for index i
 
 Note: When compiled, a plural assignment generates an STX for the third
 assignment (if specified), an STY for the second assignment and an STA for
-the first assignment. 
+the first assignment. Using a subscripted array element for the third
+assignment generates an overhead of three bytes of machine code. 
 
 GOTO STATEMENT
 

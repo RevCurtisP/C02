@@ -77,13 +77,20 @@ void prcasn(char trmntr) {
   else           prsxpr(trmntr); //Parse Expression
   DEBUG("Processing X assignment variable '%s'\n", xsnvar)
   if (xsnvar[0]) {
-    asmlin("STX", xsnvar);
+    if (strlen(xsnidx)) { //Process X variable Index
+      asmlin("PHA", "");  //Save Accumulator
+      asmlin("TXA", "");  //Transfer Return Value to Accumulator
+	  prcidx(xsnivt, xsnvar, xsnidx); //Process Index
+	  asmlin("STA", xsnvar); //Store Return Value
+      asmlin("PLA", ""); //Restore Accumulator
+    }
+	else asmlin("STX", xsnvar); //Store Return Value
     xsnvar[0] = 0;
   }
   DEBUG("Processing Y assignment variable '%s'\n", ysnvar)
   if (ysnvar[0]) {
-    if (strlen(ysnidx)) prcidx(ysnivt, ysnvar, ysnidx);
-    asmlin("STY", ysnvar);
+    if (strlen(ysnidx)) prcidx(ysnivt, ysnvar, ysnidx); //Process Index
+    asmlin("STY", ysnvar); //Store Return Value
     ysnvar[0] = 0;
   }
   DEBUG("Checking if '%s' is a register\n", asnvar)
@@ -91,8 +98,8 @@ void prcasn(char trmntr) {
   else if (strcmp(asnvar, "Y")==0) asmlin("TAY", "");
   else if (strcmp(asnvar, "A")==0) return;
   DEBUG("Processing assignment variable '%s'\n", asnvar)
-  if (strlen(asnidx)) prcidx(asnivt, asnvar, asnidx);
-  asmlin("STA", asnvar);
+  if (strlen(asnidx)) prcidx(asnivt, asnvar, asnidx); //Process Index 
+  asmlin("STA", asnvar); //Store Return Value
 }
 
 /* Parse and Return Array Index and Type */
@@ -134,7 +141,9 @@ void prcvar(char trmntr) {
       prsvar(FALSE); //get variable name
       strcpy(xsnvar, word);
       DEBUG("Set STX variable to %s\n", xsnvar)
-      if (valtyp == ARRAY) ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE) 
+      //if (valtyp == ARRAY) ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE) 
+      if (valtyp == ARRAY) xsnivt = getidx(xsnidx); //Get Array Index and Type
+      else xsnidx[0] = 0;
     }
   }
   prcasn(trmntr);

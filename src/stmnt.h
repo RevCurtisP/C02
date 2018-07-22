@@ -7,9 +7,11 @@ int  asntyp;                //Assigned Variable Type
 char asnidx[VARLEN+1] ;     //Assigned Variable Index
 int  asnivt;                //Assigned Index Variable Type
 char ysnvar[VARLEN+1];      //Assigned Y Variable Name
-char ysnidx[VARLEN+1] ;     //Assigned Variable Index
-int  ysnivt;                //Assigned Index Variable Type
+char ysnidx[VARLEN+1] ;     //Assigned Y Variable Index
+int  ysnivt;                //Assigned Y Index Variable Type
 char xsnvar[VARLEN+1];      //Assigned X Variable Name
+char xsnidx[VARLEN+1] ;     //Assigned X Variable Index
+int  xsnivt;                //Assigned X Index Variable Type
 
 char xstmnt[LINELEN];       //Expected Statement
 

@@ -27,8 +27,6 @@ void addprm(char* prmtr) {
 void addfnc(void) {
   if (infunc) ERROR("Nested Function Definitions Not Allowed\n", 0, EXIT_FAILURE)
   expect('(');
-  infunc = TRUE;          //Set Inside Function Definition Flag
-  DEBUG("Set infunc to %d\n", infunc)
   strcpy(fncnam, word);   //Save Function Name
   prmcnt = 0;             //Initialze Number of Parameters
   skpspc();               //Skip Spaces
@@ -43,6 +41,8 @@ void addfnc(void) {
   }
   expect(')');
   if (look(';')) return;    //Forward Definition
+  infunc = TRUE;          //Set Inside Function Definition Flag
+  DEBUG("Set infunc to %d\n", infunc)
   setlbl(fncnam);         //Set Function Entry Point
   if (prmcnt > 0) asmlin("STA", prmtra); //Store First Parameter
   if (prmcnt > 1) asmlin("STY", prmtry); //Store Second Parameter
