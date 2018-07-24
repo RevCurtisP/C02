@@ -3,6 +3,7 @@
  * Test file for Compiler                   *
  ********************************************/
 
+#pragma padding 1
 
 /* Constants */
 const #TRUE = $FF, #FALSE = 0;

@@ -80,6 +80,12 @@ void porign(void) {
   DEBUG("Set origin to %s\n", value)
 }
 
+/* Parse Padding Subdirective */
+void ppddng(void) {
+  padcnt = prsnum(0xFF); //Get Number of Padding Bytes
+  DEBUG("Set padding to %d\n", padcnt)
+}
+
 /* Parse Zeropage Subdirective */
 void prszpg(void) {
   zpaddr = prsnum(0xFF); //Set Zero Page Address to Literal
@@ -102,6 +108,8 @@ void pprgma(void) {
     pascii(); //Parse Ascii
   else if (wordis("ORIGIN"))
     porign(); //Parse Origin
+  else if (wordis("PADDING"))
+    ppddng(); //Parse Origin
   else if (wordis("VARTABLE"))
     pvrtbl(); //Parse Vartable
   else if (wordis("ZEROPAGE"))

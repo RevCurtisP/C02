@@ -31,6 +31,7 @@ void init(void) {
   concnt = 0;     //Number of Constants Defined
   varcnt = 0;     //Number of Variables in Table
   lblcnt = 0;     //Number of Labels in stack
+  padcnt = 0;     //Number of Padding Bytes at End
   curcol = 0;     //Current Column in Source Code
   curlin = 0;     //Current Line in Source Code
   alcvar = TRUE;  //Allocate Variables Flag
@@ -84,6 +85,11 @@ void prolog(void) {
 
 void epilog(void) {
   if (!vrwrtn) vartbl();  //Write Variable Table
+  if (padcnt) {
+	SCMNT("PADDING BYTES")
+    sprintf(word, "$%hhX", padcnt);
+	asmlin(STROP, word);
+  }
 }
 
 /* Compile Source Code*/

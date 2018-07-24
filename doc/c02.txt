@@ -131,6 +131,16 @@ Examples:
   #pragma origin $0400  //Compiled code starts at address 1024
   #pragma origin 8192   //Compiled code starts at address 8192
 
+PRAGMA PADDING
+
+The #pragma padding directive adds empty bytes to the end of the compiled
+program. It should be used with target systems that require the object
+code to be padded with a specific number of bytes.
+
+Examples:
+  #pragma padding 1     //Add one empty byte to end of code
+  #pragma padding $FF   //Add 255 empty bytes to end of code
+
 PRAGMA VARTABLE
 
 The #pragma vartable directive forces the variable table to be written.

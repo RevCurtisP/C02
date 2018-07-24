@@ -67,6 +67,8 @@ int infunc; //Inside Function Definition Flag
 int lsrtrn; //Last Statement was a Return Flag
 int fcase;  //First Case Statement Flag
 
+int padcnt;	//Number of Padding Bytes at End of Program
+
 void exterr(int errnum);        //Print current file name & position and exit
 void expctd(char *expected);    //Print Expected message and exit
 
