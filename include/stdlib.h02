@@ -15,18 +15,20 @@ char abs();
 
 /* Convert ASCII String to Unsigned Byte *
  * Args: &s - String to Convert          *
- * Returns: Numeric value of string      */
+ * Returns: Numeric value of string      *
+ *          Number of digits parsed      */
 char atoc();
 
 /* Convert Unsigned Byte to ASCII String *
  * Args: c  - Unsigned Byte to Convert   *
- *       &s - String to populate         */
+ *       &s - String to populate         *
+ * Returns: Length of string             */
 void ctoa();
 
-/* Divide Unsigned Bytes            *
- * Args: n - Numerator              *
- *       d - Denominator            *
- * Returns: Numerator / Denominator */
+/* Divide Unsigned Bytes        *
+ * Args: n - Numerator          *
+ *       d - Denominator        *
+ * Returns: Quotient, Remainder */
 char div();
  
 /* Maximum of Two Bytes        *
@@ -41,10 +43,10 @@ char max();
  * Returns: Lesser of the Two */
 char min();
 
-/* Multiply Unsigned Bytes            *
- * Args: d - Multiplicand             *
- *       r - Multiplier               *
- * Returns: Multiplicand * Multiplier */
+/* Multiply Unsigned Bytes   *
+ * Args: d - Multiplicand    *
+ *       r - Multiplier      *
+ * Returns: Product LSB, MSB */
 char mult();
 
 /* Generate Pseudo-Random Number            *

@@ -26,7 +26,7 @@ char memcmp();
 
 /* Copy Source Array to Destination Array         *
  * Args: n  - Number of bytes to copy             *
- *       &s - Source string                       *
+ *       &s - Source array                       *
  * Sets: Destination string specified by memdst() */
 char memcpy();
 

@@ -49,14 +49,15 @@ STRCLX: LDA #$FF        ;Load -1 into Accumulater
 ;strlen(&s) - Return Length of String
 ;Args: X,Y - Pointer to string
 ;Sets: SRCLO,SRCHI = Pointer to source string
-;Affects: N,Z
 ;Returns: A,Y = Length of string
+;         N,Z based on A
 STRLEN: JSR SETSRC      ;Initialize Source String
 STRLEL: LDA (SRCLO),Y   ;Get Next Character
         BEQ STRLEX      ;If <> NUL 
         INY             ;  Increment Index
         BPL STRLEL      ;  and Loop if < 128
 STRLEX: TYA             ;Transfer Index to Accumulator
+        ORA #0          ;Set N and Z flags
         RTS             ;and Return
 
 ;strdst(&s) - Set Destination String 

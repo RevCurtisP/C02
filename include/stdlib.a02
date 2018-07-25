@@ -3,50 +3,70 @@
 ; external zero page locations SRCLO and srchi
 ; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
 
-;Return ABSolute Value of Accumulator
+;abs(n) - Get ABSolute Value
+;Args: A = Number to get Absolute Value Of
+;Affects: C, N, Z
+;Returns: A = Absolute Value of Argument
 ABS:    CMP #$80        ;If Negative (High Bit Set)
         BCC ABSX        ;  Carry will Already be Set
         EOR #$FF        ;  One's Complement
         ADC #$00        ;  and Increment (Carry set by CMP)
 ABSX:   RTS
 
-;Return Higher of A and Y
-;Uses TEMP0
-;Affects A,N,Z,C
+;max(m,n) - Get MAXimum of Two Numbers
+;Args: A,Y = Numbers to Compare
+;Sets: TEMP0 = Second Argument
+;Affects: N,Z,C
+;Returns: A = Larger of the Two Arguments
 MAX:    STY TEMP0       ;Save Second Parameter
         CMP TEMP0       ;If First Parameter
         BCC MAXX        ;  Greater than Second Parameter
         TYA             ;Copy Second Parameter into Accumulator  
 MAXX:   RTS
 
-;Return Lower of A and &
-;Uses TEMP0
-;Affects A,N,Z,C
+;min(m,n) - Get MINimum Get MAXimum of Two Numbers
+;Args: A,Y = Numbers to Compare
+;Sets: TEMP0 = Second Argument
+;Affects: N,Z,C
+;Returns: A = Smaller of the Two Arguments
 MIN:    STY TEMP0       ;Save Second Parameter
         CMP TEMP0       ;If First Parameter
         BCS MINX        ;  Less than Second Parameter
         TYA             ;Copy Second Parameter into Accumulator  
 MINX:   RTS
 
-;Multiply A times Y
-;Uses TEMP0, TEMP1
-;Affects A,N,Z,C
+;mult(m,n) - MULTiply Two Numbers
+;Args: A = Multiplicand
+;      Y = Nultiplier
+;Sets: TEMP0 = Multiplicand
+;      TEMP1 = 0
+;      TEMP3 = Product MSB
+;Affects: N,Z,C
+;Returns: A = Product LSB
+;         Y = Product MSB
 MULT:   STA TEMP0       ;Store Multiplicand
         STY TEMP1       ;Store Multiplier
 ;Multiply TEMP0 times TEMP1
 MULTT:  LDA #$00        ;Initialize Accumulator
+        STA TEMP2       ;and Result High Byte
         BEQ MULTE       ;Enter Loop
 MULTA:  CLC
         ADC TEMP0       ;Add Multiplicand
 MULTL:  ASL TEMP0       ;Shift Multiplicand Left
+        ROL TEMP2
 MULTE:  LSR TEMP1       ;Shift Multiplier Right
         BCS MULTA       ;If Bit Shifted Out, Add Multiplicand
         BNE MULTL       ;Loop if Any 1 Bits Left
         RTS
 
-;Divide A by Y
-;Used TEMP0,TEMP1
-;Affects A,X,N,Z,C
+;div(m,n) - MULTiply Two Numbers
+;Args: A = Dividend
+;      Y = Divisor
+;Sets: TEMP0 = 0
+;      TEMP1 = Divisor
+;Affects: N,Z,C
+;Returns: A = Quotient
+;         Y = Remainder
 DIV:    STA TEMP0       ;Store Dividend
         STY TEMP1       ;Store Divisor
 ;Divide TEMP0 by TEMP1
@@ -61,6 +81,7 @@ DIVL:   ROL TEMP0       ;Shift Bit Out of Dividend
 DIVS:   DEX             ;Decrement Counter
         BPL DIVL        ;  and Loop
         ROL TEMP0       ;Shift Result into Dividend
+        TYA             ;Copy Remainder to Y Register
         LDA TEMP0       ;Load Result into Accumulator
         RTS
 
@@ -87,6 +108,7 @@ RANDS:  ORA #$00        ;If Passed Value not 0
 
 ;Return A Shifted Y Bytes to the Left
 ;Affects A,Y,N,Z,C
+;Affects A,Y,N,Z,C
 SHIFTL: ASL             ;Shift Byte to Left
         DEY             ;Decrement Counter
         BNE SHIFTL      ;  and Loop if Not 0
@@ -96,12 +118,16 @@ SHIFTL: ASL             ;Shift Byte to Left
 ;Affects A,Y,N,Z,C
 SHIFTR: LSR             ;Shift Byte to Right
         DEY             ;Decrement Counter
-        BNE SHIFTL      ;  and Loop if Not 0
+        BNE SHIFTR      ;  and Loop if Not 0
         RTS
 
-;Convert ASCII to Byte
-;Uses TEMP0, TEMP1
-;Affects A,X,Y,N,Z,C
+;atoc(&s) - ASCII string TO Character
+;Args: Y,X = Address of String to Convert
+;Uses: TEMP0, TEMP1
+;Sets: SRCLO, SRCHI = Address of String
+;Returns: A = Converted Number
+;         C,N,Z based on Accumulator
+;         Y = Number of Digits 
 ATOC:   JSR SETSRC      ;Initialize Source String
         STY TEMP0       ;Initialize Result
 ATOCL:  LDA (SRCLO),Y   ;Get Next Character
@@ -123,9 +149,14 @@ ATOCL:  LDA (SRCLO),Y   ;Get Next Character
 ATOCX:  LDA TEMP0       ;Load Result
         RTS             ;And Return
 
-;Convert Byte to ASCII String
-;Uses SRCLO, srchi, TEMP0, TEMP1, TEMP2
-;Affects A,X,Y,N,Z
+;ctoa(n) - Character TO ASCII string
+;Args: Y,X = Address of String to Populate
+;Sets: SRCLO, SRCHI = Address of String
+;      TEMP0 = Ones Digit
+;      TEMP1 = Tens Digit
+;      TEMP2 = Hundreds Digit
+;Affects: C,N.Z
+;Returns: A,Y = Length of String
 CTOA:   JSR SETSRC     ;Initialize Source String
         JSR CUBCD      ;Convert Accumulator to Unpacked BCD
         LDA TEMP2      ;Get High Byte
@@ -143,14 +174,17 @@ CTOA3:  LDA TEMP0      ;Get Low Byte
 CTOAN:  ORA #$30       ;Convert to ASCII digit
 CTOAX:  STA (SRCLO),Y  ;Store in StringCTOAS:  STA (SRCLO),Y  ;Store in String
         INY            ;and Increment Offset
+        TYA            ;Copy String Length to Accumulator
         RTS
 
-;Unpack 3-Digit BCD Number 
-;Input: TEMP1 = Low Byte
-;       TEMP2 = High Nybble
-;Output: TEMP0 = Ones Digit 
-;        TEMP1 = Tens Digit
-;        TEMP2 = Hundreds Digit
+;cubcd(n) - Convert and Unpack BCD number
+;Args: A - Number to Convert
+;upbcd() - UnPack 3-digit BCD number 
+;Uses: TEMP1 = Low Byte
+;      TEMP2 = High Nybble
+;Sets: TEMP0 = Ones Digit 
+;      TEMP1 = Tens Digit
+;      TEMP2 = Hundreds Digit
 ;Affects: A,N,Z
 ;Returns: X = 0
 CUBCD:  JSR CVBCD      ;Convert Accumulator to BCD
@@ -166,14 +200,19 @@ UPBCD:  LDA TEMP1      ;Get Low Byte
         RTS  
 
 
-;Convert Binary Number in Accumulator to Binary Coded Decimal
-;Uses: TEMP0
-;Returns BCD in TEMP1,temp and A,X = 0
+;ConVert number to packed Binary Coded Decimal
+;Args: A - Number to Convert
+;Destroys: TEMP0
+;Sets: TEMP1 = Tens and Ones Digit
+;      TEMP2 = Hundreds Digit
+;Returns: A = Hundreds Digit
+;         X = 0
 CVBCD:  STA TEMP0  ;Save Binary Value
 CVBCDT: LDA #0     ;Clear BCD Bytes
         STA TEMP1
         STA TEMP2
         LDX #8     ;Process 8 bits of Binary
+        PHP        ;Save Status Register
         SEI        ;Disable Interupts
         SED        ;Set Decimal Mode
 CVBCDL: ASL TEMP0  ;Shift High Bit Into Carry
@@ -185,6 +224,5 @@ CVBCDL: ASL TEMP0  ;Shift High Bit Into Carry
         STA TEMP2  ;  Effectively Multiplying It by 2
         DEX        ;Decrement Counter and
         BNE CVBCDL ;  Process Next Bit
-        CLD        ;Clear Decimal Mode
-        CLI        ;Enable Interrupts
+        PLP        ;Restore Status Register
         RTS

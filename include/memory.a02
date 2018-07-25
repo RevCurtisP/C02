@@ -37,14 +37,14 @@ MEMCLX: TYA             ;Return Index into String
 ;Affects: N,Z
 MEMDST  EQU SETDST      ;Aliased to System Header function
 
-;Set Source Address and Number of Characters
+;Set Source Address and Number of Bytes
 ;Args: X,Y = Pointer to Source Array
-;Sets: DSTLO,DSTHI = Pointer to destination Array
-;      TEMP0 - Number of Characters
+;Sets: SCRLO,SRCHI = Pointer to destination Array
+;      TEMP0 - Number of Bytes
 ;Affects: A,N,Z
 MEMSRC: JSR SETSRC      ;Initialize Source Array and Index
 MEMSRA: STA TEMP0       ;Store Number Of Character
-        ORA #0          ;If Number of Characters
+        ORA #0          ;If Number of Bytes
         BNE MEMSRX      ;  Equals 0
         PLA             ;  Pull Return Address off Stack
         PLA             ;  Aborting Calling Routine
@@ -79,12 +79,14 @@ MEMCMR: RTS             ;
 ;      X,Y = Pointer to source Array
 ;Sets: TEMP0 = Number of bytes to copy
 ;Affects: A,Y,C,N,Z
+;Returns: A=Number of Bytes Copied
 MEMCPY: JSR MEMSRC      ;Initialize Source, Index, and Count
 MEMCPL: LDA (SRCLO),Y   ;Get Character from Source Array
         STA (DSTLO),Y   ;Copy to Destination Array
         INY             ;  Increment Index
         CPY TEMP0       ;If < Count
         BCC MEMCPL      ;  Loop 
+        TYA             ;Copy Index to Accumulater
         RTS             ;Else Return
 
 ;memset(c, n) - Fill Destination Array

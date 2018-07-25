@@ -1,0 +1,49 @@
+/******************************************
+ * stack - Stack Memory Functions for C02 *
+ ******************************************/
+
+/* Set Stack Start Address     *
+ * Args: &addr - Start Address */
+void stkbgn();
+
+/* Set Destination to Stack Pointer  *
+ * Returns: Y,X=Pointer Address      */
+void stkdst();
+
+/* Set Stack End Address     *
+ * Args: &addr - End Address */
+void stkend();
+
+/* Pop Array from Contents from Stack    * 
+ * Args: n  - Number of bytes to write   *
+ *       &m - Array to pop contents into *
+ * Returns: A=Number of bytes retrieved  *
+ *            0 if none                  */
+char stkpop();
+
+/* Push Array Contents onto Stack             * 
+ * Args: n  - Number of bytes to write        *
+ *       &m - Array containing bytes to push  *
+ * Returns: A=$FF if bytes were written       *
+ *            $00 if block was overflowed     */
+char stkpsh();
+
+/* Get Stack Pointer Address    *
+ * Returns: Y,X=Pointer Address */
+void stkptr();
+
+/* Reset Stack Pointer to Stack Start *
+ * Returns: Y,X=Pointer Address       */
+void stkrst();
+
+/* Set Stack Pointer Address     *
+ * Args: &addr - Pointer Address */
+void stkset();
+
+/* Push String onto Stack                 * 
+ * Args: &m - String to push              *
+ * Returns: A=$FF if bytes were written   *
+ *            $00 if block was overflowed */
+char stkstr();
+
+void stkrst();

@@ -1,0 +1,204 @@
+;*** Needs to be Tested and Debugged ****
+
+;C02 library stack.h02 assembly language subroutines
+;Requires External Zero Page Variables 
+;STKLO, STKHI, DSTLO, DSTHI, SRCLO, SRCHI
+;External Variables 
+;STKSLO, STKSHI, STKELO, STKEHI, STKLEN, TEMP0, TEMP1, TEMP2
+;External Routines 
+;MEMCPL, SETDST, SETSRC, STRLEN
+
+;Implementation Notes:
+;Stack starts at STKSLO,STKSHI and builds upward tp STKELO, STKEHI
+;Each entry on the stack consists of the entry data followed 
+;by a single byte containing the length of the entry data
+
+;stkbgn(&b) - Set Stack Start Address
+;Args: X,Y = Address
+;Sets: STKSLO, STKSHI = Stack Start Address
+;Affects: Z, N
+STKBGN: STX STKSLO  ;Save Stack Start LSB
+        STY STKSHI  ;Save Stack Start MSB
+        RTS
+
+;stkend(&b) - Set Stack End Address (+1)
+;Args: X,Y = Address
+;Sets: STKELO, STKEHI = Stack End Address
+;Affects: Z, N
+STKEND: STX STKELO  ;Save Stack End LSB
+        STY STKEHI  ;Save Stack End MSB
+        RTS
+
+;STKPTR() - Get Stack Pointer
+;Uses: STKLO,STKHI = Stack Pointer
+;Affects: X,N,Z
+;Returns: X = Stack Pointer LSB
+;         Y = Stack Pointer MSB
+STKPTR: LDX STKLO     ;Load Stack Pointer LSB
+        LDY STKHI     ;Load Stack Pointer MSB
+        RTS
+
+;STKSRC() - Set Source Pointer to Stack Pointer
+;Uses: STKLO,STKHI = Stack Pointer
+;Sets: SRCLO,SRCHI = Source Array Pointer
+;Affects: X,N,Z
+;Returns: Y = 0
+STKSRC: JSR STKPTR    ;Get Stack Pointer Address
+        JMP SETSRC    ;Set Source/ an/d Return
+
+;stkdst() - Set Destination Pointer to Stack Pointer
+;Uses: STKLO,STKHI = Stack Pointer
+;Sets: DSTLO,DSTHI = Destination Array Pointer
+;Affects: N,Z
+;Returns: X = Stack Pointer LSB
+;         Y = Stack Pointer MSB
+STKDST: JSR STKPTR    ;Get Stack Pointer Address
+        JMP SETDST    ;Set Destination and Return
+
+;stkrst() - Reset Stack Pointer to Start Address
+;Uses: STKSLO, STKSHI = Stack Start Address
+;Sets: STKLO, STKHI = Stack Pointer
+;Affects: Z, N
+;Returns: X = Stack Pointer LSB
+;         Y = Stack Pointer MSB
+STKRST: LDX STKSLO    ;Load X with Stack Start LSB
+        LDY STKSHI    ;Load X with Stack Start MSB
+
+;stkset() - Set Stack Pointer Address
+;Args: X,Y = Address
+;Sets: STKLO, STKHI = Stack Pointer Address
+;Affects: Z, N
+;Returns: X = Stack Pointer LSB
+;         Y = Stack Pointer MSB
+STKSET: STX STKLO     ;Store X in Stack Pointer LSB
+        STY STKHI     ;Store Y in Stack Pointer MSB
+        RTS           ;Exit Routine
+
+;stkalc(n) - Allocate Space on Stack
+;Args: A=Number of Bytes to Allocate
+;Updates: STKLO, STKHI = Stack Pointer
+;Affects: C,N,Z
+;Returns: A = Number of Bytes Allocated
+;             0 if Error: Pointer Overflow or Length 0 
+;         Y=0
+STKALC: LDA TEMP0       ;If No Bytes
+        BEQ STKINX      ;  Return False
+        CLC 
+        ADC STKLO       ;Add to Stack Pointer LSB
+        STA STKLO       ;and Save
+        LDA STKHI       ;Add Carry
+        ADC #0          ;to Stack Pointer MSB
+        STA STKHI       ;and Save
+        LDA STKEHI      ;If Stack End MSB
+        CMP STKHI       ;  < Stack Pointer MSB
+        BCC STKSUZ      ;  Return False
+        BNE STKALX      ;Else if Not Equal
+        LDA STKELO      ;and Stack End LSB
+        CMP STKLO       ;  < Stack Pointer LSB
+        BCC STKSUZ      ;  Return False
+STKALX: LDA TEMP0       ;Get Number of Bytes from X Register
+        LDY #0          ;Initialize Index
+        STA (STKLO),Y   ;Store after Allocated Area
+                        ;and fall inro STKINC
+
+;stkinc(n) - Increment Stack Pointer
+;Sets: STKLO, STKHI = Stack Pointer Address
+;Affects: Y,Z,N
+STKINC: INC STKLO       ;Increment LSB 
+        BNE STKINX      ;If Zero
+        INC STKHI       ;  Increment MSB
+STKINX: RTS
+
+;stkpsh(n, &m) - Push n Bytes of m onto Stack
+;Args: A = Number of Bytes to Append
+;      Y,X = Address of Source Array
+;Uses: STKELO, STKEHI = Stack End Address
+;Sets: DSTLO, DSTHI = Pointer to Stack Entry
+;      SRCHI, SRCLO = Pointer to Source Array
+;      TEMP0 = Number of Bytes to Append
+;Updates: STKLO, STKHI = Stack Pointer
+;Returns: A=Number of Bytes Pushed
+;           0 = Error: Stack Underflow
+STKPSH: JSR SETSRC    ;Set Source Address
+STKPSA: STA TEMP0     ;Save Number of Bytes
+        JSR STKDST    ;Set Destination to Stack Pointer
+        JSR STKALC    ;Allocate Space on Stack
+        BEQ STKDER    ;If Error Return FALSE
+        JMP MEMCPL    ;Else Copy Bytes and Return
+
+;stkcmp - Compare Stack Pointer to Stack Start Address
+;Uses: STKLO, STKHI = Stack Pointer Address
+;      STKSLO, STKSHI = Stack Start Address
+;Returns: C=1,Z=1 if Stack Pointer = Stack Start 
+;         C=1,Z=0 if Stack Pointer > Stack Start
+;         C=0,Z=0 if Stack Pointer < Stack Start
+STKCMP: LDA STKHI       ;Compare MSB
+        CMP STKSHI
+        BCC STKCMX      ;If Pointer<Start Return C=0, Z=1
+        BNE STKCMX      ;If Pointer>Start Return C=1. Z=0
+        LDA STKLO       ;If MSB Equal
+        CMP STKSLO      ;Compare LSB
+STKCMX: RTS
+
+;stkdec(n) - Decrement Stack Pointer
+;Sets: STKLO, STKHI = Stack Pointer Address
+;Affects: X,Z,N
+STKDEC: LDX STKLO       ;If LSB
+        BNE STKDEL      ;  is Zero
+        DEC STKHI       ;  Decrement MSB
+STKDEL: DEC STKLO       ;  Decrement LSB
+STKDER: RTS
+
+;stkdal() - Deallocate Stack Entry
+;Uses: STKSLO, STKSHI = Stack Start Address
+;Updates: STKLO, STKHI = Stack Pointer
+;Affects: C,N,Z
+;Returns: A = Number of Bytes in Entry
+;           0 = Error: Stack Underflow
+;         Y = 0
+STKDAL: LDY #0          ;Initialize Index
+        JSR STKCMP      ;If Stack Pointer
+        BCC STKSUZ      ;  <= Stack Start
+        BEQ STKSUZ      ;  Return 0
+        JSR STKDEC      ;Decrement Stack Pointer
+        LDA (STKLO),Y   ;Get Number of Bytes in Entry
+                        ;and fall into STKSUB
+
+;stksub(n) - Reduce Stack Pointer by A
+STKSUB: STA TEMP0       ;Save Number in TEMP0
+        LDA STKLO
+        SEC             ;Subtract A from LSB
+        SBC TEMP0
+        STA STKLO
+        LDA STKHI       ;Subtract 0 from LSB
+        SBC #0          ;For Borrow
+        STA STKHI
+STKSUC: JSR STKCMP      ;If Stack Pointer LSB
+        BCC STKSUE      ;  < Stack Pointer
+STKSUE: LDA TEMP0       ;Retrieve Number of Bytes
+        RTS
+STKSUZ: LDA #0          ;Set A to 0
+        RTS
+
+;stkpop(&m) - Pop Top Entry off Stack
+;Args: Y,X = Address of Source Array
+;Uses: STKSLO, STKSHI = Stack Start Address
+;Updates: STKLO, STKHI = Stack Pointer
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Underflow
+STKPOP: JSR SETDST      ;Set Destination Address
+        JSR STKDAL      ;Deallocate Stack Entry
+        BEQ STKDER      ;If Underflow, Return 0
+        JSR STKSRC      ;Set Source Address to Stack Pointer
+        JMP MEMCPL      ;Copy Bytes and Return
+
+;stkstr(n, &m) - Push String onto Stack
+;Args: Y,X = Address of Source Array
+STKSTR: JSR STRLEN      ;Get Length of String
+        BEQ STKSTY      ;If Length > 0
+        BMI STKSTY      ;  and < 128
+        INY             ;  Increment Length to
+        TYA             ;  include null terminator
+STKSTY: LDY #0          ;Clear Y Index
+        BEQ STKPSA      ;Execute STKPSH, skippping SETSRC 

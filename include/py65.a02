@@ -12,8 +12,8 @@ DSTLO   EQU $32     ;Destination String Pointer (string.a02)
 DSTHI   EQU $33
 BLKLO   EQU $34     ;Block Segment Pointer (block.a02)
 BLKHI   EQU $35
-PTRLO   EQU $35     ;System Pointer (pointer.a02)
-PTRHI   EQU $36
+STKLO   EQU $36     ;Stack Pointer (stack.a02)
+STKHI   EQU $37
 
 RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
 RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
@@ -23,11 +23,16 @@ TEMP1   EQU $41
 TEMP2   EQU $42
 TEMP3   EQU $43
 
-BLKSLO  EQU $4A     ;Block Start Address
-BLKSHI  EQU $4B
-BLKELO  EQU $4C     ;Block End Address
-BLKEHI  EQU $4D
-BLKLEN  EQU $4E     ;Block Segment Length     
+BLKSLO  EQU $46     ;Block Start Address
+BLKSHI  EQU $47
+BLKELO  EQU $48     ;Block End Address
+BLKEHI  EQU $49
+BLKLEN  EQU $4A     ;Block Segment Length     
+
+STKSLO  EQU $4C     ;Stack Start Address
+STKSHI  EQU $4D
+STKELO  EQU $4E     ;Stack End Address
+STKEHI  EQU $4F
 
 ;Memory Mapped I/O 
 PUTCON    EQU $F001   ;Write Character to Console
@@ -89,15 +94,43 @@ PRHEX:  AND #$0F   ;Strip High Nybb
         CLD        ;Clear Decimal Flag
         JMP PRCHR  ;Print Hex Digit and Return
 
-;Initialize Destination String Pointer and Index
-SETDST: STX DSTLO       ;Save Destination String Pointer
+
+;savdst() - Save Destination Pointer
+SAVDST: JSR GETDST  ;Load Destination Pointer
+        JMP SAVRXY  ;Save X & Y Registers
+
+;Save Registers
+SAVREG: STA TEMP0   ;Save Accumulater
+SAVRXY: STX TEMP1   ;Save X Index
+        STY TEMP2   ;Save Y Index
+        RTS
+
+;Restore Registers
+RESREG: LDA TEMP0   ;Load Accumlator
+RESRXY: STX TEMP1   ;Load X Index
+        STY TEMP2   ;Load Y Index
+        RTS
+
+;Restore Destination Pointer
+RESDST: JSR RESRXY  ;Load Address and Drop into SETDST
+
+;Initialize Destination Pointer
+SETDST: STX DSTLO   ;Store Destination Pointer
         STY DSTHI
         RTS
 
-;Initialize Source String Pointer and Index
-SETSRC: STX SRCLO       ;Save Source String Pointer
+;Set Source Pointer to Destination Pointer
+SETSRD: JSR GETDST  ;Get Destination Point and fall into SETSRC
+
+;Initialize Source Pointer and Index
+SETSRC: STX SRCLO   ;Store Source Pointer
         STY SRCHI
-        LDY #$00        ;Initialize Index Into String
+        LDY #$00    ;Initialize Index Into String
+        RTS
+
+;Retrieve Source String Pointer
+GETDST: LDX DSTLO
+        LDY DSTHI
         RTS
 
 ;Retrieve Source String Pointer

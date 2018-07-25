@@ -18,7 +18,7 @@ char dstlo,dsthi; //Secondary string pointer for String functions
  * Available for use in program code, but may   *
  * be obliterated by Function Calls.            *
  * May be Zero Page, but not required           */
-char temp0,temp1;  //Temporary variables 
+char temp0,temp1,temp2,temp3;  //Temporary variables 
 
 /* Static Library Variables                     *
  * Must be preserved between function calls     *
