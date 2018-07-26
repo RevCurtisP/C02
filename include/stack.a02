@@ -29,14 +29,23 @@ STKEND: STX STKELO  ;Save Stack End LSB
         STY STKEHI  ;Save Stack End MSB
         RTS
 
-;STKPTR() - Get Stack Pointer
+;stkptr() - Get Stack Pointer
 ;Uses: STKLO,STKHI = Stack Pointer
-;Affects: X,N,Z
+;Affects: N,Z
 ;Returns: X = Stack Pointer LSB
 ;         Y = Stack Pointer MSB
 STKPTR: LDX STKLO     ;Load Stack Pointer LSB
         LDY STKHI     ;Load Stack Pointer MSB
         RTS
+
+;stkssp() - Save Stack Pointer 
+;Uses: STKLO,STKHI = Stack Pointer
+;Sets: TEMP1.TEMP2 = Stack Pointer
+;Affects: N,Z
+;Returns: X = Stack Pointer LSB
+;         Y = Stack Pointer MSB
+STKSSP: JSR STKPTR    ;Get Stack Pointer
+        JMP SAVRXY    ;Save in TEMP1, TEMP2 
 
 ;STKSRC() - Set Source Pointer to Stack Pointer
 ;Uses: STKLO,STKHI = Stack Pointer
@@ -63,6 +72,16 @@ STKDST: JSR STKPTR    ;Get Stack Pointer Address
 ;         Y = Stack Pointer MSB
 STKRST: LDX STKSLO    ;Load X with Stack Start LSB
         LDY STKSHI    ;Load X with Stack Start MSB
+        JMP STKSET    ;Store in Stack Pointer 
+
+;stkrsp() - Restore Stack Pointer 
+;Uses: TEMP1.TEMP2 = Stack Pointer
+;Sets: STKLO,STKHI = Stack Pointer
+;Affects: N,Z
+;Returns: X = Stack Pointer LSB
+;         Y = Stack Pointer MSB
+STKRSP: JSR RESRXY    ;Get TEMP1, TEMP2
+                      ;and fall into STKSET
 
 ;stkset() - Set Stack Pointer Address
 ;Args: X,Y = Address
@@ -74,7 +93,7 @@ STKSET: STX STKLO     ;Store X in Stack Pointer LSB
         STY STKHI     ;Store Y in Stack Pointer MSB
         RTS           ;Exit Routine
 
-;stkalc(n) - Allocate Space on Stack
+ ;stkalc(n) - Allocate Space on Stack
 ;Args: A=Number of Bytes to Allocate
 ;Updates: STKLO, STKHI = Stack Pointer
 ;Affects: C,N,Z
@@ -126,6 +145,16 @@ STKPSA: STA TEMP0     ;Save Number of Bytes
         BEQ STKDER    ;If Error Return FALSE
         JMP MEMCPL    ;Else Copy Bytes and Return
 
+;stkstr(n, &m) - Push String onto Stack
+;Args: Y,X = Address of Source Array
+STKSTR: JSR STRLEN      ;Get Length of String
+        BEQ STKSTY      ;If Length > 0
+        BMI STKSTY      ;  and < 128
+        INY             ;  Increment Length to
+        TYA             ;  include null terminator
+STKSTY: LDY #0          ;Clear Y Index
+        BEQ STKPSA      ;Execute STKPSH, skippping SETSRC 
+
 ;stkcmp - Compare Stack Pointer to Stack Start Address
 ;Uses: STKLO, STKHI = Stack Pointer Address
 ;      STKSLO, STKSHI = Stack Start Address
@@ -152,15 +181,16 @@ STKDER: RTS
 ;stkdal() - Deallocate Stack Entry
 ;Uses: STKSLO, STKSHI = Stack Start Address
 ;Updates: STKLO, STKHI = Stack Pointer
-;Affects: C,N,Z
-;Returns: A = Number of Bytes in Entry
-;           0 = Error: Stack Underflow
-;         Y = 0
-STKDAL: LDY #0          ;Initialize Index
-        JSR STKCMP      ;If Stack Pointer
+;Affects: Y,C,N,Z
+;Returns: A=Number of Bytes in Entry
+;           0=Error: Stack Underflow
+;         Y=0
+STKDAL: JSR STKSSP      ;Save Stack Pointer
+STKDAN: JSR STKCMP      ;If Stack Pointer
         BCC STKSUZ      ;  <= Stack Start
         BEQ STKSUZ      ;  Return 0
         JSR STKDEC      ;Decrement Stack Pointer
+        LDY #0          ;Initialize Index
         LDA (STKLO),Y   ;Get Number of Bytes in Entry
                         ;and fall into STKSUB
 
@@ -173,12 +203,21 @@ STKSUB: STA TEMP0       ;Save Number in TEMP0
         LDA STKHI       ;Subtract 0 from LSB
         SBC #0          ;For Borrow
         STA STKHI
-STKSUC: JSR STKCMP      ;If Stack Pointer LSB
-        BCC STKSUE      ;  < Stack Pointer
+        JSR STKCMP      ;If Stack Pointer < Start 
+        BCC STKSUR      ;  Restore Pointer and Return 0
 STKSUE: LDA TEMP0       ;Retrieve Number of Bytes
         RTS
+STKSUR: JSR STKRSP      ;Restore Stack Pointer
 STKSUZ: LDA #0          ;Set A to 0
         RTS
+
+;stkdrp(&m) - Drop Top Entry from Stack
+;Uses: STKSLO, STKSHI = Stack Start Address
+;Updates: STKLO, STKHI = Stack Pointer
+;Affects: C,N,Z
+;Returns: A = Number of Bytes in Dropped Entry
+;           0 = Error: Stack Underflow
+STKDRP  EQU STKDAL      ;Deallocate Stack Entry
 
 ;stkpop(&m) - Pop Top Entry off Stack
 ;Args: Y,X = Address of Source Array
@@ -190,15 +229,60 @@ STKSUZ: LDA #0          ;Set A to 0
 STKPOP: JSR SETDST      ;Set Destination Address
         JSR STKDAL      ;Deallocate Stack Entry
         BEQ STKDER      ;If Underflow, Return 0
-        JSR STKSRC      ;Set Source Address to Stack Pointer
+STKPOS: JSR STKSRC      ;Set Source Address to Stack Pointer
         JMP MEMCPL      ;Copy Bytes and Return
 
-;stkstr(n, &m) - Push String onto Stack
+;stktop(&m) - Copy Top Entry off Stack
 ;Args: Y,X = Address of Source Array
-STKSTR: JSR STRLEN      ;Get Length of String
-        BEQ STKSTY      ;If Length > 0
-        BMI STKSTY      ;  and < 128
-        INY             ;  Increment Length to
-        TYA             ;  include null terminator
-STKSTY: LDY #0          ;Clear Y Index
-        BEQ STKPSA      ;Execute STKPSH, skippping SETSRC 
+;Uses: STKSLO, STKSHI = Stack Start Address
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Underflow
+STKTOP: JSR STKPOP      ;Pop Top Entry Off Stack
+        BEQ STKDER      ;If Underflow, Return 0
+        JMP STKRSP      ;Else Restore Stack Pointer and Return
+
+;stkdup(&m) - Duplicate Top Entry off Stack
+;Uses: STKSLO, STKSHI = Stack Start Address
+;      STKELO, STKEHI = Stack End Address
+;Updates: STKLO, STKHI = Stack Pointer
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Underflow
+STKDUP: JSR STKDAL      ;Deallocate Top Entry
+        BEQ STKDER      ;If Underflow, Return 0
+        JSR STKSRC      ;Set Source Pointer to Stack Pointer
+        JSR STKRSP      ;Restore Stack Pointer
+        JMP STKSTY      ;Push Top Entry onto Stack      
+
+;stkswp(&m) - Swap Top Entry with Entry Below it
+;Args: Y,X = Address of Tempory Array
+;Uses: STKSLO, STKSHI = Stack Start Address
+;      STKELO, STKEHI = Stack End Address
+;Updates: STKLO, STKHI = Stack Pointer
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Underflow
+STKSWP: JSR SETDST      ;Set Swap Array As Destination
+        JSR STKDAL      ;Deallocate Top Entry
+        BEQ STKDER      ;If Error, Return 0
+        JSR STKDAN      ;Deallocate with No Save of Pointer
+        BEQ STKDER      ;If Error, Return 0
+        STA TEMP3       ;Save Size of Top Entry
+        JSR STKSSP      ;Save Pointer to Top Entry
+        JSR STKPOS      ;Copy Second Entry to Array
+        PHA             ;Save Size of Second Entry
+        LDA DSTHI       ;Save Array Address
+        PHA
+        LDA DSTLO
+        PHA
+        JSR RESRXY      ;Set Source String
+        JSR SETSRC      ;to Address of Old Top Entry
+        LDA TEMP3       ;Load Old Top Entry Size
+        JSR STKPSA      ;Push Old Top Entry
+        PLA             ;Restore Array Address
+        TAX
+        PLA
+        TAY
+        PLA             ;Restore Size of Second Entry
+        JMP STKPSH      ;Push Array Contents onto Stack

@@ -6,15 +6,30 @@
  * Args: &addr - Start Address */
 void stkbgn();
 
+/* Drop Top Entry from Stack             * 
+ * Returns: A=Number of bytes dropped    *
+ *            0 if none                  */
+char stkdrp();
+
 /* Set Destination to Stack Pointer  *
  * Returns: Y,X=Pointer Address      */
 void stkdst();
+
+/* Duplicate Top Stack Entry            * 
+ * Returns: A=Number of bytes retrieved *
+ *            0 if none or overflow     */
+char stkdup();
 
 /* Set Stack End Address     *
  * Args: &addr - End Address */
 void stkend();
 
-/* Pop Array from Contents from Stack    * 
+/* Duplicate Entry Under Top of Stack   * 
+ * Returns: A=Number of bytes retrieved *
+ *            0 if none or overflow     */
+char stkovr();
+
+/* Pop Top Stack Entry into Array        * 
  * Args: n  - Number of bytes to write   *
  *       &m - Array to pop contents into *
  * Returns: A=Number of bytes retrieved  *
@@ -46,4 +61,10 @@ void stkset();
  *            $00 if block was overflowed */
 char stkstr();
 
-void stkrst();
+/* Copy Top Stack Entry into Array       * 
+ * Args: n  - Number of bytes to write   *
+ *       &m - Array to pop contents into *
+ * Returns: A=Number of bytes retrieved  *
+ *            0 if none                  */
+char stktop();
+
