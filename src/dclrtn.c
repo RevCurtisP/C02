@@ -61,12 +61,13 @@ void pconst(int m) {
     getwrd();     //Get constant name
     DEBUG("Defining constant '%s',", word)
     strncpy(connam[concnt], word, VARLEN);
-    setlbl(word); //Set label Assembler Line
+    if (alcvar) setlbl(word); //Set label Assembler Line
     expect('=');
     conval[concnt++] = prsbyt(); //Get Value
     ACMNT(word); //comment value
-    asmlin(EQUOP, value); //Write Definition
+    if (alcvar) asmlin(EQUOP, value); //Write Definition
     DETAIL(" defined as '%s'\n", value)
+    if (!alcvar) SCMNT(""); //Clear Comment
   } while (look(','));
   expect(';');
   DEBUG("Constant Declaration Completed\n", 0)
