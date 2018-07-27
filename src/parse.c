@@ -15,7 +15,7 @@
 
 /* Various tests against nxtchr */
 int match(char c) {return TF(nxtchr == c);}
-int inbtwn(char mn, char mx) {return TF(nxtchr >= mn && nxtchr <= mx);}
+int inbtwn(char mn, char mx) {return TF(nxtupc >= mn && nxtupc <= mx);}
 int isalph(void) {return isalpha(nxtchr);}
 int isanum(void) {return isalnum(nxtchr);}
 int isapos(void) {return match('\'');}
@@ -57,7 +57,7 @@ char getnxt(void) {
   //if (nxtwrd[nxtptr])          //If nxtwrd is set
   //  nxtchr = nxtwrd[nxtptr++]; //  Pop First Character from nxtwrd
   //else                      
-    nxtchr = fgetc(inpfil);
+  nxtchr = fgetc(inpfil);
   nxtupc = toupper(nxtchr);	
   if (wascr && match('\n')) return c; //Skip NL after CR
   if (isnl()) curcol=1; else curcol++;
@@ -232,7 +232,7 @@ int prshex(void) {
     DETAIL("%c", nxtchr);    
     word[wrdlen++] = nxtchr;
     if (isdec()) digit = nxtchr - '0';
-    else digit = nxtchr - 'A' + 10;
+    else digit = nxtupc - 'A' + 10;
     number = number * 16 + digit;
     skpchr();
   }
