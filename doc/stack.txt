@@ -1,0 +1,179 @@
+Sta Functions
+
+This library contains functions to access and manipulate a stack. The
+entries on a stack are stored in contiguous bytes of memory.
+
+Each element of the stack can vary in size from 1 to 255 bytes. Both
+arrays and strings may be pushed onto and pulled off the stack.  
+
+Usage: at the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <memory.h02>
+  #include <string.h02>
+  #include <stack.h02>
+
+The following application functions are defined:
+
+  stkbgn(&b);           Stack Begin: Sets the beginning of the stack 
+                        to address b. 
+
+                        The beginning of a stack is the first byte 
+                        of memory in the stack space.
+
+                        Although stack space usually begins on a 256 
+                        byte boundary, this is not required.
+                      
+                        Note: Sets variables stkslo and stkshi.
+
+  stkend(&e);           Stack End: Sets the end of the stack to address
+                        e. The end of a stack is the byte after the last 
+                        byte of memory in the stack space.
+
+                        Although stack space usually ends on a 256 
+                        byte boundary, this is not required.
+
+                        Note: Sets variables stkelo and steshi.
+
+  stkrst();             Stack Reset: Set stack pointer to stack begin 
+                        address.
+
+                        This routine is called before populating a 
+                        stack with calls to the stkpsh function.
+
+  r = stkpsh(n ,&m);    Stack Push: Creates a new entry at the end of
+                        the stack consisting of n bytes of array m.
+
+                        If n is 0 or the new entry would overflow the 
+                        end of the stack space, no entry is created and 
+                        a value of 0 is returned. Otherwise, the number 
+                        of bytes in the new entry is returned.
+
+                        Note: Sets dstlo and dsthi to stkslo and stkhi 
+                        prior to the copy, updates stkslo and stkshi, 
+                        then calls the memcpy function.
+
+  r = stkstr(&s);       Stack String: Creates a new entry at the end of
+                        the stack consisting the characters in string 
+                        s, including the terminating ASCII null. This 
+                        ensures that when the entry is popped off the
+                        stack, the destination string will be properly
+                        terminated.
+
+                        If the string is empty or the bew entry would 
+                        overflow the end of the stack space, no entry is 
+                        created and a value of 0 is returned. Otherwise, 
+                        the number of bytes in the new entry is returned.
+
+                        Note: Calls the strlen function, then calls the
+                        stkpsh function.
+
+  r = stkpop(&m);       Stack Pop: Copies the bytes from the last entry of
+                        the stack into array m and removes the entry from
+                        the stack.
+
+                        If the stack is empty, the value 0 is returned.
+                        Otherwise, the number of bytes in the popped entry
+                        is returned.
+
+                        Note: Sets dstlo and dsthi to the address of m, 
+                        updates stklo and stkhi to point to the beginning 
+                        of the last entry, sets srclo and srchi to stklo
+                        and stkhi, then calls the memcpy function.
+
+  r = stktop(&m);       Stack Top: Copies the bytes from the last entry of
+                        the stack into array m and leaves the entry on the
+                        stack.
+
+                        If the stack is empty, the value 0 is returned.
+                        Otherwise, the number of bytes in the entry is
+                        returned.
+
+                        Note: Calls stkpop, then restores stklo and stkhi
+                        to their prior values.
+
+  r = stkdup();         Stack Duplicate: Creates a new entry at the end of
+                        the stack consisting of the bytes in the last entry
+                        of the stack.
+
+                        If the stack is empty or the new entry would 
+                        overflow the end of the stack space, no entry is 
+                        created and a value of 0 is returned. Otherwise, 
+                        the number of bytes in the new entry is returned.
+
+                        Note: Sets dstlo and dsthi to the stklo and stkhi, 
+                        sets srclo and srchi to point to the beginning 
+                        of the last entry, updates stklo and stkhi, then 
+                        calls the memcpy function. 
+
+  r = stkovr();         Stack Over: Creates a new entry at the end of
+                        the stack consisting of the bytes in the second 
+                        to last entry of the stack.
+
+                        If there are less than two entries in the stack 
+                        or the new entry would overflow the end of the 
+                        stack space, no entry is created and a value of 
+                        0 is returned. Otherwise, the number of bytes in 
+                        the new entry is returned.
+
+                        Note: Sets dstlo and dsthi to the stklo and stkhi, 
+                        sets srclo and srchi to point to the beginning 
+                        of the second to last entry, updates stklo and 
+                        stkhi, then calls the memcpy function. 
+
+  stkswp(n);            Stack Swap: Moves the last entry in the stack to
+                        the second to last position and the second to 
+                        last entry to the last position.
+
+                        If there are less than two entries in the stack 
+                        or there is not enough room in the stack space
+                        to make a copy of the second to last entry, the 
+                        entries are not swapped and a value of 0 is 
+                        returned. Otherwise, the number of bytes in the
+                        new last entry is returned.
+
+                        Note: Calls stkovr, creating a copy of the second
+                        to last stack entry, restores stklo and stkhi to
+                        their original values, then calls the memcpy twice.
+
+  *,m,l = stkptr();     Stack Pointer: Returns the address contained in
+                        the stack pointer as the most significant byte
+                        and the least significant byte.
+
+                        This is a utility function not normally used in
+                        application code.
+
+                        Note: Gets variables stkslo and stkshi.
+
+  stkset(&d);           Stack Set: Sets stack pointer to address d.
+
+                        This is a utility function not normally used in
+                        application code.
+
+                        Note: Sets variables stkslo and stkshi.
+
+Note: This library expects the following functions to be defined
+
+  memcpl                Copy memory (alternate entry point) 
+  ressrc                Restore source pointer
+  resrxy                Restore X and Y registers
+  savrxy                Save X and Y registers
+  setdst                Set destination pointer
+  setsrc                Set source pointer and initialize index
+  strlen                Get string length
+
+along with the zero page variable pairs
+  
+  srclo, srchi          Source String Pointer 
+  dstlo, dsthi          Destination String Pointer
+  stklo, stkhi          stack Pointer
+
+the static variable
+
+  stkslo, stkshi        Stack Start Address
+  stkelo, stkehi        Stack End Address
+
+as well as the transient variables 
+
+  temp0, temp1          Temporary storage
+  temp2, temp3
