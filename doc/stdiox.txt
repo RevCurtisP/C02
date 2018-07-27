@@ -2,16 +2,36 @@ Extended Input/Output Functions for C02 Programs
 
 At the beginning of the program use the directives
 
+  #include <stddef.h02>
   #include <stdlib.h02>
   #include <stdiox.h02>
   
 The following functions are defined:
 
+  c = getprc(&s);     Writes the string s, followed by a blank line, 
+                      to the screen, then waits for a key to be pressed. 
+
+                      Returns the ASCII value of the key that was
+                      pressed.
+
+                      Note: Calls the puts function, the newlin
+                      function twice, then the getc function.
+
+  c = getprc(&s);     Writes the string "Press any key to continue...", 
+                      followed by a blank line, to the screen, then waits 
+                      for a key to be pressed. 
+
+                      Returns the ASCII value of the key that was
+                      pressed.
+
+                      Note: Calls the getprc function, with a hard
+                      coded string.
+
   putdec(b);          Writes the decimal representation of byte b to the
                       screen. The output will be between one and three 
                       digits with no leading spaces.
                       
-                      Note: Calls part of the ctoa() routine from stdlib
+                      Note: Calls part of the ctoa routine from stdlib
                       which leaves the binary values of the ones, tens,
                       and hundreds digits in variables temp0, temp1, and 
                       temp2, respectively.
@@ -21,7 +41,7 @@ The following functions are defined:
                       with 1 space if b is between 10 and 99, or two spaces
                       if b is less than 10.
                       
-                      Note: Calls putdec() and putspc(). Leaves the value
+                      Note: Calls putdec and putspc. Leaves the value
                       of b in varible temp3.
 
   putder(b);          Writes the decimal representation of byte b to the
@@ -29,22 +49,22 @@ The following functions are defined:
                       with 1 space if b is between 10 and 99, or two spaces
                       if b is less than 10.
                       
-                      Note: Calls putdec() and putspc(). Leaves the value
+                      Note: Calls putdec and putspc. Leaves the value
                       of b in varible temp3.
 
-  putdst();           Prints the destination string set by the setdst() or
-                      setstr() functions. 
+  putdst();           Prints the destination string set by the setdst or
+                      setstr functions. 
                       
                       This can be used to print the results of any function
                       call that stores it's result in the destination string,
-                      such as strcat(), strcpy(), and strcut() in string,
+                      such as strcat, strcpy, and strcut in string,
 
-                      Note: calls putc() and is called by printf() when
+                      Note: calls putc and is called by printf when
                       processing a %S formatting tag.
                       
   putspc(b);          Writes a space character to the screen. 
 
-                      Note: Used by the putdel() and putder() functions.
+                      Note: Used by the putdel and putder functions.
 
   r = printf(b, &s):  Writes the value of byte b to screen, formatting
                       the output according the contents of string s. 
@@ -61,16 +81,16 @@ The following functions are defined:
                       %R - output b as a right justified decimal number
                       %% - output a single % character
                       
-                      Unlike the printf() function in standard C, only
+                      Unlike the printf function in standard C, only
                       one value argument may be passed and that value is
                       used for each formatting tag in the format string.
                       
                       One additional formatting tag is supported:
                       %S - output the destination string 
                       
-                      The destination string is set using the setdst() or
-                      strdst() functions (from the "string" library) before
-                      calling printf(). Multiple occurances of the %S tag
+                      The destination string is set using the setdst or
+                      strdst functions (from the "string" library) before
+                      calling printf. Multiple occurances of the %S tag
                       will cause the destination string to be repeated.
                       
                       When tag types are mixed, the %S tag will output the
@@ -82,8 +102,8 @@ The following functions are defined:
                       lower case with either a 0 or 1 in the high bit.
                       Unrecognized formatting tags are interpreted as %C.
                       
-                      Note: Calls putdec(), putdel(), putder(), prbyte(), or
-                      putdst() depending on which formatting tags are used. 
+                      Note: Calls putdec, putdel, putder, prbyte, or
+                      putdst depending on which formatting tags are used. 
                       The value of b is left in variable temp3.
 
 Note: This library expects the following functions to be defined:

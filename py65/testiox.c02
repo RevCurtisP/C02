@@ -3,6 +3,7 @@
  ***********************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
 #include <stdlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
@@ -11,6 +12,8 @@ char c, i;
 char s = "string";
 
 main:
+
+getcpr("Press any key to begin...");
 
 i = 0;
 
@@ -55,10 +58,3 @@ newlin();
 
 done:
   goto exit;
-
-void anykey() {
-  newlin();
-  putln("Press any key...");
-  c = getc();
-  newlin();
-}

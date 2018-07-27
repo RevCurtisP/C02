@@ -2,6 +2,21 @@
  * stdiox - Extended I/O Routines for C02 *
  ******************************************/
 
+/* Display "Press any key to continue" *
+ *   prompt and wait fo keypress       *
+ * Returns: ASCII value of key pressed */
+void anykey();
+
+/* Display prompt and wait for keypress *
+ * Args: &s - string to display         *
+ * Returns: ASCII value of key pressed  */
+void getcpr();
+
+/* Print Formatted Byte to Screen         *
+ * Args: b  - byte to format              *
+ *       &s - formatting string           */
+void printf();
+
 /* Print Byte as Decimal Number          *
  * Args: b - Number to print             */
 void putdec(); 
@@ -20,7 +35,3 @@ void putdst();
 /* Print a Space Character */
 void putspc(); 
 
-/* Print Formatted Byte to Screen         *
- * Args: b  - byte to format              *
- *       &s - formatting string           */
-void printf();

@@ -4,7 +4,7 @@
 ;External Variables 
 ;TEMP0, TEMP1, TEMP2
 
-;Standard Constant Definitions
+;Constant Definitions
 TRUE    EQU $FF     ;Returned for Success or Failure
 FALSE   EQU $00     ;by some Library Routines
 

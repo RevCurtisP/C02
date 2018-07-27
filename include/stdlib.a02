@@ -199,7 +199,6 @@ UPBCD:  LDA TEMP1      ;Get Low Byte
         STA TEMP1      ;Save in Tens
         RTS  
 
-
 ;ConVert number to packed Binary Coded Decimal
 ;Args: A - Number to Convert
 ;Destroys: TEMP0

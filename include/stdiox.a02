@@ -1,5 +1,17 @@
 ; C02 library stdiox.h02 assembly language subroutines
 
+ANYKEP: DC  "Press any key to continue...",0
+
+ANYKEY: JSR NEWLIN      ;Start at Beginning of Next Line
+        LDY #>ANYKEP     ;Load Prompt High Byte
+        LDX #<ANYKEP     ;Load Prompt Low Byte
+                        ;Drop into GETCPR
+
+;Display Prompt and Wait for Character
+GETCPR: JSR PUTLN       ;Print Prompt
+        JSR NEWLIN      ;Generate Blank Line
+        JMP GETC        ;Wait for and Return Keypress
+
 ;Print Byte as Left Justified Decimal Number
 ;void putdel(b)
 ;Args: A = number to print
