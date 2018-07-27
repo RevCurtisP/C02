@@ -1,10 +1,15 @@
 /* py65mon Header File */
 
+//Platform Specific Constants
+const #delkey = $08;     //Backspace Key
+const #esckey = $1B;     //Escape Key
+const #rtnkey = $0D;     //Enter Key
+
 //System Pointer Variables
-char srclo,srchi;   //Source String Pointer for Library Functions
-char dstlo,dsthi;   //Destination String Pointer for Library Functions
-char blklo,blkhi;   //Block Segment Pointer
-char stklo,stkhi;   //Stack Pointer
+char srclo,srchi;       //Source String Pointer for Library Functions
+char dstlo,dsthi;       //Destination String Pointer for Library Functions
+char blklo,blkhi;       //Block Segment Pointer
+char stklo,stkhi;       //Stack Pointer
 
 //System Variables
 char blkslo, blkshi;    //Block Start Address
@@ -12,8 +17,8 @@ char blkelo, blkehi;    //Block End Address
 char blklen;            //Block Segment Length
 char stkslo, stkshi;    //Stack Start Address
 char stkelo, stkehi;    //Stsck End Address
-
-char temp0, temp1, temp2, temp3;  //Temporary Variables
+char temp0, temp1;      //Temporary Variables
+char temp2, temp3;
 
 //Memory Mapped I/O
 char putcon;    //Write Character to Console
@@ -27,8 +32,3 @@ void newlin();  //Advance cursor to beginning of next line
 void prchr();   //Print ASCII character to Console
 void prbyte();  //Print Accumulator as Hexadadecimal number
 void prhex();   //Print Low Nybble of Accumulator as Hex Digit
-void savdst();  //Save Deatination Pointer
-void savreg();  //Save Registers
-void setdst();  //Set Destination Pointer
-void setsrc();  //Set Source Pointer
-void setsrd();  //Set Source Pointer to Destination Pointer

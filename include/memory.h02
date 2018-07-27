@@ -3,7 +3,7 @@
  *********************************************/
 
 /* Sets Destination Array for subsequent function calls *
- * Args: &s - Destination string                        */
+ * Args: &a - Destination array                         */
 void memdst();
 
 /* Find Character in Destination Array             *

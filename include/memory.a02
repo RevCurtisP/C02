@@ -112,7 +112,7 @@ MEMSEX: RTS
 ;Sets: TEMP0 = Number of bytes to swap
 ;Affects: A,X,Y,C,N,Z
 MEMSWP: JSR MEMSRC      ;Initialize Source, Index, and Count
-MEMSWL: lDA (DSTLO),Y   ;Get Character from Destination Array
+MEMSWL: LDA (DSTLO),Y   ;Get Character from Destination Array
         TAX             ;Save in X Register
         LDA (SRCLO),Y   ;Get Character from Source Array
         STA (DSTLO),Y   ;Copy to Destination Array

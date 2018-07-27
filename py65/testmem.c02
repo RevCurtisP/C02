@@ -1,8 +1,122 @@
-/****************************************
- * TESTMIO - Test Memory File Functions *
- ****************************************/
+/*******************************************
+ * TESTMEM - Test Array Handling Functions *
+ *******************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
 #include <stdio.h02>
-#include <mio.h02>
+#include <memory.h02>
+
+char c, d, f, i, n, p;
+char rlen, rcmp, rpos;
+char byts[255];
+char lttr[255];
+char nmbr[255];
+char temp[255];
+char dest[255];
+char less = "less";
+char more = "more";
+char most = "most";
+char fail = " Fail  ";
+char pass = " Pass  ";
+
+void prtemp() {
+  puts("temp: ");
+  for (i=0; i<255; i++) {
+    prbyte(temp[i]);
+    //putchr(' ');
+  }
+}
+
+main:
+  
+//Populate arrays
+i = 0; c = 'a'; d = '0';
+do {
+  byts[i] = i;
+  lttr[i] = c;
+  c++; if (c>'z') c = 'a';
+  nmbr[i] = d;
+  d++; if (d>'9') d = '0';
+  i++;
+} while (i>0);
+
+//Test memchr()
+putln("memdst(&byts);"); memdst(&byts);
+puts("memchr(i, 255);");
+p = #TRUE;
+for (i=0; i<255; i++) {
+  //prbyte(i); prchr('='); prbyte(byts[i]); prchr(',');
+  c = memchr(i,255);
+  //prbyte(c); prchr(' '); prchr(' ');
+  if (c <> i) p = #FALSE;
+}
+if (p) putln(&pass); else putln(&fail);
+newlin();
+
+//Test memcmp()
+puts("less="); puts(&less); 
+puts("  more="); puts(&more);
+puts("  most="); putln(&most);
+
+putln("memdst(&more);");
+memdst(&more);
+
+puts("memcmp(2, &most):");
+rcmp = memcmp(2, &most);
+if (!rcmp) puts(&pass); else puts(&fail);
+
+puts("memcmp(4, &most):");
+rcmp = memcmp(4, &most);
+if (rcmp :-) putln(&pass); else putln(&fail);
+
+puts("memcmp(3, &more):");
+rcmp = memcmp(3, &more);
+if (!rcmp) puts(&pass); else puts(&fail);
+
+puts("memcmp(3, &less):");
+rcmp = memcmp(3, &less);
+if (rcmp > 0) putln(&pass); else putln(&fail);
+newlin();
+
+//Test memset() and memcpy()
+putln("memdst(&temp);");
+memdst(&temp);
+
+puts("memset(0,20);      ");
+memset(0,20);
+
+puts("temp=");
+putln(&temp);
+
+puts("memset('@',20);    ");
+memset('@',20);
+
+puts("temp=");
+putln(&temp);
+
+puts("memcpy(10, &lttr); ");
+memcpy(10, &lttr);
+
+puts("temp=");
+putln(&temp);
+
+puts("memcmp(10, &lttr);");
+rcmp = memcmp(10, &lttr);
+if (!rcmp) putln(&pass); else putln(&fail);
+
+puts("memcmp(11, &lttr);");
+rcmp = memcmp(11, &lttr);
+if (rcmp > 0) putln(&pass); else putln(&fail);
+newlin();
+
+memdst(&temp); memcpy("ABCDEF");
+memdst(&dest); memcpy("123456");
+puts("memdst(&dest);memswp(3,&temp);");
+memswp(3,&temp);
+rcmp = memcmp(6,"ABC456");
+memdst(&temp); rcmp = memcmp(6,"123DEF") | rcmp;
+if (rcmp) putln(&fail); else putln(&pass);
+goto exit;
+
 

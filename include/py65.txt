@@ -30,7 +30,6 @@ Defined functions:
                     Note: Writes carriage return and line feed
                     via prchr($0D) and prchr($0A).
 
-                   
   c = rdkey();      Waits for keypress and returns ASCII code of
                     key that was pressed. 
                     
@@ -40,4 +39,24 @@ Defined functions:
   prchr(c);         Prints character to screen.
   
                     Note: Writes argument to memory location putc.
+
+  resdst();         Restores the destination pointer from temp1 and 
+                    temp2, respectively.
+
+  resreg();         Restores the A, X, and Y registers from temp1, 
+                    temp1, and temp2, respectively.
+
+  resrxy();         Restores the X and Y registers from temp1 and 
+                    temp2, respectively.
+
+  savdst();         Saves the destination pointer in temp1 and temp2, 
+                    respectively.
+
+                    Note: Calls getdst() and savrxy().
+
+  savreg();         Saves the A, X, and Y registers in temp0, temp1,
+                    and temp2, respectively.
+
+  savrxy();         Saves the X and Y registers in temp1 and temp2, 
+                    respectively.
 
