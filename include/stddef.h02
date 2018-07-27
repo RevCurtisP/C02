@@ -1,0 +1,49 @@
+/* C02 Standard Definitions File    *
+ * Contains common constants and    *
+ * functions used in libraries.     */ 
+
+/* Constant Definitions */
+const #TRUE = $FF, #FALSE = 0;
+
+/* Get Destination Pointer          *
+ * Returns: Y,X=Destination address */
+void getdst();
+
+/* Get Source Pointer          *
+ * Returns: Y,X=Source address */
+void getsrc();
+
+/* Retore Destination Pointer */
+void resdst(); 
+
+/* Restore A, X, and Y Registers */
+void resreg();
+
+/* Restore X, and Y Registers */
+void resrxy();
+
+/* Retore Source Pointer */
+void ressrc(); 
+
+/* Save Destination Pointer */
+void savdst(); 
+
+/* Save A, X, and Y Registers */
+void savreg();
+
+/* Save X, and Y Registers */
+void savrxy();
+
+/* Save Source Pointer */
+void savsrc(); 
+
+/* Set Destination Pointer        *
+ * Args: &d - Destination address */
+void setdst();
+
+/* Set Source Pointer            *
+ * Args: &d - Source     address */
+void setsrc();
+
+/* Set Source Pointer to Destination Pointer */
+void setsrd();  

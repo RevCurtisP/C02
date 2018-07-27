@@ -51,11 +51,6 @@ functions must be defined:
                       Note: Does any needed ACSII conversions, then calls 
                       echo().
 
-  setdst(&s):         Stores pointer to &s in dstlo and dsthi.
-
-  setsrc(&s):         Stores pointer to &s in srclo and srchi and
-                      initializes Y register to 0.
-
 along with the Zero Page locations (each pair of which must be sequential)
 
   srclo, srchi       Spurce String Pointer
@@ -63,9 +58,8 @@ along with the Zero Page locations (each pair of which must be sequential)
 
 the following locations that may be Zero Page, but don't have to before
 
-  temp0             Temporary variables used by stdlib.asm
-  temp1
-  temp2
+  temp0, temp1       Temporary variables used by stdlib.asm
+  temp2, temp3
 
 and the following locations that must be preserved between function calls
 
@@ -86,4 +80,3 @@ and the constants
   ESCKEY            ASCII code for Escape/Abort key (usually ESC)
   NULKEY            Returned if no Key was Pressed
   RTNKEY            ASCII code for Return/Enter key (usually CR)
-

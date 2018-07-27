@@ -1,0 +1,114 @@
+Standard Definitions for C02 Library Functions
+
+This module includes constant and function definitions common to the
+entire standard library.
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  
+The following constants are defined:
+
+  #TRUE                 The byte 255, $FF, or %11111111, representing 
+                        the true condition.
+
+  #FALSE                The byte 0, $00 or %00000000, representing the 
+                        false condition.
+
+The following functions are defined:
+
+  savreg();             Saves the A, X, and Y registers. 
+
+                        Note: Stores A, X, and Y in temp0, temp1, and
+                        temp2, respectively.
+
+  savrxy();             Saves only the X and Y registers. 
+
+                        Note: This is an alternate entry point into 
+                        the savreg function, which stores X and Y in 
+                        temp1 and temp2, respectively.
+
+  resreg();             Restore the A, X, and Y registers. 
+
+                        Note: Loads A, X, and Y from temp0, temp1, and
+                        temp2, respectively.
+
+  resrxy();             Resrtores only the X and Y registers. 
+
+                        Note: This is an alternate entry point into 
+                        the resreg function, which loads X and Y from 
+                        temp1 and temp2, respectively.
+
+  setsrc(&d);           Sets the source pointer to address d. 
+
+                        Note: Stores the least significant byte, 
+                        passed in the X register, in srclo, and the 
+                        most significant byte, passed in the Y 
+                        register, to srchi.
+
+  setdst(&d);           Sets the destination pointer to address d. 
+
+                        Note: Stores the least significant byte, 
+                        passed in the X register, in destlo, and the 
+                        most significant byte, passed in the Y 
+                        register, to desthi.
+
+  setsrd();             Sets the source pointer to the destination 
+                        pointer.
+
+                        Note: Calls the getdst function, followed by
+                        the setsrc function, copying dstlo and dsthi
+                        to srclo and srchi, respectively.
+
+  *,hi,lo=getsrc();     Gets the address in the source pointer,
+                        returning the least significant byte in lo
+                        and the most significant byte in hi.
+
+                        Note: Loads the srclo into the X register and 
+                        srchi into the Y. 
+
+  *,hi,lo=getdst();     Gets the address in the destination pointer,
+                        returning the least significant byte in lo
+                        and the most significant byte in hi.
+
+                        Note: Loads the dstlo into the X register and 
+                        dsthi into the Y. 
+
+  savsrc();             Saves the destination pointer. 
+
+                        Note: Calls the getsrc function, followed by
+                        the savrxy function, copying srclo and srchi
+                        to temp1 and temp2, respectively.
+
+  savdst();             Saves the destination pointer. 
+
+                        Note: Calls the getdst function, followed by
+                        the savrxy function, copying dstlo and dsthi
+                        to temp1 and temp2, respectively.
+
+  ressrc();             Restores the source pointer. 
+
+                        Note: Calls the resrxy function, followed by
+                        the setsrc function, copying temp1 and temp2
+                        to srclo and srchi, respectively.
+
+  resdst();             Restores the destination pointer. 
+
+                        Note: Calls the resrxy function, followed by
+                        the setdst function, copying temp1 and temp2
+                        to dstlo and dsthi, respectively.
+
+Note: This library expects the following to be defined:
+
+the zero page variables
+
+  srclo,srchi:        Source pointer
+  dstlo,dsthi:        Destination pointer
+
+and the transient variables
+  
+  temp0               Temporary storage
+  temp1
+  temp2
+  
+

@@ -1,0 +1,60 @@
+;c02 library stddef.h02 assembly language subroutines
+;Requires External Zero Page Variables 
+;DSTLO, DSTHI, SRCLO, SRCHI
+;External Variables 
+;TEMP0, TEMP1, TEMP2
+
+;Standard Constant Definitions
+TRUE    EQU $FF     ;Returned for Success or Failure
+FALSE   EQU $00     ;by some Library Routines
+
+;savdst() - Save Destination Pointer
+SAVDST: JSR GETDST  ;Load Destination Pointer
+        JMP SAVRXY  ;Save X & Y Registers
+
+;savdst() - Save Destination Pointer
+SAVSRC: JSR GETSRC  ;Load Destination Pointer
+        JMP SAVRXY  ;Save X & Y Registers
+
+;Save Registers
+SAVREG: STA TEMP0   ;Save Accumulater
+SAVRXY: STX TEMP1   ;Save X Index
+        STY TEMP2   ;Save Y Index
+        RTS
+
+;Restore Registers
+RESREG: LDA TEMP0   ;Load Accumlator
+RESRXY: LDX TEMP1   ;Load X Index
+        LDY TEMP2   ;Load Y Index
+        RTS
+
+;Restore Destination Pointer
+RESDST: JSR RESRXY  ;Load Address and Drop into SETDST
+
+;Initialize Destination Pointer
+SETDST: STX DSTLO   ;Store Destination Pointer
+        STY DSTHI
+        RTS
+
+;Restore Source Pointer
+RESSRC: JSR RESRXY  ;Load Saved Address
+        JMP SETSRC  ;Set Source Pointer
+
+;Set Source Pointer to Destination Pointer
+SETSRD: JSR GETDST  ;Get Destination Point and fall into SETSRC
+
+;Initialize Source Pointer and Index
+SETSRC: STX SRCLO   ;Store Source Pointer
+        STY SRCHI
+        LDY #$00    ;Initialize Index Into String
+        RTS
+
+;Retrieve Source String Pointer
+GETDST: LDX DSTLO
+        LDY DSTHI
+        RTS
+
+;Retrieve Source String Pointer
+GETSRC: LDX SRCLO
+        LDY SRCHI
+        RTS

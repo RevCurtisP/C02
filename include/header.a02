@@ -103,19 +103,3 @@ PRHEX:  AND #$0F    ;Strip High Nybble
         ADC #$06    ;  Convert ':' to 'A'...
 PRHEXC: ADC #$30    ;Convert to ASCII Character
         JMP PRCHR   ;Print Hex Digit and Return
-
-
-;Functions to set String Pointers
-;Used by memory, stdio, stdlin, string, and stringx libraries
-
-;Initialize Destination String Pointer
-SETDST: STX DSTLO       ;Save Destination String Pointer
-        STY DSTHI
-        RTS
-
-;Initialize Source String Pointer and Index
-SETSRC: STX SRCLO       ;Save Source String Pointer
-        STY SRCHI
-        LDY #$00        ;Initialize Index Into String
-        RTS
-
