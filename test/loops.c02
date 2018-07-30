@@ -1,0 +1,14 @@
+/*****************************
+ * Test compilation of Loops *
+ *****************************/
+
+#pragma padding 1
+
+char c,i;
+
+main:
+whilei: i = 0; while (i < 10) i++;
+        while (i:+) i--;
+dord: do {c = rdkey();} while (c=0);
+      for (i=1; i<9; i++) prchr(i);
+goto exit;

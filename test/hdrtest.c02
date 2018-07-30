@@ -1,0 +1,12 @@
+/*************************************************
+ * Test header variable and function definitions *
+ *************************************************/
+
+#include "testhdr.h02"
+ 
+main:
+
+puts("Header Test");
+
+goto exit;
+

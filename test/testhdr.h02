@@ -1,7 +1,15 @@
 /* Generic 6502 header file */
 
-char  getchr();
-void  putchr();
-char  putstr();
+const #TRUE = $FF, #FALSE = 0;
+
+char anykey = "Press any key to continue...";
+
+
+/* Get Character from Keyboard */
+char  getc(); 
+
+void  putc();
+
+char  puts();
+
 char  strlen();
-  

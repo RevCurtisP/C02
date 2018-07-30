@@ -70,12 +70,13 @@ void chklbl(char* lbname) {
   newlbl(lbname);
 }
 
-/* Require Label                               *
+/* Request Label                               *
  * if label is already set, returns that label *
  * else generates new label and sets it        */
 void reqlbl(char* lbname) {
-  if (lblasm[0] == 0) newlbl(lbname);
-  setlbl(lbname);
+  DEBUG("Requesting Label\n",0)
+  if (lblasm[0] == 0) {newlbl(lbname); setlbl(lbname);}
+  else {strcpy(lbname,lblasm); DEBUG("Found lblasm set to \"%s\"\n", lblasm)}
 }
 
 /* End Function Block */

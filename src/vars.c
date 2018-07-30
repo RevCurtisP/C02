@@ -161,7 +161,7 @@ void setdat(void) {
     datvar[dsize++] = litval;
   }
   else if (dtype == DTARRY) {
-    DEBUG("Setting variable data to array of length %d\n", dlen)
+	DEBUG("Setting variable data to array of length %d\n", dlen)
     for (i=0; i<dlen; i++)  datvar[dsize++] = dattmp[i];   
   }
   else {
@@ -183,7 +183,7 @@ void prsdat(void) {
   else if (match('"')) prsdts();       //Parse Data String
   else if (match('{')) prsdta();       //Parse Data Array
   else expctd("numeric or string literal");
-  setdat();   //Store Data Value
+  if (alcvar && dtype == DTBYTE) setdat();   //Store Data Value
 }
 
 /* Add Variable to Variable table *

@@ -1,14 +1,22 @@
 ;6502 Assembly Language File for DASM Macro Assembler
 
+TRUE    EQU $FF         ;Bitwise True
+FALSE   EQU $FF         ;Bitwise False
+
         ORG $0200      ;Set Origin
         
-start:  JMP main       ;Jump to Beginning of Program        
+START:  JMP main       ;Jump to Beginning of Program        
 
 ;Dummy Functions
-testfn: RTS            ;Generic Test Function
-getkey: RTS            ;Get Character from Keyboard
-prchr:  RTS            ;Print Character to Screen
-putstr: RTS            ;Print String to Screen
-strlen: RTS            ;Return Length of String
-exit:   BRK            ;Return to Monitor
+GETC:   RTS            ;Get Character from Keyboard
+PUTC:   RTS            ;Put Character to Screen
+PUTS:   RTS            ;Print String to Screen
+STRLEN: RTS            ;Return Length of String
+EXIT:   BRK            ;Return to Monitor
+
+ANYKEY  DC  "Press any key to continue...",0
+
+ONES    DC  "ZERO ",0,"ONE  ",0,"TWO  ",0,"THREE",0,"FOUR ",0
+            "FIVE ",0,"SIX  ",0,"SEVEN",0,"EIGHT",0,"NINE ",0
+
 
