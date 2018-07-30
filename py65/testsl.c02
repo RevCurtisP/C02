@@ -3,6 +3,7 @@
  ************************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
 #include <stdlib.h02>
 
 main:
@@ -35,17 +36,21 @@ anloop:
   newlin(); 
 
 tstmlt: //Test mult()
-char mltplr, mltpnd, prodct, acmltr;
+char mltplr, mltpnd, acmlsb, acmmsb, acmlst;
+char prodct, ovrflw;
 
 mltplr = 1;
 mrloop:
   prbyte(mltplr);
-  mltpnd = 1;
-  acmltr = 0;
+  mltpnd = 1; acmlst = 0;
+  acmlsb = 0; acmmsb = 0;
   mdloop:
-    acmltr = acmltr + mltplr;
-    prodct = mult(mltplr,mltpnd);
-    if (prodct <> acmltr) goto merror;
+    acmlsb = acmlsb + mltplr;
+    if (acmlsb<acmlst) acmmsb++;
+    acmlst = acmlsb;
+    prodct,ovrflw = mult(mltplr,mltpnd);
+    if (prodct <> acmlsb) goto merror;
+    //if (ovrflw <> acmmsb) goto merror;
     mltpnd++;
     if (mltpnd > 0) goto mdloop;
   mltplr++;
@@ -68,10 +73,10 @@ maxmpd = 1;
 drloop:
   prbyte(mltplr);
   mltpnd = 1;
-  acmltr = 0;
+  acmlsb = 0;
   ddloop:
     prbyte(mltpnd);
-    acmltr = acmltr + mltplr;
+    acmlsb = acmlsb + mltplr;
     prodct = mult(mltplr, mltpnd);
     quotnt = div(prodct, mltpnd);
     if (quotnt <> mltplr) goto derror;
@@ -143,6 +148,25 @@ caloop:
   prchr('K');
   newlin(); 
 
+doswap:
+  char i,j,m,n,p,r;
+  for (i=0;i<16;i++) {
+    for (j=0;j<16;j++) {
+      m = shiftl(i,4)+j; prbyte(m);
+      n = shiftl(j,5)+i; prchr('~');
+      p = swap(m); prbyte(p);
+      prchr(' ');
+    }
+    newlin();
+  }
+  prchr('s');
+  prchr('w');
+  prchr('a');
+  prchr('p');
+  prchr(' ');
+  prchr('O');
+  prchr('K');
+
 goto exit;
 
 abserr:
@@ -165,9 +189,11 @@ merror:
   prchr('*');
   prbyte(mltpnd);
   prchr('=');
+  //prbyte(ovrflw);
   prbyte(prodct);
   prchr(',');
-  prbyte(acmltr);
+  //prbyte(acmmsb);
+  prbyte(acmlsb);
   newlin();
 goto exit;
 

@@ -1,4 +1,4 @@
-; C02 library stdlib.h02 assembly language subroutines
+f; C02 library stdlib.h02 assembly language subroutines
 ; Requires 
 ; external zero page locations SRCLO and srchi
 ; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
@@ -40,7 +40,7 @@ MINX:   RTS
 ;      Y = Nultiplier
 ;Sets: TEMP0 = Multiplicand
 ;      TEMP1 = 0
-;      TEMP3 = Product MSB
+;      TEMP2 = Product MSB
 ;Affects: N,Z,C
 ;Returns: A = Product LSB
 ;         Y = Product MSB
@@ -48,15 +48,15 @@ MULT:   STA TEMP0       ;Store Multiplicand
         STY TEMP1       ;Store Multiplier
 ;Multiply TEMP0 times TEMP1
 MULTT:  LDA #$00        ;Initialize Accumulator
-        STA TEMP2       ;and Result High Byte
         BEQ MULTE       ;Enter Loop
 MULTA:  CLC
         ADC TEMP0       ;Add Multiplicand
 MULTL:  ASL TEMP0       ;Shift Multiplicand Left
-        ROL TEMP2
 MULTE:  LSR TEMP1       ;Shift Multiplier Right
         BCS MULTA       ;If Bit Shifted Out, Add Multiplicand
         BNE MULTL       ;Loop if Any 1 Bits Left
+        LDY TEMP2       ;Load Y with MSB
+        TAX             ;and Copy LSB to X
         RTS
 
 ;div(m,n) - MULTiply Two Numbers
@@ -81,7 +81,7 @@ DIVL:   ROL TEMP0       ;Shift Bit Out of Dividend
 DIVS:   DEX             ;Decrement Counter
         BPL DIVL        ;  and Loop
         ROL TEMP0       ;Shift Result into Dividend
-        TYA             ;Copy Remainder to Y Register
+        TAY             ;Copy Remainder to Y Register
         LDA TEMP0       ;Load Result into Accumulator
         RTS
 
@@ -119,6 +119,18 @@ SHIFTL: ASL             ;Shift Byte to Left
 SHIFTR: LSR             ;Shift Byte to Right
         DEY             ;Decrement Counter
         BNE SHIFTR      ;  and Loop if Not 0
+        RTS
+
+;SWAP Nybbles in Byte
+;Args: A = Byte containing Nybbles to Swap
+;Affects: C,N,Z
+;Returns: A = Byte with Nybbles Swapped
+SWAP:   ASL             ;Code by
+        ADC  #$80       ;David Galloway
+        ROL             ;posted on 
+        ASL             ;6502.org by
+        ADC  #$80       ;Garth Wilson
+        ROL             ;Oct 27, 2017
         RTS
 
 ;atoc(&s) - ASCII string TO Character
@@ -159,7 +171,7 @@ ATOCX:  LDA TEMP0       ;Load Result
 ;Returns: A,Y = Length of String
 CTOA:   JSR SETSRC     ;Initialize Source String
         JSR CUBCD      ;Convert Accumulator to Unpacked BCD
-        LDA TEMP2      ;Get High Byte
+        LDA TEMP2      ;Get MSB
         BEQ CTOA1      ;If Not Zero
         JSR CTOAN       ;  Convert Low Nybble
 CTOA1:  LDA TEMP1      ;Get Low Byte
@@ -218,10 +230,11 @@ CVBCDL: ASL TEMP0  ;Shift High Bit Into Carry
         LDA TEMP1  ;Add BCD Low Byte to Itself 
         ADC TEMP1  ;  Plus Bit Shifted out of Binary
         STA TEMP1  ;  Effectively Multiplying It by 2
-        LDA TEMP2  ;Add BCD High Byte to Itself
+        LDA TEMP2  ;Add BCD MSB to Itself
         ADC TEMP2  ;  Plus Bit Shifted out of Low Byte
         STA TEMP2  ;  Effectively Multiplying It by 2
         DEX        ;Decrement Counter and
         BNE CVBCDL ;  Process Next Bit
         PLP        ;Restore Status Register
         RTS
+

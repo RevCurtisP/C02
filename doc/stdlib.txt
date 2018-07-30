@@ -78,6 +78,8 @@ The following functions are defined:
                       post-operators will generate smaller code for less 
                       than 5 shifts and will always be faster.
 
+  c = swap(b);        Returns the byte b with the high and low nybbles
+                      swapped.
 
 Note: This library expects the following function to be defined
 
