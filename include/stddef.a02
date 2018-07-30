@@ -28,6 +28,10 @@ RESRXY: LDX TEMP1   ;Load X Index
         LDY TEMP2   ;Load Y Index
         RTS
 
+;Set Destinatioon Pointer to Source Pointer
+SETDSS: JSR GETSRC  ;Get Destination Pointer
+        JMP SETDST  ;Store in Source Pointer
+
 ;Restore Destination Pointer
 RESDST: JSR RESRXY  ;Load Address and Drop into SETDST
 

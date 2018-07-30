@@ -53,6 +53,13 @@ The following functions are defined:
                         most significant byte, passed in the Y 
                         register, to desthi.
 
+  setdss();             Sets the destination pointer to the source 
+                        pointer.
+
+                        Note: Calls the getsrc function, followed by
+                        the setdst function, copying srclo and srchi
+                        to dstlo and dsthi, respectively.
+
   setsrd();             Sets the source pointer to the destination 
                         pointer.
 

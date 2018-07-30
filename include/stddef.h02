@@ -37,6 +37,9 @@ void savrxy();
 /* Save Source Pointer */
 void savsrc(); 
 
+/* Set Destination Pointer to Source Pointer */
+void setdss();  
+
 /* Set Destination Pointer        *
  * Args: &d - Destination address */
 void setdst();
