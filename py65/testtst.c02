@@ -1,0 +1,66 @@
+/**********************************************
+ * TESTTST - Test the Test Module for py65mon *
+ **********************************************/
+ 
+#include <py65.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <test.h02>
+
+char tstvar; //Test Variable
+
+main:
+
+//Print Predefined Strings
+setdst(&pass);printf("pass=\"%s\", ");
+setdst(&fail);printf("fail=\"%s\"\n");
+newlin();
+
+//Test putadr()
+puts("putadr(*,1,0);   "); putadr(*,1,0);   puts("\n");
+puts("putadr(&$1234);  "); putadr(&$1234);  puts("\n");
+puts("putadr(&tstvar); "); putadr(&tstvar); puts("\n");
+newlin();
+
+//Test passed() and failed()
+puts("passed();"); passed(); puts(", ");
+puts("failed();"); failed(); puts("\n");
+newlin();
+
+//Test passln() and failln()
+puts("passln();"); passln();
+puts("failln();"); failln();
+newlin();
+
+//Test trufls()
+printf(trufls($00),"trufls($00)=$%h\n");
+printf(trufls($01),"trufls($01)=$%h\n");
+printf(trufls($FF),"trufls($FF)=$%h\n");
+newlin();
+
+//Test psorfl()
+puts("psorfl($00);"); psorfl($00); puts(", ");
+puts("psorfl($01);"); psorfl($01); puts(", ");
+puts("psorfl($FF);"); psorfl($FF); puts("\n");
+
+//Test psorfl()
+puts("florps($00);"); florps($00); puts(", ");
+puts("florps($01);"); florps($01); puts(", ");
+puts("florps($FF);"); florps($FF); puts("\n");
+newlin();
+
+//Test psflln()
+puts("psflln($00);"); psflln($00);
+puts("psflln($01);"); psflln($01);
+puts("psflln($FF);"); psflln($FF);
+newlin();
+
+//Test flpsln()
+puts("flpsln($00);"); flpsln($00);
+puts("flpsln($01);"); flpsln($01);
+puts("flpsln($FF);"); flpsln($FF);
+anykey();
+
+goto exit;

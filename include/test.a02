@@ -1,0 +1,91 @@
+; C02 library test.h02 assembly language subroutines
+; Requires external routines NEWLIN, PRBYTE and PUTS
+; external zero page locations SRCLO and srchi
+; and external locations TEMP0, TEMP1, and TEMP2. 
+; and external constants #TRUE and #FALSE
+
+;Predefined Strings
+PASS    DC  " Pass",0
+FAIL    DC  " Fail",0
+
+;putadr(&addr) - PUT ADdRess to screen
+;Args: Y = Address MSB
+;      X = Address LSB
+;Calls: PUTS = Put String
+;       PRBYTE = Print Byte
+;       SAVRXY = Save X and Y Registers
+;Affects: A,Y,X,N,Z,C
+PUTADR: JSR SAVRXY      ;Save Address
+        LDY #>PUTADS    ;Load String MSB
+        LDX #<PUTADS    ;Load String LSB
+        JSR PUTS        ;Print String
+        JMP PUTWRA      ;Print MSB & LSB
+PUTADS  DC  "address=$",0
+
+;trufls(val) - convert value to TRUe or FaLSe
+;Args: A = Value to Convert
+;Returns: A=#TRUE,N=1,Z=0 if value is not zeto
+;           #FALSE,N=0,Z=1 if value is 0
+TRUFLS: ORA #0          ;Evaluate Argument
+        BEQ TRUFLX      ;If Not 0
+        LDA #TRUE       ;  Return TRUE
+TRUFLX: RTS             ;Else Return FALSE
+
+;psorfl(val) - PaSs if true OR FaiL if false
+;Args: A = Value to evaluate
+;Calls: PASSED or FAILED
+;Affects: A,X,Y,N,Z,C
+PSORFL: ORA #0          ;Evaluate Argument
+        BEQ FAILED      ;If 0, execute FAILED
+                        ;Else fall into PASSED
+
+;passed() - print PASSED message
+;Calls: PUTS = Put String
+;Affects: A,X,Y,N,Z,C
+PASSED: LDY #>PASS      ;Load Pass Message MSB
+        LDX #<PASS      ;Load Pass Message LSB
+        JMP PUTS        ;Print Pass Message
+
+;psflln(val) - print PaSs or FaiL and newLiNe
+;Args: A = Value to evaluate
+;Calls: PASSED or FAILED
+;Affects: A,X,Y,N,Z,C
+PSFLLN: ORA #0          ;Evaluate Argument
+        BEQ FAILLN      ;If 0, execute FAILLN
+                        ;Else fall into PASSLN
+
+;passln() - print PASSED message and newline
+;Calls: PASSED and NEWLIN - Print Newline
+;Affects: A,X,Y,N,Z,C
+PASSLN: JSR PASSED      ;Print Passed Message
+        JMP NEWLIN      ;Print Newline and Return
+
+;florps(val) - FaiL if true OR PaSs if false
+;Args: A = Value to evaluate
+;Calls: PASSED or FAILED
+;Affects: A,X,Y,N,Z,C
+FLORPS: ORA #0          ;Evaluate Argument
+        BEQ PASSED      ;If 0, execute PASSED
+                        ;Else fall into FAILED
+
+;passed() - print FAILED message
+;Calls: PUTS = Put String
+;Affects: A,X,Y,N,Z,C
+FAILED: LDY #>FAIL      ;Load Fail Message MSB
+        LDX #<FAIL      ;Load Fail Message LSB
+        JMP PUTS        ;Print Fail Message
+
+;flpsln(val) - print FaiL or PaSs and newLiNe
+;Args: A = Value to evaluate
+;Calls: PASSED or FAILED
+;Affects: A,X,Y,N,Z,C
+FLPSLN: ORA #0          ;Evaluate Argument
+        BEQ PASSLN      ;If 0, execute PASSLN
+                        ;Else fall into FAILLN
+
+;failln() - print PASSED message and newline
+;Calls: PASSED and NEWLIN - Print Newline
+;Affects: A,X,Y,N,Z,C
+FAILLN: JSR FAILED      ;Print Passed Message
+        JMP NEWLIN      ;Print Newline and Return
+

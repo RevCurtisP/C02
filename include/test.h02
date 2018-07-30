@@ -1,0 +1,53 @@
+/*********************************************
+ * stdlib - Template Library Routines for C02 *
+ *********************************************/
+
+char fail[]; //" Fail" - Failed Message
+char pass[]; //" Pass" - Passed Message
+
+/* Print Failed Message */
+char failed();
+
+/* Print Failed Message   *
+ * followed by a New Line */
+char failln();
+
+/* Print Failed Message if True *
+ *   or Passed Message if False *
+ * Args: b - Value to evaluate  */
+void florps();
+
+/* Print Failed Message if True *
+ *   or Passed Message if False *
+ *   followed by a New Line     *
+ * Args: b - Value to evaluate  */
+void flpsln();
+
+/* Print Passed Message */
+char passed();
+
+/* Print Passed Message   *
+ * followed by a New Line */
+char passln();
+
+/* Print Passed Message if True *
+ *   or Failed Message if False *
+ *   followed by a New Line     *
+ * Args: b - Value to evaluate  */
+void psflln();
+
+/* Print Passed Message if True *
+ *   or Failed Message if False *
+ * Args: b - Value to evaluate  */
+void psorfl();
+
+/* Print Address in format *
+ *   "address=$HHHH"       *
+ * Args: &d - Address      */
+char putadr();
+
+ /* Convert Value to TRUE or FALSE *
+ * Args: v - Value to convert      *
+ * Returns: #FALSE if value is 0,  *
+ *          otherwise #TRUE        */
+char trufls();

@@ -1,0 +1,107 @@
+Test Functions for C02 Programs
+
+This module includes functions useful for writing testing and diagnostic programs.
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <stdio.h02>
+  #include <stdiox.h02>
+  #include <test.h02>
+
+The following strings are defined:
+
+  char pass = " Pass";
+  char fail = " Fail";
+
+along with the  following functions:
+
+  putadr(&d);           Prints the string "address=$" followed by the
+                        address of d as a four byte hexadecimal number.
+
+                        The alternate calling syntax putadr(*,hi,lo);
+                        may be used when an address is held in two 
+                        separate variables.
+
+                        For use when testing and/or debugging functions
+                        that get, set, or change addresses and pointers.
+
+                        Note: Calls puts() with the harcoded string
+                        "address=$" and putwrd().
+
+  trufls(b);            Returns the constant #TRUE unless byte b is 0,
+                        in which case #FALSE is returned.
+
+                        For use when using bitwise and operator (&) and/or
+                        exclusive-or operator (^) to combine multiple
+                        results into a single pass or fail.
+
+  passed();             Prints the string " Pass" to the screen.
+  
+                        Note: Calls puts() with the string variable pass.
+
+  passln();             Prints the string " Pass" to the screen, followed
+                        by a New Line.
+  
+                        Note: Calls passed() and newlin().
+
+  failed();             Prints the string " Fail" to the screen.
+  
+                        Note: Calls puts() with the string variable fail.
+
+  passln();             Prints the string " Fail" to the screen, followed
+                        by a New Line.
+  
+                        Note: Calls failed() and newlin().
+
+  psorfl(b);            Prints the string " Pass" if b is non-zero, or the
+                        string " Fail" if b is zero.
+
+                        For use when testing functions that return a 
+                        non-zero result on success and a zero result on
+                        failure.
+
+                        Note: Calls trufls(), then passed() or failed()
+                        depending on the result.
+
+  psflln(b);            Prints the string " Pass" and a New Line if b is 
+                        non-zero, or the string " Fail" and a New Line if 
+                        b is zero.
+
+                        Note: Calls trufls(), then passln() or failln()
+                        depending on the result.
+
+  florps(b);            Prints the string " Fail" if b is non-zero, or the
+                        string " Pass" if b is zero.
+
+                        For use when testing functions that return a 
+                        zero result on success and a non-zero result on
+                        failure.
+
+                        Note: Calls trufls(), then passed() or failed()
+                        depending on the result.
+
+  flpsln(b);            Prints the string " Fail" and a New Line if b is 
+                        non-zero, or the string " Pass" and a New Line if 
+                        b is zero.
+
+                        Note: Calls trufls(), then failln() or passln()
+                        depending on the result.
+
+Note: This library expects the following functions to be defined:
+
+  newlin();             Print New Line
+  puts(&s);             Put String to Screen
+  savrxy();             Save X and Y Registers
+
+along with the zero page variables
+  
+  srclo,srchi:          Source Address Pointer
+
+the external variables
+  
+  temp1,temp2:          Temporary Variables
+
+and the constants
+  
+  #TRUE, #FALSE         True and False
