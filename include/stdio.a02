@@ -2,42 +2,67 @@
 ; Requires external routines GETKEY, PRCHR, DELCHR, NEWLIN, and SETSRC
 ; external zero page locations SRCLO and SRCHI
 ; and external constants DELKEY, ESCKEY, and RTNKEY
-;char getc()
+
+;char getc() - GET Character from keyborad
+;Sets: System Dependent
+;Uses: System Dependent
+;Affects:  System Dependent
+;Returns: A = Character Code of Key 
 GETC    EQU GETKEY     ;Alias to external GETKEY routine
 
-;void putc(c)
+;void putc(c) - PUT Character to screen
+;Args: Character code to display 
+;Sets: System Dependent
+;Uses: System Dependent
+;Affects:  System Dependent
+;Returns: System Dependent
 PUTC    EQU PRCHR      ;Alias to external PRCHR Routine
 
-;char gets(&s)
-GETS:   JSR SETSRC     ;Initialize Source String
-GETSL:  JSR GETC       ;Get Keypress
-        CMP #DELKEY    ;If Delete
-        BNE GETSE     ;Then  
-        TYA            ;  If Offset is Zero
-        BEQ GETSL     ;    Get Next Character
-        DEY            ;  Else Decrement Offset
-        JSR DELCHR     ;    Delete Previous Character
-        JMP GETSL     ;    and Get Next Character
-GETSE:  CMP #ESCKEY    ;Else If Escape
-        BNE GETSC     ;Then  
-        LDY #$FF       ;  Return -1
+;char gets(&s) - GET String input from keyboard
+;Args: Y,X = Address of String
+;Sets: SRCLO,SRCLHI = Address of String
+;Affects: N,Z,C
+;Returns: A,Y = Number of Characters in String
+GETS:   JSR SETSRC      ;Initialize Source String
+GETSL:  JSR GETC        ;Get Keypress
+        CMP #DELKEY     ;If Delete
+        BNE GETSE       ;Then  
+        TYA             ;  If Offset is Zero
+        BEQ GETSL       ;    Get Next Character
+        DEY             ;  Else Decrement Offset
+        JSR DELCHR      ;    Delete Previous Character
+        JMP GETSL       ;    and Get Next Character
+GETSE:  CMP #ESCKEY     ;Else If Escape
+        BNE GETSC       ;Then  
+        LDY #$FF        ;  Return -1
         BNE GETSY     
-GETSC:  CMP #RTNKEY    ;Else If Not Carriage Return 
+GETSC:  CMP #RTNKEY     ;Else If Not Carriage Return 
         BEQ GETSX
-        JSR PUTC       ;  Echo Character
-        STA (SRCLO),Y  ;  Store Character at offset
-        INY            ;  increment offset and
-        BPL GETSL     ;  loop if less than 128
-GETSX:  JSR NEWLIN     ;Else Advance Cursor to Next Line
-        LDA #$00       ;  Terminate String        
-        STA (SRCLO),Y  ;  and 
-GETSY:  TYA            ;  Return String Length
+        JSR PUTC        ;  Echo Character
+        STA (SRCLO),Y   ;  Store Character at offset
+        INY             ;  increment offset and
+        BPL GETSL       ;  loop if less than 128
+GETSX:  JSR NEWLIN      ;Else Advance Cursor to Next Line
+        LDA #$00        ;  Terminate String        
+        STA (SRCLO),Y   ;  and 
+GETSY:  TYA             ;  Return String Length
         RTS
 
-;char puts(&s)
+;char puts(&s) - PUT String to screen
+;Args: Y,X = Address of String
+;Calls: PUTS
+;Affects: N,Z,C
+;Returns: A,Y = Number of Characters in String
 PUTS:   LDA #$00       ;Set Start Position to 0
                        ;and fall into putsub
-;char putsub(n, &s)
+
+;char putsub(n, &s) - PUT SUBstring to screen
+;Args: A = Starting Position in String
+;      Y,X = Address of String
+;Sets: SRCLO,SRCLHI = Address of String
+;Calls: PUTC
+;Affects: N,Z,C
+;Returns: A,Y = Number of Characters in String
 PUTSUB: JSR SETSRC     ;Initialize Source String
         TAY            ;Initialize character offset
 PUTSUL: LDA (SRCLO),Y  ;Read next character in string
@@ -48,6 +73,8 @@ PUTSUL: LDA (SRCLO),Y  ;Read next character in string
 PUTSUX: TYA            ;Return number of
         RTS            ;  characters printed
 
-;char putln(&s)
+;char putln(&s) - PUT LiNe to screen
+;Args: Y,X = Address of String
+;Calls: PUTS and NEWLIN
 PUTLN:  JSR PUTS       ;Write string to screen
         JMP NEWLIN     ;Execute external NEWLINe routine and return

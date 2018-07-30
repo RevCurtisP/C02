@@ -2,6 +2,7 @@ Standard Input/Output Functions for C02 Programs
 
 At the beginning of the program use the directives
 
+  #include <stddef.h02>
   #include <stdio.h02>
   
 The following functions are defined:

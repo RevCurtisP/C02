@@ -2,18 +2,33 @@
 
 ANYKEP: DC  "Press any key to continue...",0
 
+;
+;char anykey() - wait for character with ANY KEY prompt
+;Calls: GETCPR, NEWLIN - Print Newline to Screen
+;Affects: C,N,Z
+;Returns: A = Character code of keypress
 ANYKEY: JSR NEWLIN      ;Start at Beginning of Next Line
-        LDY #>ANYKEP     ;Load Prompt High Byte
-        LDX #<ANYKEP     ;Load Prompt Low Byte
+        LDY #>ANYKEP    ;Load Prompt High Byte
+        LDX #<ANYKEP    ;Load Prompt Low Byte
                         ;Drop into GETCPR
 
-;Display Prompt and Wait for Character
-GETCPR: JSR PUTLN       ;Print Prompt
+;char getcpr(&s) - GET Character with PRompt
+;Args: Y,X = Address of Prompt String
+;Sets: TEMP0 - Character code of keypress
+;Calls: PUTS - Put String to Screen
+;       GETC - Get Character from Keyboard
+;       NEWLIN - Print Newline to Screen
+;Affects: C,N,Z
+;Returns: A = Character code of keypress
+GETCPR: JSR PUTS        ;Print Prompt
+        JSR GETC        ;Wait for and Return Keypress
+        STA TEMP0       ;Save Key Code
+        JSR NEWLIN      ;Move to Next Line
         JSR NEWLIN      ;Generate Blank Line
-        JMP GETC        ;Wait for and Return Keypress
+        LDA TEMP0       ;Load Key Code
+        RTS
 
-;Print Byte as Left Justified Decimal Number
-;void putdel(b)
+;void putdel(b) - PUT DEcimal Left justified
 ;Args: A = number to print
 ;Sets: TEMP0 - ones digit
 ;      TEMP1 - tens digit
@@ -33,8 +48,7 @@ PUTDET: CMP #10         ;  If Number < 10
         JSR PUTSPC      ;    Print another Space
 PUTDEX: RTS
 
-;Print Byte as Right Justified Decimal Number
-;void putder(b)
+;void putder(b) - PUT DEcimal Right justified
 ;Args: A = number to print
 ;Sets: TEMP0 - ones digit
 ;      TEMP1 - tens digit
@@ -44,8 +58,7 @@ PUTDER: STA TEMP3
 PUTDES: JSR PUTDEH
         LDA TEMP3
 
-;Print Byte as Decimal Number
-;void putdec(b)
+;void putdec(b) - PUT DECimal
 ;Args: A = number to print
 ;Sets: TEMP0 - ones digit
 ;      TEMP1 - tens digit
@@ -64,15 +77,34 @@ PUTDEP: ORA #$30        ;Convert to ASCII digit
         JSR PRCHR       ;And Print
         RTS
 
+;puthex(&word) - PUT HEXadecimal
+PUTHEX  EQU PRBYTE      ;Print Byte as Hexadecimal
+
+;putwrd(&word) - PUT WoRD
+;Args: Y = Word MSB
+;      X = Word LSB
+;Calls: PUTS = Put String
+;       PRBYTE = Print Byte
+;       SAVRXY = Save X and Y Registers
+;Affects: A,Y,X,N,Z,C
+PUTWRD: JSR SAVRXY      ;Save Address
+PUTWRA: LDA TEMP2       ;Load Address MSB
+        JSR PRBYTE      ;Print as Hexadecimal
+        LDA TEMP1       ;Load Address LSB
+        JMP PRBYTE      ;Print and Return`
+
 ;Print a Space
 PUTSPC: LDA #32         ;Load Space Character
         JMP PRCHR       ;and Print it
 
-;Print Byte in Formatted String
-;void printf(b, &s)
-;Args: A = number to format
+;void printf(b, &s) - PRINT Formatted byte and/or string
+;Args: A = byte to format
 ;      Y,X = address of formatting string
-;Sets: TEMP3 - number to format
+;Uses: DSTLO,DSTHI = Address of %S string
+;Sets: SRCLO,SRCHI = Address of formatting string
+;      TEMP3 - number to format
+;Destroys: TEMP0,TEMP1,TEMP2
+;Returns: A,Y = Total number of characters printed
 PRINTF: JSR SETSRC      ;Initialize Source String
         STA TEMP3       ;Save Byte to Format
 PRINTL: LDA (SRCLO),Y   ;Read next character in string
@@ -108,12 +140,19 @@ PRINTD: CMP #'D         ;'Else If "d" or "D"
 PRINTH: CMP #'H         ;'Else If "h" or "H" 
         BNE PRINTS
         LDA TEMP3       ;  Load Byte to Format
-        JSR PRBYTE      ;  Print as Hexadecimal
+        JSR PUTHEX      ;  Print as Hexadecimal
         JMP PRINTY      ;  and Continue Printing Screen
-PRINTS: CMP #'S         ;'Else If "s" or "s" 
-        BNE PRINTB
+PRINTS: CMP #'S         ;'Else If "s" or "S" 
+        BNE PRINTW
         STY TEMP0       ;  Save Index
         JSR PUTDST      ;  Print Destination String
+        LDY TEMP0       ;  Restore Index
+        JMP PRINTY      ;
+PRINTW: CMP #'W         ;'Else If "w" or "W" 
+        BNE PRINTB
+        STY TEMP0       ;  Save Index
+        JSR SAVDST      ;  Save Destination Address
+        JSR PUTWRA      ;  Print MSB and LSB as Hex
         LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;
 PRINTB: LDA TEMP3       ;Else
