@@ -89,6 +89,11 @@ MEMCPL: LDA (SRCLO),Y   ;Get Character from Source Array
         TYA             ;Copy Index to Accumulater
         RTS             ;Else Return
 
+MEMCLR: JSR SETDST      ;Set Destination Address
+        TAY             ;Transer Count to Y 
+        LDA #0          ;Set Fill Character to Null
+                        ;and Fall into MEMSET
+
 ;memset(c, n) - Fill Destination Array
 ;Args: A = Character to fill with
 ;      Y = Number of bytes to fill

@@ -23,11 +23,17 @@ The following functions are defined:
                       Note: Aliased to the setdst() routine which sets 
                       variables dstlo and dsthi as a pointer to the array.
 
-  memset(c, n);       Fills  first n bytes of the destination array set 
+  memset(c, n);       Fills first n bytes of the destination array set 
                       by a a prior memdst() call with character c.
                       
                       Note: dstlo and dsthi are left pointing to the
                       destination array.
+
+  memclr(n, &s);      Memory Clear: Fills first n bytes of array s with 
+                      the byte $00. 
+
+                      Note: Calls memdst(&d) and memset(n,$00), leaving
+                      dstlo and dsthi pointing to s.
 
   p = memchr(c, n);   Searches for character c in the first n bytes of the
                       destination array set by a a prior memdst() call. 

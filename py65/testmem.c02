@@ -4,7 +4,9 @@
  
 #include <py65.h02>
 #include <stddef.h02>
+#include <stdlib.h02>
 #include <stdio.h02>
+#include <stdiox.h02>
 #include <memory.h02>
 
 char c, d, f, i, n, p;
@@ -55,53 +57,43 @@ if (p) putln(&pass); else putln(&fail);
 newlin();
 
 //Test memcmp()
-puts("less="); puts(&less); 
-puts("  more="); puts(&more);
-puts("  most="); putln(&most);
+setdst(&less); printf("less=\"%s\", ");  
+setdst(&more); printf("more=\"%s\", "); 
+setdst(&most); printf("most=\"%s\"\n"); 
 
 putln("memdst(&more);");
 memdst(&more);
 
-puts("memcmp(2, &most):");
-rcmp = memcmp(2, &most);
+rcmp = memcmp(2, &most); 
+printf(rcmp,"memcmp(2, &most)=$%h:"); 
 if (!rcmp) puts(&pass); else puts(&fail);
 
-puts("memcmp(4, &most):");
 rcmp = memcmp(4, &most);
+printf(rcmp,"memcmp(4, &most)=$%h:");
 if (rcmp :-) putln(&pass); else putln(&fail);
 
-puts("memcmp(3, &more):");
-rcmp = memcmp(3, &more);
+rcmp = memcmp(4, &more);
+printf("memcmp(4, &more)=$%h:");
 if (!rcmp) puts(&pass); else puts(&fail);
 
-puts("memcmp(3, &less):");
-rcmp = memcmp(3, &less);
+rcmp = memcmp(4, &less);
+printf("memcmp(4, &less)=$%h:");
 if (rcmp > 0) putln(&pass); else putln(&fail);
 newlin();
 
 //Test memset() and memcpy()
-putln("memdst(&temp);");
-memdst(&temp);
+putln("memdst(&temp);"); memdst(&temp);
 
-puts("memset(0,20);      ");
-memset(0,20);
+puts("memset(0,20);      "); memset(0,20);
+puts("temp="); putln(&temp);
 
-puts("temp=");
-putln(&temp);
+puts("memset('@',20);    "); memset('@',20);
+puts("temp="); putln(&temp);
 
-puts("memset('@',20);    ");
-memset('@',20);
+puts("memcpy(10, &lttr); "); memcpy(10, &lttr);
+puts("temp="); putln(&temp);
 
-puts("temp=");
-putln(&temp);
-
-puts("memcpy(10, &lttr); ");
-memcpy(10, &lttr);
-
-puts("temp=");
-putln(&temp);
-
-puts("memcmp(10, &lttr);");
+puts("memcmp(10, &lttr);"); 
 rcmp = memcmp(10, &lttr);
 if (!rcmp) putln(&pass); else putln(&fail);
 
@@ -110,13 +102,14 @@ rcmp = memcmp(11, &lttr);
 if (rcmp > 0) putln(&pass); else putln(&fail);
 newlin();
 
-memdst(&temp); memcpy("ABCDEF");
-memdst(&dest); memcpy("123456");
-puts("memdst(&dest);memswp(3,&temp);");
-memswp(3,&temp);
-rcmp = memcmp(6,"ABC456");
-memdst(&temp); rcmp = memcmp(6,"123DEF") | rcmp;
-if (rcmp) putln(&fail); else putln(&pass);
+memdst(&temp); memcpy(7,"ABCDEF"); printf("temp=\"%s\", ");
+memdst(&dest); memcpy(7,"123456"); printf("dest=\"%s\"\n");
+putln("memdst(&dest);memswp(3,&temp);");
+memdst(&dest); memswp(3,&temp);
+memdst(&temp); printf("temp=\"%s\":"); florps(memcmp(7,"123DEF"));
+memdst(&dest); printf("dest=\"%s\":"); florps(memcmp(7,"ABC456"));
+newlin();
+
 goto exit;
 
-
+void florps(rcmp) {if (rcmp) putln(&fail); else putln(&pass);}
