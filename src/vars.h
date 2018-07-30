@@ -64,6 +64,7 @@ void prsdts();                       //Parse Data String
 void prsvar(int alwreg);             //Parse Variable
 void prsmbr(char* name);             //Parse Struct Member
 int  psizof(void);                   //Parse SizeOf Operator
+int  pidxof(void);                   //Parse IndexOf Operator
 void reqvar(int alwary);             //Require and Parse Variable Name
 void setdat();                       //Store variable data
 void setvar(int m, int t);           //Add Variable to Variable table

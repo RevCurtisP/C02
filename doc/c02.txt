@@ -543,6 +543,23 @@ Note: The size-of operator is evaluated at compile time and generates two
 bytes of machine language code. It is the most efficient method of specifying
 a variable length.
 
+INDEX-OF OPERATOR
+
+The index-of operator ? generates a literal value equal to the offset in bytes
+of a specified stucture member. It is allowed anywhere a literal would be and
+should be used anytime the offset of the member of a struct is required.
+
+When using the size-of operator, it is prefixed to the member specification.
+
+Examples:
+
+  blkmem(?rec.data, &s);    //Search block for segment where data contains s      
+  memcpy(?rec.data, &t);    //Copy bytes of rec up to member data into t
+
+Note: The idex-of operator is evaluated at compile time and generates two
+bytes of machine language code. It is the most efficient method of specifying
+a the offset of a struct member.
+
 FUNCTION CALLS
 
 A function call may be used as a stand-alone statement, or as the first

@@ -15,6 +15,15 @@ struct record {
 //Declare Structure Variable
 struct record rec;
 
+//Display Structure Info
+printf(@rec,"@rec=%d\n");
+printf(?rec.name,"?rec.name=%d\t");
+printf(@rec.name,"@rec.name=%d\n");
+printf(?rec.index,"?rec.index=%d\t");
+printf(@rec.index,"@rec.index=%d\n");
+printf(?rec.data,"?rec.data=%d\t");
+printf(@rec.data,"@rec.data=%d\n");
+
 //Set Structure Members
 strdst(&rec.name); strcpy(name);
 rec.index = index;
@@ -32,6 +41,6 @@ index = rec.index;
 for (i = 0; i<129; i++)
   d = rec.data[i];
 
-//Treat Structure Like and Array
+//Treat Structure Like an Array
 for (i = 0; i<140; i++)
   d = rec[i];

@@ -40,6 +40,7 @@ int isprnt();                  //Is Next Character Printable
 int isspc();                   //Is Next Character a Space
 int isszop();                  //Is Next Character the SizeOf Operator
 int isvpre();                  //Is Next Character a Value Prefix
+int isxfop();                  //Is Next Character the IndexOf Operator
 int isxpre();                  //Is Next Character an Expression Prefix
 
 void expect(char c);        //Look for Character and Exit if not found
@@ -54,6 +55,7 @@ int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
 int  prspst(char trmntr, char* name, char* index);  //Parse Post Operator
 int  psizof(void);          //Parse SizeOf Operator
+int  pidxof(void);          //Parse SizeOf Operator
 void skpchr();              //Skip Next Character
 void skpcmt();              //Skip to End of Comment
 void skpspc();              //Advance to Next Printable Character

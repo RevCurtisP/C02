@@ -104,15 +104,31 @@ void reqvar(int alwary) {
   if (!alwary && valtyp != VARIABLE) expctd("Variable");
 } 
 
+/* Parse IndexOf Operator                    *
+ * Sets: value - variable size (as string)  * 
+ * Returns: variable size (as integer       */
+int pidxof(void) { 
+  expect('?');   //Check for and Skip SizeOf Operator
+  DEBUG("Parsing IndexOf operator", 0);
+  mbridx = -1; //Set Member Index to None
+  reqvar(FALSE); //Parse Variable Name to get Size Of
+  if (mbridx > -1) {
+    sprintf(value, "$%hhX", membrs[mbridx].offset);
+    return membrs[mbridx].offset;
+  }
+  ERROR("IndexOf operator requires a struct member\n", 0, EXIT_FAILURE);
+  return 0; //Suppress Warning
+}
+
 /* Parse SizeOf Operator                    *
  * Sets: value - variable size (as string)  * 
  * Returns: variable size (as integer       */
 int psizof(void) { 
   expect('@');   //Check for and Skip SizeOf Operator
-  DEBUG("Parsing sizeof operator", 0);
+  DEBUG("Parsing SizeOf operator", 0);
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
-  if (mbridx > 0) {
+  if (mbridx > -1) {
     sprintf(value, "$%hhX", membrs[mbridx].size);
     return membrs[mbridx].size;
   }
@@ -183,7 +199,7 @@ void prsdat(void) {
   else if (match('"')) prsdts();       //Parse Data String
   else if (match('{')) prsdta();       //Parse Data Array
   else expctd("numeric or string literal");
-  if (alcvar && dtype == DTBYTE) setdat();   //Store Data Value
+  if (alcvar || dtype == DTBYTE) setdat();   //Store Data Value
 }
 
 /* Add Variable to Variable table *

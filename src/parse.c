@@ -24,7 +24,7 @@ int isbpre(void) {return TF(isnpre() || isapos());}
 int isdec(void)  {return inbtwn('0', '9');}
 int iscpre(void) {return match('#');}
 int ishexd(void) {return TF(isdec() || inbtwn('A', 'Z'));}
-int islpre(void) {return TF(isbpre() || iscpre() || isszop());}
+int islpre(void) {return TF(isbpre() || iscpre() || isszop() || isxfop());}
 int isnl(void)   {return TF(match('\n') || match('\r'));}
 int isnpre(void) {return TF(isdec() || match('$') || match('%'));}
 int isoper(void) {return TF(strchr("+-&|^", nxtchr));}
@@ -33,6 +33,7 @@ int isprnt(void) {return isprint(nxtchr);}
 int isspc(void)  {return isspace(nxtchr);}
 int isszop(void) {return match('@');}
 int isvpre(void) {return TF(isalph() || islpre());}
+int isxfop(void) {return match('?');}
 int isxpre(void) {return TF(isvpre() || match('-'));}
 
 /* Process ASCII Character */
@@ -317,7 +318,8 @@ int prscon(void) {
 void prslit(void) {
   skpspc();
   if      (iscpre()) litval = prscon(); //Parse Constant
-  else if (isszop()) litval = psizof(); //Parese SizeOf Operator
+  else if (isszop()) litval = psizof(); //Parse SizeOf Operator
+  else if (isxfop()) litval = pidxof(); //Parse IndexOf Operator
   else               litval = prsbyt(); //Parse Byte Value
   valtyp = LITERAL;
   strcpy(word, value); //Patch for DASM
