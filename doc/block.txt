@@ -17,6 +17,7 @@ the variable length (at index 8).
 
 Usage: at the beginning of the program use the directives
 
+  #include <stddef.h02>
   #include <memory.h02>
   #include <string.h02>
   #include <block.h02>
@@ -37,74 +38,103 @@ The following application functions are defined:
                       a block is the byte after the last byte of memory in 
                       the block.
 
-                      Although a block usually begins on a 256 byte
+                      Although a block usually ends on a 256 byte
                       boundary, this is not required.
                       
-                      Note: Sets variables blkslo and blkshi.
+                      Note: Sets variables blkelo and blkehi.
 
   blkseg(n);          Block Segment: Set block segment size to n.
-  
+
                       Required before calls any calls that manipulate
                       block segments.
                       
                       Note: Sets blklen to n.
 
-  blkset(c);          Block Set: Fill entire block with character c,
+  blkset(c);          Block Set: Fills entire block with character c,
                       leaving block pointer at end of block.
   
-                      Used to initialize a block before use.
+                      Should be called with an argument of 0, to initialize
+                      a block before use.
 
-  blkrst();           Block Reset: Set block segment pointer to block 
+  blkrst();           Block Reset: Sets block segment pointer to block 
                       begin address.
   
                       This routine is called before populating a block with
-                      calls to the blkapd function.
+                      calls to the blkput function.
 
-  blknxt();           Block Next: Move block pointer forward by the segment
+  blkptr(&d);         Block Pointer: Sets the block pointer to the address 
+                      of b. 
+
+                      Does not validate that the address is within the
+                      beginning and ending address of the block.
+                      
+                      Note: Sets variables blkslo and blkshi.
+                      
+  blknxt();           Block Next: Moves block pointer forward by the segment
                       length set by a prior blkseg call.
 
                       If the block pointer is moved past the end of the
-                      block, a value of 0 (false) is returned. Otherwise,
-                      a value of 255 (true) is returned.
+                      block, or the segmebt length is set to 0, a value of 
+                      #TRUE is returned. Otherwise, a value of #FALSE is 
+                      returned.
                       
-  blkput(n ,&m);      Block Append: Copy n bytes of array m to block
-                      at current pointer location, and moves block pointer 
+  blkprv();           Block Previous: Moves block pointer backward by the 
+                      segment length set by a prior blkseg call.
+
+                      If the block pointer is moved past the beginning of 
+                      the block, or the segmebt length is set to 0, a value  
+                      of #TRUE is returned. Otherwise, a value of #FALSE is 
+                      returned.
+                      
+  blkput(n ,&m);      Block Put: Copies n bytes of array m to a block at the
+                      current pointer location, and moves block the pointer 
                       forward by the segment length set by a prior blkseg
                       call.
                       
                       If the appended bytes would overflow the end of the
-                      block, no bytes are copied and a value of 0 (false)
-                      is returned. Otherwise, the bytes are copied and
-                      a value of 255 (true) is returned.
+                      block, no bytes are copied and a value of #FALSE is
+                      returned. Otherwise, the bytes are copied and a value
+                      of #TRUE is returned.
                       
-                      Note: Sets dstlo and dsthi to the block pointer prior
-                      to the copy, updates blkslo and blkshi, then calls
+                      Note: Sets dstlo and dsthi to blklo and blkhi prior
+                      to the copy, updates blklo and blkhi, then calls
                       the memcpy function.
                       
-  blkget(n ,&m);      Block Get: Copy n bytes from block at current 
-                      pointer location to array m, and moves block pointer 
+  blkget(n ,&m);      Block Get: Copies n bytes from a block at the current 
+                      pointer location to array m, and moves the pointer 
                       forward by the segment length set by a prior blkseg
                       call.
                       
                       If the copied bytes would overflow the end of the
-                      block, no bytes are copied and a value of 0 (false)
-                      is returned. Otherwise, the bytes are copied and
-                      a value of 255 (true) is returned.
+                      block, no bytes are copied and a value #FALSE is
+                      returned. Otherwise, the bytes are copied and a value
+                      of #TRUE is returned.
                       
                       Note: Sets dstlo and dsthi to the address of m, 
-                      srclo and srchi to the block pointer prior to the 
+                      srclo and srchi to blklo and blkhi prior to the 
                       copy, updates blkslo and blkshi, then calls the 
                       memcpy function.
                       
+  blkswp(n);          Block Swap: Swaps n bytes of array m with the current
+                      block segment (pointed to by the block pointer. The
+                      block pointer is not changed.
+                      
+                      Requires a prior call to the memdst function specifying 
+                      an array at least n bytes long, which is used for 
+                      temporary storage.
+    
+                      Note: Sets temp0 to n, copies blklo and blkhi to dstlo,
+                      and dsthi, and calls memswp.
+
   blkmem(n ,&m);      Block Memory search: Search block for n byte long
                       segment matching array m. 
                       
-                      If a matching segment is found, the value 255 (true)
-                      is returned and the destination pointer is set to the 
+                      If a matching segment is found, the value #TRUE is
+                      returned and the destination pointer is set to the 
                       address of the matching segment, allowing it to be 
                       overwritten with a subsequent memcpy call. Otherwise,
-                      the value 0 (false) is returned.
-    
+                      the value #FALSE is returned.
+
                       Note: Sets srclo and srchi to the address of m, 
                       dstlo and dsthi to the address of the matching segment,
                       and temp0 to n. Does not change the block pointer. 
@@ -121,17 +151,6 @@ The following application functions are defined:
                       segment, temp0 to n, and copies dstlo and dsthi to
                       temp1 and temp2. Does not change the block pointer. 
 
-  blkswp(n);          Block Swap: Swaps n bytes of array m with the current
-                      block segment (pointed to by the block pointer. The
-                      block pointer is not changed.
-                      
-                      Requires a prior call to the memdst function specifying 
-                      an array at least n bytes long, which is used for 
-                      temporary storage.
-    
-                      Note: Sets temp0 to n, copies blklo and blkhi to dstlo,
-                      and dsthi, and calls memswp.
-
   blksrt(&m);         Block Sort: Sort segments in block by initial string,
                       using array m as temporary storage.
                       
@@ -143,6 +162,14 @@ The following application functions are defined:
                       
                       Note: Uses the selection sort algorithm. Sets temp1
                       and temp2 to the address of array m.
+
+  blkdst();           Block Destination: Sets the destination pointer to the
+                      block segment pointer.
+
+                      This is a utility function called by other functions in
+                      this module.
+
+                      Note: Sets dstlo and dsthi to blklo and blkhi.
 
 Note: This library expects the following functions to be defined
 

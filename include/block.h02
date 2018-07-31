@@ -27,6 +27,20 @@ char blkget();
  *            $00 if not found                     */
 char blkmem();
 
+/* Move Block Pointer to Next Segment   *
+ * Returns: A=$FF if successful         *
+ *            $00 if there was an error */
+void blknxt();
+
+/* Set Block Pointer Address            * 
+ * Args: &d - Address to Set Pointer to */
+char blkptr();
+
+/* Move Block Pointer to Previous Segment *
+ * Returns: A=$FF if successful           *
+ *            $00 if there was an error   */
+void blkprv();
+
 /* Write Bytes to Block                       * 
  * Args: n  - Number of bytes to write        *
  *       &m - Array containing bytes to write *
@@ -37,13 +51,18 @@ char blkput();
 /* Set Block Pointer to Block Start */
 void blkrst();
 
+/* Set Block Segment Length          *
+ * Args: n - Length of block segment *
+ * Returns: Fill character           */
+char blkseg();
+
 /* Fill Block with Character              *
  * Args: c - Character to fill block with *
  * Returns: Fill character                */
 char blkset();
 
-/* Sort Segments in Block                    *
- * Args: &m - Array containing bytes to swap */
+/* Sort Segments in Block              *
+ * Args: &m - Temporary storage array  */
 char blksrt();
 
 /* Search Block for String                         *

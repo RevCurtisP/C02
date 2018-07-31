@@ -1,46 +1,208 @@
 /*******************************************
  * TESTBLK - Test Array Handling Functions *
  *******************************************/
- 
+
 //todo: Test blknxt() and blkprv()
- 
+
 #include <py65.h02>
-#include <stdio.h02>
+#include <stddef.h02>
 #include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
 #include <string.h02>
+#include <test.h02>
 #include <memory.h02>
 #include <block.h02>
 
-char TRUE=$FF, FALSE=$00;
 
 char c, i, n, r, z;
 char savlo,savhi,tmplo,tmphi; //Address Pointer
+char chkhi,chklo; //Address Check
 char number[5];
 char numbrs = "zero one  two  threefour five six  seveneightnine ten";
+char sorted = {8,5,4,9,1,7,6,3,2,0};
 char name1 = "Dick", name2 = "Jane";
+char block[255]; //Array to Use as Block
 char temp[127];
+char seglo[9],seghi[9];
+char aa,xx,yy;
 
-char seglen = 7; 
-char sgmt[6]; //Structure: [0-5]=Text, [6]=Binary
-char seg1[6],seg2[6];
+struct ssgmt {
+   char key[6];
+   char flag;
+   char value;
+};
 
-char pass = " Pass ";
-char fail = " Fail ";
+struct ssgmt sgmt;
+struct ssgmt seg1;
+struct ssgmt seg2;
+struct ssgmt tseg;
+
+main:
+
+puts("blkbgn(&4321);  ");
+blkbgn(&$4321); //Set Block Start
+setchk(&$4321); chkadr(blkshi,blkslo);
+
+puts("blkend(&$4567); ");
+blkend(&$4567); //Set Block End
+setchk(&$4567); chkadr(blkehi,blkelo);
+
+puts("blkseg(@sgmt);  ");
+blkseg(@sgmt);
+printf(blklen,"blklen=%d:");
+if (blklen == @sgmt) passln(); else failln();
+
+puts("blkrst();       ");
+blkrst();
+setchk(&$4321); chkadr(blkhi,blklo);
+
+puts("blknxt();       ");
+blknxt();
+setchk(&$432A); chkadr(blkhi,blklo);
+
+puts("blkprv();       ");
+blkprv();
+setchk(&$4321); chkadr(blkhi,blklo);
+
+puts("blkset('@');    ");
+blkset('@'); r=chkptr(&$4321);
+while (blkget(1,&sgmt)) {if (sgmt<>'@') r=#FALSE;} psflln(r);
+
+newlin();//if (anykey()==#ESCKEY) goto exit;
+
+setdst(&seg1.key); strcpy(&name1);seg1.flag=#TRUE; seg1.value = 1;
+puts("seg1=");prtseg(&seg1);
+setdst(&seg2.key); strcpy(&name2);seg2.flag=#FALSE;seg2.value = 2; 
+puts("seg2=");prtseg(&seg2);
+setdst(&sgmt);memcpy(@seg2,&seg2);
+puts("sgmt=");prtseg(&sgmt);
+newlin();
+
+puts("blkput(@seg1,&seg1); ");
+blkrst(); blkput(@seg1,&seg1); r=chkptr(&$432A);
+memdst(&$4321); r = chkmem(@seg1,&seg1) & r; 
+psflln(r);
+puts(" _blk=");prtseg(&$4321);
+newlin();
+
+puts("blkswp(@sgmt,&sgmt); ");
+blkrst(); blkswp(@sgmt,&sgmt); r = chkptr(&$4321);
+memdst(&$4321); r = chkmem(@seg2,&seg2) & r; 
+memdst(&sgmt);  r = chkmem(@seg1,&seg1) & r; 
+psflln(r);
+puts(" _blk=");prtseg(&$4321);
+puts(" sgmt=");prtseg(&sgmt);
+
+anykey();
+
+puts("blkput(@sgmt, &sgmt);\n"); blkset(0); blkrst(); r = #TRUE;
+for (i=0; i<10; i++) {
+  printf(i,"%d: "); nsgmt(i,&sgmt); savlo=blklo;savhi=blkhi;  
+  blkput(@sgmt,&sgmt); seglo[i]=savlo; seghi[i]=savhi;
+  putadr(*,savhi,savlo); puts(" _blk="); prtseg(*,savhi,savlo);
+  setdst(*,savhi,savlo); if (memcmp(@sgmt,&sgmt)) r = #FALSE;
+}
+puts("blkput:"); psflln(r); newlin();
+
+puts("blkget(@temp, &temp);\n"); blkrst(); r = #TRUE;
+for (i=0; i<10; i++) {
+  printf(i,"%d: "); nsgmt(i,&sgmt); memclr(@temp, &temp); 
+  putadr(*,blkhi,blklo); r = blkget(@temp, &temp);
+  setdst(&temp); if (memcmp(@sgmt, &sgmt)) r = #FALSE;
+  puts(" temp="); prtseg(&temp);
+}
+puts("blkget:"); psflln(r); anykey();
+
+puts("blkmem(@sgmt, &sgmt);\n"); r = #TRUE;
+for (i=9; i:+; i--) {
+  printf(i,"%d: "); nsgmt(i,&sgmt);
+  blkmem(@sgmt,&sgmt);  
+  if (dstlo<>seglo[i]) r = #FALSE; 
+  if (dsthi<>seghi[i]) r = #FALSE; 
+  putadr(*,dsthi,dstlo); puts(" _blk="); prtseg(*,dsthi,dstlo);
+}
+puts("blkmem:"); psflln(r); newlin();
+
+
+puts("blkstr(@sgmt, &sgmnt);\n"); r = #TRUE;
+for (i=0; i<10; i++) {
+  printf(i,"%d: "); nsgmt(i,&sgmt); memclr(@temp, &temp);
+  setdst(&temp); blkstr(&sgmt.key);
+  if (srclo<>seglo[i]) r = #FALSE; 
+  if (srchi<>seghi[i]) r = #FALSE; 
+  putadr(*,srchi,srclo); puts(" temp="); prtseg(&temp);
+  if (memcmp(@sgmt, &sgmt)) r = #FALSE;
+  i++; if (i=9) i=0; //evens then odds
+}
+puts("blkstr:"); psflln(r); anykey();
+
+puts("blksrt(&temp);\n"); r = #TRUE; blksrt(&temp);blkrst();
+for (i=0; i<10; i++) {
+  printf(i,"%d: "); nsgmt(sorted[i],&sgmt); memclr(@temp, &temp); 
+  putadr(*,blkhi,blklo); r = blkget(@temp, &temp);
+  setdst(&temp); if (memcmp(@sgmt, &sgmt)) r = #FALSE;
+  puts(" temp="); prtseg(&temp);
+}
+puts("blksrt:"); psflln(r); newlin();
+
+putln("Tests complete.");
+
+goto exit;
+
+char chkptr() {
+  setchk(); //pass through args
+  putadr(*,blkhi,blklo); 
+  return cmpadr(*,blkhi,blklo);
+}
+void setchk() {
+  chklo=X; chkhi=Y;
+}
+
+void chkadr(tmphi,tmplo) {
+  putadr(*,tmphi,tmplo);
+  cmpadr(*,tmphi,tmplo);
+  psflln(tmplo & tmphi);
+}
+
+char cmpadr(aa,yy,xx) {
+  xx = (chklo == xx) ? #TRUE : #FALSE;
+  yy = (chkhi == yy) ? #TRUE : #FALSE;
+  return xx & yy;
+}
+
+void clrseg() {
+  setdst(); memset(0, @sgmt);
+}
+
+void prtseg(aa,yy,xx) {
+  setdst(&tseg); memcpy(@tseg,yy,xx);
+  setdst(&tseg.key); printf("key=\"%s\",");
+  puts("flag=");if (tseg.flag) puts("TRUE"); else puts("FALSE");
+  printf(tseg.value,",value=%d\n");
+}
+
+char chkmem() {
+  aa = memcmp(); //pass through args
+  aa = (aa==0) ? #TRUE : #FALSE;
+  return aa;
+}  
 
 //Copy Textual Representation of n to temp
-void numcpy(n) {
-  strdst(&temp); 
-  strcut(mult(n,5), &numbrs); //Copy Representation
+void numstr(n,yy,xx) {
+  strdst(&temp); strcut(mult(n,5),&numbrs); //Copy Representation
   temp[5] = 0; //Cut off remainder of String
-  z = strchr(' ', &temp);
-  if (z:+) //Search for space in string
-    temp[z] = 0;  //and terminate at that point
+  z=strchr(' ', &temp); if (z:+) temp[z]=0; //and terminate at space
+  setdst(*,yy,xx); strcpy(&temp);
 }
 
 //Build String Segment in Temp
-void numtmp(n) {
-  numcpy(n); //Copy Textual Representation to temp[0:5]
-  temp[6] = i; //Set   
+void nsgmt(n,tmphi,tmplo) {
+  memclr(@tseg,&tseg);
+  numstr(n,&tseg.key); 
+  tseg.flag = trufls(n);
+  tseg.value = n;
+  setdst(*,tmphi,tmplo); memcpy(@tseg,&tseg);  
 }
 
 //Print Addresses
@@ -58,106 +220,4 @@ void prbadr() {
   prbyte(blkehi);prbyte(blkelo);putc(' ');
   prbyte(blkhi);prbyte(blklo);newlin();
 }
-
-main:
-
-puts("blkbgn(&$4000);");
-blkbgn(&$4000); //Set Block Start
-if (blkshi == $40) putln(&pass); else putln(&fail);
-
-puts("blkend(&$4400);");
-blkend(&$4400); //Set Block End
-if (blkehi == $44) putln(&pass); else putln(&fail);
-
-puts("blkseg(seglen);");
-blkseg(seglen);
-if (blklen == seglen) putln(&pass); else putln(&fail);
-
-puts("blkrst();      ");
-blkrst();
-if (blkhi == $40) putln(&pass); else putln(&fail);
-
-puts("blkset('@');   ");
-blkset('@');
-r = $FF;
-blkrst();
-while (blkget(1,&sgmt)) {
-  if (sgmt <> '@') r = $00;
-}
-if (r) putln(&pass); else putln(&fail);
-
-setdst(&seg1); strcpy(&name1);seg1[6] = 1;
-setdst(&seg2); strcpy(&name2);seg2[6] = 2; 
-puts("blkswp(seglen, &seg2);");
-blkrst();
-blkput(seglen, &seg1);
-blkrst();
-setdst(&temp);
-blkswp(seglen, &seg2);
-r = $FF;
-blkget(seglen, &sgmt);
-if (strcmp(&name2)) r = $00;
-if (sgmt[6] <> 2) r = $00;
-setdst(&seg2);
-if (strcmp(&name1)) r = $00;
-if (seg2[6] <> 1) r = $00;
-if (r) putln(&pass); else putln(&fail);
-
-blkset(0);
-puts("blkput(seglen, &temp);");
-r = TRUE;
-blkrst();
-for (i=0; i<10; i++) {
-  numtmp(i);
-  savlo=blklo;savhi=blkhi;
-  blkput(seglen, &temp);
-  dstlo=savlo;dsthi=savhi;
-  if (memcmp(seglen,&temp)) r = FALSE;
-}
-if (blklo <> 70) r = TRUE;
-if (r) putln(&pass); else putln(&fail);
-
-puts("blkmem(seglen, &temp);");
-r = $FF;
-for (i=9; i:+; i--) {
-  numtmp(i);
-  r = blkmem(seglen, &temp);
-  if (mult(seglen,i) <> dstlo) r = 0;
-}
-if (r) putln(&pass); else putln(&fail);
-
-puts("blkstr(seglen, &temp);");
-r = $FF;
-for (i=0; i<10; i++) {
-  numtmp(i);
-  setdst(&sgmt);
-  r = blkstr(seglen, &temp);
-  if (sgmt[6] <> i) r = 0;
-}
-if (r) putln(&pass); else putln(&fail);
-
-blkrst();
-puts("blkget(seglen, &sgmt);");
-r = $FF;
-for (i=0; i<10; i++) {
-  numtmp(i);
-  setdst(&sgmt);
-  r = blkget(seglen, &sgmt);
-  if (memcmp(seglen, &temp)) r = 0;
-}
-if (r) putln(&pass); else putln(&fail);
-
-puts("blksrt(&temp);");
-blksrt(&temp);
-r = TRUE;
-seg1[0] = 0;
-blkrst();
-while(blkget(seglen, &seg2)) {
-  if (!seg2[0]) break;
-  if (strcmp(&seg1)<>1) r = FALSE; 
-  strdst(&seg1);strcpy(&seg2);
-}
-if (r) putln(&pass); else putln(&fail);
-
-goto exit;
 
