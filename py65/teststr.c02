@@ -3,6 +3,7 @@
  ******************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
 #include <stdio.h02>
 #include <string.h02>
 
