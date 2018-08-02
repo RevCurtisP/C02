@@ -3,6 +3,7 @@
  ******************************************************/
 
 char curlbl[LABLEN+1];             //Most recently generated label
+char cmplbl[LABLEN+1];             //Label for Comparison
 char cndlbl[LABLEN+1];             //Label for Conditional Code
 char endlbl[LABLEN+1];             //End Label
 char forlbl[LABLEN+1];             //For Loop Label

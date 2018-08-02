@@ -3,16 +3,86 @@
  ****************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
 #include <stdio.h02>
+#include <stdiox.h02>
+#include <test.h02>
 
-char true = $FF;
-char false = $00;
-char pass = " Passed";
-char fail = " Failed";
+char n0=0, n1=1, n2=2, nff=255;
+char r,s; //Result & Summary
 
 main:
-puts("if (true):  "); if (true) putln(&pass); else putln(&fail);
-puts("if (false): "); if (false) putln(&fail); else putln(&pass);
+
+puts(  "if (#TRUE): "); if (#TRUE)  passed(); else failed();
+puts("; if (#FALSE):"); if (#FALSE) failln(); else passln();
+newlin();
+
+puts(  "if (#TRUE  and #TRUE ):"); if (#TRUE  and #TRUE)  passed(); else failed();
+puts("; if (#TRUE  and #FALSE):"); if (#TRUE  and #FALSE) failln(); else passln();
+puts(  "if (#FALSE and #TRUE ):"); if (#FALSE and #TRUE)  failed(); else passed();
+puts("; if (#FALSE and #FALSE):"); if (#FALSE and #FALSE) failln(); else passln();
+newlin();
+
+puts(  "if (#TRUE  or #TRUE) :"); if (#TRUE  or #TRUE)  passed(); else failed();
+puts("; if (#TRUE  or #FALSE):"); if (#TRUE  or #FALSE) passln(); else failln();
+puts(  "if (#FALSE or #TRUE) :"); if (#FALSE or #TRUE)  passed(); else failed();
+puts("; if (#FALSE or #FALSE):"); if (#FALSE or #FALSE) failln(); else passln();
+newlin();
+
+puts(  "if (#TRUE  and #TRUE  and #TRUE) :"); if (#TRUE  and #TRUE  and #TRUE)  passed(); else failed();
+puts("; if (#TRUE  and #TRUE  and #FALSE):"); if (#TRUE  and #TRUE  and #FALSE) failln(); else passln();
+puts(  "if (#TRUE  and #FALSE and #TRUE) :"); if (#TRUE  and #FALSE and #TRUE)  failed(); else passed();
+puts("; if (#TRUE  and #FALSE and #FALSE):"); if (#TRUE  and #FALSE and #FALSE) failln(); else passln();
+puts(  "if (#FALSE and #TRUE  and #TRUE) :"); if (#FALSE and #TRUE  and #TRUE)  failed(); else passed();
+puts("; if (#FALSE and #TRUE  and #FALSE):"); if (#FALSE and #TRUE  and #FALSE) failln(); else passln();
+puts(  "if (#FALSE and #FALSE and #TRUE) :"); if (#FALSE and #FALSE and #TRUE)  failed(); else passed();
+puts("; if (#FALSE and #FALSE and #FALSE):"); if (#FALSE and #FALSE and #FALSE) failln(); else passln();
+newlin();
+
+puts(  "if (#TRUE  or #TRUE  or #TRUE) :"); if (#TRUE  or #TRUE  or #TRUE)  passed(); else failed();
+puts("; if (#TRUE  or #TRUE  or #FALSE):"); if (#TRUE  or #TRUE  or #FALSE) passln(); else failln();
+puts(  "if (#TRUE  or #FALSE or #TRUE) :"); if (#TRUE  or #FALSE or #TRUE)  passed(); else failed();
+puts("; if (#TRUE  or #FALSE or #FALSE):"); if (#TRUE  or #FALSE or #FALSE) passln(); else failln();
+puts(  "if (#FALSE or #TRUE  or #TRUE) :"); if (#FALSE or #TRUE  or #TRUE)  passed(); else failed();
+puts("; if (#FALSE or #TRUE  or #FALSE):"); if (#FALSE or #TRUE  or #FALSE) passln(); else failln();
+puts(  "if (#FALSE or #FALSE or #TRUE) :"); if (#FALSE or #FALSE or #TRUE)  passed(); else failed();
+puts("; if (#FALSE or #FALSE or #FALSE):"); if (#FALSE or #FALSE or #FALSE) failln(); else passln();
+anykey();
+
+puts(  "if (n0<n1): "); if (n0<n1)  passed(); else failed();
+puts("; if (n2>n1): "); if (n2>n1)  passln(); else failln();
+puts(  "if (n1==n1):"); if (n1==n1) passed(); else failed();
+puts("; if (n0<>n2):"); if (n0<>n2) passln(); else failln();
+newlin();
+
+puts(  "if (n0<n1): "); if (n0<n1) passed(); else failed();
+puts("; if (n1<n2): "); if (n1<n2) passed(); else failed();
+puts("; if (n0<n2): "); if (n1<n2) passln(); else failln();
+
+puts(  "if (n1<=n1):"); if (n1<=n1) passed(); else failed();
+puts("; if (n1<=n2):"); if (n1<=n2) passed(); else failed();
+puts("; if (n1<n2): "); if (n1<=n2) passln(); else failln();
+
+puts(  "if (n1>=n1):"); if (n2>=n1) passed(); else failed();
+puts("; if (n2>=n1):"); if (n2>=n1) passed(); else failed();
+puts("; if (n2>n1): "); if (n2>n1)  passln(); else failln();
+newlin();
+
+puts(  "if (n0):   "); if (n0)    failed(); else passed();
+puts("; if (n1):   "); if (n1)    passed(); else failed();
+puts("; if (n2):   "); if (n1)    passed(); else failed();
+puts("; if (nff):  "); if (nff)   passln(); else failln();
+
+puts(  "if (n0:+): "); if (n0:+)  passed(); else failed();
+puts("; if (n1:+): "); if (n1:+)  passed(); else failed();
+puts("; if (n2:+): "); if (n1:+)  passed(); else failed();
+puts("; if (nff:+):"); if (nff:+) failln(); else passln();
+
+puts(  "if (n0:-): "); if (n0:-)  failed(); else passed();
+puts("; if (n1:-): "); if (n1:-)  failed(); else passed();
+puts("; if (n2:-): "); if (n1:-)  failed(); else passed();
+puts("; if (nff:-):"); if (nff:-) passln(); else failln();
+newlin();
 
 goto exit;
-

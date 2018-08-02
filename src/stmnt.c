@@ -48,11 +48,11 @@ void prssif(char trmntr) {
   prscnd(')', FALSE);     //Parse Condition
   expect('?');          
   prsxpr(':');            //Parse "if TRUE" expression
-  newlbl(tmplbl);         //Create End of Expression Label
-  asmlin("JMP", tmplbl);  //Jump over "if FALSE" expression
+  newlbl(skplbl);         //Create End of Expression Label
+  asmlin("JMP", skplbl);  //Jump over "if FALSE" expression
   setlbl(cndlbl);         //Emit "if FALSE" label
   prsxpr(trmntr);         //Parse "if FALSE" expression
-  setlbl(tmplbl);         //Emit End of Expression Label
+  setlbl(skplbl);         //Emit End of Expression Label
 }
 
 /* Process Array Index */

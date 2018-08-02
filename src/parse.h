@@ -28,10 +28,10 @@ int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
 int isbin();                   //Is Next Character a Binary Digit
 int isbpre();                  //Is Next Character a Binary Prefix
-int islpre();                  //Is Next Character a Literal Prefix
 int isdec();                   //Is Next Character a Decimal Digit
 int iscpre();                  //Is Next Character a Constant Prefix
 int ishexd();                  //Is Next Character a Hexadecimal Digit
+int islpre();                  //Is Next Character a Literal Prefix
 int isnl();                    //Is Next Character a NewLine
 int isnpre();                  //Is Next Character a Numeric Prfix
 int isoper();                  //Is Next Character an Operator

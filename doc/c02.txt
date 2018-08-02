@@ -420,10 +420,10 @@ Accumulator. However, due to the 6502 having only one Accumulatorm which
 is used for all operations between two bytes, there is no simple system 
 agnostic method for allowing function calls in subsequent terms.
 
-EVALUATIONS
+CONTENTIONS
 
-An evaluation is a construct which generates either TRUE or FALSE condition.
-It may be an expression, a comparison, or a test.
+An contention is a construct which generates either TRUE or FALSE condition,
+and may be an expressions, comparisons, or test.
 
 A stand-alone expression evaluates to TRUE if the result is non-zero, or 
 FALSE if the result is zero.
@@ -455,8 +455,8 @@ a positive value upon succesful completion and a negative value if an error
 was encounters. They compile into smaller code than would be generated 
 using the equivalent comparison operators.
 
-A comparison may be preceded by negation operator (a ! character), which 
-reverses the meaning of the entire comparison. For example,
+An contention may be preceded by negation operator (the ! character), which 
+reverses the result of the entire contention. For example:
   ! expr
 evaluates to TRUE if expr is zero, or FALSE if it is non-zero; while
   ! expr = term
@@ -464,7 +464,7 @@ evaluates to TRUE if expr and term are not equal, or FALSE if they are; and
   ! expr :+
 evaluates to TRUE if expr is negative, or FALSE if it is positive
 
-Note: Evaluations are compiled directly into 6502 conditional branch 
+Note: Contentions are compiled directly into 6502 conditional branch 
 instructions, which precludes their use inside expressions. Standalone 
 expressions and test-ops generate a single branch instruction, and 
 therefore result in the most efficient code. Comparisons generate a
@@ -472,6 +472,29 @@ compare instruction and one or two branch instructions (=. <. >=, and <>
 generate one, while <= and > generate two).  A preceding negation operator
 will switch the number of branch instructions used in a comparison, but
 otherwise does not change the size of the generated code.
+
+CONDITIONALS
+
+A conditional consists of one or more contentions joined with the 
+conjunctors "and" and "or".
+
+If only one contention is present, the result of the conditional is the
+same as the result of the contention. 
+
+If two contentions are joined with "and", then the conditional is true only
+if both of the contentions are true. If either or both of the contentions
+are false, then the conditional is false.
+
+If two contentions are joined with "or", then the conditional is true if
+either or both of the contentions are true. If both of the contentions are
+false, then the conditional is false.
+
+When more three or more contentions are chained together, the conjunctors
+are evaluated in left to right order, using short-circuit evaluation. If
+the contention to the left of an "and" is false, then the entire conditional
+evaluates to false, and if the contention to the left of an "or" is true,
+then the entire conditional evaluates to true. In either case, no further
+contentions in the conditional are evaluated.
 
 ARRAY SUBSCRIPTS
 
@@ -665,9 +688,9 @@ Examples:
     
 SHORTCUT-IFS
 
-A shortcut-if is a special form of assignment consisting of an evaluation 
+A shortcut-if is a special form of assignment consisting of an contention 
 and two expressions, of which one will be assigned based on the result
-of the evaluation. A shortcut-if is written as a condition surrounded 
+of the contention. A shortcut-if is written as a condition surrounded 
 by ( and ) characters, followed by a ? character, the expression to be 
 evaluated if the condition was true, a : character, and the expression to 
 be evaluated if the condition was false.
@@ -757,12 +780,13 @@ IF AND ELSE STATEMENTS
 The if then and else statements are used to conditionally execute blocks
 of code. 
 
-When using the if keyword, it is followed by an evaluation (surrounded by
-parenthesis) and the block of code to be executed if the evaluation was true.
+When using the if keyword, it is followed by a conditional (surrounded by
+parenthesis) and the block of code to be executed if the conditional was 
+true.
 
 An else statement may directly follow an if statement (with no other 
 executable code intervening). The else keyword is followed by the block
-of code to be executed if the evaluation was false.
+of code to be executed if the conditional was false.
 
 Examples:
   if (c = 27) goto end;
@@ -850,13 +874,13 @@ select expression will be executed.
 WHILE LOOPS
 
 The while statement is used to conditionally execute code in a loop. When
-using the while keyword, it is followed by an evaluation (surrounded by
-parenthesis) and the the block of code to be executed while the evaluation
-is true. If the evaluation is false when the while statement is entered,
+using the while keyword, it is followed by a conditional (surrounded by
+parenthesis) and the the block of code to be executed while the conditional
+is true. If the conditional is false when the while statement is entered,
 the code in the block will never be executed.
 
 Alternatively, the while keyword may be followed by a pair of empty 
-parenthesis, in which case an evaluation of true is implied.
+parenthesis, in which case a conditional of true is implied.
 
 Examples:
   c = 'A' ; while (c <= 'Z') {putc(c); c++;} //Print letters A-Z
@@ -869,10 +893,10 @@ DO WHILE LOOPS
 
 The do statement used with to conditionally execute code in a loop at 
 least once. When using the do keyword, it is followed by the block of
-code to be executed, a while statement, an evaluation (surrounded
+code to be executed, a while statement, a conditional (surrounded
 by parenthesis), and a terminating semicolon.
 
-A while statement that follows a do loop must contain an evaluation. 
+A while statement that follows a do loop must contain a conditional. 
 The while statement is evaluated after each iteration of the loop, and
 if it is true, the code block is repeated.
 
@@ -893,7 +917,7 @@ a set of values.
 
 When using the if keyword, it is followed by a pair of parenthesis 
 containing an initialization assignment statement (which is executed once), 
-a semicolon separator, an evaluation (which determines if the code block 
+a semicolon separator, a conditional (which determines if the code block 
 is executed), another semicolon separator, and an increment assignment 
 (which is executed after each iteration of the code block). This is then 
 followed by the block of code to be conditionally executed.
@@ -926,8 +950,8 @@ break keyword, it is followed with a trailing semicolon.
 When a continue statement is encountered, program execution is transferred
 to the beginning of the block associated with the innermost do, for, or 
 while statement. In the case of a for statement, the increment assignment 
-is executed, followed by the evaluation, and in the case of a while 
-statement, the evaluation is executed. When using the continue keyword, it 
+is executed, followed by the conditional, and in the case of a while 
+statement, the conditional is executed. When using the continue keyword, it 
 is followed with a trailing semicolon.
 
 Examples:

@@ -36,8 +36,10 @@
 #define TRUE -1
 #define FALSE 0
 
-void prtpos();  //Print current file name and position
-#define DEBUG(fmt, val) {if (debug) {prtpos(); printf(fmt, val);}}
+void initim(); //Initialize elapsed time counter
+void prtpos(); //Print current file name and position
+void prttim(); //Print elapsed time
+#define DEBUG(fmt, val) {if (debug) {prtpos(); prttim(); printf(fmt, val);}}
 #define DETAIL(fmt, val) {if (debug) printf(fmt, val);}
 #define ERROR(fmt, val, err) {fprintf(stderr, fmt, val);exterr(err);}
 
@@ -48,6 +50,8 @@ char asmcmt[LINELEN];  //Processed Assembly Language Comment
 
 int curcol, curlin;  //Position in Source Code
 int savcol, savlin;  //Save Position in Source Code
+
+int bgntim; //Starting Time
 
 int nxtchr; //Next Character of Source File to Process
 int nxtupc; //Next Character Converted to Uppercase

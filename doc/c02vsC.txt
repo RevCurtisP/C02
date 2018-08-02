@@ -78,6 +78,22 @@ a function call as the first term).
 The sizeof operator in C02 is the at sign @. It may only be used with
 declared variables and struct members, not types.
 
+CONDITIONALS
+
+Conditional operations, including comparisons and logical operators,
+may not be used within or in place of normal expressions, and are only
+allowed in if, while, and for statements, as well as shortcut-ifs.
+
+The comparison operators are ==, <, <=, >=, >, and <>. Unlike standard
+C, the not-equals operator is <> instead of !=. In addition, = may be
+substituted for ==. The logical not operator ! negates an entire 
+comparison rather than an individual term within the comparison, thus 
+the C02 code !b<x is equivalent to the C code !(b<x).
+
+C02 uses the logical operators "and" and "or" instead of "&&" and "||",
+and performs short-circuit evaluation of logical operators, making them
+effectively right associative.  
+
 FUNCTIONS
 
 Parameter passing uses the 6502's A, Y, and X registers. This limits 

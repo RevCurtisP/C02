@@ -27,6 +27,7 @@
 
 /* Initilize Compiler Variables */
 void init(void) {
+  initim();       //Initialize Elapsed Time
   DEBUG("Initializing Compiler Variables\n",0)
   concnt = 0;     //Number of Constants Defined
   varcnt = 0;     //Number of Variables in Table
