@@ -1,0 +1,74 @@
+The C02 library provides functions for common tasks and allows the 
+creation of programs that can be compiled for different systems with 
+little or no changes.
+
+Use of the C02 library requires a system specific header, which can be 
+specified using the #include directive in the source code or by using
+a command line argument when running the compiler. The available 
+headers include:
+
+    appl2std    Original Apple 2 (incomplete)
+    apple1      Apple 1 (incomplete)
+    c64         Commodored 64 (incomplete)
+    oric        Oric-1 (incomplete)
+    plus4       Commoded Plus/4 (incomplete)
+    py65        Python 6502 Emulator - py65mon
+    vic3k       Vic-20 with 3k memory (incomplete)
+    vic8k       Vic-20 with 8k+ memory (incomplete)
+
+The library functions are contained in various modules. The #include
+directive is used to allow the functions in a module to be used in a
+program. Most modules require that orher modules be included. These
+dependencies are detailed in the documentation for each individual
+module. The available modules are as follows:
+
+    stddef      Standard Definitions
+
+                Contains commonly used constants, as well as base
+                functions common to nearly every other module.
+
+    stdlib      Standard Library
+
+                Includes the most commonly used functions, including
+                mathematical operations and string/numeric conversions.
+
+    stdio       Standard Input/Output
+
+                Contains functions for reading and writing characters 
+                and strings from the keyboard and to the screen.
+
+    stdiox      Standard Input/Output Extended
+
+                Contains functions for writing formatted data to the
+                screen, including decimal and hexadecimal numbers.
+
+    memio       Memory Input/Ouput
+
+                Provides functions to simulate reading and writing to
+                a section of memory as though it were a file.
+
+    string      String functions
+
+                Contains functions for copying, searching, comparing,
+                and concatenating strings.
+
+    stringx     String Extended
+    
+                Contains the more powerful, but less frequently used 
+                string manipulation functions.
+
+    memory      Memory functions
+
+                Contains functions for copying, searching, and comparing
+                arrays.
+
+    block       Block functions
+
+                Contains functions for reading, writing, and searching 
+                for fixed length segments of data to an arbitrarily large 
+                section of memory.
+
+    Stack       Stack functions
+
+                Contains functions for pushing and popping variable 
+                length segments of data onto and off of a stack in memory.

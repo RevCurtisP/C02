@@ -1,0 +1,26 @@
+; C02 library test.h02 assembly language subroutines
+; Requires external functions 
+; external zero page locations SRCLO and srchi
+; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
+
+
+;func(aa,xx,yy) - FUNCtion description
+;Args: A = First arguments
+;      Y,X = Address argument
+;Sets: ARG0 = First argument
+;      ADRLO,ADRLHI = Address argument
+;Uses: VAR0 = First Return Value
+;      VAR2 = Second Return Value
+;      VAR3 = Third Return Value
+;Affects: N,Z,C
+;Returns: A = First Return Value
+;         Y = Second Return Value
+;         X = Third Return Value
+FUNC:   STA ARG0        ;Save First Argument
+        STY ADRHI       ;Save Address MSB
+        STX ADRLO       ;Save Address LSB
+        LDA VAR0        ;Load First Return Value
+        LDY VAR1        ;Load Second Return Value
+        LDX VAR2        ;Load Third Return Value
+        TYA             ;Copy Second Parameter into Accumulator  
+        RTS

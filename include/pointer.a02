@@ -2,88 +2,139 @@
 ;Requires External Zero Page Variables PTRLO, PTRHI
 ;External Routines MSETSRC
 
-;ptrset(&a) - Store Address in Pointer
-;Args: A = Zero Page Pointer Locatione
-;      X,Y = Address
-;Sets: PTRLO, PTRHI = Pointer
-PTRSET: STX PTRLO  ;Pointer Low Byte
-        STY PTRHI  ;Pointer Start High Byte
+;ptrini - Pointer Initialization code
+;Sets: TEMP0 = Memory Pointer Address
+PTRINI: STX TEMP0       ;Save Address LSB
+        TAX             ;Copy Memory Pointer to X register
+        LDA TEMP0       ;Retrieve Address LSB
         RTS
 
-;ptrcmp(&a) - Compare Pointer to Address
-;Requires: PTRLO, PTRHI - Pointer
-;Args: X,Y = Address to Compare Against
+;ptradr(ptr, &addr) - Return Address Stored in Pointer
+;Args: A = Zero Page Pointer Address
+;Sets: TEMP0 = Pointer Address
+;Affects: N,Z
+;Returns: A = Zero Page Pointer Address
+;         Y,X = New Pointer Contents
+PTRADR: JSR PTRINI      ;Swap A and X Registers
+PTRRTN: LDY (1,X)       ;Load Pointer MSB into Y
+        LDA (1,X)       ;Load Pointer LSB into A
+        TAX             ;and transfer to X
+        LDA TEMP0       ;Load Pointer Addres into A
+        RTS
+
+        
+;ptrset(ptr, &addr) - Store Address in Pointer
+;Args: A = Zero Page Pointer Address
+;      X,Y = Address to Store
+;Sets: TEMP0 = Pointer Address
+;Affects: N,Z
+;Returns: A = Zero Page Pointer Address
+;         Y,X = New Pointer Contents
+PTRSET: JSR PTRINI      ;Swap A and X Registers
+        STA 0,X         ;Store in Memory Pointer LSB
+        STY 1,X         ;Store Address MSB in Memory Pointer MSB
+        TXA
+        LDX TEMP0
+        RTS             ;Return Pointer Address as Result
+
+;ptrcmp(ptr, &addr) - Compare Pointer to Address
+;Args: A = Zero Page Pointer Address
+;      X,Y = Address to Compare Against
 ;Affects N,Z
 ;Returns A=$01 and C=? if Pointer > Address  
 ;        A=$00 and Z=1, C=? if Pointer = Address  
 ;        A=$FF and C=? if Pointer < Address
-PTRCMP: CPY PTRHI  ;Compare High Bytes
-        BCC PTRCMN ;If Pointer > Address, Return 1
-        BNE PTRCMF ;If Pointer < Address Return 1
-        CPX PTRLO  ;Compare Low Byte
-        BCC PTRCMN ;If Pointer > Address, Return 1
-        BNE PTRCMF ;If Pointer < Address Return 1
-PTRCMZ: LDA #$00   ;Return 0
+PTRCMP: JSR PRTINI      ;Swap A and X Registers
+        CPY 1,X         ;Compare High Bytes
+        BCC PTRCMN      ;If Pointer > Address, Return 1
+        BNE PTRCMF      ;If Pointer < Address Return 1
+        CPA 0,X         ;Compare Low Byte
+        BCC PTRCMN      ;If Pointer > Address, Return 1
+        BNE PTRCMF      ;If Pointer < Address Return 1
+PTRCMZ: LDA #$00        ;Return 0
         RTS
-PTRCMN: LDA #$01   ;Return 1
+PTRCMN: LDA #$01        ;Return 1
         RTS
-PTRCMF: LDA #$FF   ;Return 255
+PTRCMF: LDA #$FF        ;Return 255
         RTS
 
-;ptrget() - Read Byte from Pointer Address
-;           and Increment Pointer 
-;Sets: PTRLO, PTRSHI = New pointer address
+;ptrget(ptr) - Read Byte from Pointed to Address
+;              and Increment Pointer 
+;Args: A = Zero Page Pointer Address
+;Affects: N, Z
 ;Returns: A = Byte at pointer address
-;Affects:  Y, N, Z
-PTRGET: LDY #0         ;Set Offset to 0
-        LDA (PTRLO),Y  ;Load Value at Pointer
+;         X = Zero Page Pointer Address
+PTRGET: TAX             ;Transfer Pointer Address to X 
+        LDA (0,X)       ;Load Value at Pointer
+        JMP PTRINN      ;Increment Pointer Value
 
-;ptrinc() - Increment Pointer Address
-;Sets: PTRLO, PTRSHI = New pointer address
+;ptrinc(ptr) - Increment Pointer Address
+;Args: A = Zero Page Pointer Address
 ;Affects:  N, Z
-PTRINC: INC PTRLO   ;Increment Pointer Low Byte
-        BNE PTRRET  ;If Zero
-        INC PTRHI   ;  Increment Pointer High Byte
-PTRRET: RTS         ;Return from function
+;Returns: A,X = Zero Page Pointer Address
+PTRINC: TAX             ;Transfer Pointer Address to X 
+PTRINN: INC (0,X)       ;Increment Pointer Low Byte
+        BNE PTRRET      ;If Zero
+        INC (1,X)       ;  Increment Pointer High Byte
+PTRRET: RTS             ;Return from function
 
-;ptrput() - Write Byte from Pointer Address
+;ptrput(ptr,byte) - Write Byte from Pointer Address
 ;           and Increment Pointer 
-;Args: A = Byte to write 
-;Sets: PTRLO, PTRSHI = New pointer address
-;Affects: Y, N, Z
-PTRPUT: LDY #0         ;Set Offset to 0
-        STA (PTRLO),Y  ;Load Value at Pointer
-        JMP PTRINC     ;Increment Pointer
+;Args: A = Zero Page Pointer Address
+;      Y = Byte to write 
+;Affects: N, Z
+;Returns: A,X = Zero Page Pointer Address
+PTRPUT: TAX             ;Transfer Pointer Address to X 
+        STY (0,X)       ;Store Value at Pointed to Address
+        JMP PTRINN      ;Increment Pointer
 
 ;ptrdec() - Decrement Pointer Address
-;Sets: PTRLO, PTRSHI = New pointer address
+;Args: A = Zero Page Pointer Address
 ;Affects:  Y, N, Z
-PTRDEC: LDY PTRLO   ;Get Pointer Low Byter
-        BNE PTRDEL  ;If Zero
-        DEC PTRHI   ;  Deccrement Pointer High Byte
-PTRDEL: DEC PTRLO   ;Decrement Pointer Low Byte
-        RTS         ;Return from function
+;Returns: A = Zero Page Pointer Address
+;         Y,X = New Pointer Contents
+PTRDEC: TAX             ;Transfer Pointer Address to X 
+        LDY (0,X)       ;Get Pointer Low Byter
+        BNE PTRDEL      ;If Zero
+        DEC (1,X)       ;  Decrement Pointer High Byte
+PTRDEL: DEC (0,X)       ;Decrement Pointer Low Byte
+        JMP PTRRTN      ;Set Registers and Return
 
-;ptradd() - Add Offset to Pointer
-;Args: A = Number of bytes to add
-;Sets: PTRLO, PTRSHI = New pointer address
-;Affects: A, N, Z
-PTRADD: CLC            ;Add Offset to Low Byte
-        ADC PTRLO
-        STA PTRLO      ;And Save It
-        BCC PTRRET     ;If Carry 
-        INC PTRHI      ;  Increment High Byte
-        RTS
+;ptradd(ptr, &offset) - Add Offset to Pointer
+;Args: A = Zero Page Pointer Address
+;      Y,X = Number of bytes to add
+;Sets: TEMP0 = Pointer Address
+;Affects: N, Z
+;Returns: A = Zero Page Pointer Address
+;         Y,X = New Pointer Contents
+PTRADD: JSR PRTINI      ;Swap A and X Registers
+        CLC             ;Add Offset Low Byte
+        ADC (0,X)       ;to Pointer Low Byte
+        STA (0,X)       ;and Save It
+        TYA             ;Add Offset High Byte
+        ADC (1,X)       ;to Pointer High Byte        
+        STA (1,X)       ;and Save It
+        JMP PTRRTN      ;Set Registers and Return
 
-;ptrsub() - Subtract Offset from Pointer
-;Args: A = Number of bytes to subtract
-;Sets: PTRLO, PTRSHI = New pointer address
-;Affects: A, N, Z
-PTRSUB: STA TEMP0      ;Save Offset
-        LDA PTRLO      ;Get Pointer Low Byte
-        SEC            ;Subtract Offset
-        SBC TEMP0      ;
-        STA PTRLO      ;And Save New Low Byte
-        BCS PTRRET     ;If Borrow
-        DEC PTRHI      ;  Decrement High Byte
-        RTS
+;ptrsub(offset) - Subtract Offset from Pointer
+;Args: A = Zero Page Pointer Address
+;      Y,X = Number of bytes to add
+;Sets: TEMP0 = Pointer Address
+;      TEMP1 = Offset LSB
+;      TEMP2 = Offset MSB
+;Affects: N, Z
+;Returns: A = Zero Page Pointer Address
+;         Y,X = New Pointer Contents
+PTRSUB: STY TEMP2       ;Save Offset MSB
+        STX TEMP1       ;Save Offset LSB
+        STA TEMP0       ;Save Pointer Address
+        TAX             ;Transfer Pointer Address to X  
+        LDA (0,X)       ;Get Pointer Low Byte
+        SEC             ;Subtract Offset LSB
+        SBC TEMP1       ;from Pointer LSB
+        STA PTRLO       ;and Save It
+        LDA (1,X)       ;Subtract Offset MSB
+        SBC TEMP1       ;from Pointer MSB
+        STA (1,X)       ;and Save It
+        JMP PTRRTN      ;Set Registers and Return
+

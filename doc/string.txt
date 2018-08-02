@@ -14,6 +14,7 @@ most of these functions do not match those in standard C and C++.
 
 Usage: at the beginning of the program use the directives
 
+  #include <stddef.h02>
   #include <string.h02>
   
 The following functions are defined:

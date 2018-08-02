@@ -1,0 +1,36 @@
+Template Functions for C02 Programs
+
+This is a template for the documentation of a C02 library module.
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <template.h02>
+
+The following functions are defined:
+
+  c,d,e = func(a,&d);   Stores the input value a and the address of d 
+                        in memory.
+
+                        Returns three bytes read from memory.
+
+                        Note: Writes argument a to variable arg0,
+                        the address of d to variables adr0 and adr1,
+                        and returns the values of variables var0,
+                        var1, and var2.
+
+Note: This library expects the following functions to be defined:
+
+  ext();                External function description
+
+along with the zero page variables
+  
+  zpage0,zpage1:        Zero page variable pair
+
+the external variables
+  
+  exvar0,exvar1:        External variable pair
+
+and the constants
+  
+  #CNSTNAME             Constant description

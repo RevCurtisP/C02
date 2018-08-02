@@ -8,6 +8,7 @@ Strings follow all the same rules as specified in the string.h02 library.
 
 Usage: at the beginning of the program use the directives
 
+  #include <stddef.h02>
   #include <string.h02>
   #include <stringx.h02>
   

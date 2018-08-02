@@ -1,5 +1,6 @@
 Function Library  Name                  Description
 abs      stdlib   Absolute Value        Return absolute value of byte.
+anykey   stdiox   Any Key               Display "Any Key" prompt and wait for keypress.
 atoc     stdlib   ASCII to Character    Convert numeric string to byte.
 blkbgn   block    Block Begin           Set beginning of block address.
 blkend   block    Block End             Set end of block address.
@@ -15,6 +16,8 @@ blkswp   block    Block Swap            Swap bytes of array with the current seg
 blksrt   block    Block Sort            Sort segments in block by initial string.
 ctoa     stdlib   Character to ASCII    Convert byte to numeric string.
 div      stdlib   Divide                Divide two bytes.
+failed   test     Failed                Write "  Fail" to screen.
+failln   test     Failed Line           Write "  Fail" plus newline to screen.
 fclall   file     File Close All        Close all files. 
 fclose   file     File Close            Close file.
 feof     file     File End of File      Check for end of file condition.
@@ -22,6 +25,8 @@ ferror   file     File Error            Get file error information.
 fgetc    file     File Get Character    Read character from file.
 fgets    file     File Get String       Read string from file.
 fopen    file     File Open             Open file.
+florps   test     Fail or Pass          Write "  Fail" or "  Pass" to screen.
+flpsln   test     Fail or Pass Line     Write "  Fail" or "  Pass" plus newline to screen.
 fputc    file     File Put Character    Write character to file.
 fputs    file     File Put String       Write string to file.
 fread    file     File Read             Read bytes from file.
@@ -33,7 +38,10 @@ fssrc    file     File Set Source       Set source array for fwrite.
 fstat    file     File System Status    Get file pointer status.
 fwrite   file     File Write            Write bytes to file.
 getc     stdio    Get Character         Read character from keyboard.
+getdst   stddef   Get Destination       Get address in Destination Pointer.
+getprc   stdiox   Get Prompt Character  Display prompt and wait for keypress.
 gets     stdio    Get String            Read string from keyboard.
+getsrc   stddef   Get Source            Get address in Source Pointer.
 isalnm   ctype    Is Alphanumeric       Return TRUE if character is A-Z, a-z, or 0-9.
 isalph   ctype    Is Alphabetic         Return TRUE if character is A-Z or a-z.
 isbdgt   ctype    Is Binary Digit       Return TRUE if character is 0 or 1.
@@ -46,16 +54,30 @@ ispnct   ctype    Is Punctuation        Return TRUE if Graphical and not Alphanu
 isprnt   ctype    Is Printable          Return TRUE if ASCII code is 32-126.
 isspce   ctype    Is white Space        Return TRUE if ASCII code is 9-13 or 32.
 isuppr   ctype    Is Uppercase          Return TRUE if character is A-Z.
+maddr    memio    Memory Address        Return address contained in memory file pointer.
 max      stdlib   Maximum               Return greater of two byte.
+mclose   memio    Memory Close          Close memory file.
 memdst   memory   Memory Destination    Set destination array for subsequent functions.
-memset   memory   Memory Set            File bytes in array with character.
+memset   memory   Memory Set            File bytes in array with byte.
 memchr   memory   Memory Character      Search for byte in array.
+memclr   memory   Memory Cllear         File bytes in array with $00.
 memcmp   memory   Memory Compare        Compare bytes in array against destination array.
 memcpy   memory   Memory Copy           Copy bytes from array to destination array.
 memswp   memory   Memory Swap           Swap bytes in array with destination array.
+mflush   memio    Memory Flush          Flush memory file.
+mgetc    memio    Memory Get Character  Read single character from memory file. 
+mgets    memio    Memory Get String     Read string from memory file. 
 min      stdlib   Minimum               Return lesser of two byte.
+mopen    memio    Memory Open           Open memory file.
+mputc    memio    Memory Put Character  Write single character to memory file. 
+mputln   memio    Memory Put String     Write string followed by newline to memory file. 
+mputs    memio    Memory Put String     Write string to memory file. 
 mult     stdlib   Multiply              Multiply two bytes.
-ptrset   pointer  Pointer Set           Set pointer to address.
+passed   test     Passed                Write "  Pass" to screen.
+passln   test     Passed Line           Print "  Pass" plus newline to screen.
+psflln   test     Pass or Fail Line     Write "  Pass" or "  Fail" plus newline to screen.
+psorfl   test     Pass or Fail          Write "  Pass" or "  Fail" to screen.
+ptrset   pointer  Pointer Set           Write pointer to address.
 ptrput   pointer  Pointer Put           Write byte and increment pointer.
 ptrget   pointer  Pointer Get           Read byte and increment pointer.
 ptrinc   pointer  Pointer Increment     Increment pointer.
@@ -65,14 +87,46 @@ ptrsub   pointer  Pointer Subtract      Subtract value from pointer.
 ptrcmp   pointer  Pointer Compare       Compare pointer against address.
 ptrsav   pointer  Pointer Save          Save pointer into two-byte array.
 ptrrst   pointer  Pointer Restore       Restore pointer from two-byte array.
+printf   stdiox   Print Formatted       Write formatted byte and/or string/address to screen.
+putadr   test     Put Address           Write "address=" and hexadecimal address to screen.
 putc     stdio    Put Character         Write character to screen.
-puts     stdio    Output String         Write string to screen.
-putsub   stdio    Output Substring      Write substring to screen.
-putln    stdio    Put String            Write string plus newline to screen. 
+putdec   stdiox   Put Decimal           Write byte to screen as decimal number.
+putdel   stdiox   Put Decimal Left      Write byte to screen as left-justified decimal.
+putder   stdiox   Put Decimal Right     Write byte to screen as right-justified decimal.
+putdst   stdios   Put Destination       Write destination string to screen.
+puthex   stdiox   Put Hexadecimal       Write byte to screen as hexadecimal number.
+putln    stdio    Put Line              Write string plus newline to screen. 
+puts     stdio    Put String            Write string to screen.
+putspc   stdiox   Put Space             Write space character to screen.
+putsub   stdio    Put Substring         Write substring to screen.
+putwrd   stdiox   Put Word              Write address to screen as hexadecimal number.
 rand     stdlib   Random                Generate pseudorandom number.
 rands    stdlib   Random Seed           Seed random number generator.
+ressrc   stddef   Restore Destination   Restore Destination      Pointer from TEMP variables.
+resreg   stddef   Restore Registers     Restore A, X, and Y registers from TEMP variables.
+resrxy   stddef   Restore Reg. X and Y  Restore X, and Y registers from TEMP variables.
+ressrc   stddef   Restore Source        Restore Source Pointer from TEMP variables.
+savreg   stddef   Save Registers        Save A, X, and Y registers in TEMP variables.
+savrxy   stddef   Save Reg. X and Y     Save X, and Y registers in TEMP variables.
+savsrc   stddef   Save Source           Save Source Pointer in TEMP variables.
+setdss   stddef   Set Dest. Source      Set Destination Pointer to Source Pointer.
+setdst   stddef   Set Destination       Set Destination Pointer to address.
+setsrc   stddef   Set Source            Set Source Pointer to address.
+setsrd   stddef   Set Source Dest.      Set Source Pointer to Destination Pointer.
 shiftl   stdlib   Shift Left            Shift byte left specified number of bits.
 shiftr   stdlib   Shift Right           Shift byte right specified number of bits.
+stkbgn   stack    Stack Begin           Set start of stack address.
+stkdup   stack    Stack Duplicate       Duplicate top entry of stack.
+stkend   stack    Stack End             Set end of stack address.
+stkovr   stack    Stack Over            Copy second from top entry of stack to top.
+stkpop   stack    Stack Pop             Remove entry from top of stack.
+stkpsh   stack    Stack Push            Push array contents onto top of stack.
+stkptr   stack    Stack Pointer         Get stack pointer address.
+stkrst   stack    Stack Reset           Initialize or clear stack.
+stkset   stack    Stack Set             Set stack pointer to address.
+stkstr   stack    Stack String          Push string onto top of stack.
+stktop   stack    Stack Top             Get entry from top of stack without popping it.
+stkswp   stack    Stack Swap            Swap top entry of stack with entry below it.
 strapd   string   String Append         Append character to string.
 strcat   string   String Concatenate    Concatenate string to destination string.
 strchr   string   String Character      Search for character in string.
@@ -86,5 +140,7 @@ strpbk   stringx  String Pointer Break  Find first character in destination foun
 strrch   string   String Reverse Char   Search for character from end of string.
 strspn   stringx  String Span           Return length of span in destination found in string.
 strstr   string   String String         Search for string in destination string.
+swap     stdlib   Swap nybbles          Swaps the upper and lower nybbles in a byte.
 tolowr   ctype    To Lowercase          Convert character to lowercase.
 touppr   ctype    To Uppercase          Convert character to uppercase.
+trufls   test     True or False         Convert value to #TRUE or #FALSE.

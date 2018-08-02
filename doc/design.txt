@@ -1,0 +1,457 @@
+C02 Design Considerations
+
+
+Variable Types
+==============
+
+Pointers
+--------
+
+The 6502 differs from nearly all other microprocessors by not having
+a 16 bit index register, instead using indirect indexed mode in 
+conjunction with zero page. 
+
+On other processors, it would be trivial to dereference a pointer
+stored anywhere in memory. For example, on the 6800:
+
+    LDX P       ;N = *P
+    LDAA IX
+
+There is no direct equivalent on the 6502, but by using indirect
+indexed mode, any zero page variable pair can be used as a pointer:
+
+    LDY #0      ;N = *P
+    LDA (P),Y
+    
+Additionally, accessing elements of a dereferenced zero page pointer 
+is just as trivial:
+
+    LDY I       ;N = *P[I]
+    LDA (P),Y
+
+    expr        ;N - *P[expr]
+    TAY
+    LDA (P),Y
+
+However, trying to use a 16-bit value stored outside of zero-page
+would take extra code and require using a a zero page byte pair:
+
+    LDY P       ;N = *P
+    STY ZP
+    LDY P+1
+    STY ZP+1
+    LDY #0
+    LDA (ZP),Y
+
+This violates two principles of the C02 design philosophy: that
+each token correspond to one or two machine instructions and 
+that the compiler is completely agnostic of the system configuration.
+
+Therefore, if pointers are implemented, they will have to be in 
+zero page.
+
+Implementation:
+
+Declaration of a pointer should use two bytes of zero page storage,
+the address of which would be taken from the free zero page space
+specified by the #pragma zeropage directive.
+
+    P   EQU $80 ;char *p
+    Q   EQU $82 ;char *q
+
+Any pointers declared in a header file would added to the variable
+table but not allocated, so would be defined in the accompanying
+assembly file:
+
+    char *dst;  //stddef.h02
+    char dstlo,dsthi;
+
+    DST     EQU $30 ;stddef.a02
+    DSTLO   EQU $30
+    DSTHI   EQU $31
+
+Since they are 16-bit values, raw pointers cannot be passed into
+used directly in expressions. But could be used in standalone
+assignments:
+
+    LDX Q       ;p = q
+    STX P
+    LDY Q+1     ;X is used for LSB and Y as MSB to match
+    STY P+1     ;the address passing convention for functions 
+
+Likewise if a 16-bit integer variable type was added to C02,
+then one could be assigned to the other using the exact same
+assembly code.
+
+A derefenced pointer can be used anywhere an array references
+is allowed and would be subject to the same restrictions.
+
+A raw pointer used as an argument to a function will be passed
+using the same convention as an address:
+
+    LDY P+1     ;func(p)
+    LDX P
+    JSR FUNC
+
+    JSR FUNC    ;p = func()
+    STY P+1
+    STX P
+
+Since pointers are zero page the address of operator on a pointer
+will generate a char value:
+
+    LDA #P      ;&p
+
+This will allow passing of pointers for use inside of functions
+using indexed mode:
+
+    LDA #P      ;inc(&p)
+    JSR FUNC
+    
+    TAX         ;void inc()
+    INC ($00,X)
+    RTS
+
+The memio module makes extensive use of pointer addresses as
+function arguments.
+
+Structs
+-------
+
+For the declarations
+
+    STRUCT RECORD { CHAR NAME[8]; CHAR INDEX; CHAR DATA[128]; };
+    STRUCT RECORD REC;
+
+references to the members of the struct REC will generate the code:
+
+    XXA REC+$09     ;REC.INDEX
+
+    LDX I           ;REC.DATA[I]
+    XXA REC+$0A,X
+
+Using the address of operator on a struct member generates assembly 
+code with parentherical expressions, which are not recognized by all
+assemblers:
+
+    LDY #>(REC+$0A)  ;FUNC(&REC.DATA)
+    LDX #<(REC+$0A)
+    JSR FUNC
+
+The compiler could optimize the generation of code for references
+to the first member of a struct, producing
+
+    XXA REC     ;REC.NAME
+    
+instead of 
+
+    XXA REC+$00 ;REC.NAME
+    
+but the machine code produced by the assembler should be indentical
+in either case.
+
+
+Expression Evaluation
+=====================
+
+Array Indexes
+-------------
+
+Array indexing normally uses the X register and indexed addressing mode:
+
+    LDX I       ;R[I]
+    XXA R,X
+    
+If the index is a constant or literal, absolute addressing is used:
+
+    LDA R+1     ;R[1] 
+    XXA S+0     ;S[0]
+ 
+Specifying a register as the index also uses indexed addressing mode:
+
+    TAX         ;R[A]
+    XXA R,X
+    XXA R,Y     ;R[Y]
+    XXA R,X     ;R[X]
+
+Allowing for an expression as the index in the first term of an 
+expression uses only one extra byte of code and two machine cycles:
+
+    expression  ;R[expr]
+    TAX
+    LDAA R,X
+
+while in any other termm is uses an extra three extra bytes of code 
+and ten machine cycles:
+
+    PHA         ;R[expr]
+    expr code   ;code to evaluate the expression
+    TAX
+    PLA
+    XXA R,X
+    
+compared to the extra four to six bytes and six to eight machine cycles
+used by the equivalent C02 code required to achieve the same result:
+
+    expr code   ;Z = expr
+    STA Z
+    LDX Z       ;R[Z]
+    XXA R,X
+
+Function Calls
+--------------
+
+A function call in the first term of an expression requires additional
+processing by the compiler, since the accumulator holds the return
+value upon completion of the function call:
+
+    JSR FUNC    ;R = func() 
+    STA R
+
+Allowing a function call in susbsequent terms, however, requires 
+extensive stack manipulation:
+
+
+
+whereas the equivalent C02 code generates much simpler machine code:
+
+
+
+Shift Operators
+----------------
+
+In standard C, the shift operators use the number of bits to shift as
+the operand. Since the 6502 shift and rotate instructions only shift
+one bit at a time, this would require the use of an index register and
+six to seven bytes of code
+
+            expr code    ;expr
+    .LOOP   LDY B        ;>> B
+            LSR
+            DEY
+            BNE .LOOP
+
+whereas a library function would require five bytes of code:
+
+    SHIFTR: LSR         ;A=Value to Shift
+            DEY         ;Y=Bits to Shift
+            BNE SHIFTR
+            RTS
+            
+and each function call would use five bytes of code
+
+    expr code   ;shiftr(expr, B)
+    LDY B
+    JSR SHIFTR
+
+Following the philosophy that a operator should correspond to a single 
+machine instruction, in C02 shifting is implemented as post-operators
+using the various available addressing modes:
+
+    ASL S       ;S<<
+
+    LDX I       ;T[I]>>
+    LSR T,X
+
+    ASL         ;A<<
+
+
+Post-Operators and Pre-Operators
+--------------------------------
+
+Parsing for post-operators in a standalone expression is trivial, since
+that is the only time the relevant characters will only follow the operand.
+
+Implementing pre-operators on standalone expressions would be redundant 
+since their would be no difference in the generated code.
+
+Parsing for post-operators and/or preoperators within an expression or 
+evaluation, however, would complicate the detection of operators and 
+comparators. 
+
+In addition, the code generated from a post-operator or pre-operator 
+withing an expression:
+
+    DEC I       ;R[--I]
+    LDX I
+    XXA R,X
+
+    LDX I       ;R[I++]
+    XXA R,X
+    INC I
+
+Is indentical to the code generated when using a standalone post-operator;
+
+    DEC I       ;I--
+    LDX I       ;R[I]
+    XXA R,X
+
+    LDX I       ;R[I]
+    XXA R,X
+    INC I       ;I++
+
+Assignments
+===========
+
+Assignment to a variable generates an STA instruction, using either absolute 
+or indexed addressing mode:
+
+    expr code   ;R = expr
+    STA R
+
+    expr code   ;R[2] = expr
+    STA R+2
+
+    expr code   ;R[I] = expr
+    LDX I
+    STA R,I
+
+while assignment to an index register generates a transfer instruction:
+
+    expr code   ;Y = expr
+    TAY
+
+    expr code   ;X = expr
+    TAX
+
+and assignment to the Accumulator is simply a syntactical convenience:
+
+    expr code   ;A = expr
+
+Specific to C02 is the implied assignment, which also generates an STA:
+
+    STA S       ;S
+
+Allowing an expression as an array index in an assignment is problematic
+on an NMOS 6502 since the index expression will be evaluated prior to the 
+expression being assigned to the array element and neither index register
+may be directly pushed or pulled from the stack.
+
+The addition of the PLX instruction to the 65C02 would allows this to be 
+done using only two extra bytes of code for each variable assignment:
+
+    indexp oode ;R[indexp] = expr
+    PHA
+    expr code
+    PLX
+    STA R,X
+
+    expr oode   ;R[expr], S[exps] = func()
+    PHA
+    exps code
+    PHA
+    JSR FUNC
+    PLX
+    STY S,X
+    PLX
+    STA R,X
+
+however, this would only work with the A and Y variables of a plural 
+assignment.
+
+A workaround for the NMOS 6502 would require an extra five bytes of code
+
+    indexp oode ;R[indexp] = expr
+    PHA
+    expr code
+    TAY
+    PLA
+    TAX
+    TYA
+    STA R,X
+
+and the use of the Y register would limit it to the only the A variable
+of a plural assigment, whereas the equivalent C02 code would use an 
+extra four to six bytes of code
+
+    indexp code ;I = indexp;
+    STA I
+    expr code   ;R[I] = expr
+    LDX I
+    STA R,X
+
+and works with all three variables of a plural assignment.
+
+Conditionals
+============
+
+Conditionals are separate and distinct from expessions, due to the fact
+that the comparison operators all set status flags which affect the various
+branch instructions:
+
+     CMP DATA       Normal      Inverted
+    Reg < Data       BCC          BCS
+    Reg = Data       BEQ          BNE
+    Reg ≥ Data       BCS          BCC
+    Reg ≠ Data       BNE          BEQ
+    
+    CLC:SBC DATA    Normal      Inverted   
+    Reg ≤ Data       BCC          BCS
+    Reg > Data       BCS          BCC
+
+When compiling a comparison, the generated code will usually, but not 
+always, branch when the condition is false, skipping to the end of the 
+block of code following the comparison. In addition, the logical not
+operator will invert the comparison.
+
+By arranging the eight standard comparisons, along with evaluation of
+a term as true when non-zero, in this order:
+
+     0   1   2   3   4   5   6   7
+    !0   =   <   ≤   ≥   >   ≠   0
+
+the comparison can be inverted with a simple exclusive-or. For this
+reason, The ! operator is logical rather than bitwise and affects
+the result of the comparison rather than an individual expression
+or term within the expression.
+
+Standalone Expressions
+----------------------
+
+Flags Operators
+---------------
+
+Logical Operators
+-----------------
+
+Parsing the logical operators && and || is trivial if the preceding 
+condition is a comparison or flag operation, since any expression 
+evaluation is complete before the parse encounters the initial & or |
+character. For a standalone evaluation of an expression as true or\
+false, however, the expression evaluator will mistake the initial
+character of the && or || as a bitwise operator. Differentiating
+the two would require changing to a look-ahead parser.
+
+One solution is to enclose require parenthises around each comparison
+when using logical operators, which is allowable in C syntax, but
+it's just as easy, and arguably cleaner looking, to use the words 
+"and" and "or" instead. This is be allowble in standard C by using
+the @define directive to alias "and" to "&&" and "or" to "||".
+ 
+The most efficient way to implement logical operators is to use shortcut 
+evaluations.
+ 
+Under the normal circumstances, where the generated code branches when
+the condition is false, && can be implemented by evaluation the next
+comparison only in the event of the first condition being true.
+
+For ||, however, the following comparison will be evaluated only if the 
+first comparison was false. 
+
+    LDA I       ;IF (I<J 
+    CMP J 
+    BCS ENDIF
+    LDA M       ;&& M<>N)
+    CMP N
+    BEQ ENDIF
+
+    LDA I       ;IF (I<J 
+    CMP J 
+    BCC block
+    LDA M       ;|| M<>N)
+    CMP N
+    BEQ ENDIF
+    block
+
+When chaining multiple && and/or || operators, the shortcut evaluation
+effectively make them right-associative.

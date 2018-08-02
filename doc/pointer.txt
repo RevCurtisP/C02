@@ -5,22 +5,11 @@ This library contains functions for basic pointer access and manipulation.
 These functions are intended to allow sequential reading and writing of
 individual bytes to arbitrary locations in memory. 
 
-Only one pointer may be active at a time, but it's contents may be saved 
-and restored using the following code:
-
-  savelo = ptrlo; savehi = ptrhi; //save current pointer
-  ptrlo = savelo; ptrhi = savehi; //restore current pointer
-  
-where savelo and savehi are an arbitrary pair of variables defined in the
-program. 
+A pointer consists of any two consecutive bytes in Zero Page and is 
+referenced using the single byte zeto page address (0-254).
 
 Note: There is no concept of a null pointer in C02. A pointer containing
 the value 0 simply points to the first byte of memory. 
-
-In the equivalent C code examples below, the system pointer is represented 
-as the variable p. In all cases, assume the following declaration :
-
-  int *p;
 
 Usage: at the beginning of the program use the directives
 
@@ -28,97 +17,57 @@ Usage: at the beginning of the program use the directives
 
 The following application functions are defined:
 
-  ptrset(&v);         Pointer Set: Set pointer contents to the address of
-                      variable v.
+  ptr, msb, lsb =       Pointer Set: Set the contents of the pointer at
+    ptrset(zp, &addr);  location zp to the address &addr.
+    
+                        Returns the zsro-page pointer location, address
+                        high byte, and address low byte.
 
-                      This is equivalent to the C code 
-                      
-                        p = &v;
-                      
-                      Note: Sets variables ptrlo and ptrhi.
+  ptr, msb, lsb =       Pointer Address: Retrieves the contents of the 
+    ptradr(zp);         pointer at location zp.
+    
+                        Returns the zsro-page pointer location, address
+                        high byte, and address low byte.
 
-  ptrput(b);          Pointer Put: Stores value of b in the byte currently 
-                      pointed to and increments the pointer.
+  ptr, b =              Pointer Put: Stores byte of b at the address 
+    ptrput(zp, b);      pointed to by the pointer at location zp, then
+                        increments the pointer contents.
 
-                      This is equivalent to the C code 
-                      
-                        *p = b; p++;
-                      
-                      Note: Updates variables ptrlo and ptrhi.
+                        Returns the zsro-page pointer location and value
+                        written to address.
 
-  b = ptrget();       Pointer Get: Retrieves the contents of the byte 
-                      currently pointed to and increments the pointer.
+  b = ptrget(zp);       Pointer Get: Retrieves the contents of the byte 
+                        at the address pointed to by the pointer at 
+                        location zp, then increments the pointer contents.
 
-                      This is equivalent to the C code 
-                      
-                        b = *p; p++;
-                      
-                      Note: Updates variables ptrlo and ptrhi.
+  ptrinc(zp);           Pointer Increment: Increases the contents of the
+                        pointer at location zp by one.
 
-  ptrinc();           Pointer Increment: Increases the pointer value by 1,
-                      causing it to point to the next byte in memory.  
+  ptrdec(zp);           Pointer Decrement: Decreases the contents of the
+                        pointer at location zp by one.
 
-                      This is equivalent to the C code 
-                      
-                        p++;
-                      
-                      Note: Updates variables ptrlo and ptrhi.
+  ptr, msb, lsb =       Pointer Add: Adds the 16-bit value specified by &addr 
+    ptradd(zp, &addr);  or msb, lsb to the contents of the pointer at 
+    ptradd(zp,msb,lsb); location zp.
 
-  ptrdec();           Pointer Decrement: Decreases the pointer value by 1,
-                      causing it to point to the previous byte in memory.  
+  ptr, msb, lsb =       Pointer Add: Subtracts the 16-bit value specified by  
+    ptrsub(zp, &addr);  &addr or msb, lsb to the contents of the pointer at 
+    ptrsub(zp,msb,lsb); location zp.
 
-                      This is equivalent to the C code 
-                      
-                        p++;
-                      
-                      Note: Updates variables ptrlo and ptrhi.
+  r =                   Pointer Compare: Compares the contents of the pointer
+    ptrcmp(zp, &addr);  at location zp to the address &addr.
 
-  ptradd(n);          Pointer Add: Adds the value n to the address contained 
-                      in the pointer, moving it that many bytes forward in
-                      memory.
+                        Returns 255 if the contents are less than the address
+                        (pointing to a byte lower in memory), 0 if the contents
+                        are equal to the address (pointing to the same byte),
+                        and 1 if the contents are greater than the address 
+                        (pointing to a byte higher in memory).
 
-                      This is equivalent to the C code 
-                      
-                        p += n;
-                      
-                      Note: Updates variables ptrlo and ptrhi.
-
-  ptrsub(n);          Pointer Subtract: Adds the value n to the address 
-                      contained in the pointer, moving it that many bytes 
-                      backward in memory.
-
-                      This is equivalent to the C code 
-                      
-                        p -= n;
-                      
-                      Note: Updates variables ptrlo and ptrhi.
-
-  ptrcmp(&v);         Pointer Compare: Compares pointer contents against
-                      the address of variable v.
-
-                      Returns 255 if the pointer is less than the address
-                      (pointing to a byte lower in memory), 0 if the pointer
-                      is equal to the address (pointing to the same byte),
-                      and 1 if greater than tge address (pointing to a 
-                      byte higher in memory).
-                      These results can be evaluated using the C02 
-                      unary comparator ! or the test-operators :+ or :-.
-
-                      This is equivalent to the C code 
-                      
-                        if (p < &v) return 255;
-                        else if (p > &v) return 1;
-                        else return 0;
-                      
-                      Note: Sets variables srclo and srchi.
-
+                        These results can be evaluated using the C02 unary
+                        comparator ! or the test-operators :+ or :-.
 
 Note: This library expects the following to be defined: 
 
-the zero page variable pair
-  
-  ptrlo, ptrhi        System Pointer 
+the transient variables  
 
-and the transient variable 
-
-  temp0               Temporary storage
+  temp0, temp1, temp2   Temporary storage

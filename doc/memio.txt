@@ -9,6 +9,7 @@ function has the same signature it's equivalent in the file library.
 
 At the beginning of the program use the directives
 
+  #include <stddef.h02>
   #include <memio.h02>
 
 The following functions are defined:

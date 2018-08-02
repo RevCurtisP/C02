@@ -1,0 +1,135 @@
+; Program initialization code for Oric-1
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $7F     ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
+NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
+
+;Zero Page Locations
+SRCLO   EQU $00     ;Source String Pointer (stdio.asm)
+SRCHI   EQU $01
+DSTLO   EQU $02     ;Destination String Pointer (string.asm)
+DSTHI   EQU $03
+
+STKSAV  EQU $04     ;Stack Pointer Storage
+RDSEED  EQU $05     ;Pseudo-RANDOM Seed
+RANDOM  EQU $06     ;Pseudo-RANDOM Number Storage
+
+TEMP0   EQU $07     ;Temporary Storage
+TEMP1   EQU $08
+TEMP2   EQU $09
+TEMP3   EQU $0A
+
+BLKSLO  EQU $0B     ;Block Start Address
+BLKSHI  EQU $0C
+BLKELO  EQU $0D     ;Block End Address
+BLKEHI  EQU $0E
+
+;Oric-1 Memory Locations
+CAPLCK  EQU $020C   ;Caps Lock: 127=Off, 255 = On
+
+;Oric-1 ROM Funxtions
+GTORKB EQU $E905    ;Get Character from Keyboard
+VDU    EQU $F409    ;Print character in X to screen
+
+;Oric-1 Tape images have the file extension ".tap"
+;and have the following header prepended to the code
+;   $16,$16,$16, $16    Tape Syncronization Pattern
+;   $24                 Tape Syncronization Byte
+;   $00,$00             Filler Bytes
+;   $00                 Basic Program
+;   $00                 No Autostart ($80 for Autostart)
+;   $xx,$xx             MSB, LSB of End Address
+;   $05,$01             MSB, LSB of Start Address
+;   $00                 Filler Byte
+;   "filename"          Up to 16 ASCII Characters
+;   $00                 Strint Terminator    
+
+;The End Address is actually one higher than the last
+;byte of the Basic program and the first byte of Basic
+;variable space. so the compiled program need to have
+;one dummy byte added to the end.
+
+        ORG $0501   ;Basic Program Start Address
+
+BASIC:  .DB $0C,$05 ;Address of Next Line
+        .DB $00,$00 ;Basic Line Number (0)
+        .DB $BF     ;Token for Basic Call Command
+        .DB $20     ;Space
+        .DS "1294"  ;Address of START Label
+        .DB $00     ;End of Line
+        .DB $00,$00 ;End of Program Marker
+
+START:  TXS         ;Save Stack Pointer
+        STX STKSAV
+        LDA #127    ;Set Caps Lock Off
+        STA CAPLCK
+        JMP MAIN    ;Execute Program
+
+;Poll Character from Keyboard
+PLKEY:  INC RDSEED  ;Cycle the Random Seed (if not provided by system)
+        JMP GTORKB  ;Call ROM Key Reading function and return
+
+;Read Character from Console
+GETKEY;             ;Drop into RDKEY routine
+
+;Wait for Character from Console
+RDKEY:  JSR PLKEY   ;Usually calls PLKEY 
+        BEQ RDKEY   ;  until a non-zero is returned
+        RTS         
+
+;Delete Previous Character
+DELCHR: LDA DELKEY  ;Load Delete Character
+        BNE PRCHR   ;and Print to Screem
+
+;Advance Cursor to Next line
+NEWLIN: LDA RTNKEY  ;Load Carriage Return and fall through to PRCHR
+
+;Print Character to Screen
+PRCHR:  TAX         ;Transfer Character to X Register
+        JMP VDU     ;Call ROM Print Function and Return
+
+;Exit Program and Return to Operating System or Monitor
+EXIT:   LDA #255    ;Set Caps Lock On
+        STA CAPLCK
+        LDX STKSAV  ;Restore Stack Pointer
+        TXS
+        RTS         ;and Return to Basic
+
+;Note: The following two functions replicate calls available 
+;in the Apple-1 monitor and are included for test purposes
+;They will likely be removed before the final release
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into PRHEX
+
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP PRCHR   ;Print Hex Digit and Return
+
+
+;Functions to set String Pointers
+;Used by memory, stdio, stdlin, string, and stringx libraries
+
+;Initialize Destination String Pointer
+SETDST: STX DSTLO       ;Save Destination String Pointer
+        STY DSTHI
+        RTS
+
+;Initialize Source String Pointer and Index
+SETSRC: STX SRCLO       ;Save Source String Pointer
+        STY SRCHI
+        LDY #$00        ;Initialize Index Into String
+        RTS

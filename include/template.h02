@@ -1,0 +1,11 @@
+/*********************************************
+ * stdlib - Template Library Routines for C02 *
+ *********************************************/
+
+/* Function Description         *
+ * Args: a - First Argument     *
+ *       &d - Address Argumnt   *
+ * Returns: First Result        *
+ *          Second Result       *
+ *          Third Result        */
+char func();

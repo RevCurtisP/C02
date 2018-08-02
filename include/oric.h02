@@ -1,0 +1,28 @@
+/* C02 Standard Header for Oric-1 */
+
+
+/* System Specific ASCII Key Codes              */
+const DELKEY;    //Delete/Backspace Key
+const ESCKEY;    //Escape/Stop Key
+const RTNKEY;    //Return/Enter Key
+const NULKEY     //No Key was Pressed
+
+/* Zero Page Variables used as Pointers         */
+char strlo,strhi; //String pointer for String and I/O functions
+char dstlo,dsthi; //Secondary string pointer for String functions
+
+char temp0,temp1,temp2,temp3;  //Temporary variables 
+
+/* Static Library Variables */
+char random;      //Last Result of Pseudo-Random Number Generator
+char rdseed;      //System Seed for Pseudo-Random Number Generator 
+
+//System Subroutines
+char plkey();     //Poll Console for character
+char rdkey();     //Wait for character from Console
+char getkey();    //Read ASCII character from Console
+void newlin();    //Advance cursor to beginning of next line
+void prchr();     //Print ASCII character to Console
+void prbyte();    //Print Accumulator as Hexadadecimal number
+void prhex();     //Print Low Nybble of Accumulator as Hex Digit
+ 

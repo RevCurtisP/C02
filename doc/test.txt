@@ -49,7 +49,7 @@ along with the  following functions:
   
                         Note: Calls puts() with the string variable fail.
 
-  passln();             Prints the string " Fail" to the screen, followed
+  failln();             Prints the string " Fail" to the screen, followed
                         by a New Line.
   
                         Note: Calls failed() and newlin().
