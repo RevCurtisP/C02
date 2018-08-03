@@ -25,7 +25,7 @@ int isdec(void)  {return inbtwn('0', '9');}
 int iscpre(void) {return match('#');}
 int ishexd(void) {return TF(isdec() || inbtwn('A', 'Z'));}
 int islpre(void) {return TF(isbpre() || iscpre() || isszop() || isxfop());}
-int isnl(void)   {return TF(match('\n') || match('\r'));}
+int isnl(void)   {return TF(match('\n') || match('\r') || match(EOF));}
 int isnpre(void) {return TF(isdec() || match('$') || match('%'));}
 int isoper(void) {return TF(strchr("+-&|^", nxtchr));}
 int ispopr(void) {return TF(strchr("+-<>", nxtchr));}

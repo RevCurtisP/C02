@@ -48,7 +48,12 @@ int  dsize;                    //Total Data Length
 
 enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 
-enum mtypes {MTNONE, MTALGN, MTZP, MTALS, MTLOCAL}; //Variable Modifier Types
+/*Variable Modifier Types (Bit Mask) */
+#define MTNONE   0 //No Modifier
+#define MTCONST  1 //Constant
+#define MTZP     2 //Zero Page
+#define MTALS    4 //Alias
+#define MTALGN 128 //Aligned
 
 int symdef(char *name);         //Is Variable defined (TRUE or FALSE)
 int zpaddr;                     //Current Zero-Page Address
@@ -56,12 +61,12 @@ int zpaddr;                     //Current Zero-Page Address
 void addvar(int m, int t);           //Parse and Compile Variable Declaration
 void addstc();                       //Parse and Compile Structure Declaration
 void defstc();                       //Parse Structure Definition
-void chksym(int alwreg, char *name); //Error if Variable not defined
+void chksym(int alwreg, int alwcon, char *name); //Error if Variable not defined
 void prsdts();                       //Parse Data String
 void setdat();                       //Set Variable Data
 void setvar(int m, int t);           //Set Variable Name and Size
 void prsdts();                       //Parse Data String
-void prsvar(int alwreg);             //Parse Variable
+void prsvar(int alwreg, int alwcon); //Parse Variable
 void prsmbr(char* name);             //Parse Struct Member
 int  psizof(void);                   //Parse SizeOf Operator
 int  pidxof(void);                   //Parse IndexOf Operator

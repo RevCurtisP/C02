@@ -115,22 +115,29 @@ void pdecl(int m, int t) {
  * Args: m - Modifier Type          */
 int ptype(int m) {
   int result = TRUE;
-  if    (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration
-  else if (wordis("CONST")) pconst(m);       //Parse 'const' declaration
-  else if (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
-  else if (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
-  else if (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
-  else                     result = FALSE;
+  if     (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration
+  else if  (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
+  else if  (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
+  else if  (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
+  else                      result = FALSE;
   return result;
+}
+
+int pmtype(int m) {
+  getwrd();
+  if (m == MTALGN && wordis("CONST")) {m = m | MTCONST; getwrd();}
+  DEBUG("Parsing type %s\n", word)
+  return ptype(m);
 }
 
 /* Check for and Parse Modifier */
 int pmodfr(void) {
   DEBUG("Parsing modifier '%s'\n", word)
   int result = TRUE;
-  if      (wordis("ALIGNED"))  { getwrd(); ptype(MTALGN); }
-  else if (wordis("ZEROPAGE")) { getwrd(); ptype(MTZP); }
-  else if (wordis("ALIAS"))    { getwrd(); ptype(MTALS); }
+  if      (wordis("ALIAS"))    { pmtype(MTALS); }
+  else if (wordis("ALIGNED"))  { pmtype(MTALGN); }
+  else if (wordis("CONST"))    { pmtype(MTCONST); }
+  else if (wordis("ZEROPAGE")) { pmtype(MTZP); }
   else                         result = FALSE;
   return result;
 }

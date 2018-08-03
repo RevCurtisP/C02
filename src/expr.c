@@ -33,11 +33,11 @@ void poptrm(void) {
  * Args: alwreg - allow registers        *
  * Sets: value - the value (as a string) *
  *       valtyp - value type             */
-void prsval(int alwreg) {
+void prsval(int alwreg, int alwcon) {
   DEBUG("Parsing value\n", 0)
   skpspc();
   if      (islpre()) prslit();       //Parse Literal
-  else if (isalph()) prsvar(alwreg); //Parse Variable
+  else if (isalph()) prsvar(alwreg, alwcon); //Parse Variable
   else               expctd("literal or variable");
   DEBUG("Parsed value of type %d\n", valtyp)
   skpspc();
@@ -55,7 +55,7 @@ void prcmns(void) {
  *             "" if no index defined     */
 void prsidx(int clbrkt) {
   expect('[');
-  prsval(TRUE); //Parse Value, Allowing Registers
+  prsval(TRUE, TRUE); //Parse Value, Allowing Registers
   DEBUG("Parsed array index '%s'\n", value)
   if (clbrkt) expect(']');
 }
@@ -113,7 +113,7 @@ void chkidx(void) {
  * Sets: term - the term (as a string) */
 void prstrm(void) {
   DEBUG("Parsing term\n", 0)
-  prsval(FALSE); //Parse Term - Disallow Registers
+  prsval(FALSE, TRUE); //Parse Term - Disallow Registers
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
   DEBUG("Parsed term %s\n", term)
@@ -140,7 +140,7 @@ void prcadr(int adract, char* symbol) {
 void prsadr(int adract) {
   DEBUG("Parsing address\n", 0)
   if (isnpre()) prsnum(0xFFFF);
-  else prsvar(FALSE);
+  else prsvar(FALSE, TRUE);
   prcadr(adract, value);  //Compile Address Reference
 }
 
@@ -177,7 +177,7 @@ void prsfnc(char trmntr) {
     if (!look('*')) prsxpr(0);
     if (look(',') && !chkadr(0)) {
       if (!look('*')) { prstrm(); asmlin("LDY", term); }
-      if (look(',')) { prsval(FALSE); asmlin("LDX", value); }
+      if (look(',')) { prsval(FALSE, TRUE); asmlin("LDX", value); }
     }
   }
   expect(')');
@@ -201,7 +201,7 @@ void prcftm(void) {
 /* Parse first term of expession            *
  * First term can include function calls    */
 void prsftm(void) {
-  prsval(TRUE); //Parse Value, Allowing Registers
+  prsval(TRUE, TRUE); //Parse Value, Allowing Registers
   prcftm();
 }
 

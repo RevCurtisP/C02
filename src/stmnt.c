@@ -113,7 +113,7 @@ int getidx(char* idx) {
 
 /* Process Assignment Variable(s) */
 void prcvar(char trmntr) {
-  chksym(TRUE, word);
+  chksym(TRUE, FALSE, word);
   strcpy(asnvar, word);  //save variable to assign to
   if (valtyp == VARIABLE && match('.')) prsmbr(asnvar);
   asntyp = valtyp; //Set Assigned Varable Type
@@ -131,14 +131,14 @@ void prcvar(char trmntr) {
   }
   if (look(',')) {     
     if (asntyp == REGISTER) ERROR("Register %s not allowed in plural assignment\n", asnvar, EXIT_FAILURE)
-    prsvar(FALSE); //get variable name
+    prsvar(FALSE, FALSE); //get variable name
     strcpy(ysnvar, word);
     DEBUG("Set STY variable to %s\n", ysnvar)
     if (valtyp == ARRAY) ysnivt = getidx(ysnidx); //Get Array Index and Type
     else ysnidx[0] = 0;
     DEBUG("Set STY index to '%s'", ysnidx) DETAIL(" and type to %d\n", ysnivt)
     if (look(',')) {
-      prsvar(FALSE); //get variable name
+      prsvar(FALSE, FALSE); //get variable name
       strcpy(xsnvar, word);
       DEBUG("Set STX variable to %s\n", xsnvar)
       //if (valtyp == ARRAY) ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE) 

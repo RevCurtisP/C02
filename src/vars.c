@@ -53,8 +53,9 @@ int fndmbr(int idx, char *name) {
 /* Check for variable                       *
  * Generates error if variable is undefined *
  * Args: alwreg - allow register name       *
+ *       alwcon - allow const variable      *
  *       name - variable name               */
-void chksym(int alwreg, char *name) {
+void chksym(int alwreg, int alwcon, char *name) {
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
     if (alwreg && valtyp != ARRAY) { 
       valtyp = REGISTER;
@@ -64,6 +65,8 @@ void chksym(int alwreg, char *name) {
   }
   if (!fndvar(name))
     ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE)
+  if (!alwcon && (varmod[varidx] & MTCONST)) 
+    ERROR("Illegal use of const variable '%s'\n", name, EXIT_FAILURE)
 }
 
 /* Parse next word as struct member *
@@ -87,10 +90,10 @@ void prsmbr(char* name) {
  * Args: alwreg - Allow Register Names          *
  * Sets: value - Identifier Name                *
  *       valtyp - Identifier Type               */
-void prsvar(int alwreg) {
+void prsvar(int alwreg, int alwcon) {
   getwrd(); //Get Variable Name
   valtyp = gettyp(); //Determine Variable Type
-  if (valtyp != FUNCTION) chksym(alwreg, word);
+  if (valtyp != FUNCTION) chksym(alwreg, alwcon, word);
   strcpy(value, word);
   DEBUG("Parsed variable '%s'\n", value)
   if (valtyp == VARIABLE && match('.')) prsmbr(value);
@@ -100,7 +103,7 @@ void prsvar(int alwreg) {
  * Parameters: alwary - Allow Array Reference *
  * Sets: vrname - operand for LDA/STA/LDY/STY */
 void reqvar(int alwary) {
-  prsvar(FALSE);
+  prsvar(FALSE, TRUE);
   if (!alwary && valtyp != VARIABLE) expctd("Variable");
 } 
 
@@ -191,9 +194,9 @@ void setdat(void) {
 }
 
 /* Parse and store variable data */
-void prsdat(void) {
-  DEBUG("Checking for variable data\n", 0)
-  if (!look('=')) { datlen[varcnt] = 0; return; }
+void prsdat(int m) {
+  if ((m & MTCONST) == 0) ERROR("Initialization allowed only on variables declared CONST\n", 0, EXIT_FAILURE);
+  DEBUG("Parsing variable data\n", 0)
   skpspc();
   if (islpre()) {dtype = DTBYTE; prslit(); } //Parse Data Literal
   else if (match('"')) prsdts();       //Parse Data String
@@ -216,23 +219,23 @@ void setvar(int m, int t) {
 }
 
 /* Parse and Compile Variable Declaration *
- * Uses: word - variable name     */
+ * Uses: word - variable name             */
 void addvar(int m, int t) {
   strcpy(vrname, word); //Save Variable Name
   if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
-  if (m == MTZP) {
+  if (m & MTZP) {
     setlbl(vrname);
     sprintf(word, "$%hhX", zpaddr++);
     asmlin(EQUOP, word);
     strcpy(value, "*"); //Set Variable to Non Allocated  
   }
-  else if (m == MTALS) {
+  else if (m & MTALS) {
     setlbl(vrname);
     skpspc();
     expect('=');
     skpspc();
-    if (isnpre()) prsnum(0xFFFF); else prsvar(FALSE);
+    if (isnpre()) prsnum(0xFFFF); else prsvar(FALSE, FALSE);
     asmlin(EQUOP, word);
     strcpy(value, "*"); //Set Variable to Non Allocated  	
   }
@@ -253,22 +256,24 @@ void addvar(int m, int t) {
     if (!alcvar) strcpy(value, "*");  
   }  
   setvar(m, t);  //Add to Variable Table
-  if (m < MTZP && t != VTSTRUCT ) prsdat();   //Parse Variable Data
+  if (look('=')) prsdat(m); //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 
-/* Write Variable Table */
-void vartbl(void) {
+/* Write Variable Definitions        *
+ * Args: m = write CONST vars flag */
+void vardef(int m) {
   int i, j;
   DEBUG("Writing Variable Table\n", 0)
-  fprintf(logfil, "\n%-31s %s %s %s %s\n", "Variable", "Type", "Size", "Struct", "Data");
+  fprintf(logfil, "\n%-31s %s %s %s %s\n", "Variable", "Mod", "Type", "Size", "Struct", "Data");
   dlen = 0;
   for (i=0; i<varcnt; i++) {
-    fprintf(logfil, "%-31s %4d %4s %6d %1d-%d\n", varnam[i], vartyp[i], varsiz[i], varstc[i], dattyp[i], datlen[i]);
+    if ((varmod[i] & MTCONST) != m) continue;
+    fprintf(logfil, "%-8s %3d %4d %4s %6d %1d-%d\n", varnam[i], varmod[i], vartyp[i], varsiz[i], varstc[i], dattyp[i], datlen[i]);
     strcpy(lblasm, varnam[i]);
     DEBUG("Set Label to '%s'\n", lblasm)
     if (strcmp(varsiz[i], "*") == 0) continue;
-    if (varmod[i] == MTALGN) {
+    if (varmod[i] & MTALGN) {
       DEBUG("Aligning variable '%s'\n", varnam[i])
       asmlin(ALNOP, "256");
     }
@@ -294,6 +299,15 @@ void vartbl(void) {
     }
   }
   vrwrtn = TRUE;
+}
+
+/* Write Variable Table */
+void vartbl(void) {
+  LCMNT("Variables declared CONST")
+  vardef(MTCONST); //Write CONST Definitions
+  //Emit Segment Mnemonic for RAM Variables here
+  LCMNT("Writable Variables")
+  vardef(0); //Write All Other Variables
 }
 
 /* Parse and Compile Struct Declaration */

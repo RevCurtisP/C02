@@ -82,3 +82,4 @@ void setcmt(char *s);   //Set comment to string
 #define SCMNT(str) if (gencmt) {setcmt(str);}
 #define ACMNT(str) if (gencmt) {addcmt(str);}
 #define CCMNT(chr) if (gencmt) {chrcmt(chr);}
+#define LCMNT(str) if (gencmt) {setcmt(str); cmtlin();}

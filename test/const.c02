@@ -1,20 +1,28 @@
 /* Test C02 define directive */
 
-#pragma origin 1000
+#pragma origin 1024
 
-const #TRUE = $FF, #FALSE = 0;
+#define TRUE $FF
+#define FALSE 0
 
-const #BITS = %01010101;
-const #ZED = 'Z';
+#define BITS %01010101
+#define ZED 'Z'
 
 enum {SOLO};
 enum {BLACK, WHITE, RED, CYAN, PURPLE, GREEN, BLUE, YELLOW};
 enum {NONE, FIRST, SECOND, THIRD};
 enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
 
-char a = {#TRUE, #FALSE};
-char b;
-char f = #FALSE;
-char t = #TRUE;
+//char b = #TRUE; - Error
+char b,i;
+aligned const char v = {0,1,2,3,4,5,6,7,8,9};
+aligned char m[255];
+const char tandf = {#TRUE, #FALSE};
+const char t = #TRUE, f = #FALSE;
 
 b = #TRUE;
+b = tandf[i];
+
+//t = #FALSE; - Errors
+//b, t = test();
+//b, i, t = test();
