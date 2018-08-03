@@ -9,5 +9,6 @@ char prmtry[VARLEN+1]; //Function Parameter Y
 int  prmcnt;           //Number of Parameters
 //int  lpemtd;                    //Location Prefix Emitted
 
-int pmodfr();       //Check for and Parse Modifier
-int ptype(int m);   //Check for and Parse Type Keyword
+void addcon(int numval); //Add Constant
+int pmodfr();            //Check for and Parse Modifier
+int ptype(int m);        //Check for and Parse Type Keyword

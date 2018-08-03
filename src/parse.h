@@ -18,6 +18,7 @@ char connam[MAXCON+1][CONLEN+1]; //Constant Name Table
 int  conval[MAXCON+1];           //Constant Value Table
 int  concnt;                     //Number of Constants Defined
 int  conidx;                     //Index into Constant Tables
+char defnam[CONLEN+1];           //Defined Constant Name
 
 int invasc;                    //Invert ASCII Flag
 int mskasc;                    //Set High Bit Flag

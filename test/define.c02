@@ -2,18 +2,26 @@
 
 #pragma origin 1000
 
-#define TRUE = $FF
-#define FALSE = 0
+#define TRUE $FF
+#define FALSE 0
 
-#define BITS = %01010101
-#define ZED = 'Z'
+#define BITS %01010101
+#define ZED 'Z'
 
-#enum SOLO
-#enum ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN
+enum {SOLO};
+enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
 
-char a = {#TRUE, #FALSE};
-char b;
+char b = {#TRUE, #FALSE};
+char c, i;
 char f = #FALSE;
 char t = #TRUE;
+char zed;
 
 b = #TRUE;
+
+char nums = {#ZERO, #ONE, #TWO, #THREE, #FOUR, #FIVE, #SIX, #SEVEN, #EIGHT, #NINE, #TEN};
+
+for (i=#ZERO; i<#TEN; i++) {
+  c =  (i = nums[i]) ? #TRUE : #FALSE;
+  putdec(c);
+}

@@ -1,7 +1,9 @@
 /* C02 Syntax Examples */
 
 /* Constants */
-const #TRUE = $FF, #FALSE = 0; //Constant
+#define TRUE $FF //Constants 
+#define FALSE 0
+#define CR 32  
 enum {BLACK, WHITE, RED, CYAN, PURPLE, GREEN, BLUE, YELLOW}; 
 
 /* Structures */
@@ -9,10 +11,14 @@ struct record {char name[8]; char index;}; //Struct Definition
 struct record rec;                         //Struct Declaration
 
 /* Declarations */
-char i, j;             //Variables 
+char b,c,d,e,f,g,h;    //Variables 
+char i,j,k,n,p,q,t,v; 
+char fp;
+char line,row,col,tmp;
 char debug = #TRUE;    //Variable initialized to constant
 char flag = %01010101; //Variable initialized to literal
-char r[7];             //8 byte Array 
+char hmove, s80vid;    //Strobe Registers
+char r[7];             //8 byte Array   
 char s = "string";     //Array initialized to string
 char m = {1,2,3};      //Array initialized to list
 char isdgt(); //Forward declaration of function
@@ -25,8 +31,8 @@ d[j] = r[i] + s[x] + t[y];   //Array Indexing
 a<< ;b[i]>>; x++; y--;     //Post-Operations
 
 /* Function Calls */
-i = abs(n); j = min(b,c), k = max(d,e); plot(h,v,c);
-n = mult(e+f, div(m+n,d)) - t;
+i = abs(n); j = min(b,c); k = max(d,e); plot(h,v,c);
+n = mult(div(m+n,d), e) - t;
 puts("string"); putc(#CR); fputs(fp, &line);
 c = getc(); i = strchr(c, &s); row,col = scnpos(); 
 push d,r; mult(); pop p;        //Pass via Stack
@@ -35,24 +41,24 @@ irect(); inline 10,10,100,100;  //Pass Inline Parameters
 
 /* Control Structures */
 if (c = 27) goto end;
-if (n) q = div(n,d) else puts("Division by 0!");
+if (n) q = div(n,d); else puts("Division by 0!");
 if (!fp) putln("File not opened");
 i = 0; while (c < 10) { prbyte(i); i++; } 
-while() { c=rdkey; if (c=0) continue; putchr(c); if (c==13) break; }
+while() { c=rdkey(); if (c=0) continue; putchr(c); if (c==13) break; }
 do c = rdkey(); while (c=0);
-do (c = getchr(); putchr(c); while (c<>13)
+do {c = getchr(); putchr(c);} while (c<>13);
 for (c='A'; c<='Z'; c++) putc(c);
 for (i=strlen(s)-1;i:+;i--) putc(s[i]);
-for (i=0;c>0;i++) { c=getc(); s[i]=c }
+for (i=0;c>0;i++) { c=getc(); s[i]=c; }
 select (getc()) {
   case $0D: putln("The Enter key");
-  case 'A','a': putln ("The letter A");
+  case 'A','a': putln("The letter A");
   default: putln("some other key");
 }
 end: //Label
 
 /* Function Declaration */
 char isdgt(tmp) {
-  if (tmp >= '0') if (tmp <= '9') return true;
-  return false;
+  if (tmp >= '0') if (tmp <= '9') return #TRUE;
+  return #FALSE;
 }

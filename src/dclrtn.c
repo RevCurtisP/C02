@@ -52,25 +52,19 @@ void addfnc(void) {
   bgnblk('{');           //Start Program Block
 }
 
-/* Parse Constant Declaration*/
-void pconst(int m) {
-  DEBUG("Processing constant declarations(s)\n", 0)
-  if (m != MTNONE) ERROR("Illegal Modifier %d in Constant Definition", m, EXIT_FAILURE)
-  do {
-	expect('#');  //Require # prefix
-    getwrd();     //Get constant name
-    DEBUG("Defining constant '%s',", word)
-    strncpy(connam[concnt], word, VARLEN);
-    if (alcvar) setlbl(word); //Set label Assembler Line
-    expect('=');
-    conval[concnt++] = prsbyt(); //Get Value
-    ACMNT(word); //comment value
+/* Add Constant to Contant Table *
+ * Args: numval = value as int   *
+ * Uses: defnam = constant name  *
+ *       word = value as parsed  *
+ *       value = value as number */
+void addcon(int numval) {
+    strncpy(connam[concnt], defnam, VARLEN);
+    if (alcvar) setlbl(defnam); //Set label Assembler Line
+    conval[concnt++] = numval; //Get Value
     if (alcvar) asmlin(EQUOP, value); //Write Definition
-    DETAIL(" defined as '%s'\n", value)
+    DEBUG("Defined constant '%s'", defnam)
+    DETAIL(" as '%s'\n", value)
     if (!alcvar) SCMNT(""); //Clear Comment
-  } while (look(','));
-  expect(';');
-  DEBUG("Constant Declaration Completed\n", 0)
 }
 
 /* Parse Enum Declaration*/
@@ -82,13 +76,9 @@ void penum(int m) {
   do {
     getwrd(); //get defined identifier
     DEBUG("Enumerating '%s'\n", word)
-    strncpy(connam[concnt], word, VARLEN);
-    setlbl(word); //Set label Assembler Line
-    conval[concnt++] = enmval; //Set Value
+    strncpy(defnam, word, VARLEN);
     sprintf(value, "%d", enmval);
-    asmlin(EQUOP, value); //Write Definition
-    DEBUG("Defined as '%s'\n", value)
-    enmval++;
+	addcon(enmval++);
   } while (look(','));
   expect('}');
   expect(';');

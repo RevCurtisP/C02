@@ -6,9 +6,10 @@
 #pragma padding 1
 
 /* Constants */
-const #TRUE = $FF, #FALSE = 0;
-const #BITS = %01010101;
-const #ZED = 'Z';
+#define TRUE $FF
+#define FALSE 0
+#define BITS %01010101
+#define ZED     'Z'
 
 /* Enumerations */
 enum {SOLO};

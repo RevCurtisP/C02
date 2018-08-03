@@ -2,10 +2,10 @@
 
 
 /* System Specific ASCII Key Codes              */
-const DELKEY;    //Delete/Backspace Key
-const ESCKEY;    //Escape/Stop Key
-const RTNKEY;    //Return/Enter Key
-const NULKEY     //No Key was Pressed
+#define DELKEY $7F //Delete/Backspace Key
+#define ESCKEY $1B //Escape/Stop Key
+#define RTNKEY $0D //Return/Enter Key
+#define NULKEY $00 //No Key was Pressed
 
 /* Zero Page Variables used as Pointers         */
 char strlo,strhi; //String pointer for String and I/O functions

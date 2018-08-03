@@ -68,7 +68,7 @@ directives, the C02 compiler processes directives directly.
 
 DEFINE DIRECTIVE
 
-The #define directive has been deprecated in favor of the const keyword.
+The #define directive is used to define constants (see below).
 
 INCLUDE DIRECTIVE
 
@@ -245,16 +245,14 @@ structures.
 
 CONSTANTS
 
-A constant is defined by using the const keyword followed by one or more
-constant assignments separated with commas and terminated with a semicolon.
-
-A constant assignment consists of the the constant name, an equals sign, 
-and the literal value to assign to the constant. 
+A constant is defined by using the #define directive followed the constant
+name (without the # prefix) and the literal value to be assigned to it.
 
 Examples:
-  const #TRUE = $FF, #FALSE = 0;
-  const #BITS = %01010101;
-  const #ZED = 'Z';
+  #define TRUE $FF
+  #define FALSE 0
+  #define BITS %01010101
+  #define ZED 'Z'
 
 ENUMERATIONS
 
@@ -961,8 +959,7 @@ Examples:
 
 UNIMPLEMENTED FEATURES
 
-The #define directive generates an error. Defining of constants is done
-using the const keyword, and defining of macros is not supported.
+The #define directive allows the definition of constants but not macros.
 
 The #if, #else, and #endif directives are not recognized at all by the
 compiler. They may be added in the future.
@@ -975,4 +972,3 @@ In addition, the signed and unsigned keywords are unrecognized, due to the
 Because of the 6502's peculiar indirect addressing modes, pointers are not 
 currently implemented. Limited pointer operations may be implemented using
 zero page variables in the future.
-

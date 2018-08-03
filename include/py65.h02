@@ -1,9 +1,10 @@
 /* py65mon Header File */
 
 //Platform Specific Constants
-const #delkey = $08;     //Backspace Key
-const #esckey = $1B;     //Escape Key
-const #rtnkey = $0D;     //Enter Key
+#define DELKEY $08 //Delete/Backspace Key
+#define ESCKEY $1B //Escape/Stop Key
+#define RTNKEY $0D //Return/Enter Key
+#define NULKEY $00 //No Key was Pressed
 
 //System Pointer Variables
 char srclo,srchi;       //Source String Pointer for Library Functions

@@ -59,7 +59,10 @@ void incasm(void) {
 
 /* Process define directive */
 void pdefin(void) {
-  ERROR("Define directive not implemented\n", 0, EXIT_FAILURE)
+  DEBUG("Processing DEFINE directive\n", 0)
+  getwrd();     //Get constant name
+  strncpy(defnam, word, CONLEN);
+  addcon(prsbyt()); //Get Value and Add Constant
 }
 
 /* Parse ASCII Subdirective */
@@ -94,9 +97,7 @@ void prszpg(void) {
 
 /* Process Vartable Subdirective */
 void pvrtbl(void) {
-  if (vrwrtn) 
-    ERROR("Variable table already written", 0, EXIT_FAILURE)
-  
+  if (vrwrtn) ERROR("Variable table already written", 0, EXIT_FAILURE)
   vartbl(); //Write Variable Table
 }
 

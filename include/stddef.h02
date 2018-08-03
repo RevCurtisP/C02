@@ -3,7 +3,8 @@
  * functions used in libraries.     */ 
 
 /* Constant Definitions */
-const #TRUE = $FF, #FALSE = 0;
+#define #TRUE  $FF
+#define #FALSE $00 
 
 /* Get Destination Pointer          *
  * Returns: Y,X=Destination address */
