@@ -128,7 +128,7 @@ void skpcmt(void)
  *   a Word is a sequence of AlphaNumeric characters *
  * Sets: word - the Word read from the source file   */
 void getwrd(void) {
-  int wrdlen = 0;
+  wrdlen = 0;
   skpspc();
   if (!isalph()) expctd("Alphabetic Character");
   while (isanum()) word[wrdlen++] = toupper(getnxt());
@@ -152,10 +152,13 @@ char escape(char c) {
   }
 }
 
-/* Get String */
+/* Get String                 *
+ * Sets: word = parsed string 
+ *       wrdlen = length of string (including terminator) */
 void getstr(void) {
   char strdel;
-  int wrdlen = 0, escnxt = FALSE;
+  int escnxt = FALSE;
+  wrdlen = 0;
   DEBUG("Parsing string\n", 0)
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
@@ -173,7 +176,7 @@ void getstr(void) {
   }
   skpchr(); //Skip End Delimiter
   CCMNT(strdel);
-  word[wrdlen++] = 0;
+  word[wrdlen] = 0;
 }
 
 /* Read Binary number from input file                *
@@ -182,7 +185,7 @@ void getstr(void) {
  * Sets: word - binary number including leading '%'  *
  * Returns: integer value of number                  */ 
 int prsbin(void) {
-  int wrdlen = 0;
+  wrdlen = 0;
   int digit;
   int number = 0;
   if (!match('%')) expctd("binary number"); 
@@ -203,7 +206,7 @@ int prsbin(void) {
  * Sets: word - number without leading 0's  *
  * Returns: integer value of number         */ 
 int prsdec(void) {
-  int wrdlen = 0;
+  wrdlen = 0;
   int digit;
   int number = 0;
   if (!isdec()) expctd("Digit");
@@ -223,7 +226,7 @@ int prsdec(void) {
  * Sets: word - Hex number including leading '$' *
  * Returns: integer value of number              */ 
 int prshex(void) {
-  int wrdlen = 0;
+  wrdlen = 0;
   int digit;
   int number = 0;
   DEBUG("Parsing hexadecimal literal '", 0)
@@ -247,7 +250,7 @@ int prshex(void) {
  *              single quotes               *
  * Returns: ASCII value of literal          */ 
 int prschr(void) {
-  int wrdlen = 0;
+  wrdlen = 0;
   char c;
   DEBUG("Parsing character literal\n", 0)
   word[wrdlen++] = getnxt(); //Initial Single Quote

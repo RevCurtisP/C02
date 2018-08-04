@@ -22,8 +22,9 @@ char b , i;  //byte type has been removed
 char c,d,f;  //a char is an unsigned 8 bit number
 char r[15];  //reserves dimension bytes
 char z[15];
-char t = {1, 2, 3, 4, 5};  //Not Implemented?
-char s = "This is a string.";
+const char n = {1, 2, 3, 4, 5};
+const char s = "This is a string.";
+const char m = {"mixed", 1, "const", 2, "array", 3}; 
 char aa,xx,yy ; //Function parameter variables
 char STROBE; //Strobe Register
 

@@ -9,8 +9,8 @@ char b ,
 char c,d,f;  
 char r[15];  
 char z[15];
-char t = {1, 2, 3, 4, 5};  
-char s = "This is a string.";
+const char t = {1, 2, 3, 4, 5};  
+const char s = "This is a string.";
 char aa,xx,yy ; //Function parameter variables
 char aaa,xxx,yyy ; //Function return variables
 char STROBE;     //Strobe Register

@@ -57,6 +57,7 @@ int nxtchr; //Next Character of Source File to Process
 int nxtupc; //Next Character Converted to Uppercase
 int savchr; //Holds nxtchr when switching input files
 
+int  wrdlen;          //Length of Parsed Word
 char word[LINELEN];   //Word parsed from source file
 char uword[LINELEN];  //Word converted too uppercase
 char cmtasm[LINELEN]; //Assembly Language Comment Text

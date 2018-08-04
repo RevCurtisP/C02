@@ -11,15 +11,15 @@
 enum {SOLO};
 enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
 
-char b = {#TRUE, #FALSE};
+const char b = {#TRUE, #FALSE};
 char c, i;
-char f = #FALSE;
-char t = #TRUE;
+const char f = #FALSE;
+const char t = #TRUE;
 char zed;
 
-b = #TRUE;
+//b = #TRUE; ***Error: Illegal use of const variable 'B'
 
-char nums = {#ZERO, #ONE, #TWO, #THREE, #FOUR, #FIVE, #SIX, #SEVEN, #EIGHT, #NINE, #TEN};
+const char nums = {#ZERO, #ONE, #TWO, #THREE, #FOUR, #FIVE, #SIX, #SEVEN, #EIGHT, #NINE, #TEN};
 
 for (i=#ZERO; i<#TEN; i++) {
   c =  (i = nums[i]) ? #TRUE : #FALSE;

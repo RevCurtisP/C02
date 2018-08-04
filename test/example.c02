@@ -11,23 +11,25 @@ struct record {char name[8]; char index;}; //Struct Definition
 struct record rec;                         //Struct Declaration
 
 /* Declarations */
-char b,c,d,e,f,g,h;    //Variables 
-char i,j,k,n,p,q,t,v; 
-char fp;
-char line,row,col,tmp;
-char debug = #TRUE;    //Variable initialized to constant
-char flag = %01010101; //Variable initialized to literal
-char hmove, s80vid;    //Strobe Registers
-char r[7];             //8 byte Array   
-char s = "string";     //Array initialized to string
-char m = {1,2,3};      //Array initialized to list
+char c,e,f,g,h,k,n,p,q,v;    //Variables 
+char i,j;                    //Counter Variables
+char fp;                     //File Pointer
+char line,row,col,tmp;       //More Variables
+const char debug = #TRUE;    //Variable initialized to constant
+const char flag = %01010101; //Variable initialized to literal
+char hmove, s80vid;          //Strobe Registers
+char b[7],d[7],r[7];         //8 byte Arrays
+const char s = "string";     //Const String
+char t[128];                 //String Array
+const char l = {1,2,3};      //Const List
+const char m = {"one",1};    //Mixed List
 char isdgt(); //Forward declaration of function
 
 /* Assignments */
 hmove; s80vid;             //Implicit Assignments
 x = 0; y = a; a = 1;       //Register Assignments
 b = c + d - e & f | g ^ h; //Assignment and Expression
-d[j] = r[i] + s[x] + t[y];   //Array Indexing
+d[j] = r[i] + s[x] + t[y]; //Array Indexing
 a<< ;b[i]>>; x++; y--;     //Post-Operations
 
 /* Function Calls */
@@ -49,7 +51,7 @@ do c = rdkey(); while (c=0);
 do {c = getchr(); putchr(c);} while (c<>13);
 for (c='A'; c<='Z'; c++) putc(c);
 for (i=strlen(s)-1;i:+;i--) putc(s[i]);
-for (i=0;c>0;i++) { c=getc(); s[i]=c; }
+for (i=0;c>0;i++) { c=getc(); t[i]=c; }
 select (getc()) {
   case $0D: putln("The Enter key");
   case 'A','a': putln("The letter A");

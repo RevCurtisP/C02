@@ -150,12 +150,18 @@ int psizof(void) {
 
 /* Parse Data Array */
 void prsdta(void) {
+  DEBUG("Parsing Array Data\n", 0)
+  int i;
   dtype = DTARRY;
   expect('{');
   dlen = 0;
   do {
-    prslit(); //Parse Literal
-    dattmp[dlen++] = litval;
+    skpspc();
+    if (match('"')) { //Parse and Add String (including terminator)
+      getstr(); for (i=0; i<=wrdlen; i++) dattmp[dlen++] = word[i];
+    } else { //Parse and Add Literal
+      prslit(); dattmp[dlen++] = litval;
+    }
   } while (look(','));
   expect('}');
 }
@@ -265,10 +271,10 @@ void addvar(int m, int t) {
 void vardef(int m) {
   int i, j;
   DEBUG("Writing Variable Table\n", 0)
-  fprintf(logfil, "\n%-31s %s %s %s %s\n", "Variable", "Mod", "Type", "Size", "Struct", "Data");
+  fprintf(logfil, "\n%-8s %s %s %s %s %s\n", "Variable", "Mod", "Type", "Size", "Struct", "Data");
   dlen = 0;
   for (i=0; i<varcnt; i++) {
-    if ((varmod[i] & MTCONST) != m) continue;
+    if ((varmod[i] & MTCONST) != m) { dlen += datlen[i]; continue; }
     fprintf(logfil, "%-8s %3d %4d %4s %6d %1d-%d\n", varnam[i], varmod[i], vartyp[i], varsiz[i], varstc[i], dattyp[i], datlen[i]);
     strcpy(lblasm, varnam[i]);
     DEBUG("Set Label to '%s'\n", lblasm)

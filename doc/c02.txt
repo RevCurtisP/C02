@@ -8,24 +8,24 @@ PURPOSE
 
 Why create a whole new language, particularly one with severe restrictions,
 when there are already full-featured C compilers available? It can be
-argued that standard C is a poor fit for processors like the 6502. The C 
-was language designed to translate directly to machine language instructions 
-whenever possible. This works well on 32-bit processors, but requires either 
+argued that standard C is a poor fit for processors like the 6502. The C
+was language designed to translate directly to machine language instructions
+whenever possible. This works well on 32-bit processors, but requires either
 a byte-code interpreter or the generation of complex code on a typical
-8-bit processor. C02, on the other hand, has been designed to translate 
+8-bit processor. C02, on the other hand, has been designed to translate
 directly to 6502 machine language instructions.
- 
+
 The C02 language and compiler were designed with two goals in mind.
 
-The first goal is the ability to target machines with low memory: a few 
-kilobytes of RAM (assuming the generated object code is to be loaded into 
+The first goal is the ability to target machines with low memory: a few
+kilobytes of RAM (assuming the generated object code is to be loaded into
 and ran from RAM), or as little as 128 bytes of RAM and 2 kilobytes of ROM
-(assuming the object code is to be run from a ROM or PROM). 
+(assuming the object code is to be run from a ROM or PROM).
 
-The compiler is agnostic with regard to system calls and library functions. 
-Calculations and comparisons are done with 8 bit precision. Intermediate 
+The compiler is agnostic with regard to system calls and library functions.
+Calculations and comparisons are done with 8 bit precision. Intermediate
 results, array indexing, and function calls use the 6502 internal registers.
-While this results in compiled code with virtually no overhead, it severely 
+While this results in compiled code with virtually no overhead, it severely
 restricts the syntax of the language.
 
 The second goal is to port the compiler to C02 code so that it may be
@@ -35,14 +35,14 @@ code structures.
 
 SOURCE AND OUTPUT FILES
 
-C02 source code files are denoted with the .c02 extension. The compiler 
-reads the source code file, processes it, and generates an assembly 
+C02 source code files are denoted with the .c02 extension. The compiler
+reads the source code file, processes it, and generates an assembly
 language file with the same name as the source code file, but with
 the .asm extension instead of the .c02 extension. This assembly language
 file is then assembled to create the final object code file.
 
-Note: The default implementation of the compiler creates assembly 
-language code formatted for the DASM assembler. The generation of the 
+Note: The default implementation of the compiler creates assembly
+language code formatted for the DASM assembler. The generation of the
 assembly language is parameterized, so it may be easily changed to
 work with other assemblers.
 
@@ -50,7 +50,7 @@ COMMENTS
 
 The parser recognizes both C style and C++ style comments.
 
-C style comments begin with /* and end at next */. Nested C style comments 
+C style comments begin with /* and end at next */. Nested C style comments
 are not supported.
 
 C++ style comments begin with // and end at the next newline. C++ style
@@ -59,8 +59,8 @@ comments my be nested inside C style comments.
 DIRECTIVES
 
 Directives are special instructions to the compiler. Depending on the
-directive, it may or may not generate compiled code. A directive is 
-denoted by a leading # character. Unlike a statements, a directives is 
+directive, it may or may not generate compiled code. A directive is
+denoted by a leading # character. Unlike a statements, a directives is
 not followed by a semicolon.
 
 Note: Unlike standard C and C++, which use a preprocessor to process
@@ -80,20 +80,20 @@ up a program.
 An #include directive is followed by the file name to be included. This
 file name may be surrounded with either a < and > character, or by two "
 characters. In the former case, the compiler looks for the file in an
-implementation specific library directory (the default being ./include), 
+implementation specific library directory (the default being ./include),
 while in the latter case, the compiler looks for the file in the current
 working directory. Two file types are currently supported.
 
 Header files are denoted by the .h02 extension. A header file is used to
 provide the compiler with the information necessary to use machine
 language system and/or library routines written in assembly language,
-and consists of comments and declarations. The declarations in a header 
+and consists of comments and declarations. The declarations in a header
 file added to the symbol table, but do not directly generate code. After
 a header file has been processed, the compiler reads and process a
 assembly language file with the same name as the header file, but with
 the .a02 extension instead of the .h02 extension.
 
-The compiler does not currently generate any assembler required 
+The compiler does not currently generate any assembler required
 pseudo-operators, such as the specification of the target processor,
 or the starting address of the assembled object code. Therefore, at least
 one header file, with an accompanying assembly language file is needed
@@ -108,13 +108,13 @@ of the file into the generated code.
 PRAGMA DIRECTIVE
 
 The #pragma directive is used to set various compiler options. When using
-a #pragma directive it is followed by the pragma name and possibly an 
+a #pragma directive it is followed by the pragma name and possibly an
 option, each separated by whitespace.
 
-Note: The various pragma directives are specific to the cross-compiler and 
+Note: The various pragma directives are specific to the cross-compiler and
 may be changed or omitted in future versions of the compiler.
 
-PRAGMA ASCII 
+PRAGMA ASCII
 
 The #pragma ascii directive instructs the compiler to convert the characters
 in literal strings to a form expected by the target machine.
@@ -122,8 +122,8 @@ in literal strings to a form expected by the target machine.
 Options:
   #pragma ascii high    //Sets the high bit to 1 (e.g. Apple II)
   #pragma ascii invert  //Swaps upper and lower case (e.g. PETSCII)
-  
-PRAGMA ORIGIN 
+
+PRAGMA ORIGIN
 
 The #pragma origin directive sets the target address of compiled code.
 
@@ -164,11 +164,11 @@ A binary number consists of a % followed by eight binary digits (0 or 1).
 
 A decimal number consists of one to three decimal digits (0 through 9).
 
-A hexadecimal number consists of a $ followed by two hexadecimal digits 
+A hexadecimal number consists of a $ followed by two hexadecimal digits
 (0 through 9 or A through F).
 
 A character literal consists of a single character surrounded by ' symbols.
-A ' character may be specified by escaping it with a \. 
+A ' character may be specified by escaping it with a \.
 
 Examples:
   &0101010  Binary Number
@@ -177,13 +177,13 @@ Examples:
   'A'       Character Literal
   '\''      Escaped Character Literal
 
-STRINGS 
+STRINGS
 
 A string is a consecutive series of characters terminated by an ASCII null
 character (a byte with the value 0).
 
-A string literal is written as up to 255 printable characters. prefixed and 
-suffixed with " characters. 
+A string literal is written as up to 255 printable characters. prefixed and
+suffixed with " characters.
 
 The " character and a subset of ASCII control characters can be specified
 in a string literal by using escape sequences prefixed with the \ symbol:
@@ -200,7 +200,7 @@ in a string literal by using escape sequences prefixed with the \ symbol:
 
 SYMBOLS
 
-A symbol consists of an alphabetic character followed by zero to five 
+A symbol consists of an alphabetic character followed by zero to five
 alphanumeric characters. Four types of symbols are supported: labels,
 simple variables, variable arrays, and functions.
 
@@ -210,23 +210,23 @@ as a symbol suffixed by a : character.
 A constant represents a literal value. A constant is written as a symbol
 prefixed by the # character.
 
-A simple variable represents a single byte of memory. A variable is written 
+A simple variable represents a single byte of memory. A variable is written
 as a symbol without a suffix.
 
 A variable array represents a block of up to 256 continuous bytes in
 memory. An Array reference are written as a symbol suffixed a [ character,
 index, and ] character. The lowest index of an array is 0, and the highest
 index is one less than the number of bytes in the array. There is no bounds
-checking on arrays: referencing an element beyond the end of the array will 
+checking on arrays: referencing an element beyond the end of the array will
 access indeterminate memory locations.
 
-A function is a subroutine that receives multiple values as arguments and 
+A function is a subroutine that receives multiple values as arguments and
 optionally returns a value. A function is written as a symbol suffixed with
 a ( character, up to three arguments separated by commas, and a ) character,
 
 The special symbols A, X, and Y represent the 6502 registers with the same
 names. Registers may only be used in specific circumstances (which are
-detailed in the following text). Various C02 statements modify registers 
+detailed in the following text). Various C02 statements modify registers
 as they are processed, care should be taken when using them. However, when
 used properly, register references can increase the efficiency of compiled
 code.
@@ -241,7 +241,7 @@ BLOCKS
 
 A program block is a series of statements surrounded by the { and }
 characters. They may only be used with function definitions and control
-structures. 
+structures.
 
 CONSTANTS
 
@@ -260,7 +260,7 @@ An enumeration is a sequential list of constants. Enumerations are used to
 generate sets of related but distinct values.
 
 An enumeration is defined using an enum statement. When using the enum
-keyword, it is followed by a { character, one or more constant names 
+keyword, it is followed by a { character, one or more constant names
 separated by commas, and a } character. The enum statement is terminated
 with a semicolon.
 
@@ -275,41 +275,24 @@ the second is assigned the value 1, and so on.
 
 DECLARATIONS
 
-A declaration statement consists of type keyword (char or void) followed 
-by one or more variable names and optional definitions, or a single 
-function name and optional function block. 
+A declaration statement consists of type keyword (char or void) followed
+by one or more variable names and optional definitions, or a single
+function name and optional function block.
 
 Variables may only be of type char and all variable declaration statements
 are suffixed with a ; character.
 
-A simple variable declaration may include an initial value definition in
-the form of an = character and literal after the variable name. 
-
-A variable array may be declared in one of two ways: the variable name
-suffixed with a [ character, a literal specifying the upper bound of 
-the array, and a ] character; or a variable name followed by an = character 
-and string literal or series of literals separated by , characters and 
-surrounded by { or } characters.
-
-Variables are initialized at compile time. If a variable is changed during
-execution, it will not be reinitialized unless the compiled program is
-reloaded into memory.
-
 Examples:
-  char c;             //Defines variable c 
-  char debug = #TRUE; //Defines variable debug initialized to constant
-  char flag = 1;      //Defines variable flag initialized to 1
+  char c;             //Defines variable c
   char i, j;          //Defines variables i and j
-  char r[7];          //Defines 8 byte array r 
-  char s = "string";  //Defines 7 byte array s initialized to "string"
-  char m = {1,2,3};   //Defines 3 byte array m initialized to 1, 2, and 3   
-  
+  char r[7];          //Defines 8 byte array r
+
 A function declaration consists of the function name suffixed with a (
-character, followed zero to three comma separated simple variables and 
+character, followed zero to three comma separated simple variables and
 a ) character. A function declaration terminated with a ; character is
-called a forward declaration and does not generate any code, while one 
+called a forward declaration and does not generate any code, while one
 followed by a program block creates the specified function. Functions of
-type char explicitly return a value (using a return statement), while 
+type char explicitly return a value (using a return statement), while
 functions of type void do not.
 
 Examples:
@@ -319,12 +302,12 @@ Examples:
 Note: Like all variables, function parameters are global. They must be
 declared prior to the function decaration, and retain there values after
 the function call. Although functions may be called recursively, they are
-not re-entrant. Allocation of variables and functions is implementation 
-dependent, they could be placed in any part of memory and in any order.  
-The default behavior is to place variables directly after the program code, 
-including them as part of the generated object file. 
+not re-entrant. Allocation of variables and functions is implementation
+dependent, they could be placed in any part of memory and in any order.
+The default behavior is to place variables directly after the program code,
+including them as part of the generated object file.
 
-The return value of a function is passed through the A register. A return 
+The return value of a function is passed through the A register. A return
 statement with an explicit expression will simply process that expression
 (which leaves the result in the A register) before returning. A return
 statement without an expression (including an implicit return) will, by
@@ -337,18 +320,18 @@ unique variables called members. Each member may be either a simple
 variable or an array. However, the total size of the struct may not
 exceed 256 characters.
 
-Member names are local to a struct: each member within a struct must have 
-a unique name, but the same member name can be used in different structs 
+Member names are local to a struct: each member within a struct must have
+a unique name, but the same member name can be used in different structs
 and may also have the same name as a global variable.
 
 The struct keyword is used for both defining the members of a struct type
 as well as declaring struct type variables.
 
 When defining a struct type, the struct keyword is followed by the name of
-the struct type, the { character, the member definitions separated by 
+the struct type, the { character, the member definitions separated by
 commas, and the } character. The struct definition is terminated with a
 semicolon. Each member definition is composed of the optional char keyword,
-and the member name. If the member is an array, the member name is suffixed 
+and the member name. If the member is an array, the member name is suffixed
 the [ character, the upper bound of the array, and the ] character. Each
 member definition is terminated with a semicolon.
 
@@ -370,26 +353,42 @@ A modifier is used with a declaration to override the default properties of
 an object. Modifiers may currently only be used with simple variable and
 array declarations, although this may be expanded in the future.
 
+The aligned modifier specifies that the the variable or array will start on
+a page variable. This is used to ensure that accessing an array element will
+not cross a page boundary, which requires extra CPU cycles to execute.
+
+The const modifier specifies that a variable or array should not be changed 
+by program code.  The const modifier may be preceded by the aligned modifier.
+
+A const variable declaration may include an initial value definition in
+the form of an = character and literal after the variable name.
+
+A const array may be declared in one of two ways: the variable name
+suffixed with a [ character, a literal specifying the upper bound of
+the array, and a ] character; or a variable name followed by an = character
+and string literal or series of atring and numeric literals separated by 
+commas and surrounded by the { or } characters.
+
 The zeropage modifier specifies that the variable will be defined in page
 zero (addresses 0 through 255). It should be used in conjunction with the
 pragma zeropage directive.
 
-The aligned directive specifies that the the variable or array will start on
-a page variable. This is used to ensure that accessing an array element will
-not cross a page boundary, which requires extra CPU cycles to execute.
-
 Examples:
-
-  zeropage char ptr, tmp;
-  aligned char table[240], fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
+  aligned char table[240];  //Defines 241 byte array aligned to page boundary
+  char debug = #TRUE; //Defines variable debug initialized to constant
+  char flag = 1;      //Defines variable flag initialized to 1
+  const char s = "string";  //Defines 7 byte string s initialized to "string"
+  const char m = {1,2,3};   //Defines 3 byte array m containing 1, 2, and 3   
+  aligned const char fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
+  zeropage char ptr, tmp;   //Defines zero page variables
 
 EXPRESSIONS
-        
-An expression is a series of one or more terms separated by operators. 
 
-The first term in an expression may be a function call, subscripted array 
-element, simple variable, literal, or register (A, X, or Y). An expression 
-may be preceded with a - character, in which case the first term is assumed 
+An expression is a series of one or more terms separated by operators.
+
+The first term in an expression may be a function call, subscripted array
+element, simple variable, literal, or register (A, X, or Y). An expression
+may be preceded with a - character, in which case the first term is assumed
 to be a literal 0.
 
 Additional terms are limited to subscripted array elements, simple variables,
@@ -397,25 +396,25 @@ literals, and constants.
 
 Operators:
   + — Add the following value.
-  - — Subtract the following value. 
+  - — Subtract the following value.
   & — Bitwise AND with the following value.
   | — Bitwise OR with the following value.
   ^ — Bitwise Exclusive OR with the following value.
 
 Arithmetic operators have no precedence. All operations are performed in
-left to right order. Expressions may not contain parenthesis. 
+left to right order. Expressions may not contain parenthesis.
 
-Note: the character ! may be substituted for | on systems that do not 
+Note: the character ! may be substituted for | on systems that do not
 support the latter character. No escaping is necessary because a ! may
 not appear anywere a | would.
 
 After an expression has been evaluated, the A register will contain the
-result. 
+result.
 
 Note: Function calls are allowed in the first term of an expression
-because upon return from the function the return value will be in the 
-Accumulator. However, due to the 6502 having only one Accumulatorm which 
-is used for all operations between two bytes, there is no simple system 
+because upon return from the function the return value will be in the
+Accumulator. However, due to the 6502 having only one Accumulatorm which
+is used for all operations between two bytes, there is no simple system
 agnostic method for allowing function calls in subsequent terms.
 
 CONTENTIONS
@@ -423,7 +422,7 @@ CONTENTIONS
 An contention is a construct which generates either TRUE or FALSE condition,
 and may be an expressions, comparisons, or test.
 
-A stand-alone expression evaluates to TRUE if the result is non-zero, or 
+A stand-alone expression evaluates to TRUE if the result is non-zero, or
 FALSE if the result is zero.
 
 A comparison consists of an expression, a comparator, and a term (subscripted
@@ -438,22 +437,22 @@ Comparators:
   <> — Evaluates to TRUE if expression is not equal to term
 
 The parser considers == equivalent to a single =. The operator <>
-was chosen instead of the usual != because it simplified the parser design. 
+was chosen instead of the usual != because it simplified the parser design.
 
 A test consists of an expression followed by a test-op.
 
 Test-Ops:
   :+ — Evaluates to TRUE if the result of the expression is positive
   :- — Evaluates to TRUE if the result of the expression is negative
-  
+
 A negative value is one in which the high bit is a 1 (128 — 255), while a
 positive value is one in which the high bit is a 0 (0 — 127). The primary
 purpose of test operators is to check the results of functions that return
-a positive value upon succesful completion and a negative value if an error 
-was encounters. They compile into smaller code than would be generated 
+a positive value upon succesful completion and a negative value if an error
+was encounters. They compile into smaller code than would be generated
 using the equivalent comparison operators.
 
-An contention may be preceded by negation operator (the ! character), which 
+An contention may be preceded by negation operator (the ! character), which
 reverses the result of the entire contention. For example:
   ! expr
 evaluates to TRUE if expr is zero, or FALSE if it is non-zero; while
@@ -462,22 +461,22 @@ evaluates to TRUE if expr and term are not equal, or FALSE if they are; and
   ! expr :+
 evaluates to TRUE if expr is negative, or FALSE if it is positive
 
-Note: Contentions are compiled directly into 6502 conditional branch 
-instructions, which precludes their use inside expressions. Standalone 
-expressions and test-ops generate a single branch instruction, and 
+Note: Contentions are compiled directly into 6502 conditional branch
+instructions, which precludes their use inside expressions. Standalone
+expressions and test-ops generate a single branch instruction, and
 therefore result in the most efficient code. Comparisons generate a
-compare instruction and one or two branch instructions (=. <. >=, and <> 
+compare instruction and one or two branch instructions (=. <. >=, and <>
 generate one, while <= and > generate two).  A preceding negation operator
 will switch the number of branch instructions used in a comparison, but
 otherwise does not change the size of the generated code.
 
 CONDITIONALS
 
-A conditional consists of one or more contentions joined with the 
+A conditional consists of one or more contentions joined with the
 conjunctors "and" and "or".
 
 If only one contention is present, the result of the conditional is the
-same as the result of the contention. 
+same as the result of the contention.
 
 If two contentions are joined with "and", then the conditional is true only
 if both of the contentions are true. If either or both of the contentions
@@ -497,38 +496,38 @@ contentions in the conditional are evaluated.
 ARRAY SUBSCRIPTS
 
 Individual elements of an array are accessed using subscript notation.
-Subscripted array elements may be used as a terms in an expression, as 
-well as the target variable in an assignments. They are written as the 
-variable name suffixed with a [ character, followed by an index, and 
-the ] character. 
+Subscripted array elements may be used as a terms in an expression, as
+well as the target variable in an assignments. They are written as the
+variable name suffixed with a [ character, followed by an index, and
+the ] character.
 
-When assigning to an array element, the index may be a literal, constant, 
+When assigning to an array element, the index may be a literal, constant,
 or simple variable.
 
-When using an array element in an expression or pop statement, the index 
-may be any expression. 
+When using an array element in an expression or pop statement, the index
+may be any expression.
 
 Examples:
   z = r[i];      //Store the value from element i of array r into variable z
   r[0] = z;      //Store the value of variable z into the first element of r
   z = d[15-i];   //Store the value element 15-i of array d into variable z
-  c = t[getc()]; //Get a character, translate using array t and store in c 
+  c = t[getc()]; //Get a character, translate using array t and store in c
 
-Note: Register references may be used as array indexes within expressions, 
-but the contents of each registers may change with each term evaluation. 
-Using a constant, literal, or the X or Y registers as an array index will 
-generates the same amount of code as a simple variable reference and leave 
+Note: Register references may be used as array indexes within expressions,
+but the contents of each registers may change with each term evaluation.
+Using a constant, literal, or the X or Y registers as an array index will
+generates the same amount of code as a simple variable reference and leave
 both the X and Y registers unchanged. Using the A register as an index will
-generate one extra byte of code, while using a simple variable as index 
+generate one extra byte of code, while using a simple variable as index
 will generate 1 to 2 extra bytes of code. In either case, the index value
 will be left in the X register. When an expression is used as an index,
-one extra byte of stack space is used, and an additional three bytes of 
-code is generated. The X register will contain the result of the expression 
+one extra byte of stack space is used, and an additional three bytes of
+code is generated. The X register will contain the result of the expression
 and the Y register will be left in an unknown state.
 
 STRUCTS
 
-Individual members of a struct variable are specified using the struct 
+Individual members of a struct variable are specified using the struct
 variable name, a period, and the member name. If a member is an array,
 it's elements are accessed using the same syntax as an array variable.
 
@@ -541,14 +540,14 @@ Examples:
   rec.data[i] = i;    //Set Struct Member Element
   arr[i] = rec[i];    //Copy Struct Byte into Array
 
-Note: Unlike standard C, structs may not be assigned using an equals 
+Note: Unlike standard C, structs may not be assigned using an equals
 sign. One struct variable may be copied to another byte by byte or
 through a function call.
 
 SIZE-OF OPERATOR
 
 The size-of operator @ generates a literal value equal to the size in bytes
-of a specified variable. It is allowed anywhere a literal would be and 
+of a specified variable. It is allowed anywhere a literal would be and
 should be used anytime the size of an array, struct, or member is required.
 
 When using the size-of operator, it is prefixed to the variable name or
@@ -574,7 +573,7 @@ When using the size-of operator, it is prefixed to the member specification.
 
 Examples:
 
-  blkmem(?rec.data, &s);    //Search block for segment where data contains s      
+  blkmem(?rec.data, &s);    //Search block for segment where data contains s
   memcpy(?rec.data, &t);    //Copy bytes of rec up to member data into t
 
 Note: The idex-of operator is evaluated at compile time and generates two
@@ -584,24 +583,24 @@ a the offset of a struct member.
 FUNCTION CALLS
 
 A function call may be used as a stand-alone statement, or as the first
-term in an expression. A function call consists of the function name 
-appended with a ( character, followed by zero to three arguments separated 
+term in an expression. A function call consists of the function name
+appended with a ( character, followed by zero to three arguments separated
 with commas, and a closing ) character.
 
-The first argument of a function call may be an expression, address, or 
+The first argument of a function call may be an expression, address, or
 string (see below).
 
-The second argument may be a term (subscripted array element, simple 
+The second argument may be a term (subscripted array element, simple
 variable, or constant), address, or string,
 
 The third argument may only be a simple variable or constant.
 
-If the first or second argument is an address or string, then no more 
+If the first or second argument is an address or string, then no more
 arguments may be passed.
 
-When passing the address of a variable, array, struct, or struct member 
-into a function, the variable specification is prefixed with the 
-address-of operator &. When passing a string, the string is simply 
+When passing the address of a variable, array, struct, or struct member
+into a function, the variable specification is prefixed with the
+address-of operator &. When passing a string, the string is simply
 specified as the argument with.
 
 Examples:
@@ -616,13 +615,13 @@ Examples:
   memcpy(140, &srcrec);  //Copy struct variable to destination struct
   puts(&rec.name);       //Write struct membet to screen
 
-Note: This particular argument passing convention has been chosen because 
-of the 6502's limited number of registers and stack processing instructions. 
-When an address is passed, the high byte is stored in the Y register and 
-the low byte in the X register. If a string is passed, it is turned into 
-anonymous array, and it's address is passed in the Y and X registers. 
-Otherwise, the first argument is passed in the A register, the second in 
-the Y register, and the third in the X register. 
+Note: This particular argument passing convention has been chosen because
+of the 6502's limited number of registers and stack processing instructions.
+When an address is passed, the high byte is stored in the Y register and
+the low byte in the X register. If a string is passed, it is turned into
+anonymous array, and it's address is passed in the Y and X registers.
+Otherwise, the first argument is passed in the A register, the second in
+the Y register, and the third in the X register.
 
 EXTENDED PARAMETER PASSING
 
@@ -633,14 +632,14 @@ statements push, pop, and inline.
 The push statement is used to push arguments onto the machine stack prior
 to a function call. When using a push statement, it is followed by one or
 more arguments, separated by commas, and terminated with a semicolon. An
-argument may be an expression, in which case the single byte result is 
+argument may be an expression, in which case the single byte result is
 pushed onto the stack, or it may be an address or string, in which case the
 address is pushed onto the stack, high byte first and low byte second.
 
 The pop statement is likewise used to pop arguments off of the machine
 stack after a function call. When using a pop statement, it is followed
-with one or more simple variables or subscripted array elements , separated 
-by commas, and terminated with a semicolon. If any of the arguments are to 
+with one or more simple variables or subscripted array elements , separated
+by commas, and terminated with a semicolon. If any of the arguments are to
 be discarded, an asterisk can be specified instead of a variable name.
 
 The number of arguments pushed and popped may or may not be the same,
@@ -655,12 +654,12 @@ Examples:
 Note: The push and pop statements could also be used to manipulate the
 stack inside or separate from a function, but this should be done with
 care.
-  
+
 The inline statement is used when calling machine language routines that
 expect constant byte or word values immediately following the 6502 JSR
 instruction. A routine of this type will adjust the return address to the
 point directly after the last instruction. When using the inline statement,
-it is followed by one or more arguments, separated by commas, and 
+it is followed by one or more arguments, separated by commas, and
 terminated with a semicolon. The arguments may be constants, addresses,
 or strings.
 
@@ -674,49 +673,49 @@ be compiled directly inline.
 
 ASSIGNMENTS
 
-An assignment is a statement in which the result of an expression is stored 
-in a variable. An assignment usually consists of a simple variable or 
-subscripted array element, an = character, and an expression, terminated 
+An assignment is a statement in which the result of an expression is stored
+in a variable. An assignment usually consists of a simple variable or
+subscripted array element, an = character, and an expression, terminated
 with a ; character.
 
 Examples:
   i = i + 1;     //Add 1 to contents variable i
   c = getchr();  //Call function and store result in variable c
   s[i] = 0;      //Terminate string at position i
-    
+
 SHORTCUT-IFS
 
-A shortcut-if is a special form of assignment consisting of an contention 
+A shortcut-if is a special form of assignment consisting of an contention
 and two expressions, of which one will be assigned based on the result
-of the contention. A shortcut-if is written as a condition surrounded 
-by ( and ) characters, followed by a ? character, the expression to be 
-evaluated if the condition was true, a : character, and the expression to 
+of the contention. A shortcut-if is written as a condition surrounded
+by ( and ) characters, followed by a ? character, the expression to be
+evaluated if the condition was true, a : character, and the expression to
 be evaluated if the condition was false.
 
 Example:
   result = (value1 < value) ? value1 : value2;
-  
+
 Note: Shortcut-ifs may only be used with assignments. This may change in
-the future.  
-  
+the future.
+
 POST-OPERATORS
 
 A post-operator is a special form of assignment which modifies the value
-of a variable. The post-operator is suffixed to the variable it modifies. 
+of a variable. The post-operator is suffixed to the variable it modifies.
 
 Post-Operators:
   ++  Increment variable (increase it's value by 1)
   --  Decrement variable (decrease it's value by 1)
   <<  Left shift variable
   >>  Right shift variable
-  
+
 Post-operators may be used with either simple variables or subscripted
-array elements.  
+array elements.
 
 Examples:
   i++;    //Increment the contents variable i
   b[i]<<; //Left shift the contents of element i of array b
-  
+
 Note: Post-operators may only be used in stand-alone statements, although
 this may change in the future.
 
@@ -728,7 +727,7 @@ registers X and Y (but not A) may be used with the ++ and -- post-operators.
 
 IMPLICIT ASSIGNMENTS
 
-A statement consisting of only a simple variable is treated as an 
+A statement consisting of only a simple variable is treated as an
 implicit assignment of the A register to the variable in question.
 
 This is useful on systems that use memory locations as strobe registers.
@@ -757,32 +756,32 @@ Examples:
 Note: When compiled, a plural assignment generates an STX for the third
 assignment (if specified), an STY for the second assignment and an STA for
 the first assignment. Using a subscripted array element for the third
-assignment generates an overhead of three bytes of machine code. 
+assignment generates an overhead of three bytes of machine code.
 
 GOTO STATEMENT
 
-A goto statement unconditionally transfers program execution to the 
+A goto statement unconditionally transfers program execution to the
 specified label. When using a goto statement, it is followed by the
 label name and a terminating semicolon.
 
 Example:
   goto end;
-  
+
 Note: A goto statement may be executed from within a loop structure
-(although a break or continue statement is preferred), but should not 
-normally be used to jump from inside a function to outside of it, as 
+(although a break or continue statement is preferred), but should not
+normally be used to jump from inside a function to outside of it, as
 this would leave the return address on the machine stack.
 
 IF AND ELSE STATEMENTS
 
 The if then and else statements are used to conditionally execute blocks
-of code. 
+of code.
 
 When using the if keyword, it is followed by a conditional (surrounded by
-parenthesis) and the block of code to be executed if the conditional was 
+parenthesis) and the block of code to be executed if the conditional was
 true.
 
-An else statement may directly follow an if statement (with no other 
+An else statement may directly follow an if statement (with no other
 executable code intervening). The else keyword is followed by the block
 of code to be executed if the conditional was false.
 
@@ -790,12 +789,12 @@ Examples:
   if (c = 27) goto end;
   if (n) q = div(n,d) else puts("Division by 0!");
   if (r[j]<r[i]) {t=r[i],r[i]=r[j],r[j]=t)}
-  
-Note: In order to optimize the compiled code, the if and else statements 
-are to 6502 relative branch instructions. This limits the amount of 
+
+Note: In order to optimize the compiled code, the if and else statements
+are to 6502 relative branch instructions. This limits the amount of
 generated code between the if statement and the end of the if/else block
-to slightly less than 127 bytes. This should be sufficient in most cases, 
-but larger code blocks can be accommodated using function calls or goto 
+to slightly less than 127 bytes. This should be sufficient in most cases,
+but larger code blocks can be accommodated using function calls or goto
 statements.
 
 SELECT, CASE, AND DEFAULT STATEMENTS
@@ -808,9 +807,9 @@ by parenthesis) and an opening curly brace, which begins the select block.
 This must then be followed by a case statement.
 
 Each use of the case keyword is followed by one or more comma-separated
-terms and a colon. If the term is equal to the select expression then the 
-code immediately following the is executed, otherwise, program execution 
-transfers to the next case or default statement. 
+terms and a colon. If the term is equal to the select expression then the
+code immediately following the is executed, otherwise, program execution
+transfers to the next case or default statement.
 
 The code between two case statements or a case and default statement is
 called a case block. At the end of a case block, program execution
@@ -823,8 +822,8 @@ default statement and the end of the select block (marked with a closing
 curly-brace) is called the default block and is executed if none of
 the case arguments matched the select expression.
 
-If the constant 0 is to be used as an argument to any of the case 
-statements, using it as the first argument of the first case statement 
+If the constant 0 is to be used as an argument to any of the case
+statements, using it as the first argument of the first case statement
 will produce slightly more efficient code.
 
 Example:
@@ -835,17 +834,17 @@ Example:
     case ' ': putln("The space bar");
     case 'A','a': putln ("The letter A");
     case ltr: putln("The character in variable 'ltr'");
-    case s[2]: putln("The third character of string 's'"); 
+    case s[2]: putln("The third character of string 's'");
     default: putln("some other key");
   }
 
-Unlike the switch statement in C, the break statement is not needed to 
-exit from a case block. It may be used, however, to prematurely exit a 
+Unlike the switch statement in C, the break statement is not needed to
+exit from a case block. It may be used, however, to prematurely exit a
 case block if desired.
 
 Example:
   select (arg) {
-    case foo: 
+    case foo:
       puts("fu");
       if (!bar) break;
       puts("bar");
@@ -860,7 +859,7 @@ statement with a label.
       putc('I');
       goto two;
     case 2:
-    two: 
+    two:
       putc('I');
     default: //do nothing
    }
@@ -877,7 +876,7 @@ parenthesis) and the the block of code to be executed while the conditional
 is true. If the conditional is false when the while statement is entered,
 the code in the block will never be executed.
 
-Alternatively, the while keyword may be followed by a pair of empty 
+Alternatively, the while keyword may be followed by a pair of empty
 parenthesis, in which case a conditional of true is implied.
 
 Examples:
@@ -889,12 +888,12 @@ blocks may be arbitrarily large.
 
 DO WHILE LOOPS
 
-The do statement used with to conditionally execute code in a loop at 
+The do statement used with to conditionally execute code in a loop at
 least once. When using the do keyword, it is followed by the block of
 code to be executed, a while statement, a conditional (surrounded
 by parenthesis), and a terminating semicolon.
 
-A while statement that follows a do loop must contain a conditional. 
+A while statement that follows a do loop must contain a conditional.
 The while statement is evaluated after each iteration of the loop, and
 if it is true, the code block is repeated.
 
@@ -909,15 +908,15 @@ the code inside the loop to just under 127 bytes.
 FOR LOOPS
 
 The for statement allows the initialization, evaluation, and modification
-of a loop condition in one place. For statements are usually used to 
+of a loop condition in one place. For statements are usually used to
 execute a piece of code a specific number of times, or to iterate through
 a set of values.
 
-When using the if keyword, it is followed by a pair of parenthesis 
-containing an initialization assignment statement (which is executed once), 
-a semicolon separator, a conditional (which determines if the code block 
-is executed), another semicolon separator, and an increment assignment 
-(which is executed after each iteration of the code block). This is then 
+When using the if keyword, it is followed by a pair of parenthesis
+containing an initialization assignment statement (which is executed once),
+a semicolon separator, a conditional (which determines if the code block
+is executed), another semicolon separator, and an increment assignment
+(which is executed after each iteration of the code block). This is then
 followed by the block of code to be conditionally executed.
 
 The assignments and conditional of a for loop must be populated. If an
@@ -926,30 +925,30 @@ infinite loop is desired, use a while () statement.
 Examples:
   for (c='A'; c<='Z'; c++) putc(c);       //Print letters A-Z
   for (i=strlen(s)-1;i:+;i--) putc(s[i]); //Print string s backwards
-  for (i=0;c>0;i++) {c=getc();s[i]=c}     //Read characters into string s  
+  for (i=0;c>0;i++) {c=getc();s[i]=c}     //Read characters into string s
 
 Note: For loops are compiled using the 6502 JMP statements, so the code
 blocks may be arbitrarily large.  A for loop generates less efficient code
-more than a simple while loop, but will always execute the increment 
+more than a simple while loop, but will always execute the increment
 assignment on a continue.
 
 BREAK AND CONTINUE
 
-A break statement is used to exit out of a do, for, or while loop or a 
-case block. The continue statement is used to jump to the beginning of 
+A break statement is used to exit out of a do, for, or while loop or a
+case block. The continue statement is used to jump to the beginning of
 a do, for, or while loop. Neither may be used outside it's corresponding
 control structures.
 
 When a break statement is encountered, program execution is transferred
-to the statement immediately following the end of the block associated 
-with the innermost do, for, while, or case statement. When using the 
+to the statement immediately following the end of the block associated
+with the innermost do, for, while, or case statement. When using the
 break keyword, it is followed with a trailing semicolon.
 
 When a continue statement is encountered, program execution is transferred
-to the beginning of the block associated with the innermost do, for, or 
-while statement. In the case of a for statement, the increment assignment 
-is executed, followed by the conditional, and in the case of a while 
-statement, the conditional is executed. When using the continue keyword, it 
+to the beginning of the block associated with the innermost do, for, or
+while statement. In the case of a for statement, the increment assignment
+is executed, followed by the conditional, and in the case of a while
+statement, the conditional is executed. When using the continue keyword, it
 is followed with a trailing semicolon.
 
 Examples:
@@ -965,10 +964,10 @@ The #if, #else, and #endif directives are not recognized at all by the
 compiler. They may be added in the future.
 
 The only type recognized by the compiler is char. Since the 6502 is an
-8-bit processor, multi-byte types would generate over-complicated code. 
-In addition, the signed and unsigned keywords are unrecognized, due to the 
+8-bit processor, multi-byte types would generate over-complicated code.
+In addition, the signed and unsigned keywords are unrecognized, due to the
 6502's limited signed comparison functionality.
 
-Because of the 6502's peculiar indirect addressing modes, pointers are not 
+Because of the 6502's peculiar indirect addressing modes, pointers are not
 currently implemented. Limited pointer operations may be implemented using
 zero page variables in the future.
