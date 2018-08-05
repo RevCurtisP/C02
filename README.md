@@ -28,62 +28,85 @@ in Linux, or
 
 in Windows.
  
-Some of the subdirectories contain a c02.bat file, which will compile the .c02 program, then run dasm to assemble the code. However, the path to dasm is hardcoded, so you will likely need to change it.
+Some of the subdirectories contain a c02.bat file, which will compile 
+the .c02 program, then run dasm to assemble the code. However, the path 
+to dasm is hardcoded, so you will likely need to change it.
 
-The file [c02.sh](./c02sh) provides the same functionality in Linux, but it may not be in a working state.
+The file [c02.sh](./c02sh) provides the same functionality in Linux, 
+but it may not be in a working state.
 
 ## Syntax Examples
 ```
+/* Directives */
+#include <header.h02>   //Include header from standard library
+#include "inc/hdr.h02"  //Include header from local directory
+#pragma origin 8192     //Set start address of object code
+#pragma zeropage $80    //Set start address of zero page variables 
+
+
 /* Constants */
-const #TRUE = $FF, #FALSE = 0; //Constant
+#define TRUE = $FF ; //Constants
+#define FALSE = 0
 enum {BLACK, WHITE, RED, CYAN, PURPLE, GREEN, BLUE, YELLOW}; 
 
 /* Structures */
 struct record {char name[8]; char index;}; //Struct Definition
 struct record rec;                         //Struct Declaration
 
-/* Declarations */
-char i, j;             //Variables 
-char debug = #TRUE;    //Variable initialized to constant
-char flag = %01010101; //Variable initialized to literal
-char r[7];             //8 byte Array 
-char s = "string";     //Array initialized to string
-char m = {1,2,3};      //Array initialized to list
+/* Variables and Array Declarations */
+char i, j;                   //Variables 
+zeropage p,q;                //Variables in zeropage
+const char nine = 9;         //Const variable set to decimal literal
+const char maxsiz = $FF;     //Const variable set to hexadecimal literal
+const char flag = %01010101; //Const variable set to binary literal
+const char debug = #TRUE;    //Const variable set to constant
+char r[7];                   //8 byte array 0 (decimal dimension)
+aligned char m[$FF];         //256 byte array aligned to page boundary
+const char s = "string";     //Const array set to string literal
+const char m = {1,2,3};      //Const array set to literal list
+const char t = {"one", 1);   //Const array set to mixed list
 
 /* Functions Declarations */
 void myfunc(); //Forward declaration of function
-char min(tmp1, tmp2) {
-  //function definition
+char myfunp(tmp1, tmp2, tmp3) {
+  //function code
 }
 
 /* Assignments */
-hmove; s80vid;              //Implicit Assignments
-x = 0; y = a; a = 1;        //Register Assignments
-b = c + d - e & f | g ^ h;  //Assignment and Expression
-d[j] = r[i] + s[x] + t[y];  //Array Indexing
-a<< ;b[i]>>; x++; y--;      //Post-Operations
+hmove; s80vid;               //Implicit Assignments
+x = 0; y = a; a = 1;         //Register Assignments
+b = c + d - e & f | g ^ h;   //Assignment and Expression
+r[i] = s[j+1] & t[k-1];      //Array Indexing
+d[j] = r[a] + s[x] + t[y];   //Arrays Indexed by Register
+r = (i>j) ? d[i] : e[j];     //Shortcut If
+a<< ;b[i]>>; x++; y--;       //Post-Operations
 
 /* Function Calls */
-i = abs(n); j = min(b,c), k = max(d,e); plot(h,v,c);
-n = mult(e+f, div(m+n,d)) - t;
-puts("string"); putc(#CR); fputs(fp, &line);
-c = getc(); i = strchr(c, &s); row,col = scnpos(); 
-push d,r; mult(); pop p;        //Pass via Stack
-iprint(); inline "Hello World"; //Pass Inline String
-irect(); inline 10,10,100,100;  //Pass Inline Parameters
+i = abs(n); j = min(b,c), plot(h,v,c);  //Up to Three Char Arguments
+q = div(m+n,d)) - t; n = mult(e+f, z);  //Expression in First Arg Only 
+puts("string"); fputs(fp, &line);       //Passing Strings and Arrays
+setdst(&dst); n = strcpy(&src);         //Using Multiple String Agruments
+c = getc(); setptr(*,addrhi,addrlo);    //No and Skipped Arguments
+row,col = scnpos(); i,j,k = get3d();    //Plural Assignments
+push d,r; mult(); pop p;                //Pass Arguments via Stack
+iprint(); inline "Hello World";         //Pass Inline String Argument
+irect(); inline 10,10,100,100;          //Pass Inline Char Arguments
+icpstr(); inline &dst, &src;            //Pass Inline Address Arguments
 
 /* Control Structures */
 if (c = 27) goto end;
 if (n) q = div(n,d) else puts("Division by 0!");
+if (b==0 || b>10 && b<20) fprint(n,"input %d in range"); 
 c = 'A' ; while (c <= 'Z') { putc(c); c++; } 
 while() { c=rdkey; if (c=0) continue; putchr(c); if (c=13) break; }
 do c = rdkey(); while (c=0);
-do (c = getchr(); putchr(c); while (c<>13)
+do {c = getchr(); putchr(c);} while (c<>13)
 for (c='A'; c<='Z'; c++) putc(c);
 for (i=strlen(s)-1;i:+;i--) putc(s[i]);
 for (i=0;c>0;i++) { c=getc(); s[i]=c }
 select (getc()) {
   case $0D: putln("The Enter key");
+  case #ESCKEY: if (#NOESC) break; goto escape; 
   case 'A','a': putln ("The letter A");
   default: putln("some other key");
 }
