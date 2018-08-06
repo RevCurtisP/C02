@@ -287,14 +287,18 @@ void vardef(int m) {
       DEBUG("Building Data for Variable '%s'\n", varnam[i])
       value[0] = 0;
       for (j=0; j<datlen[i]; j++) {
-        if (j) strcat(value,",");
+        if (strlen(value)) strcat(value,",");
         sprintf(word, "$%hhX", datvar[dlen++]);
-        strcat(value, word);  
+        strcat(value, word);
+        if (strlen(value)>64) {asmlin(BYTEOP,value); value[0]=0;}
       }
-      if (dattyp[i] == DTSTR) strcat(value, ",$00");
+      if (dattyp[i] == DTSTR) {
+        if (strlen(value)) strcat(value,",");
+        strcat(value, "$00");
+      }
       DEBUG("Allocating Data for Variable '%s'\n", varnam[i])
       asmlin(BYTEOP, value);
-  }
+    }
     else if (strlen(varsiz[i]) > 0) {
       DEBUG("Allocating array '%s'\n", varnam[i])
       asmlin(STROP, varsiz[i]);

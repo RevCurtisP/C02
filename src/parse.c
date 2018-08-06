@@ -142,7 +142,7 @@ char escape(char c) {
   switch (c) {
     case 'a': return 0x07; //Alert (Beep/Bell)
     case 'b': return 0x08; //Backspace
-    case 'e': return 0x08; //Escape
+    case 'e': return 0x1B; //Escape
     case 'f': return 0x0C; //Form Feed
     case 'n': return 0x0A; //Newline (Line Feed)
     case 'r': return 0x0D; //Return (Carriage Return)
