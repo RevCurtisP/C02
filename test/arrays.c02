@@ -2,7 +2,6 @@
 
 #pragma origin 1000
 
-
 char b, c, i;
 
 char r[255];
@@ -10,8 +9,11 @@ const char s = "string";
 const char d = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 const char n = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 const char t = {"eins", 1, "zwei", 2, "drei", 3, "vier", 4};
+const char z = "zero";
 
 char func();
+
+puts("      ");
 
 c = d[3];
 b = n[i];
