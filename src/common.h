@@ -13,7 +13,7 @@
 #define VARLEN 6          //Maximum Variable Name Length
 #define MAXVAR 255        //Maximum Number of Variables
 #define MAXTRM 16         //Maximum Terms in Stack
-#define DATASPC 2048      //Space to Allocate for Variable Data
+#define DATASPC 4096      //Space to Allocate for Variable Data
 
 #define LABLEN 6          //Maximum Label Length
 #define LABFMT "L_%04d"   //Label Format

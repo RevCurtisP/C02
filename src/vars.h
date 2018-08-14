@@ -39,9 +39,9 @@ int mbridx;                      //Index into Struct Member Tables
 enum vtypes {VTVOID, VTCHAR, VTSTRUCT}; //Variable Types
 
 char datvar[DATASPC+1];        //Variable Data Storage
-char datlen[MAXVAR+1];         //Variable Data Length
+int  datlen[MAXVAR+1];         //Variable Data Length
 char dattyp[MAXVAR+1];         //Variable Data Type
-char dattmp[256];              //Variable Temporary Data
+char dattmp[DATASPC+1];        //Variable Temporary Data
 int  dtype;                    //Data Type
 int  dlen;                     //Length of Variable Data
 int  dsize;                    //Total Data Length

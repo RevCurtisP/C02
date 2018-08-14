@@ -159,6 +159,7 @@ void pargs(int argc, char *argv[]) {
     else ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE)
   }
   if (srcnam[0]) DEBUG("srcnam set to '%s'\n", srcnam)
+  else ERROR("Error: Source file not specified\n", 0, EXIT_FAILURE)
   if (outnam[0]) DEBUG("outnam set to '%s'\n", outnam)
 }
 

@@ -284,7 +284,8 @@ void vardef(int m) {
       asmlin(ALNOP, "256");
     }
     if (datlen[i]) {
-      DEBUG("Building Data for Variable '%s'\n", varnam[i])
+      DEBUG("Building Data for Variable '%s'", varnam[i])
+      DETAIL(" with length %d\n", datlen[i]);
       value[0] = 0;
       for (j=0; j<datlen[i]; j++) {
         if (strlen(value)) strcat(value,",");

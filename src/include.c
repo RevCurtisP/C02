@@ -68,9 +68,10 @@ void pdefin(void) {
 /* Parse ASCII Subdirective */
 void pascii(void) {
   getwrd(); //Get Pragma Subdirective
+  DEBUG("Parsing subdirective '%s'\n", word)
   if (wordis("INVERT"))
     invasc = TRUE;
-  if (wordis("HIGH"))
+  else if (wordis("HIGH"))
     mskasc = TRUE;
   else 
     ERROR("Unrecognized option '%s'\n", word, EXIT_FAILURE)
