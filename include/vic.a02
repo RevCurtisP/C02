@@ -1,0 +1,106 @@
+;c02 Program Initialization Code for Vic-20 - Common Code
+
+;PETSCII Key Mappings
+DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Zero Page Locations
+SRCLO   EQU $22   ;Source Pointer LSB [Temporary Pointers]
+SRCHI   EQU $23   ;Source Pointer MSB [Temporary Pointers]
+DSTLO   EQU $24   ;Destination Pointer LSB [Temporary Pointers]
+DSTHI   EQU $25   ;Destination Pointer MSB [Temporary Pointers]
+BLKLO   EQU $26   ;Block Pointer LSB [Floating Point Work Area]
+BLKHI   EQU $27   ;Block Pointer MSB [Floating Point Work Area]
+STKLO   EQU $28   ;Stack Pointer LSB [Floating Point Work Area]
+STKHI   EQU $29   ;Stack Pointer MSB [Floating Point Work Area]
+RDSEED  EQU $2A   ;Random Seed [Software Jiffy Clock (Low Byte)]
+TEMP0   EQU $FB   ;Temporary Variable [Unused Byte]
+TEMP1   EQU $FC   ;Temporary Variable [Unused Byte]
+TEMP2   EQU $FD   ;Temporary Variable [Unused Byte]
+TEMP3   EQU $FE   ;Temporary Variable [Unused Byte]
+
+USER0   EQU $0310 ;Free Byte for User Programs
+RANDOM  EQU $0311 ;Random Number Storage [Unused Byte]
+STKSAV  EQU $0312 ;Machine Stack Storage [Unused Byte]
+STKSLO  EQU $0313 ;Stack Start LSB [Unused Byte]
+STKSHI  EQU $0334 ;Stack Start MSB [Unused Byte]
+STKELO  EQU $0335 ;Stack End LSB [Unused Byte]
+STKEHI  EQU $0336 ;Stack End MSB [Unused Byte]
+BLKSLO  EQU $0337 ;Block Start LSB [Unused Byte]
+BLKSHI  EQU $0338 ;Block Start MSB [Unused Byte]
+BLKELO  EQU $0339 ;Block Start MSB [Unused Byte]
+BLKEHI  EQU $033A ;Block End MSB [Unused Byte]
+BLKLEN  EQU $033B ;Block Length [Unused Byte]
+TBFFR   EQU $033C ;Cassette I/O Buffer
+USER12  EQU $03FC ;Free Byte for User Programs
+USER13  EQU $03FD ;Free Byte for User Programs
+USER14  EQU $03FE ;Free Byte for User Programs
+USER15  EQU $03FF ;Free Byte for User Programs
+
+;Cakculated Addresses
+BASICX  EQU BASIC+$0B   ;End of Basic Program
+
+;Machine Language Basic Stub
+        ORG BASIC              ;Start 
+        DC  <BASICX, >BASICX   ; Pointer to Next Line 
+        DC  $00, $00           ; Line Number (0)
+        DC  $9E                ; SYS 
+        DC  $20                ; ' '
+        DC  SYSADR             ; "addr" 
+        DC  $00                ;End of Line Marker
+        DC  $00, $00           ;End of Basic Program
+
+START:  TSX         ;Get Stack Pointer
+        STX STKSAV  ;and Save for Exit
+;        LDA #$0E    ;Switch to Upper/Lower Case
+;        JSR PRCHR
+;        LDA #$08    ;Disable Commodore+Shift
+;        JSR PRCHR
+;        LDA #$93    ;Clear Screen
+;        JSR PRCHR
+        JMP MAIN    ;Execute Program
+
+EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
+        TXS         ;and Restore It
+        RTS         ;Return to BASIC
+
+;Poll Keyboard for Character
+PLKEY   EQU $FFE4  ;Aliased to Kernal GETIN Routine
+
+;Get Character from Keyboard
+GETKEY: EQU PLKEY
+
+;Wait for Character from Keyboard
+RDKEY:  JSR GETKEY  ;Poll Keyboard
+        BEQ RDKEY   ;If No Key, Loop
+        RTS
+
+;Delete Previous Character
+DELCHR: LDA #DELKEY ;Load Delete Character
+        JMP PRCHR   ;Print and Return
+
+;Advance Character to Next line
+NEWLIN: LDA #RTNKEY ;Load C/R into Accumulator
+        JMP PRCHR   ;Print and Return
+
+;Print Character to Console
+PRCHR   EQU $FFD2  ;Aliased to Kernal CHROUT Routine
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into prhex
+
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP PRCHR   ;Print Hex Digit and Return
