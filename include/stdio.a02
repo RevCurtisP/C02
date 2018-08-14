@@ -8,7 +8,7 @@
 ;Uses: System Dependent
 ;Affects:  System Dependent
 ;Returns: A = Character Code of Key 
-GETC    EQU GETKEY     ;Alias to external GETKEY routine
+GETC    EQU RDKEY       ;Alias to external RDKEY routine
 
 ;void putc(c) - PUT Character to screen
 ;Args: Character code to display 

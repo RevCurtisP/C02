@@ -1,0 +1,18 @@
+/********************************
+ * util - C02 Utility Functions *
+ ********************************/
+
+/* Decode Tokeniz into Destination String *
+ * Args: &t - Address of Token List       *
+ * Returns: Tokenized Value of String     */
+char tkndec();
+
+/* Encode Tokenized from Destination String *
+ * Args: &t - Address of Token List         *
+ * Returns: Tokenized Value of String       */
+char tknenc();
+
+/* Swap Nybbles in Byte   *
+ * Args: b - Byte to Swap *
+ * Returns: Swapped Byte  */
+char swap();

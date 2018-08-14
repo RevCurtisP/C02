@@ -1,0 +1,77 @@
+; C02 library util.h02 assembly language subroutines
+; Requires external function SETSRC, STRLEN, STRCML, and STRCPL
+; and external zero page locations DSTLO, DSTHI, SRCLO, and SRCHI
+
+;tkndec(&list) - Decode Token into Destination String
+;Args: A = Tokenized Value
+;      Y,X = Address of Token List
+;Requires: DSTLO,DSTHI = Address of Destination String
+;Sets: SRCLO,SRCHI = Pointer to Token in List
+;                    End of List if Not Found
+;Affects: X,C
+;Returns: A,Y = Length of Token, 0=Not Found
+;         N,Z based on A
+TKNDEC: JSR SETSRC      ;Set Source String to Token List
+        TAX             ;Save Argument
+        BNE TKNDEL      ;If 0
+        STA (DSTLO),Y   ;  Set String to Null
+        BEQ TKNENX      ;  And Return 0
+TKNDEL: JSR STRLEL      ;Get Length of first Token in List
+        BEQ TKNENX      ;If Null String, Return 0
+        TAY             ;Set Index to Token Length
+        INY             ;plus 1
+        TXA             ;Compare Argument
+        CMP (SRCLO),Y   ;to Tokenized Value
+        BEQ TKNDET      ;If Not Egual
+        TYA             ;  Get Token Length
+        JSR TKNNXT      ;  Skip to Next Token
+        BEQ TKNDEL      ;  and Loop
+TKNDET: LDY #0          ;Initialize Index and
+        JMP STRCPL      ;Copy Token to Destination String
+
+;tknenc(&list) - Encode Token in Destination String
+;Args: Y,X = Address of Token List
+;Requires: DSTLO,DSTHI = Address of String to be Tokenized
+;Sets: SRCLO,SRCHI = Pointer to Token in List
+;                    End of List if Not Found
+;Affects: X,C,N,Z
+;Returns: A = Tokenized Value
+;         N,Z based on A
+TKNENC: JSR SETSRC      ;Set Source String to Token List
+TKNENL: JSR STRLEL      ;Get Length of first Token in List
+        BEQ TKNENX      ;If Null String, Return 0
+        TAX             ;Save Length of Token
+        INX             ;and Add 1 for Terminator
+        LDY #0          ;Initialize Index and
+        JSR STRCML      ;Compare Destination to Token
+        BEQ TKNENT      ;If Not Egual
+        TXA             ;  Get Token Length
+        JSR TKNNXT      ;  Skip to Next Token
+        BEQ TKNENL      ;  and Loop
+TKNENT: TXA             ;Get Index to Byte After String
+        TAY
+        LDA (SRCLO),Y   ;and Load Byte
+TKNENX: RTS
+
+;Move to Next Token
+;Args: A = Length of Token (including Terminator)
+;Returns: Y=0
+TKNNXT: SEC             ;Add Token Length  
+        ADC SRCLO       ;plus 1 for Value Byte
+        STA SRCLO       ;to Source Pointer LSB
+        BCC TKNNXX      ;If Carry
+        INC SRCHI       ;  Increment Source Pointer MSB
+TKNNXX: LDY #0          ;Clear Index Register
+        RTS
+
+;SWAP Nybbles in Byte
+;Args: A = Byte containing Nybbles to Swap
+;Affects: C,N,Z
+;Returns: A = Byte with Nybbles Swapped
+SWAP:   ASL             ;Code by
+        ADC  #$80       ;David Galloway
+        ROL             ;posted on 
+        ASL             ;6502.org by
+        ADC  #$80       ;Garth Wilson
+        ROL             ;Oct 27, 2017
+        RTS

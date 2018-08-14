@@ -1,0 +1,81 @@
+;Apple 1 program initialization code for c02 programs
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $08     ;Delete/Backspace Key (Left Arrow)
+ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     (Return)
+
+;Zero Page Variables (*=System Variable)
+DSTLO   EQU $06     ;Destination Pointer
+DSTHI   EQU $07
+BLKLO   EQU $08     ;Block Segment Pointer (block.a02)
+BLKHI   EQU $09
+STKLO   EQU $1D     ;Stack Pointer (stack.a02)
+STKHI   EQU $1E
+RANDOM  EQU $1F     ;Random Number
+INVFLG  EQU $32     ;*Inverse Flag: $3F=Blinking, $7F=Inverse, $FF=Normal 
+SRCLO   EQU $71     ;Source Pointer
+SRCHI   EQU $72
+RDSEED  EQU $E3     ;Random Seed
+BLKSLO  EQU $EB     ;Block Start Address
+BLKSHI  EQU $ED
+BLKELO  EQU $ED     ;Block End Address
+BLKEHI  EQU $EE
+BLKLEN  EQU $EF     ;Block Segment Length    
+TEMP0   EQU $FC     ;Temporary Storage
+TEMP1   EQU $FD
+TEMP2   EQU $FE
+TEMP3   EQU $FF
+
+;I/O Locations
+KBD     EQU $C000   ;Keyboard Data
+AKD     EQU $C010   ;Keyboard Strobe Register
+
+;Monitor Routines
+PRBYTE  EQU $FDDA   ;Print Accumulator as Hexadecimal Number
+PRHEX   EQU $FDE3   ;Print Low Nybble of Accumulator as Hex Digit
+
+ECHO    EQU $FDF0   ;Print Character - Routine Monitor COUT1
+EXIT    EQU $03D0   ;Return to Monitor - Jump Vector to DOS warm start
+
+        ORG $0C00   ;Safe Area for Machine Language
+
+START:  JSR NEWLIN  ;Start On New Line
+        JMP MAIN    ;Execute Program
+
+;Subroutine Poll Keyboard
+PLKEY:  INC RDSEED  ;Cycle Random Seed
+        LDA #0      ;Clear Accumulator
+        BIT KBD     ;Check Keyboard Strobe Bit
+        BPL PLKEYR  ;If Key Pressed  
+        LDA KBD     ;  Load Key Value
+        STA AKD     ;  Clear Strobe
+PLKEYR: RTS
+
+;Read Keyboard
+GETKEY  JSR PLKEY   ;Poll Keyboard
+        AND #$7F    ;Strip High Bit
+        RTS
+
+;Wait for Keypress
+RDKEY:  JSR GETKEY  ;Get Modified Key Code
+        BEQ RDKEY   ;Loop if No Key	
+        RTS
+
+;Delete Previous Character
+DELCHR: LDX #2      ;Two Characters Total
+        LDA #$88    ;Load Backspace Character
+        JSR $F94C   ;Monitor Routine PRBLAX
+        LDA #DELKEY ;Load Backspace Character
+                    ;and Fall into PRCHR
+
+;Print Character to Screen
+PRCHR:  ORA #$80    ;Set High Bit
+        CMP #$E0    ;
+        BCC PRCHRX  ;If Lower Case 
+        AND #$1F    ;  Convert to Inverse
+PRCHRX: JMP ECHO    ;Alias to Monitor Routine
+
+;Advance Character to Next line
+NEWLIN   EQU $FD8E  ;Monitor Routine CROUT
+

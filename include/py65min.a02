@@ -1,25 +1,41 @@
 ; py65mon program initialization code for c02 programs
 
 ;System Specific ASCII Key Mappings
-DELKEY  EQU $7F     ;Delete/Backspace Key (Delete)
+DELKEY  EQU $08     ;Delete/Backspace Key (Delete)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
 ;Memory Mapped I/O 
-PUTC    EQU $F001   ;Write Character to Console
-GETC    EQU $F004   ;Read Character from Console
+PUTCON  EQU $F001   ;Write Character to Console
+GETCON  EQU $F004   ;Read Character from Console
 
         ORG $0200   ;Start Directly Above Stack
 
 START:  JMP MAIN    ;Execute Program
 
-;Wait for Character from Console
-RDKEY:  LDA GETC    ;Read Character from Console
-        BEQ RDKEY   ;  Loop if None Received
+;Delete Previous Character
+DELCHR: JSR DELCHB  ;Print Backspace
+        LDA #$20    ;Load Space into Accumulater
+        JSR PRCHR   ;  and Print it
+DELCHB: LDA #$08    ;Load Backspace into Accumulator
+        BNE PRCHR   ;  and Print it
+
+        ;Advance Character to Next line
+NEWLIN: LDA #$0D    ;Load C/R into Accumulator
+        JSR PRCHR   ;  and Print it
+        LDA #$0A    ;Load L/F into Accumulater
+                    ;  and fall into PRCHR
+;Print Character to Console
+PRCHR:  STA PUTCON ;Write Character to Console
         RTS
 
-;Print Character to Console
-PRCHR:  STA PUTC   ;Write Character to Console
+;Poll Keyboard for Keypress
+PLKEY:  LDA GETCON  ;Read Character from Console
+        RTS
+
+;Wait for Character from Console
+RDKEY:  JSR PLKEY   ;Read Character from Console
+        BEQ RDKEY   ;  Loop if None Received
         RTS
 
 EXIT:   BRK        ;Return to Monitor

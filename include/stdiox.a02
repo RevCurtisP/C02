@@ -1,6 +1,6 @@
 ; C02 library stdiox.h02 assembly language subroutines
 
-ANYKEP: DC  "Press any key to continue...",0
+ANYKEP: DC  "PRESS ANY KEY...",0
 
 ;
 ;char anykey() - wait for character with ANY KEY prompt
@@ -138,9 +138,13 @@ PRINTD: CMP #'D         ;'Else If "d" or "D"
         JSR PUTDEC      ;  Print as Decimal
         JMP PRINTY      ;  and Continue Printing Screen
 PRINTH: CMP #'H         ;'Else If "h" or "H" 
-        BNE PRINTS
+        BNE PRINTN
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTHEX      ;  Print as Hexadecimal
+        JMP PRINTY      ;  and Continue Printing Screen
+PRINTN: CMP #'N         ;'Else If "n" or "N" 
+        BNE PRINTS
+        JSR NEWLIN      ;  Execute Newline Function
         JMP PRINTY      ;  and Continue Printing Screen
 PRINTS: CMP #'S         ;'Else If "s" or "S" 
         BNE PRINTW
@@ -158,8 +162,7 @@ PRINTW: CMP #'W         ;'Else If "w" or "W"
 PRINTB: LDA TEMP3       ;Else
         JMP PRINTC      ;  Print Raw Byte and Continue
 
-                       ;and fall into putsub
-;char putdst()
+                       ;char putdst()
 PUTDST: LDY #0         ;Initialize character offset
 PUTDSL: LDA (DSTLO),Y  ;Read next character in string
         BEQ PUTDSX     ;If Not 0

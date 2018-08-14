@@ -1,4 +1,4 @@
-f; C02 library stdlib.h02 assembly language subroutines
+; C02 library stdlib.h02 assembly language subroutines
 ; Requires 
 ; external zero page locations SRCLO and srchi
 ; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
@@ -119,18 +119,6 @@ SHIFTL: ASL             ;Shift Byte to Left
 SHIFTR: LSR             ;Shift Byte to Right
         DEY             ;Decrement Counter
         BNE SHIFTR      ;  and Loop if Not 0
-        RTS
-
-;SWAP Nybbles in Byte
-;Args: A = Byte containing Nybbles to Swap
-;Affects: C,N,Z
-;Returns: A = Byte with Nybbles Swapped
-SWAP:   ASL             ;Code by
-        ADC  #$80       ;David Galloway
-        ROL             ;posted on 
-        ASL             ;6502.org by
-        ADC  #$80       ;Garth Wilson
-        ROL             ;Oct 27, 2017
         RTS
 
 ;atoc(&s) - ASCII string TO Character

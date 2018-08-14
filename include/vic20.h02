@@ -7,7 +7,6 @@ char chrin();  //Input Character to Channel
 void chrout(); //Output Character to Channel
 char getin();  //Read Character from Keyboard Buffer
 
-
 //System Subroutines
 char plkey();     //Poll Console for character
 char rdkey();     //Wait for character from Console

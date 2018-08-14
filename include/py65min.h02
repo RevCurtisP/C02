@@ -1,12 +1,18 @@
 /* py65mon Header File */
 
+#define DELKEY $08 //Delete/Backspace Key
+#define ESCKEY $1B //Escape/Stop Key
+#define RTNKEY $0D //Return/Enter Key
+
 //Memory Mapped I/O
 char putc;        //Write Character to Console
 char getc;        //Read Character from Console
 
 //System Subroutines
-char plkey();     //Poll Console for character
-char rdkey();     //Wait for character from Console
-char getkey();    //Read ASCII character from Console
-void prchr();     //Print ASCII character to Console
+void newlin(); //Advance cursor to beginning of next line
+void delchr(); //Delete previous character
+char plkey();  //Poll Console for character
+char rdkey();  //Wait for character from Console
+char getkey(); //Read ASCII character from Console
+void prchr();  //Print ASCII character to Console
 

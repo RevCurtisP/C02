@@ -5,8 +5,8 @@
 ; and external constants #TRUE and #FALSE
 
 ;Predefined Strings
-PASS    DC  " Pass",0
-FAIL    DC  " Fail",0
+PASS    DC  " PASS",0
+FAIL    DC  " FAIL",0
 
 ;putadr(&addr) - PUT ADdRess to screen
 ;Args: Y = Address MSB
@@ -20,7 +20,7 @@ PUTADR: JSR SAVRXY      ;Save Address
         LDX #<PUTADS    ;Load String LSB
         JSR PUTS        ;Print String
         JMP PUTWRA      ;Print MSB & LSB
-PUTADS  DC  "address=$",0
+PUTADS  DC  "ADDRESS=$",0
 
 ;trufls(val) - convert value to TRUe or FaLSe
 ;Args: A = Value to Convert

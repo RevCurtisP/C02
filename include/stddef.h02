@@ -3,8 +3,8 @@
  * functions used in libraries.     */ 
 
 /* Constant Definitions */
-#define #TRUE  $FF
-#define #FALSE $00 
+#define TRUE  $FF
+#define FALSE $00 
 
 /* Get Destination Pointer          *
  * Returns: Y,X=Destination address */

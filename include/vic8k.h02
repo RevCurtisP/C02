@@ -1,10 +1,11 @@
-/* py65mon Header File */
+/* VIC 20 with 8k Expansion Header File */
+
+//#pragma ascii invert //switch case for PETSCII
 
 //Platform Specific Constants
-#define DELKEY $08 //Delete/Backspace Key
-#define ESCKEY $1B //Escape/Stop Key
-#define RTNKEY $0D //Return/Enter Key
-#define NULKEY $00 //No Key was Pressed
+#define DELKEY $14 //Delete/Backspace Key (DEL)
+#define ESCKEY $03 //Escape/Stop Key (STOP)
+#define RTNKEY $0D //Return/Enter Key (RETURN)
 
 //Library Pointer Variables
 char srclo,srchi; //Source String Pointer for Library Functions
@@ -21,10 +22,6 @@ char stkelo, stkehi; //Stsck End Address
 char random, rdseed; //Pseudo-Random Number Generation
 char temp0, temp1, temp2, temp3; //Temporary Storage
 
-//Memory Mapped I/O
-char putcon;  //Write Character to Console
-char getcomn; //Read Character from Console
-
 //System Subroutines
 char plkey();  //Poll Console for character
 char rdkey();  //Wait for character from Console
@@ -34,3 +31,4 @@ void delchr(); //Delete previous character
 void prchr();  //Print ASCII character to Console
 void prbyte(); //Print Accumulator as Hexadadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
+ 

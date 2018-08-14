@@ -94,7 +94,7 @@ STRCAX: STY TEMP0       ;Subtract Destination String Length
 ;Args: X,Y = Pointer to source string
 ;Sets: SRCLO,SRCHI = Pointer to source string
 ;Affects: N,Z
-;Returns: A,Y = Number of characters copies
+;Returns: A,Y = Number of characters copied
 STRCPY: JSR SETSRC      ;Initialize Source String
 STRCPL: LDA (SRCLO),Y   ;Get Character from Source String
         STA (DSTLO),Y   ;Copy to Destination String

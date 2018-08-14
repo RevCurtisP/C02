@@ -64,8 +64,8 @@ PLKEY   EQU $FFE4  ;Aliased to Kernal GETIN Routine
 GETKEY  EQU PLKEY
 
 ;Wait for Character from Keyboard
-RDKEY:  JSR GETKEY ;Poll Keyboard
-        BEQ RDKEY  ;If No Key, Loop
+RDKEY:  JSR GETKEY  ;Poll Keyboard
+        BEQ RDKEY   ;If No Key, Loop
         RTS
 
 ;Delete Previous Character
@@ -96,4 +96,3 @@ PRHEX:  AND #$0F    ;Strip High Nybble
         ADC #$06    ;  Convert ':' to 'A'...
 PRHEXC: ADC #$30    ;Convert to ASCII Character
         JMP PRCHR   ;Print Hex Digit and Return
-

@@ -45,13 +45,11 @@ START:  JMP MAIN    ;Execute Program
 ;Poll Character from Keyboard
 PLKEY:  INC RDSEED  ;Cycle the RANDOM Seed (if not provided by system)
         LDA GETCON  ;Read Character from Console
-        CMP #$E0
-        BEQ PLKEYX  ;If Not E0 Extended Key 
-        ORA #$00    ;  Set Status Flags
-        RTS         ;  and Return
-PLKEYX: LDA GETCON  ;Else Get Second Byte
-        ORA #$80    ;  Set High Byte
-        RTS         ;  and Return
+        CMP $E0     
+        BNE PLKEYX  ;If E0 Extended Key 
+        LDA GETCON  ;  Get Second Byte
+        ORA $80     ;  and Set High Byte
+PLKEYX: RTS
 
 ;Read Character from Console
 GETKEY             ;Same As RDKEY
