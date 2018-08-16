@@ -90,8 +90,24 @@ void ppddng(void) {
   DEBUG("Set padding to %d\n", padcnt)
 }
 
+/* Parse RamBase Subdirective */
+void prambs(void) {
+  rambas = prsnum(0xFFFF); //Set Ram Base Address to Literal
+  DEBUG("Set ram base address to %d\n", rambas)
+}
+
+/* Parse WriteBase Subdirective */
+void pwrtbs(void) {
+  if (!rambas) ERROR("RAM Base must be set prior to Write Base\n", 0, EXIT_FAILURE);
+  wrtbas = prsnum(0xFFFF); //Set Ram Base Address to Literal
+  DEBUG("Set write base address to %d ", wrtbas)
+  if (rambas && wrtbas) sprintf(wrtofs, "%+d", wrtbas - rambas);
+  else wrtofs[0] = 0;
+  DETAIL("and write offset to '%s'\n", wrtofs)
+}
+
 /* Parse Zeropage Subdirective */
-void prszpg(void) {
+void pzropg(void) {
   zpaddr = prsnum(0xFF); //Set Zero Page Address to Literal
   DEBUG("Set zero page address to %d\n", zpaddr)
 }
@@ -112,12 +128,17 @@ void pprgma(void) {
     porign(); //Parse Origin
   else if (wordis("PADDING"))
     ppddng(); //Parse Origin
+  else if (wordis("RAMBASE"))
+    prambs(); //Parse RamBase
   else if (wordis("VARTABLE"))
-    pvrtbl(); //Parse Vartable
+    pvrtbl(); //Parse VarTable
+  else if (wordis("WRITEBASE"))
+    pwrtbs(); //Parse RamBase
   else if (wordis("ZEROPAGE"))
-    prszpg(); //Parse Origin
+    pzropg(); //Parse ZeroPage
   else 
     ERROR("Illegal pragma subdirective '%s'\n", word, EXIT_FAILURE)
+  cmtlin(); //Write Comment Line
 }
 
 /* Process Include File Directive */

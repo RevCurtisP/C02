@@ -141,15 +141,41 @@ Examples:
   #pragma padding 1     //Add one empty byte to end of code
   #pragma padding $FF   //Add 255 empty bytes to end of code
 
+PRAGMA RAMBASE
+
+The #pragma rambase directive sets the base address for variables in RAM 
+(not declared const). This is normally used when the compiled code will be 
+stored in ROM (such as in an EPROM or Cartridge), but can be used any time
+variables should be in a specific area of RAM.
+
+Examples:
+  #pragma rambase $0200 //Define Variable RAM base address for NES
+  #pragma rambase 828   //Define Variable RAM in C64 Tape Buffer
+  #pragma rambase 4096  //Define RAM base for Vic 20 ROM cartridge 
+
 PRAGMA VARTABLE
 
 The #pragma vartable directive forces the variable table to be written.
 It should be used before any #include directives that need to generate
 code following the table.
 
+PRAGMA WRITEBASE
+
+The #pragma writebase directive sets the base address for writing to variables 
+in RAM. This is used when target system uses different addresses for reading
+and writing the same memory locations. This directive must be preceded by 
+#pragma rambase directive with a non-zero argument. 
+
+Examples:
+  #pragma rambase $F080   //Define Superchip RAM Read Base for Atari 2600
+  #pragma writebase $F000 //Define Superchip RAM Write Base for Atari 2600
+
+Note: Setting a RAM write base causes the compiler to generate a write offset
+which is concatenated to the variable name on all assignments. 
+
 PRAGMA ZEROPAGE
 
-The #pragma zeropage variable sets the base address for variables declared
+The #pragma zeropage directive sets the base address for variables declared
 as zeropage.
 
 Example:
@@ -189,7 +215,7 @@ The " character and a subset of ASCII control characters can be specified
 in a string literal by using escape sequences prefixed with the \ symbol:
 
   \b  $08  Backspace
-  \e  $08  Escape
+  \e  $1B  Escape
   \f  $0C  Form Feed
   \n  $0A  Line Feed
   \r  $0D  Carriage Return

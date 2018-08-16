@@ -28,6 +28,7 @@
 #define BYTEOP "DC"         //Define Byte Pseudo-Op
 #define STROP  "DS"         //Define String Pseudo-Op
 #define ALNOP  "ALIGN"      //Align Pseudo-Op
+#define USEGOP "SEG.U"      //Uninitalized Segment Pseudo-Op
 #define LOCOP  "SUBROUTINE" //Local Variable Boundary Pseudo-Op
 
 #define ASMFMT "%-7s %-3s %-12s %s\n"  //Assembly Language Line printf Format

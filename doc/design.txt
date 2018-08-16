@@ -1,5 +1,78 @@
 C02 Design Considerations
 
+Variable Storage 
+================
+
+Zero Page
+---------
+
+The 6502 has a Zero Page addressing mode. This differs from the absolute
+addressing mode in that the address operand is only one byte instead of
+two and the instructions take less cycles to execute.
+
+Also, some systems have very limited RAM, requiring all variables to be
+stored in zero page. One example is the Atari 2600, which maps the 128 
+bytes of RAM in the RIOT chip to the range $80-$8F and mirrors it at
+$180-$18F (for the machine stack). 
+
+To allow the use of zero page variables, the compiler recognizes the 
+"zeropage" declaration modifier and the "#pragma zeropage" directive,
+the latter of which specifies a base address for allocating zero page
+variables.
+
+I may add a -Z command line option to allow the specification of the
+zero page variable base address.
+
+ROM Based Code
+--------------
+
+For compiled programs that will reside in ROM, such as an EPROM or a 
+cartridge, variables will need to reside in a separate memory area than
+the program. 
+
+The compiler normally allocates all variables directly after the generated
+code, const variables first and regular variables afterward. In addition,
+the regular variables are all all allocated as zero bytes in the assembled
+object code, which can unnecesarilly inflate the size of the generated
+binary file.
+
+The compiler allows the location of non-const variables to be specified 
+using the "#pragma rambase" directive.
+
+I may add a -R command line option to allow the specification of the RAM
+variable base address.
+
+Read/Write Variables
+--------------------
+
+Some systems used different memory addresses for reading and writing to
+RAM. One example is Atari 2600 catridges with RAM. The SARA Superchip 
+contained 128 bytes of RAM, which were written at addresses $F000 through
+$F01F and read from addresses $F080 through $F0FF, while CBS RAM+ had 256
+bytes which were written from $F000 though $F0FF and read from $F100
+through $F1FF. 
+
+To allow for this, the compiler recognizes an additional directive,
+"#pragma writebase" directive. In this case the "#pragma rambase" 
+will specify the base address for reads. When a write base address is 
+specified, the compiler will allocate all variables using the read base 
+address and generate an offset, which will be included in all variable 
+assignments. Thus the code
+
+    #pragma rambase $F100
+    #pragma writebase $F000
+    char b,c;
+    c = b;
+    
+would generate the assembly code
+
+        LDA B
+        STA C-256
+    B   EQU $F100
+    C   EQU $F101
+
+I may add a -W command line option to allow the specification of the write
+base address.
 
 Variable Types
 ==============
@@ -214,6 +287,7 @@ extensive stack manipulation:
 
 
 whereas the equivalent C02 code generates much simpler machine code:
+
 
 
 

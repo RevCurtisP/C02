@@ -1,0 +1,13 @@
+/* Test RamBase Directive */
+
+#pragma origin $F200
+#pragma rambase $F000
+
+char t[128];
+const char s = "String";
+
+strdst(&s);
+strcpy(&t);
+
+void strcpy() {}
+void strdst() {}

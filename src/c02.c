@@ -42,10 +42,13 @@ void init(void) {
   nxtwrd[0] = 0;  //Next Word (from DEFINE lookup)
   nxtptr = 0;     //Pointer to next character in nxtwrd
   vrwrtn = FALSE; //Variables Written Flag
+  rambas = 0;     //RAM Base Address
+  wrtbas = 0;     //Write Base Address
   zpaddr = 0;     //Current Zero-Page Address
   invasc = FALSE; //Invert ASCII Flag
   mskasc = FALSE; //Set High Bit Flag
   fcase = FALSE;  //First Case Statement Flag
+  wrtofs[0] = 0;  //Write Offset
   xsnvar[0] = 0;  //Assigned X Variable Name
   ysnvar[0] = 0;  //Assigned Y Variable Name
   strcpy(incdir, "../include/");

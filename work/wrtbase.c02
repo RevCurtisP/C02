@@ -1,0 +1,13 @@
+/* Test WriteBase Directive */
+
+#pragma origin $F100
+#pragma rambase $F080
+#pragma writebase $F000
+
+char r[7];
+char b,d,i;
+const char c = 0; 
+
+b = d;
+for (i=0;i<7;i++) r[i] = r[i] + i;
+r[7]=7;

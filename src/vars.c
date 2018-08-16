@@ -318,6 +318,11 @@ void vartbl(void) {
   vardef(MTCONST); //Write CONST Definitions
   //Emit Segment Mnemonic for RAM Variables here
   LCMNT("Writable Variables")
+  if (rambas) {
+    asmlin(USEGOP,"RAMVARS"); //Create Uninitialized Segment
+    sprintf(word, "$%X", rambas); 
+    asmlin(ORGOP, word);      //Set Origin to RAM Base Address
+  }
   vardef(0); //Write All Other Variables
 }
 

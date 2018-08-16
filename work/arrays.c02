@@ -23,4 +23,7 @@ b = s[func()];
 b = s[0] & d[c-1] | n[i+2]; 
 b = s[A] + b[X] + c[Y];
 
+r[0], r[1], r[2] = func();
+r[b], r[c], r[i] = func();
+
 pop b, d[i], n[func()], s[c-n[i+3]];

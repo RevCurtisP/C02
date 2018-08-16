@@ -56,7 +56,10 @@ enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 #define MTALGN 128 //Aligned
 
 int symdef(char *name);         //Is Variable defined (TRUE or FALSE)
+int rambas;						//RAM Base Address (0=None)
+int wrtbas;						//Write Base Address (0=None)
 int zpaddr;                     //Current Zero-Page Address
+char wrtofs[6];				    //Write Address Offset
 
 void addvar(int m, int t);           //Parse and Compile Variable Declaration
 void addstc();                       //Parse and Compile Structure Declaration

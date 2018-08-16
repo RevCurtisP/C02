@@ -70,6 +70,13 @@ void prcidx(int idxtyp, char *name, char *index)
     }
 }
 
+/* Set word to assignment variable *
+ * adding write offset (if set)    */
+void setasn(char *name) {
+  strcpy(word, name);
+  if (wrtofs[0]) strcat(word, wrtofs);
+}
+
 /* Process Assignment */
 void prcasn(char trmntr) {
   expect('=');
@@ -77,20 +84,27 @@ void prcasn(char trmntr) {
   else           prsxpr(trmntr); //Parse Expression
   DEBUG("Processing X assignment variable '%s'\n", xsnvar)
   if (xsnvar[0]) {
+    setasn(xsnvar);
     if (strlen(xsnidx)) { //Process X variable Index
-      asmlin("PHA", "");  //Save Accumulator
-      asmlin("TXA", "");  //Transfer Return Value to Accumulator
-	  prcidx(xsnivt, xsnvar, xsnidx); //Process Index
-	  asmlin("STA", xsnvar); //Store Return Value
-      asmlin("PLA", ""); //Restore Accumulator
+	  if (xsnivt != LITERAL) { 
+        asmlin("PHA", "");  //Save Accumulator
+        asmlin("TXA", "");  //Transfer Return Value to Accumulator
+        prcidx(xsnivt, word, xsnidx); //Process Index
+        asmlin("STA", word); //Store Return Value
+        asmlin("PLA", ""); //Restore Accumulator
+	  } else {
+        prcidx(xsnivt, word, xsnidx); //Process Index
+        asmlin("STX", word); //Store Return Value
+	  }
     }
-	else asmlin("STX", xsnvar); //Store Return Value
+	else asmlin("STX", word); //Store Return Value
     xsnvar[0] = 0;
   }
   DEBUG("Processing Y assignment variable '%s'\n", ysnvar)
   if (ysnvar[0]) {
-    if (strlen(ysnidx)) prcidx(ysnivt, ysnvar, ysnidx); //Process Index
-    asmlin("STY", ysnvar); //Store Return Value
+    setasn(ysnvar);
+    if (strlen(ysnidx)) prcidx(ysnivt, word, ysnidx); //Process Index
+    asmlin("STY", word); //Store Return Value
     ysnvar[0] = 0;
   }
   DEBUG("Checking if '%s' is a register\n", asnvar)
@@ -98,8 +112,9 @@ void prcasn(char trmntr) {
   else if (strcmp(asnvar, "Y")==0) asmlin("TAY", "");
   else if (strcmp(asnvar, "A")==0) return;
   DEBUG("Processing assignment variable '%s'\n", asnvar)
-  if (strlen(asnidx)) prcidx(asnivt, asnvar, asnidx); //Process Index 
-  asmlin("STA", asnvar); //Store Return Value
+  setasn(asnvar);
+  if (asnidx[0]) prcidx(asnivt, word, asnidx); //Process Index 
+  asmlin("STA", word); //Store Return Value
 }
 
 /* Parse and Return Array Index and Type */
