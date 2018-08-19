@@ -1,0 +1,79 @@
+/***********************************************
+ * TESTIOX - Test Library stdiox.h for py65mon *
+ ***********************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+
+char i, j;
+const char s = "STRING";
+
+main:
+
+getcpr("PRESS A KEY TO BEGIN");
+
+i = 0;
+
+putln("PRTDEC()");
+do {
+  putdec(i);
+  putc(':');
+  i++;
+  if (!i&7) newlin();
+  if (!i&127) anykey();
+} while (i);
+
+putln("PRTDEL()");
+do {
+  putdel(i);
+  putc(':');
+  i++;
+  if (!i&7) newlin();
+  if (!i&127) anykey();
+} while (i);
+
+putln("PRTDER()");
+do {
+  putder(i);
+  putc(':');
+  i++;
+  if (!i&7) newlin();
+  if (!i&127) anykey();
+} while (i);
+
+putln("PRTHEX()");
+do {
+  puthex(i);
+  putc(':');
+  i++;
+  if (!i&7) newlin();
+  if (!i&127) anykey();
+} while (i);
+
+putln("PRTWRD()");
+do {
+  j = i ^ $FF;
+  putwrd(*,i,j);
+  putc(':');
+  i++;
+  if (!i&3) newlin();
+  if (!i&63) anykey();
+} while (i);
+
+do {
+  if (!i&15) putln("%C %H .%R %L. %D%%");
+  if (i<32) printf(i, "   %h %r %l %d%%%n");
+  else      printf(i," %c %h %r %l %d%%%n");
+  i++; if (!i&15) anykey();
+} while (i<128);    
+
+putln("%W.. '%S'");
+setdst(&s);
+printf("%w '%s'%n");
+
+done:
+  goto exit;
+

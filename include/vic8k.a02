@@ -5,8 +5,14 @@ VICSCN  EQU $1000 ;Video Screen Memory Area (Unexpanded)
 CHRROM  EQU $8000 ;Character Generator ROM
 VICCLR  EQU $9400 ;Color RAM (Unexpanded)
 
-;BASIC Stub Constants
-BASIC   EQU $1201       ;Start of BASIC Program
-SYSADR  EQM "4622"      ;M/L SYS Address
+;Machine Language Basic Stub
+        ORG $1201           ;Start of Basic Program 
+BASIC:  DC  $0C, $12        ;Pointer to Next Line 
+        DC  $00, $00        ;Line Number (0)
+        DC  $9E             ;SYS 
+        DC  $20             ;' '
+        DC  $34,$36,$32,$32 ;"4622" 
+        DC  $00             ;End of Line Marker
+        DC  $00, $00        ;End of Basic Program
 
         INCLUDE "../include/vic.a02" ;Include VIC 20 Common Code

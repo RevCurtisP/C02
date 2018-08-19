@@ -1,0 +1,21 @@
+/**************************************************
+ * TESTHDR - Test C02 system specific Header file *
+ **************************************************/
+ 
+
+//use -h option on command line
+
+main:
+
+  prchr('P');
+  prchr('R');
+  prchr('C');
+  prchr('H');
+  prchr('R');
+  newlin();
+  
+  getkey();
+  newlin();
+
+goto exit;
+

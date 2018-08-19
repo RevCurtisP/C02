@@ -1,0 +1,67 @@
+/****************************************
+ * CONDS - Test Conditional Expressions *
+ ****************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+
+char allok;
+
+main:
+
+allok = #TRUE;
+
+putln("Test Conditionals");
+
+puts(" 1<>1"); if (1<>1) failed(); else passed();
+puts(" 1<>2"); if (1<>2) passln(); else failln();
+puts(" 1==1"); if (1==1) passed(); else failed();
+puts(" 1==2"); if (1==2) failln(); else passln();
+puts("1+1=2"); if (1+1 == 2) passed(); else failed();
+puts("  2<1"); if (2<1) failln(); else passln();
+puts("  1<1"); if (1<1) failed(); else passed();
+puts("  1<2"); if (1<2) passln(); else failln();
+
+puts(" 1<=1"); if (1<=1) passed(); else failed();
+puts(" 1<=2"); if (1<=2) passln(); else failln();
+puts(" 2<=1"); if (2<=1) failed(); else passed();
+puts("  2>1"); if (2>1) passln(); else failln();
+puts("  1>1"); if (1>1) failed(); else passed();
+puts("  1>2"); if (1>2) failln(); else passln();
+puts(" 1>=1"); if (1>=1) passed(); else failed();
+puts(" 1>=2"); if (1>=2) failln(); else passln();
+puts(" 2>=1"); if (2>=1) passed(); else failed();
+puts(" !0:+"); if (!0:+) failln(); else passln();
+
+puts("$FF:+"); if ($FF:+) failed(); else passed();
+puts("  $FF"); if ($FF) passln(); else failln();
+puts("$FF:-"); if ($FF:-) passed(); else failed();
+puts(" !$FF"); if (!$FF) failln(); else passln();
+puts("$00:+"); if ($00:+) passed(); else failed();
+puts("  $00"); if ($00) failln(); else passln();
+puts("$00:-"); if ($00:-) failed(); else passed();
+puts(" !$00"); if (!$00) passln(); else failln();
+
+puts("  1!0"); if (1|0) passed(); else failed();
+puts(" !1!0"); if (!1|0) failln(); else passln();
+puts("  1&0"); if (1&0) failed(); else passed();
+puts(" !1&0"); if (!1&0) passln(); else failln();
+puts("  1^1"); if (1^1) failed(); else passed();
+puts(" !1^1"); if (!1^1) passln(); else failln();
+
+puts("      atoc(\"0\")"); if (atoc("0")) failln(); else passln();
+puts("      atoc(\"1\")"); if (atoc("1")) passln(); else failln();
+puts("  atoc(\"127\"):+"); if (atoc("127"):+) passln(); else failln();
+puts("  atoc(\"128\"):-"); if (atoc("128"):-) passln(); else failln();
+
+if (allok) putln("All Tests Passed");
+getc();
+
+goto exit;
+
+void passed() {puts(" Pass");}
+void passln() {passed(); newlin();}
+void failed() {puts(" Fail"); allok = #FALSE;}
+void failln() {failed(); newlin();}

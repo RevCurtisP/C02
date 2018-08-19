@@ -7,7 +7,7 @@
 #define NULKEY $00 //No Key was Pressed
 
 /* Zero Page Variables used as Pointers         */
-char strlo,strhi; //String pointer for String and I/O functions
+char srclo,srchi; //String pointer for String and I/O functions
 char dstlo,dsthi; //Secondary string pointer for String functions
 
 char temp0,temp1,temp2,temp3;  //Temporary variables 

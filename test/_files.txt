@@ -1,0 +1,31 @@
+C02/Test/ - C02 Compiler Test & Demonstration Programs
+
+Batch Files - Compile and assemble programs for specific systems
+
+    A1.BAT      Apple 1 - Creates .ASC file (Woz Monitor Format, 0300R to Run)
+    A2.BAT      Apple 2 - Creates .DSK file (Bootable Disk Image)
+    O1.BAT      Oric-1  - Creates .TAP file (Oriculator Tape Image)
+    P65.BAT     py65mon - Creates .BIN file (Binary file, Load and Run at 0200) 
+    V8K.BAT     VIC+8K  - Creates .PRG file (Program File with BASIC stub)
+
+Auxillary Files - Used by Batch Files
+
+    s2boot.dsk  Apple 2 Bootable Disk Image - Used by A2.BAT
+    xvic.ini    VICE Configuration - Used bu V8K.BAT
+
+C02 Test & Demonstration Files
+
+    echo.c02       Echo typed keys to screen
+    echohex.c02    Display ASCII code of typed keys in Hexadecimal
+
+    conds.c02      Test C02 Conditional Expressions
+    funcs.c02      Test C02 Function Calls and Parameter Passing
+    loops.c02      Test C02 Loop Structures
+
+    forforpf.c02   Demo of printf function from "stringx" module
+    strings.c02    Demo of standard library "string" module
+
+    testhdr.c02    Test system specific Header file functions
+    testsd.c02     Test module "stddef" functions
+    testsl.c02     Test module "stdlib" functions
+    testiox.c02    Test module "stdiox" functions

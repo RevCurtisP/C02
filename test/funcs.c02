@@ -1,0 +1,71 @@
+/*******************************
+ * FUNCS - Test Function Calls *
+ *******************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+
+char i;        //index value
+char n;        //result of function call
+char s[128];   //for Numeric to String conversions
+char z;        //Function Parameters
+
+const char passed = " Passed.";
+const char failed = " Failed.";
+
+main:
+
+for (i=1;i<5;i++) test(i);
+putln("Testing complete.");
+
+goto exit;
+
+//Test Use of Variable as Parameter
+void test(z) {
+  select(z) {
+    case 1: test1();
+    case 2: test2();
+    case 3: test3();
+    case 4: test4();
+    default: printf(z, "Bad test value %d\n."); 
+  }
+}
+
+
+void test1() {
+  puts("atoc(\"1\") = ");
+  n = atoc("1");
+  prtnum(n); checkn(1);
+}
+
+void test2() {
+  puts("atoc(\"2\") = ");
+  n = atoc("2");
+  prtnum(n); checkn(2);
+}
+
+void test3() {
+  puts("atoc(\"1\") + 2 = ");
+  n = atoc("1") + 2;
+  prtnum(n); checkn(3);
+}
+
+void test4() {
+  puts("abs(atoc(\"255\") + 7 = ");
+  n = abs(atoc("255")) + 7;
+  prtnum(n); checkn(8);
+}
+
+
+//uses explicit passing of accumulator
+void checkn() {if (A == n) pass(); else fail();}
+
+//uses implicit passing of accumulator
+void prtnum() {ctoa(&s); puts(&s); putc(':');}
+
+//one more level of function calls - just because
+void pass() {putln(&passed);}
+void fail() {putln(&failed);}

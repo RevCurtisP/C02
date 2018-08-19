@@ -2,11 +2,12 @@
  * LOOPS - Test C02 Loop Structures *
  ************************************/
  
-#include <py65.h02>
+//Specify System Header using -H option
+#include <stddef.h02>
 #include <stdio.h02>
 
 char i, b;
-char failed = " Test Failed!";
+const char failed = " Test Failed!";
 
 main:
 

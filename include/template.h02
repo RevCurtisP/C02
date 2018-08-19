@@ -1,6 +1,6 @@
-/*********************************************
- * stdlib - Template Library Routines for C02 *
- *********************************************/
+/************************************************
+ * template - Template Library Routines for C02 *
+ ************************************************/
 
 /* Function Description         *
  * Args: a - First Argument     *

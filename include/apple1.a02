@@ -23,8 +23,8 @@ DSTLO   EQU $32     ;Destination String Pointer (string.a02)
 DSTHI   EQU $33
 BLKLO   EQU $34     ;Block Segment Pointer (block.a02)
 BLKHI   EQU $35
-PTRLO   EQU $35     ;System Pointer (pointer.a02)
-PTRHI   EQU $36
+STKLO   EQU $35     ;System Pointer (pointer.a02)
+STKHI   EQU $36
 
 RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
 RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
@@ -34,12 +34,15 @@ TEMP1   EQU $41
 TEMP2   EQU $42
 TEMP3   EQU $43
 
-BLKSLO  EQU $4A     ;Block Start Address
-BLKSHI  EQU $4B
-BLKELO  EQU $4C     ;Block End Address
-BLKEHI  EQU $4D
-BLKLEN  EQU $4E     ;Block Segment Length    
-
+BLKLEN  EQU $47     ;Block Segment Length    
+BLKSLO  EQU $48     ;Block Start Address
+BLKSHI  EQU $49
+BLKELO  EQU $4A     ;Block End Address
+BLKEHI  EQU $4B
+STKSLO  EQU $4C     ;Stack Start Address
+STKSHI  EQU $4D
+STKELO  EQU $4E     ;Stack End Address
+STKEHI  EQU $4F
 
 ;PIA 6820 Registers
 KBD     EQU $D010   ;Keyboard Data
@@ -56,8 +59,7 @@ PRHEX   EQU $FFE5   ;Subroutine - Print Low Nybble of Accumulator as Hex Digit
 
 START:  LDX #$FF    ;Reset stack - the monitor doesn't do this
         TXS         ;  (probably because of lack of space) 
-        LDA #$0D    ;Move cursor to next line before 
-        JSR ECHO    ;  executing program
+        JSR NEWLIN  ;Move cursor to next line before executing program
         JMP MAIN    ;Execute Program
 
 
@@ -91,19 +93,3 @@ DELCHR: LDA #DELKEY ;Load Underscore Character
 ;Advance Character to Next line
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
         JMP PRCHR   ;  and Print it
-
-;Initialize Destination String Pointer and Index
-SETDST: STX DSTLO       ;Save Destination String Pointer
-        STY DSTHI
-        RTS
-
-;Initialize Source String Pointer and Index
-SETSRC: STX SRCLO       ;Save Source String Pointer
-        STY SRCHI
-        LDY #$00        ;Initialize Index Into String
-        RTS
-
-;Retrieve Source String Pointer
-GETSRC: LDX SRCLO
-        LDY SRCHI
-        RTS

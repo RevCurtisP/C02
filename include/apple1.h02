@@ -8,15 +8,23 @@ char ysave;       //Y Register Storage
 char mode;        //Mode: Store, Examine, Block Examine
 char buffer[];    //Input Buffer
 
+//Platform Specific Constants
+#define DELKEY $5F //Delete/Backspace Key
+#define ESCKEY $1B //Escape/Stop Key
+#define RTNKEY $0D //Return/Enter Key
+
 /* Standard Library Variables */
 char srclo,srchi;   //Source String Pointer for Library Functions
 char dstlo,dsthi;   //Destination String Pointer for Library Functions
 char blklo,blkhi;   //Block Segment Pointer
-char ptrlo,ptrhi;   //System Pointer
+char stklo,skthi;   //System Pointer
 
 char blkslo, blkshi;    //Block Start Address
 char blkelo, blkehi;    //Block End Address
 char blklen;            //Block Segment Length
+
+char stkslo, stkshi;    //Stack Start Address
+char stkelo, stkehi;    //Stack End Address
 
 char temp0, temp1, temp2, temp3;  //Temporary Variables
 

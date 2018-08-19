@@ -4,7 +4,6 @@
 #define DELKEY $08 //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key
 #define RTNKEY $0D //Return/Enter Key
-#define NULKEY $00 //No Key was Pressed
 
 //Library Pointer Variables
 char srclo,srchi; //Source String Pointer for Library Functions

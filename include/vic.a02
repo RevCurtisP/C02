@@ -38,27 +38,8 @@ USER13  EQU $03FD ;Free Byte for User Programs
 USER14  EQU $03FE ;Free Byte for User Programs
 USER15  EQU $03FF ;Free Byte for User Programs
 
-;Cakculated Addresses
-BASICX  EQU BASIC+$0B   ;End of Basic Program
-
-;Machine Language Basic Stub
-        ORG BASIC              ;Start 
-        DC  <BASICX, >BASICX   ; Pointer to Next Line 
-        DC  $00, $00           ; Line Number (0)
-        DC  $9E                ; SYS 
-        DC  $20                ; ' '
-        DC  SYSADR             ; "addr" 
-        DC  $00                ;End of Line Marker
-        DC  $00, $00           ;End of Basic Program
-
 START:  TSX         ;Get Stack Pointer
         STX STKSAV  ;and Save for Exit
-;        LDA #$0E    ;Switch to Upper/Lower Case
-;        JSR PRCHR
-;        LDA #$08    ;Disable Commodore+Shift
-;        JSR PRCHR
-;        LDA #$93    ;Clear Screen
-;        JSR PRCHR
         JMP MAIN    ;Execute Program
 
 EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer

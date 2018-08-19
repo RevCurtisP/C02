@@ -2,40 +2,47 @@
  * STRINGS - Demonstrate string.h02 functions *
  **********************************************/
  
-#include <py65.h02>
-#include <stdio.h02>
+//Specify System Header using -H option
+#include <stddef.h02>
 #include <stdlib.h02>
+#include <stdio.h02>
 #include <string.h02>
 #include <stringx.h02>
 
 char slen, scmp, spos;
-char s1  = "First string.";
-char s2  = "Second string.";
-char stest = "123456789012345678901234567890";
+const char s1  = "FIRST STRING.";
+const char s2  = "SECOND STRING.";
+const char stest = "123456789012345678901234567890";
 char stemp[32];
-char sless = "This string is less.";
-char smore = "This string is more.";
+const char smore = "THIS STRING IS MORE.";
+const char sless = "THIS STRING IS LESS.";
 char sprt[4];
-char pass = "Pass";
-char fail = "Fail";
+const char pass = "PASS";
+const char fail = "FAIL";
+
+void anykey() {
+  putln("*PRESS A KEY*");
+  if (getkey() == #ESCKEY) goto exit;
+  newlin();
+}
 
 main:
   //Demo strchr(), strrch()
   putln(&s1);               //Print s1 to screen
-  puts("Position of first 's' is: ");
-  spos = strchr('s', &s1);  //Get position of 's'
+  puts("POSITION OF FIRST 'S' IS: ");
+  spos = strchr('S', &s1);  //Get position of 's'
   ctoa(spos, &sprt);        //Convert to string
   putln(&sprt);             //Print position to screen
-  puts("Position of first 'x' is: ");
-  spos = strchr('x', &s1);  //Get position of 's'
+  puts("POSITION OF FIRST 'X' IS: ");
+  spos = strchr('X', &s1);  //Get position of 's'
   ctoa(spos, &sprt);        //Convert to string
   putln(&sprt);             //Print position to screen
-  puts("Position of last 's' is: ");
-  spos = strrch('s', &s1);  //Get position of 's'
+  puts("POSITION OF LAST 'S' IS: ");
+  spos = strrch('S', &s1);  //Get position of 's'
   ctoa(spos, &sprt);        //Convert to string
   putln(&sprt);             //Print position to screen
-  puts("Position of last 'x' is: ");
-  spos = strrch('x', &s1);  //Get position of 's'
+  puts("POSITION OF LAST 'X' IS: ");
+  spos = strrch('X', &s1);  //Get position of 's'
   ctoa(spos, &sprt);        //Convert to string
   putln(&sprt);             //Print position to screen
   newlin();
@@ -44,61 +51,65 @@ main:
   putln(&stest);         //Print stest to screen
   slen = strlen(&stest); //Get string length
   ctoa(slen, &sprt);     //Convert to string
-  puts("Length of string is ");
+  puts("LENGTH OF STRING IS ");
   putln(&sprt);          //Print length to screen
   newlin();
 
   //Demo setstr();
   strdst(&stemp);         //Set stemp as destination street
-  puts("Address of stemp is $");
+  puts("ADDRESS OF STEMP IS $");
   prbyte(dsthi);          //Print stored address to string
   prbyte(dstlo);
   newlin();
   newlin();
 
+  anykey();
+
   //Demo strcpy()
-  putln("Copying s1 to stemp: ");
-  strdst(&stemp);         //Set Destination String
-  slen = strcpy(&s1);     //Copy s1 into Destination String
-  puts("String stemp contains: ");
-  putln(&stemp);          //Print stest to screen
-  ctoa(slen, &sprt);      //Convert to string
-  puts("Total characters copied: ");
-  putln(&sprt);          //Print length to screen
+  putln("COPYING S1 TO STEMP: ");
+  strdst(&stemp);               //Set Destination String
+  slen = strcpy(&s1);           //Copy s1 into Destination String
+  puts("STRING STEMP CONTAINS: ");
+  putln(&stemp);                //Print stest to screen
+  ctoa(slen, &sprt);            //Convert to string
+  puts("TOTAL CHARACTERS COPIED: ");
+  putln(&sprt);                 //Print length to screen
   newlin();
   
   //Demo strcat()
-  putln("Concatenating s2 to stemp: ");
-  strdst(&stemp);         //Set Destination String
-  slen = strcat(&s2);     //Copy s1 into Destination String
-  puts("String stemp contains: ");
-  putln(&stemp);          //Print stest to screen
-  ctoa(slen, &sprt);      //Convert to string
-  puts("Length of concatenated string is ");
-  putln(&sprt);           //Print length to screen
+  putln("CONCATENATING S2 TO STEMP: ");
+  strdst(&stemp);               //Set Destination String
+  slen = strcat(&s2);           //Copy s1 into Destination String
+  putln("STRING STEMP CONTAINS: ");
+  puts("  "); putln(&stemp);    //Print stest to screen
+  ctoa(slen, &sprt);            //Convert to string
+  puts("LENGTH OF CONCATENATED STRING IS ");
+  putln(&sprt);                 //Print length to screen
   newlin();
 
   //Demo strcut()
-  putln("Cutting s2 at position 7 to stemp: ");
+  putln("CUTTING S2 AT POSITION 7 TO STEMP: ");
   strdst(&stemp);         //Set Destination String
   slen = strcut(7, &s2);     //Copy s1 into Destination String
-  puts("String stemp contains: ");
+  puts("STRING STEMP CONTAINS: ");
   putln(&stemp);          //Print stest to screen
   ctoa(slen, &sprt);      //Convert to string
-  puts("Length of cut string is ");
+  puts("LENGTH OF CUT STRING IS ");
   putln(&sprt);           //Print length to screen
   newlin();
 
+  anykey();
+
   //Demo strcmp();
-  puts("Comparing sless to smore: ");
+  puts("COMPARING SLESS TO SMORE: ");
   strdst(&sless);
   scmp = strcmp(&smore);  
   prbyte(scmp); newlin();
-  puts("Comparing sless to sless: ");
+  puts("COMPARING SLESS TO SLESS: ");
   strdst(&sless);
   scmp = strcmp(&sless);  
   prbyte(scmp); newlin();
-  puts("Comparing smore to sless: ");
+  puts("COMPARING SMORE TO SLESS: ");
   strdst(&smore);
   scmp = strcmp(&sless);
   prbyte(scmp); newlin();
@@ -106,17 +117,17 @@ main:
 
   //Demo strspn();
   putln(&stest);         //Print test to screen
-  puts("Span matching \"0123\" is: ");
+  puts("SPAN MATCHING \"0123\" IS: ");
   strdst(&stest);        //Set string to search
   slen = strspn("0123"); //Get position of "123"
   ctoa(slen, &sprt);     //Convert to string
   putln(&sprt);          //Print position to screen
-  puts("Span matching \"0123456789\" is: ");
+  puts("SPAN MATCHING \"0123456789\" IS: ");
   strdst(&stest);        //Set string to search
   slen = strspn("0123456789");  //Get position of "123"
   ctoa(slen, &sprt);     //Convert to string
   putln(&sprt);          //Print position to screen
-  puts("Span matching \"789\" is: ");
+  puts("SPAN MATCHING \"789\" IS: ");
   strdst(&stest);        //Set string to search
   slen = strspn("789");  //Get position of "123"
   ctoa(slen, &sprt);     //Convert to string
@@ -125,12 +136,14 @@ main:
 
   //Demo strstr();
   putln(&stest);         //Print test to screen
-  puts("Position of \"234\" is: ");
+  puts("POSITION OF \"234\" IS: ");
   strdst(&stest);        //Set string to search
   spos = strstr("234");  //Get position of "123"
   ctoa(spos, &sprt);     //Convert to string
   putln(&sprt);          //Print position to screen
   newlin();    
+
+  newlin();
 
 goto exit;
 
