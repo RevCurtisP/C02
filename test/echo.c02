@@ -1,0 +1,22 @@
+/****************************************************
+ * ECHO - Test/Demo program for C02 Standard Header *
+ *        Echos typed keys to screen                *
+ *        RETURN/ENTER key Moves to New Line        *
+ *        BACKSPACE/DELETE key Deletes to Left      *
+ *        ESCAPE/STOP key Ends Program              *
+ ****************************************************/
+ 
+//Specify System Header using -H option
+
+char key;  //Key value
+
+main:
+  while() {
+    key = getkey();
+    select (key) {
+      case #DELKEY: delchr(); 
+      case #RTNKEY: newlin();
+      case #ESCKEY: goto exit;
+      default: prchr(key);
+    }
+  }

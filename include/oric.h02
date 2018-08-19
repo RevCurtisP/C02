@@ -1,6 +1,5 @@
 /* C02 Standard Header for Oric-1 */
 
-
 /* System Specific ASCII Key Codes              */
 #define DELKEY $7F //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key

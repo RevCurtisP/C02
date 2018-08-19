@@ -12,19 +12,18 @@ SRCHI   EQU $01
 DSTLO   EQU $02     ;Destination String Pointer (string.asm)
 DSTHI   EQU $03
 
-STKSAV  EQU $04     ;Stack Pointer Storage
-RDSEED  EQU $05     ;Pseudo-RANDOM Seed
-RANDOM  EQU $06     ;Pseudo-RANDOM Number Storage
+RDSEED  EQU $04     ;Pseudo-RANDOM Seed
+RANDOM  EQU $05     ;Pseudo-RANDOM Number Storage
 
-TEMP0   EQU $07     ;Temporary Storage
-TEMP1   EQU $08
-TEMP2   EQU $09
-TEMP3   EQU $0A
+TEMP0   EQU $06     ;Temporary Storage
+TEMP1   EQU $07
+TEMP2   EQU $08
+TEMP3   EQU $09
 
-BLKSLO  EQU $0B     ;Block Start Address
-BLKSHI  EQU $0C
-BLKELO  EQU $0D     ;Block End Address
-BLKEHI  EQU $0E
+BLKSLO  EQU $0A     ;Block Start Address
+BLKSHI  EQU $0B
+BLKELO  EQU $0C     ;Block End Address
+BLKEHI  EQU $0D
 
 ;Oric-1 Memory Locations
 CAPLCK  EQU $020C   ;Caps Lock: 127=Off, 255 = On
@@ -53,22 +52,20 @@ VDU    EQU $F409    ;Print character in X to screen
 
         ORG $0501   ;Basic Program Start Address
 
-BASIC:  .DB $0C,$05 ;Address of Next Line
-        .DB $00,$00 ;Basic Line Number (0)
-        .DB $BF     ;Token for Basic Call Command
-        .DB $20     ;Space
-        .DS "1294"  ;Address of START Label
-        .DB $00     ;End of Line
-        .DB $00,$00 ;End of Program Marker
+BASIC:  .DC $0C,$05 ;Address of Next Line
+        .DC $00,$00 ;Basic Line Number (0)
+        .DC $BF     ;Token for Basic Call Command
+        .DC $20     ;Space
+        .DC "1294"  ;Address of START Label
+        .DC $00     ;End of Line
+        .DC $00,$00 ;End of Program Marker
 
-START:  TXS         ;Save Stack Pointer
-        STX STKSAV
-        LDA #127    ;Set Caps Lock Off
+START:  LDA #127    ;Set Caps Lock Off
         STA CAPLCK
         JMP MAIN    ;Execute Program
 
 ;Poll Character from Keyboard
-PLKEY:  INC RDSEED  ;Cycle the Random Seed (if not provided by system)
+PLKEY:  INC RDSEED  ;Cycle the Random Seed
         JMP GTORKB  ;Call ROM Key Reading function and return
 
 ;Read Character from Console
@@ -80,23 +77,23 @@ RDKEY:  JSR PLKEY   ;Usually calls PLKEY
         RTS         
 
 ;Delete Previous Character
-DELCHR: LDA DELKEY  ;Load Delete Character
+DELCHR: LDA #DELKEY ;Load Delete Character
         BNE PRCHR   ;and Print to Screem
 
 ;Advance Cursor to Next line
-NEWLIN: LDA RTNKEY  ;Load Carriage Return and fall through to PRCHR
+NEWLIN: LDA #$0D    ;Load Carriage Return
+        JSR PRCHR   ;and Print It
+        LDA #$0A    ;Load Line Feed and fall through to PRCHR
 
 ;Print Character to Screen
 PRCHR:  TAX         ;Transfer Character to X Register
         JMP VDU     ;Call ROM Print Function and Return
 
 ;Exit Program and Return to Operating System or Monitor
-EXIT:   LDA #255    ;Set Caps Lock On
+EXIT    LDA #255    ;Set Caps Lock On
         STA CAPLCK
-        LDX STKSAV  ;Restore Stack Pointer
-        TXS
-        RTS         ;and Return to Basic
-
+        JMP $C003   ;BASIC Warm Start
+;       
 ;Note: The following two functions replicate calls available 
 ;in the Apple-1 monitor and are included for test purposes
 ;They will likely be removed before the final release
@@ -118,18 +115,3 @@ PRHEX:  AND #$0F    ;Strip High Nybble
         ADC #$06    ;  Convert ':' to 'A'...
 PRHEXC: ADC #$30    ;Convert to ASCII Character
         JMP PRCHR   ;Print Hex Digit and Return
-
-
-;Functions to set String Pointers
-;Used by memory, stdio, stdlin, string, and stringx libraries
-
-;Initialize Destination String Pointer
-SETDST: STX DSTLO       ;Save Destination String Pointer
-        STY DSTHI
-        RTS
-
-;Initialize Source String Pointer and Index
-SETSRC: STX SRCLO       ;Save Source String Pointer
-        STY SRCHI
-        LDY #$00        ;Initialize Index Into String
-        RTS
