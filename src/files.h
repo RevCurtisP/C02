@@ -12,6 +12,7 @@ char srcnam[FNAMLEN]; //Source File Name
 char outnam[FNAMLEN]; //Assembler File Name
 char lognam[FNAMLEN]; //Log File Name 
 char incnam[FNAMLEN]; //Include File Name 
+char subnam[FNAMLEN]; //Include File Name (Subdirectory) 
 
 void opnsrc();   //Open Source File
 void clssrc();   //Close Source File

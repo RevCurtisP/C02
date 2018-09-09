@@ -50,9 +50,9 @@ enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 
 /*Variable Modifier Types (Bit Mask) */
 #define MTNONE   0 //No Modifier
-#define MTCONST  1 //Constant
-#define MTZP     2 //Zero Page
-#define MTALS    4 //Alias
+#define MTALS    1 //Alias
+#define MTCONST  2 //Constant
+#define MTZP     4 //Zero Page
 #define MTALGN 128 //Aligned
 
 int symdef(char *name);         //Is Variable defined (TRUE or FALSE)

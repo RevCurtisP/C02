@@ -96,18 +96,18 @@ void pstrct(int m) {
 
 /* Parse Variable/Function Declaration*/
 void pdecl(int m, int t) {
-  DEBUG("Processing variable declarations(s) of type %d\n", t)
+  DEBUG("Processing declaration(s) of type %d\n", t)
   do {
     getwrd();
     if (match('(')) {
-      if (m != MTNONE) ERROR("Illegal Modifier %d in Function Definition\n", m, EXIT_FAILURE)
+      if (m > MTNONE) ERROR("Illegal Modifier %d in Function Definition\n", m, EXIT_FAILURE)
       addfnc();  //Add Function Call
       return;
-    }  
+    }
     addvar(m, t);
   } while (look(','));
   expect(';');
-  DEBUG("Variable Declaration Completed\n", 0)
+  DEBUG("Declaration completed\n", 0)
   cmtlin();    //Write out declaration comment
 }
 

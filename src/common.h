@@ -66,6 +66,7 @@ char cmtasm[LINELEN]; //Assembly Language Comment Text
 char hdrnam[FNAMLEN]; //Header File Name
 char incdir[FNAMLEN]; //Include File Directory
 char inpnam[FNAMLEN]; //Input File Name 
+char subdir[FNAMLEN]; //Include File SubDirectory
 
 int alcvar; //Allocate Variables Flag
 int inblck; //Multiline Block Flag

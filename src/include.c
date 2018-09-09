@@ -23,11 +23,18 @@
 void pincnm(void) {
   char dlmtr;
   int inclen = 0;
+  int sublen = 0;
   skpspc();
   dlmtr = getnxt();
   if (dlmtr == '<') {
     strcpy(incnam, incdir);
     inclen = strlen(incnam);
+    if (subdir[0]) {
+      strcpy(subnam, incdir);
+      strcat(subnam, subdir);
+      sublen = strlen(subnam);
+      subnam[sublen++] = '/';
+    }
     dlmtr = '>';
   }
   else if (dlmtr != '"')
@@ -35,10 +42,14 @@ void pincnm(void) {
   while (!match(dlmtr))
   {
     incnam[inclen++] = nxtchr;
+    if (sublen) subnam[sublen++] = nxtchr;
     skpchr();
   }
   skpchr(); //skip end dlmtr
   incnam[inclen] = 0;
+  subnam[sublen] = 0;
+  DEBUG("Set INCNAM to '%s'\n", incnam);
+  DEBUG("Set SUBNAM to '%s'\n", subnam);
 }
 
 /* Process assembly language include file  */
@@ -250,7 +261,9 @@ void pincfl(void) {
     incasm();
   else if (strcmp(dot, ".h02") == 0) { 
     inchdr();  //Process Header File
+    dot = strrchr(incnam, '.'); //find extension
     strcpy(dot, ".a02");
+    DEBUG("INCNAM set to '%s'\n", incnam)
     incasm();  //Process Assembly File with Same Name
   }
   else {

@@ -51,6 +51,7 @@ void init(void) {
   wrtofs[0] = 0;  //Write Offset
   xsnvar[0] = 0;  //Assigned X Variable Name
   ysnvar[0] = 0;  //Assigned Y Variable Name
+  subdir[0] = 0;  //Include Subdirectory
   strcpy(incdir, "../include/");
 }
 
@@ -129,7 +130,7 @@ int popt(int arg, int argc, char *argv[]) {
   strncpy (argstr, argv[arg], 31);
   if (strlen(argstr) != 2) ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
   opt = toupper(argstr[1]);
-  if (strchr("H", opt)) {
+  if (strchr("HS", opt)) {
     if (++arg >= argc) ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
@@ -137,6 +138,10 @@ int popt(int arg, int argc, char *argv[]) {
   switch (opt) {
     case 'H':
       strcpy(hdrnam, optarg);
+      DEBUG("Header Name set to '%s'\n", hdrnam)
+      break;
+    case 'S':
+      strcpy(subdir, optarg);
       DEBUG("Header Name set to '%s'\n", hdrnam)
       break;
     default:

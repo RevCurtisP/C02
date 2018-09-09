@@ -69,15 +69,28 @@ void opnlog(void) {
   if (logfil == NULL)  extsys(lognam);
 }
 
-/* Close Log File                      *
- * Uses: logfil - Log File Handle    */
+/* Close Log File                 *
+ * Uses: logfil - Log File Handle */
 void clslog(void) { fclose(logfil); }
 
-/* Open Include file                      *
- * Uses: incnam - Include File Name     *
- * Sets: incfil - Include File Handle    */
+/* Open Include file                               *
+ * Uses: incnam - Include File Name                *
+ *       subnam - Include File Name (Subdirectory) *
+ * Sets: incfil - Include File Handle              */
 void opninc(void)
 {
+  if (subnam[0]) {
+    DEBUG("Attempting to open include file '%s'\n", subnam)
+    incfil = fopen(subnam, "r");
+    if (incfil == NULL) DEBUG("Open failed\n", 0)
+    else {
+      strcpy(incnam, subnam);
+      DEBUG("INCNAM set to '%s'\n", incnam);
+	  subnam[0] = 0;
+      return;
+    }
+  }
+
   DEBUG("Opening include file '%s'\n", incnam)
   incfil = fopen(incnam, "r");
   if (incfil == NULL) extsys(incnam);
