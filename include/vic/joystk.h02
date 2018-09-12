@@ -1,0 +1,15 @@
+/* Joystick Library Header File for VIC-20 */
+
+#define JYSTKS $01 //Number of Joysticks
+
+#define JOYUP $04 //Bit 2 - Up    
+#define JOYDN $08 //Bit 3 - Down  
+#define JOYLF $10 //Bit 4 - Left  
+#define JOYRT $01 //Bit 1 - Right 
+#define JOYB0 $20 //Bit 5 - Button
+
+/* Read Joystick State             *
+ * Args: n = Joystick Number       *
+ * Returns: Joystick Status        *
+ *          $FF = Invalid Argument */
+char joystk(); 

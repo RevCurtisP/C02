@@ -14,6 +14,7 @@ blkmem   block    Block Memory          Search block for segment matching array.
 blkstr   block    Block String          Search block for segment beginning with string.
 blkswp   block    Block Swap            Swap bytes of array with the current segment.
 blksrt   block    Block Sort            Sort segments in block by initial string.
+button   paddle   Button                Read paddle button controller status.
 ctoa     stdlib   Character to ASCII    Convert byte to numeric string.
 div      stdlib   Divide                Divide two bytes.
 failed   test     Failed                Write "  Fail" to screen.
@@ -54,6 +55,8 @@ ispnct   ctype    Is Punctuation        Return TRUE if Graphical and not Alphanu
 isprnt   ctype    Is Printable          Return TRUE if ASCII code is 32-126.
 isspce   ctype    Is white Space        Return TRUE if ASCII code is 9-13 or 32.
 isuppr   ctype    Is Uppercase          Return TRUE if character is A-Z.
+joystk   joystk   Joystick              Read Atari style joystick controller status.
+lgtpen   lgtpen   Light Pen             Read light pen status.
 maddr    memio    Memory Address        Return address contained in memory file pointer.
 max      stdlib   Maximum               Return greater of two byte.
 mclose   memio    Memory Close          Close memory file.
@@ -73,6 +76,7 @@ mputc    memio    Memory Put Character  Write single character to memory file.
 mputln   memio    Memory Put String     Write string followed by newline to memory file. 
 mputs    memio    Memory Put String     Write string to memory file. 
 mult     stdlib   Multiply              Multiply two bytes.
+paddle   paddle   Paddle                Read paddle controller position.
 passed   test     Passed                Write "  Pass" to screen.
 passln   test     Passed Line           Print "  Pass" plus newline to screen.
 psflln   test     Pass or Fail Line     Write "  Pass" or "  Fail" plus newline to screen.

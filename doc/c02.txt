@@ -379,6 +379,12 @@ A modifier is used with a declaration to override the default properties of
 an object. Modifiers may currently only be used with simple variable and
 array declarations, although this may be expanded in the future.
 
+The alias modifier specifies that a variable is to be located at a specific 
+address. The specified address may either be a literal in the range 0 to
+65534 ($0 to $FFFF) or a previously defined variable name. When using the
+alias modifier, the declared variable must be followed by the = character
+and the literal or variable name to be aliased to.
+
 The aligned modifier specifies that the the variable or array will start on
 a page variable. This is used to ensure that accessing an array element will
 not cross a page boundary, which requires extra CPU cycles to execute.
@@ -400,13 +406,15 @@ zero (addresses 0 through 255). It should be used in conjunction with the
 pragma zeropage directive.
 
 Examples:
-  aligned char table[240];  //Defines 241 byte array aligned to page boundary
-  char debug = #TRUE; //Defines variable debug initialized to constant
-  char flag = 1;      //Defines variable flag initialized to 1
-  const char s = "string";  //Defines 7 byte string s initialized to "string"
-  const char m = {1,2,3};   //Defines 3 byte array m containing 1, 2, and 3   
+  alias char putcon = $F001; //Defines variable putcon with address $F001
+  alias char alpha = omega;  //Defines variable alpha aliased to omega  
+  aligned char table[240];   //Defines 241 byte array aligned to page boundary
+  const char debug = #TRUE;  //Defines variable debug initialized to constant
+  const char flag = 1;       //Defines variable flag initialized to 1
+  const char s = "string";   //Defines 7 byte string s initialized to "string"
+  const char m = {1,2,3};    //Defines 3 byte array m containing 1, 2, and 3   
   aligned const char fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
-  zeropage char ptr, tmp;   //Defines zero page variables
+  zeropage char ptr, tmp;    //Defines zero page variables
 
 EXPRESSIONS
 

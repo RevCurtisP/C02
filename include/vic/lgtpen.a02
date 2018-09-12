@@ -1,0 +1,32 @@
+;Light Pen Constants and Functions
+;Non-Functional Skeleton for Systems with No Joystick Support
+
+LGTPNS  EQU #$FF        ;Light Pen Status (Supported)
+
+;Read Light Pen
+LGTPEN: LDX #0      ;Initialize X to FALSE (0)
+        LDA $9009   ;Check Paddle 1 (Magnum Light Phaser)
+        BMI LGTPEJ  ;If Trigger Pulled
+        DEX         ;  Set X to TRUE ($FF)
+        BNE LGTPEP  ;Else Check Joystick Inputs
+LGTPEJ: LDA $9113   ;  Get DDR for Port A Status
+        PHA         ;  and Save It
+        LDA $9122   ;  Set DDR for Port B Status
+        PHA         ;  and Save It
+        STX $9113   ;  Set DDR for Port A to All Inputs
+        STX $9122   ;  Set DDR for Port B to All Inputs
+        LDA $9120   ;  Read Port B (S2)
+        ASL         ;  Shift Bit 7 into Carry
+        LDA $9111   ;  Read Port A
+        ROR         ;  Rotate Carry Back In
+        EOR #$FF    ;  Invert Bits
+        AND #$9E    ;  and Mask Joystick Inputs
+        BEQ LGTPES  ;  If Any Bits Set
+        DEX         ;    Set X to TRUE ($FF)
+LGTPES: PLA         ;  Restore Port B DDDR
+        STA $9122
+        PLA         ;  Restore Port A DDDR
+        STA $9113
+LGTPEP: LDY $9007   ;Read Y Position into Y
+        LDA $9006   ;Read X Position into A
+        RTS

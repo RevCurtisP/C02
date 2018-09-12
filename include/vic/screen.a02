@@ -1,0 +1,124 @@
+;Screen Control Assembly Lanuage Routines for C02
+
+;Vic Display Colors
+BLACK   EQU 0     Black
+WHITE   EQU 1     White
+RED     EQU 2     Red
+CYAN    EQU 3     Cyan
+MAGENT  EQU 4     Purple
+GREEN   EQU 5     Green
+BLUE    EQU 6     Blue
+YELLOW  EQU 7     Yellow
+
+;PETSCII Screen Control Characters
+CHRCLR  EQU 147   Clear (CLR)
+CHRDEL  EQU 20    Delete (DEL)
+CHRDN   EQU 17    Cursor Down
+CHRRTN  EQU 13    Return
+CHRFN1  EQU 133   Function Key 1 (F1)
+CHRFN2  EQU 137   Function Key 2 (F2)
+CHRFN3  EQU 134   Function Key 3 (F3)
+CHRFN4  EQU 138   Function Key 4 (F4)
+CHRFN5  EQU 135   Function Key 5 (F5)
+CHRFN6  EQU 139   Function Key 6 (F6)
+CHRFN7  EQU 136   Function Key 7 (F7)
+CHRFN8  EQU 140   Function Key 8 (F8)
+CHRHOM  EQU 19    Home 
+CHRINS  EQU 148   Insert
+CHRLFT  EQU 157   Cursor Left
+CHRRGT  EQU 29    Cursor Left
+CHRRVF  EQU 146   Reverse Off
+CHRRVN  EQU 18    Reverse On
+CHRUP   EQU 145   Cursor Up
+
+;PETSCII Box Drawing Characters
+BOXBLC  EQU 173   Bottom Left Corner
+BOXBRC  EQU 189   Bottom Right Corner
+BOXBCT  EQU 177   Bottom to Cetter Tee 
+BOXCTR  EQU 123   Center Cross
+BOXHLN  EQU 96    Horizontal Line
+BOXLCT  EQU 171   Left To Center T
+BOXRCT  EQU 179   Right To Center T
+BOXTLC  EQU 176   Top Left Corner
+BOXTRC  EQU 174   Top Right Corner
+BOXTCT  EQU 178   Top to Center T
+BOXVLN  EQU 98    Verical Line
+
+;PETSCII Color Code Table
+CLRCDS  DC  144, 5, 28, 159, 156, 30, 32, 158
+
+;Set Background Color
+;Args: A = Vic Color Code
+;Uses: TEMP0 - Temporary Storage
+;Affects: A,C,N,Z
+SCRBKG: LSR           ;Shift Color Code 4 Bits Left
+        LSR 
+        LSR 
+        LSR 
+        STA TEMP0     ;Save it
+        LDA $900F     ;Read VIC Color Control Register
+        AND #$15      ;Strip Existing Backround Color
+        ORA           ;Add in Background Color
+        STA $900F     ;Write back to VIC Chip
+        RTS
+
+;Set Text Color
+;Args: A = Vic color code
+;Affects: A,X,C,N,Z
+SCRTXT: TAX           ;Transfer Color Code to Index
+        LDA CLRTBL,X  ;Load PETSCII Color Control Character
+        JMP PRCHR     ;Print Character and Return
+
+;Clear Screen
+;Affects A,C,N,Z
+SCRCLR: LDA #CLEAR  ;Load Clear Screen Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Down
+;Affects A,C,N,Z
+SCRDWN: LDA #DOWN   ;Load Cursor Down Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor To Home Position
+;Affects A,C,N,Z
+SRCHOM: LDA #HOME   ;Load Cursor Home Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Left
+;Affects A,C,N,Z
+SCRLFT: LDA #LEFT   ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Right
+;Affects A,C,N,Z
+SCRRGT: LDA #RIGHT  ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Up
+;Affects A,C,N,Z
+SCRUP:  LDA #UP     ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor to Specified Coordinates
+;Args: A = screen column (0 = top)   
+;      Y = screen line (0 = left)
+SCRMOV: TAX         ;Transfer Column to X Register
+        CLC         ;Clear Carry Flag
+        JMP $FFF0   ;Call PLOT Kernal Routine and Return
+
+;Get Cursor Position
+;Returns: A = current cursor column
+;         Y = current cursor row
+;         X = current cursor column
+SCRPOS: SEC         ;Set Carry Flag
+        JSR $FFF0   ;Call PLOT Kernal Routine
+        TXA         ;Transfer Column to Accumulator
+        RTS
+
+;Get Screen Size
+;Returns: A = width of screen in columns
+;         Y = height of screen in rows
+;         X = width of screen in columns
+SCRSIZ: JSR $FFED   ;Call SCREEN Kernal Routine
+        TXA         ;Transfer Width to Accumulator
+        RTS

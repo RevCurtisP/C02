@@ -1,0 +1,17 @@
+/* Joystick Header File         *
+ * Nonfunctional Skeleton for   *
+ * Systems w/o Joystick Support */
+
+#define JYSTKS $00 //Number of Joysticks
+
+#define JOYUP $00 //Undefined - Up    
+#define JOYDN $00 //Undefined - Down  
+#define JOYLF $10 //Undefined - Left  
+#define JOYRT $00 //Undefined - Right 
+#define JOYB0 $20 //Undefined - Button
+
+/* Read Joystick State       *
+ * Args: j = Joystick Number *
+ * Returns: $FF = Error      *
+ *              No Joysticks */
+char joystk(); 

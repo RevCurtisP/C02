@@ -70,13 +70,13 @@ PLKEY:  INC RDSEED  ;Cycle Keypress Counter
         LDA #0      ;Otherwise Return ASCII NUL
         RTS
 
-RDKEY:  INC RDSEED  ;Cycle Keypress Counter
+GETCHR: INC RDSEED  ;Cycle Keypress Counter
 RDKEYC: BIT KBDCR   ;Check the Keyboard Control Register
         BPL RDKEYC  ;  and loop if key not pressed
 RDKEYA: LDA KBD     ;  Read key into Accumulator
         RTS
 
-GETKEY: JSR RDKEY   ;Subroutine - Read ASCII from Keyboard
+GETKEY: JSR GETCHR  ;Subroutine - Read ASCII from Keyboard
 GETKEA: AND #$7F    ;Strip High Bit
         BIT GETKEM  ;If Character is in   
         BEQ GETKEX  ;  Alpha Block ($40-$74)
@@ -84,12 +84,26 @@ GETKEA: AND #$7F    ;Strip High Bit
 GETKEX: RTS 
 GETKEM: DC  $40     ;Character Block Bit Mask        
 
-PRCHR   EQU ECHO    ;Alias to Monitor Routine
+PUTCHR  EQU ECHO    ;Alias to Monitor Routine
 
 ;Delete Previous Character
 DELCHR: LDA #DELKEY ;Load Underscore Character
-        JMP PRCHR   ;  and Print it
+        JMP PUTCHR  ;  and Print it
 
 ;Advance Character to Next line
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
-        JMP PRCHR   ;  and Print it
+        JMP PUTCHR  ;  and Print it
+
+;Clear the Screen
+CLRSCR:             ;Do Nothing (Drop to RTS)
+
+;Move Cursor to Specified Coordinates
+SETPOS: RTS         ;No Action
+ 
+;Get Cursor Position
+GETPOS  EQU LGTPEN  ;Return Error 
+
+;Get Screen Size
+GETSIZ: LDA #40     ;40 Columns
+        LDY #24     ;24 Lines
+        RTS

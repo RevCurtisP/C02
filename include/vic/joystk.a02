@@ -1,0 +1,35 @@
+;Joystick Assembly Language Library for VIC-20
+
+JYSTKS  EQU $01     ;Number of Joysticks
+
+;Joystick Bit Masks
+JOYUP   EQU $04     ;Bit 2 - Up    
+JOYDN   EQU $08     ;Bit 3 - Down  
+JOYLF   EQU $10     ;Bit 4 - Left  
+JOYRT   EQU $01     ;Bit 1 - Right 
+JOYB0   EQU $20     ;Bit 5 - Button
+
+;Read Joystick
+JOYSTK: LDX #$FF    ;Preset X with 255
+        ORA #0      ;Check Parameter
+        BNE JOYSTZ  ;If Not Zero, Return Error
+        TAX         ;Set X to 0
+        LDA $9113   ;Get DDR for Port A Status
+        PHA         ;and Save It
+        LDA $9122   ;Set DDR for Port B Status
+        PHA         ;amd Save It
+        STX $9113   ;Set DDR for Port A to All Inputs
+        STX $9122   ;Set DDR for Port B to All Inputs
+        LDA $9120   ;Read Port B (Right)
+        ASL         ;Shift Bit 7 into Carry
+        LDA $9111   ;Read Port A
+        AND #$3C    ;Mask Bits
+        ADC #0      ;Move Carry into Bit 0
+        EOR #$3D    ;Invert Bits
+        TAX         ;and Save in X Register
+        PLA         ;Restore Port B DDDR
+        STA $9122   
+        PLA         ;Restore Port A DDDR
+        STA $9113   
+JOYSTZ: TXA         ;Copy Status Back into Accumulator
+        RTS

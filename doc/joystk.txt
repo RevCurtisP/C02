@@ -1,0 +1,48 @@
+Joystick Functions for C02 Programs
+
+This module contains constants and a function for reading digital joysticks
+(the type used on Atari and Commodore 8-bit computers). For systems that use
+analog joysticks (such as the Apple II), the paddle module should be used.
+
+The constants and assembly code vary by system, so when invoking the 
+cross-compilers, the command line option -s must be used to ensure that
+the correct header files are included.
+
+At the beginning of the program use the directives
+
+  #include <joystk.h02>
+
+The following constants are defined:
+
+  #JYSTKS       Maximum number of joysticks supported by system.
+
+                For systems with no joystick support, this will be 0.
+
+  #JOYUP        Joystick Switch Bitmask - Up
+  #JOYDN        Joystick Switch Bitmask - Down
+  #JOYLF        Joystick Switch Bitmask - Left
+  #JOYRT        Joystick Switch Bitmask - Right
+  #JOYB0        Joystick Switch Bitmask - Fire Button
+
+The following functions are defined:
+
+  j = joystk(n);        Returns the current state of joystick n.
+
+                        If n is greater than or equal to #JYSTKS then $FF
+                        will be returned. Otherwise, a byte representing the
+                        state of the joystick switches will be returned.
+
+                        Each switch in the joystick has a corresponding bit 
+                        in the result which will be 1 if the switch is 
+                        depressed or 0 if it is not.
+
+                        The specific assignment of bits varies by system, so
+                        the joystick bitmask constants should be used to check
+                        the state of the individual switches. 
+                        
+                        The state of an individual switch can be determined by  
+                        doing a bitwise and of the result with the corresponding
+                        bitmask constant, which will result in a non-zero value
+                        if and only if that switch is depressed.
+
+Note: This library has no external dependencies.

@@ -1,0 +1,37 @@
+/************************************
+ * PADDLES - Test paddle() function *
+ ************************************/
+
+//use -h option on command line
+#include <paddle.h02>
+
+char i,b,p;
+
+main:
+  clrscr();
+
+  if (!#PADDLS|#BUTTNS) goto exit; 
+
+  for (i=0;i<#PADDLS;i++) {
+    setpos(1,i);
+    putchr('P'); prhex(i); putchr(':');
+  }
+
+  for (i=0;i<#BUTTNS;i++) {
+    setpos(7,i);
+    putchr('B'); prhex(i); putchr(':');
+  }
+
+loop:
+  if (getkey() == #ESCKEY) goto exit;
+  for (i=0;i<#PADDLS;i++) {
+    p = paddle(i);
+    setpos(4,i);
+    prbyte(p);
+  }
+  for (i=0;i<#BUTTNS;i++) {
+    b = button(i);
+    setpos(10,i);
+    prbyte(b);
+  }
+  goto loop;

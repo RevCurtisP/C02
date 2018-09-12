@@ -1,0 +1,17 @@
+/* Psddle Controllers Header File *
+ * Nonfunctional Skeleton for     *
+ * Systems w/o Paddle Support     */
+
+#define BUTTNS $00 //Number of Paddle Buttons
+#define PADDLS $00 //Number of Paddles
+
+/* Get Paddle Button Status *
+ * Args: p = Paddle Number  *
+ * Returns: 0               */
+void button(); 
+
+/* Get Paddle Status       *
+ * Args: p = Paddle Number *
+ * Returns: 0              */
+void paddle();
+

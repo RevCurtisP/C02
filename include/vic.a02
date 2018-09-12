@@ -47,26 +47,63 @@ EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
         RTS         ;Return to BASIC
 
 ;Poll Keyboard for Character
-PLKEY   EQU $FFE4  ;Aliased to Kernal GETIN Routine
+POLKEY  EQU $FFE4   ;Aliased to Kernal GETIN Routine
 
 ;Get Character from Keyboard
-GETKEY: EQU PLKEY
+GETKEY: JSR POLKEY  ;Get Key From Keybord
+        ;The below is not working...
+        LDY $9005   ;Get Character Memory Offset
+        CPY #242    ;If Upper/Lower
+        BNE GETKEX
+        BIT $FF     ;  Bit 7 -> C, Bit 6 -> V
+        BVC GETKEX  ;  If Bit 6 Set (Alpha)
+        BCC GETKEL  ;    If Bit 7 Set (PETSCII Upper)
+        AND #$7F    ;      Clear Bit 7 (ASCII Upper)
+        BNE GETKEX  ;    Else
+GETKEL: ORA #$20    ;      Set Bit 5 (ASCII Lower)
+GETKEX: ORA #$00    ;Set Flags
+        RTS
+
+;A = $41 %0100 0001
+;a = $C1 %1100 0001 PETSCII
+;a = $61 %0110 0001 PETSCII
+;$9005 = 240 UPR/GFX
+;        242 UPR/LWR
 
 ;Wait for Character from Keyboard
-RDKEY:  JSR GETKEY  ;Poll Keyboard
-        BEQ RDKEY   ;If No Key, Loop
+GETCHR: JSR GETKEY  ;Poll Keyboard
+        BEQ GETCHR  ;If No Key, Loop
         RTS
+
+;Print Character to Console
+;uses direct call to SCRNOUT instead of CHROUT 
+PUTCHR  EQU $E742  ;Aliased to SRCNOUT Routine
 
 ;Delete Previous Character
 DELCHR: LDA #DELKEY ;Load Delete Character
-        JMP PRCHR   ;Print and Return
+        JMP PUTCHR  ;Print and Return
 
 ;Advance Character to Next line
 NEWLIN: LDA #RTNKEY ;Load C/R into Accumulator
-        JMP PRCHR   ;Print and Return
+        JMP PUTCHR  ;Print and Return
 
-;Print Character to Console
-PRCHR   EQU $FFD2  ;Aliased to Kernal CHROUT Routine
+;Clear the Screen
+CLRSCR  EQU $E55F   ;Alias to CLSR Routine
+
+;Move Cursor to Specified Coordinates
+SETPOS: STA $D3     ;Save Cursor Column
+        STY $D6     ;Save Cursor Row
+        JMP $E587   ;Set Screen Poiners and Return
+
+;Get Cursor Position
+GETPOS: LDY $D6     ;Load Cursor Row
+        LDA $D3     ;Load Cursor Column
+        RTS
+
+;Get Screen Size
+GETSIZ: JSR $FFED   ;Call SCREEN Kernal Routine
+        TXA         ;Transfer Width to Accumulator
+        RTS
 
 ;Print Byte as Two-Digit Hex Number to Console
 PRBYTE: PHA         ;Save Accumulater
@@ -84,4 +121,4 @@ PRHEX:  AND #$0F    ;Strip High Nybble
         BCC PRHEXC  ;  
         ADC #$06    ;  Convert ':' to 'A'...
 PRHEXC: ADC #$30    ;Convert to ASCII Character
-        JMP PRCHR   ;Print Hex Digit and Return
+        JMP PUTCHR  ;Print Hex Digit and Return

@@ -13,48 +13,72 @@ Note: This will probably be replaced with a command line parameter
 If compatibility with the C02 Standard Libraries is needed, the following
 functions must be defined:
 
-  c = plkey();        Polls keyboard and returns raw ASCII character
-                      corresponding to last/current pressed key.
+  c = plkey();          Polls keyboard and returns raw ASCII character
+                        corresponding to last/current pressed key.
 
-                      Returns constant NULKEY (usually 0) if no key was
-                      pressed.
+                        Returns constant NULKEY (usually 0) if no key was
+                        pressed.
 
-  c = rdkey();        Waits for a keypress and returns the raw ASCII
-                      character corresponding to the pressed key.
+  c = rdchr();          Waits for a keypress and returns the raw ASCII
+                        character corresponding to the pressed key.
 
-                      Note: Usually a loop that calls plkey(), but may
-                      also directly call a system subroutine.
+                        Note: Usually a loop that calls plkey(), but may
+                        also directly call a system subroutine.
 
-  c = getkey();       Waits for a keypress and returns the cleaned
-                      ASCII value corresponding to the pressed key.
+  c = getkey();         Waits for a keypress and returns the cleaned
+                        ASCII value corresponding to the pressed key.
 
-                      Note: Calls rdkey() followed by any necessary
-                      character code conversions. This can be due to
-                      high-bit being set by keyboard decoder,
-                      non-standard key mappings, keys that generate
-                      escape sequences, etc...
+                        Note: Calls rdkey() followed by any necessary
+                        character code conversions. This can be due to
+                        high-bit being set by keyboard decoder,
+                        non-standard key mappings, keys that generate
+                        escape sequences, etc...
 
-  newlin();           Advances the cursor to the beginning of then
-                      next line.
+  prchr(c);             Writes character c to the screen.
 
-                      Note: Depending on the system, this will usually
-                      output a Carriage Return, Line Feed, both.
+                        Note: Does any needed ACSII conversions, then calls
+                        the native print character routine.
 
-  echo(c);            Writes character c to the screen without any
-                      translation.
+  newlin();             Advances the cursor to the beginning of then
+                        next line.
 
-                      Note: May directly access memory-mapped I/O
-                      or may call a system subroutine.
+                        Note: Depending on the system, this will usually
+                        output a Carriage Return, Line Feed, both.
 
-  prchr(c);           Writes character c to the screen.
+  delchr();             Delete character to left and move cursor one
+                        character to the left.
 
-                      Note: Does any needed ACSII conversions, then calls 
-                      echo().
+                        Note: Depending on the system, this will usually
+                        print one or two delete or backspace characters, and
+                        possibly a space to overwite the deleted character.
+
+  clrscn();             Clears the screen. On systems without this capability,
+                        such as the Apple 1, this function should simply
+                        return without performing any actions.
+
+                        Note: Depending on the system, this will may either
+                        print the clear screen control character or execute
+                        the native clear screen routine.
+
+  setpos(col,row);      Moves the cursor to the specified column and row. On
+                        systems without this capability, such as the Apple 1,
+                        this function should simply returns without performing
+                        any actions.
+
+  col, row = getpos();  Returns the cursor's current position. On systems
+                        without this capability, such as the Apple 1,
+                        this function should return the values 255, 255.
+
+  wid, hgt = getsiz();  Returns the size of the screen in columns, and rows.
+  
+                        Note: This may call a system subroutine, read system
+                        variables, or simply return hard-coded values.
 
 along with the Zero Page locations (each pair of which must be sequential)
 
-  srclo, srchi       Spurce String Pointer
+  srclo, srchi       Source String Pointer
   dstlo, dsthi       Destination String Pointer
+  stklo, stkhi       Stack Pointer
 
 the following locations that may be Zero Page, but don't have to before
 

@@ -1,0 +1,73 @@
+Joystick Functions for C02 Programs
+
+This module contains constants and a function for reading paddles and
+analog joysticks. It can also be used with devices that emulate paddles,
+such as the Koala Pad and some mice. 
+
+The constants and assembly code vary by system, so when invoking the 
+cross-compilers, the command line option -s must be used to ensure that
+the correct header files are included.
+
+At the beginning of the program use the directives
+
+  #include <paddle.h02>
+
+The following constants are defined:
+
+  #PADDLS       Maximum number of joysticks supported by system.
+
+  #BUTTNS       Maximum number of paddle buttons supported by system.
+
+                For systems with no paddle support, both of these
+                will be 0
+
+The following functions are defined:
+
+  p = paddle(n);        Returns the current state of paddle n, the first
+                        paddle having the number 0.
+
+                        If n is greater than or equal to #PADDLS then 0
+                        will be returned. Otherwise, a byte between 0 and
+                        $FF representing the current paddle position will
+                        be returned.
+
+  b = button(n);        Returns the current state of button n, the first
+                        paddle having the number 0. This number may or may
+                        not correspond to a particular paddle number.
+
+                        If n is greater than or equal to #BUTTNS then 0
+                        will be returned. Otherwise, the number 255 (TRUE)
+                        will be returned if the button is depressed, while
+                        the number 0 (FALSE) will be returned if it is not.
+
+System Specific Notes:
+
+  Atari Style Paddles   These are used on Atari and Commodore 8-bit systems.
+                        The paddles are grouped in pairs. Therefore, the 
+                        paddles in the first controller port will be 
+                        numbered 0 and 1, the paddles in the second port 
+                        will be numbered 2 and 3, and so on. The button 
+                        numbers directly correspond with the paddle numbers.
+
+                        When using a Koala Pad, mouse in paddle emulation 
+                        mode, or similar device, two calls to the paddle()
+                        and/or button() functions must be made. Using the 
+                        even paddle number (0 or 2) returns the horizontal 
+                        value, while the odd paddle number (1 or 3) returns 
+                        the vertical value. Likewise, using the even button 
+                        number reads the left button, while the odd button
+                        reads the right button.
+
+  Apple II              When using paddle controllers, the first paddle
+                        and its button are both numbered 0 while the second 
+                        paddle and its button are both numbered 1.
+
+                        When using joystick controllers, the first joystick's
+                        horizontal and vertical positions are read using 
+                        paddle(0) and paddle(1) respectively, and its button
+                        is read using button(0), while the second joystick's
+                        horizontal and vertical positions are read using 
+                        paddle(2) and paddle(3) respectively, and its button
+                        is read using button(1)
+
+Note: This library has no external dependencies.

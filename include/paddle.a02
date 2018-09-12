@@ -1,0 +1,14 @@
+;Paddle Controller Constants and Functions
+;Non-Functional Skeleton for Systems with No Paddle77 Support
+
+PADDLS  EQU 0       ;Number of Joysticks
+
+;Read Paddle
+PADDLE: LDA #0      ;Return Zero
+        SEC         ;and Carry Set
+        RTS
+
+BUTTNS  EQU 0       ;Number of Paddle Buttons
+
+;Read Button
+BUTTON: EQU PADDLE  ;Return Zero & Carry Set

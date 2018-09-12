@@ -1,0 +1,35 @@
+Lightpen Functions for C02 Programs
+
+This module contains a constant and function for reading lightpens on 
+systems that support them.
+
+The constants and assembly code vary by system, so when invoking the 
+cross-compilers, the command line option -s must be used to ensure that
+the correct header files are included.
+
+At the beginning of the program use the directives
+
+  #include <lgtpen.h02>
+
+The following constants are defined:
+
+  #LGTPNS       Light pen status. If loght pen support is available,
+                this will be 255 (true), otherwise, it will be 0 (false).
+
+The following function is defined:
+
+  h,v,t = lgtpen();     Returns the state of the lightpen ot lightgun.
+
+                        This function returns three values: the first
+                        is the horizontal position on the screen, the 
+                        second is the vertical position on screen, and
+                        the third is the state of the button or trigger
+                        (255 if pressed, otherwise 0).
+                        
+                        Note: The position returned by this function is
+                        based on the position of the raster beam and does
+                        not directly correspond to pixel coordinates. 
+                        Therefore, some sort of calibration and conversion
+                        will be necessary when using a light pen.
+
+Note: This library has no external dependencies.

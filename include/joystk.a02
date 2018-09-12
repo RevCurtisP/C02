@@ -1,0 +1,15 @@
+;Joystick Constants and Functions
+;Non-Functional Skeleton for Systems with No Joystick Support
+
+JYSTKS  EQU 0       ;Number of Joysticks
+
+;Joystick Bit Masks
+JOYUP   EQU $00     ;N/A - Up    
+JOYDN   EQU $00     ;N/A - Down  
+JOYLF   EQU $00     ;N/A - Left  
+JOYRT   EQU $00     ;N/A - Right 
+JOYB0   EQU $00     ;N/A - Button
+
+;Read Joystick
+JOYSTK: LDA #255    ;Return Error Code
+        RTS

@@ -1,0 +1,25 @@
+;Paddle Controller Constants and Functions for Apple II
+
+PADDLS  EQU #4      ;Maximum Numbers of Paddles
+
+;Read Paddle
+PADDLE: LDY #0      ;Set Result to 0
+        CMP #PADDLS ;If Paddle# >= Max 
+        BCS PADDLZ  ;  Return # of Paddles & Carry Set
+        TAX         ;Copy Paddle# to X Register
+        JSR $FB1E   ;Execute Monitor PREAD Routine
+PADDLZ: TYA         ;Copy Result to Accumulator
+        RTS
+
+BUTTNS  EQU #2      ;Maximum Numbers of Buttons
+
+;Read Paddle Button
+BUTTON: LDY #0      ;Set Result to 0
+        CMP #BUTTNS ;If Button# >= Max
+        BCS BUTTOZ  ;  Return Zero & Carry Set
+        TAX         ;Copy Paddle# to X Register
+        LDA $C061,X ;Load Button Register
+        BPL BUTTOZ  ;If Bit 7 Set
+        DEY         ;  Change Result to $FF
+BUTTOZ: TYA         ;Copy Result to Accumulator
+        RTS

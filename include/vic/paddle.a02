@@ -1,0 +1,48 @@
+;Paddle Controller Constants and Functions for VIC-20
+
+PADDLS  EQU #2      ;Maximum Numbers of Paddles
+
+;Read Paddle
+;Args: A = Paddle #
+;Returns: A,Y = Paddle Value
+;               0 and Carry Set if Paddle # Invalid
+;         X = Paddle #
+PADDLE: LDY #0      ;Preset Result to 0
+        CMP #PADDLS ;If Paddle# >= # of Paddles
+        BCS PADDLZ  ;  Return Zero & Carry Set
+        TAX         ;Copy Paddle # to X Register
+        LDY $9008,X ;Read Paddle
+PADDLZ: TYA         ;Copy Result to Accumulator
+        RTS
+
+BUTTNS  EQU #2      ;Maximum Numbers of Paddle Buttons
+
+;Read Paddle Button
+;Args: A = Button #
+;Affects: Y
+;Returns: A = $FF if Paddle Button Pressed
+;             $00 if Paddle Button Not Pressed
+;         Carry Set if Button Number Invalid
+;         X = Button #
+BUTTON: CMP #2          ;If Button# >= # of Buttons
+        BCS BUTTOZ      ;  Return FALSE & Carry Set
+        TAX             ;Copy Button Number to X Register
+        LDY BUTTOR,X    ;Get Button Register Offset
+        LDA $9102,Y     ;Read Data Direction Register
+        PHA             ;and Save It
+        LDA #$00        ;Set Port to All Inputs
+        STA $9102,Y     ; 
+        LDA $9100,Y     ;Read Button Port
+        AND BUTTOM,X    ;and Isolate Bit
+        TAX             ;Save Result in X
+        PLA             ;Retrieve Original DDR Value
+        STA $9102,Y     ;Restore Data Direction Register
+        TXA             ;Get Result from X, Setting Flags
+        BNE BUTTOZ      ;If Bit Not Set
+        LDA #$FF        ;  Return TRUE 
+        RTS             ;Else
+BUTTOZ: LDA #$00        ;  Return FALSE
+        RTS
+;Paddle Buttons 0 = S2 ($9111 bit 4), 1 = S3 ($9120 bit 7)
+BUTTOR: DC  $11,$20     ;Paddle Button VIC Registers
+BUTTOM: DC  $10,$80     ;Paddle Button Bit Masks

@@ -1,0 +1,11 @@
+;Light Pen Constants and Functions
+;Non-Functional Skeleton for Systems with No Joystick Support
+
+LGTPNS  EQU #0  ;Light Pen Status (Unsupported)
+
+;Read Light Pen
+LGTPEN: LDA #0  ;Return FALSE
+        TAY
+        TAX
+        SEC     ;and Carry Set
+        RTS

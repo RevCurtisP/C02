@@ -1,0 +1,7 @@
+/* Light Pen Header File         *
+ * Nonfunctional Skeleton for    *
+ * Systems w/o Light Pen Support */
+
+#define LGTPNS 0 //Light Pen Status (Unsupported)
+
+char lgtpen(); //Read Light Pen

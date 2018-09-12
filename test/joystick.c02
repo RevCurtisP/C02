@@ -1,0 +1,40 @@
+/*************************************
+ * JOYSTICK - Test joystk() function *
+ *************************************/
+
+//use -h option on command line
+#include <joystk.h02>
+
+char i,j,r;
+char aa,yy,xx;
+
+void prtdir(aa,yy,xx) {
+  if (aa & yy) xx = '*';
+  putchr(xx);
+}
+
+main:
+  clrscr();
+  if (!#JYSTKS) goto exit;
+  for (i=0;i<#JYSTKS;i++) {
+    r = i + 1;
+    setpos(1,r);
+    putchr('J'); prhex(i); putchr(':');
+  }
+  while() {
+    for(i=0; i<#JYSTKS; i++) {
+      j = joystk(i);
+      r = i + 1;
+      setpos(4,r);
+      prbyte(j);
+      putchr(' ');
+      prtdir(j,#JOYUP,'U');
+      prtdir(j,#JOYDN,'D');
+      prtdir(j,#JOYLF,'L');
+      prtdir(j,#JOYRT,'R');
+      prtdir(j,#JOYB0,'B');
+    }
+    if (getkey()==#ESCKEY) break;
+  }
+
+goto exit;

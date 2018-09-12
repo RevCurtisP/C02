@@ -34,8 +34,6 @@ AKD     EQU $C010   ;Keyboard Strobe Register
 ;Monitor Routines
 PRBYTE  EQU $FDDA   ;Print Accumulator as Hexadecimal Number
 PRHEX   EQU $FDE3   ;Print Low Nybble of Accumulator as Hex Digit
-
-ECHO    EQU $FDF0   ;Print Character - Routine Monitor COUT1
 EXIT    EQU $03D0   ;Return to Monitor - Jump Vector to DOS warm start
 
         ORG $0C00   ;Safe Area for Machine Language
@@ -43,23 +41,23 @@ EXIT    EQU $03D0   ;Return to Monitor - Jump Vector to DOS warm start
 START:  JSR NEWLIN  ;Start On New Line
         JMP MAIN    ;Execute Program
 
-;Subroutine Poll Keyboard
-PLKEY:  INC RDSEED  ;Cycle Random Seed
+;Poll Keyboard for Raw Character
+POLKEY: INC RDSEED  ;Cycle Random Seed
         LDA #0      ;Clear Accumulator
         BIT KBD     ;Check Keyboard Strobe Bit
-        BPL PLKEYR  ;If Key Pressed  
+        BPL POLKER  ;If Key Pressed  
         LDA KBD     ;  Load Key Value
         STA AKD     ;  Clear Strobe
-PLKEYR: RTS
+POLKER: RTS
 
-;Read Keyboard
-GETKEY  JSR PLKEY   ;Poll Keyboard
+;Get ASCII Character from Keyboard
+GETKEY: JSR POLKEY  ;Poll Keyboard
         AND #$7F    ;Strip High Bit
         RTS
 
-;Wait for Keypress
-RDKEY:  JSR GETKEY  ;Get Modified Key Code
-        BEQ RDKEY   ;Loop if No Key	
+;Wait for ASCII Character from Keyboard
+GETCHR: JSR GETKEY  ;Get Modified Key Code
+        BEQ GETCHR  ;Loop if No Key	
         RTS
 
 ;Delete Previous Character
@@ -70,12 +68,29 @@ DELCHR: LDX #2      ;Two Characters Total
                     ;and Fall into PRCHR
 
 ;Print Character to Screen
-PRCHR:  ORA #$80    ;Set High Bit
+PUTCHR: ORA #$80    ;Set High Bit
         CMP #$E0    ;
         BCC PRCHRX  ;If Lower Case 
         AND #$1F    ;  Convert to Inverse
-PRCHRX: JMP ECHO    ;Alias to Monitor Routine
+PRCHRX: JMP $FDF0   ;Call Monitor Routine COUT1
 
 ;Advance Character to Next line
 NEWLIN   EQU $FD8E  ;Monitor Routine CROUT
 
+;Clear the Screen
+CLRSCR:  EQU $FC58  ;Applesoft Routine HOME
+
+;Move Cursor to Specified Coordinates
+SETPOS: STA $24     ;Store Column in CH
+        TYA         ;Transfer Row to Accumulator
+        JMP $FB5B   ;Call Monitor Routine TABV
+
+;Get Cursor Position
+GETPOS: LDA $24     ;Load Column from CH
+        LDY $25     ;Load Row from CV
+        RTS
+
+;Get Screen Size
+GETSIZ: LDA $21     ;Load Width from WNDWDTH
+        LDY $23     ;Load Height from WNDBTM
+        RTS

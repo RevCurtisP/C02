@@ -1,0 +1,15 @@
+/* Psddle Controllers Header File for Apple II */
+
+#define PADDLS $04 //Number of Paddles
+#define BUTTNS $02 //Number of Paddle Buttons
+
+/* Get Paddle Button Status       *
+ * Args: p = Paddle Number        *
+ * Returns: $FF if Button Pressed *
+ *          $00 if Not Pressed    */
+void button(); 
+
+/* Get Paddle Status       *
+ * Args: p = Paddle Number *
+ * Returns: Paddle Value (0-255) */
+void paddle();
