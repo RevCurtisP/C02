@@ -1,0 +1,20 @@
+;Lightpen Assembly Language Module for C64
+
+LGTPNS  EQU #$FF        ;Light Pen Status (Supported)
+
+;Read Light Pen
+;Returns: A = X Position / 2
+;         Y = Y Position
+;         X = Trigger Status ($FF = Pressed)
+LGTPEN: LDX #0      ;Initialize X to FALSE (0)
+        LDA $D41A   ;Check Paddle 1 (Magnum Light Phaser)
+        BPL LGTPET  ;If Trigger Pulled, Set X tp $FF 
+        LDA $DC01   ;Read Joystick Switches
+        EOR #$FF    ;Invert and
+        AND #$1F    ;Mask Bits
+        BEQ LGTPEP  ;If Trigger Pulled
+LGTPET: DEX         ;  Set X to TRUE ($FF)
+LGTPEP: LDY $D014   ;Read Y Position into Y
+        LDA $D013   ;Read X Position into A
+        RTS
+
