@@ -1,4 +1,4 @@
-/* Joystick Library Header File for VIC-20 */
+/* Joystick Module Header File for VIC-20 */
 
 #define JYSTKS $01 //Number of Joysticks
 

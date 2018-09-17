@@ -1,6 +1,4 @@
-/* Light Pen Header File         *
- * Nonfunctional Skeleton for    *
- * Systems w/o Light Pen Support */
+/* Lightpen Module Header File for VIC-20 */
 
 #define LGTPNS $FF //Light Pen Status (Supported)
 

@@ -1,4 +1,4 @@
-;Joystick Assembly Language Library for VIC-20
+;Joystick Assembly Language Module for VIC-20
 
 JYSTKS  EQU $01     ;Number of Joysticks
 

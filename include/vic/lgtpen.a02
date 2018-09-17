@@ -1,5 +1,4 @@
-;Light Pen Constants and Functions
-;Non-Functional Skeleton for Systems with No Joystick Support
+;Lightpen Assembly Language Module for VIC-20
 
 LGTPNS  EQU #$FF        ;Light Pen Status (Supported)
 
