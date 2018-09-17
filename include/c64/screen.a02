@@ -1,15 +1,15 @@
 ;Screen Control Assembly Lanuage Routines for VIC-20
 
 ;Clear the Screen
-CLRSCR  EQU $E55F   ;Aliased to CLSR Routine
+CLRSCR  EQU $E544   ;Aliased to CLSR Routine
 
 ;Move Cursor To Home Position
-CRSRHM  EQU $E581   ;Aliased to HOME Routine
+CRSRHM  EQU $E566   ;Aliased to HOME Routine
 
 ;Move Cursor to Specified Coordinates
 SETPOS: STA $D3     ;Save Cursor Column
         STY $D6     ;Save Cursor Row
-        JMP $E587   ;Set Screen Poiners and Return
+        JMP $E56C   ;Set Screen Poiners and Return
 
 ;Get Cursor Position
 GETPOS: LDY $D6     ;Load Cursor Row

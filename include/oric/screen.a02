@@ -1,0 +1,41 @@
+;Screen Control Assembly Lanuage Routines for Oric-1
+
+;Clear the Screen
+CLRSCR  EQU $CC0A   ;Basic CLS Routine (Atmos = $CCCE)
+
+;Move Cursor to Home Position
+CRSRHM: LDA #0      ;Set Args to 0,0
+        TAY         ;and Fall into SETPOS
+
+;Set Cursor Position
+SETPOS: CLC
+        ADC #2      ;Add 2 to Column
+        PHA         ;and Save It
+        INY         ;Add 1 to Row
+        TYA         ;and Save It
+        PHA
+        LDA #0      ;Turn Cursor Off
+        JSR $F7CB
+        PLA         ;Retrieve Row
+        STA $0268   ;and Store in CURROW
+        PLA         ;Retrieve Column
+        STA $0269   ;and Store in CURCOL
+        JSR $F67D   ;Recalculate Screen Pointers
+        LDA #0      ;Turn Cursor On
+        JMP $F7CB   ;and Return
+
+;Get Cursor Position
+GETPOS: LDA $0269   ;Load Column from CURCOL
+        SEC
+        SBC #2      ;Subtract 2
+        BPL GETPOY  ;If Negative
+        LDA #0      ;set to 0
+GETPOY: LDY $0268   ;Load Row from CURROW
+        DEY         ;and Subtract 1
+        RTS
+
+;Get Screen Size
+GETSIZ: LDA #38     ;38 Columns (First 2 are Protected)
+        LDY #27     ;27 Rows
+        RTS
+

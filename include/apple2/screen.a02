@@ -1,0 +1,24 @@
+;Screen Control Assembly Lanuage Routines for Apple II
+
+;Clear the Screen
+CLRSCR:  EQU $FC58  ;Applesoft Routine HOME
+
+;Move Cursor To Home Position
+CRSRHM  LDA #0      ;Set Column to 0
+        TAY         ;Set Row to 0
+                    ;and Fall into SETPOS
+
+;Move Cursor to Specified Coordinates
+SETPOS: STA $24     ;Store Column in CH
+        TYA         ;Transfer Row to Accumulator
+        JMP $FB5B   ;Exectute Monitor Routine TABV
+
+;Get Cursor Position
+GETPOS: LDA $24     ;Load Column from CH
+        LDY $25     ;Load Row from CV
+        RTS
+
+;Get Screen Size
+GETSIZ: LDA $21     ;Load Width from WNDWDTH
+        LDY $23     ;Load Height from WNDBTM
+        RTS

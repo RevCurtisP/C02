@@ -1,0 +1,17 @@
+;Screen Control Assembly Lanuage Routines for Apple 1
+
+;Clear the Screen
+CLRSCR: RTS         ;Do Nothing (Drop to RTS)
+
+;Move Cursor to Specified Coordinates
+SETPOS  EQU CLRSCR  ;No Action
+ 
+;Get Cursor Position
+GETPOS: LDA #$FF   ;Return Error 
+        TAY
+        RTS
+
+;Get Screen Size
+GETSIZ: LDA #40     ;40 Columns
+        LDY #24     ;24 Lines
+        RTS

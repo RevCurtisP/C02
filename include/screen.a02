@@ -1,0 +1,19 @@
+;Screen Control Assembly Lanuage Routines for C02
+;Skeleton Code for Systems with no Screen Control
+
+;Clear the Screen
+CLRSCR: RTS         ;No Action
+
+;Move Cursor Home
+CRSRHM  EQU CLRSCR  ;No Action
+
+;Move Cursor to Specified Coordinates
+SETPOS  EQU CLRSCR  ;No Action 
+ 
+;Get Cursor Position
+GETPOS: LDA #$FF    ;Return Error 
+        TAY
+        RTS
+
+;Get Screen Size
+GETSIZ  EQU GETPOS  ;Return Error

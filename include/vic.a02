@@ -14,29 +14,33 @@ BLKLO   EQU $26   ;Block Pointer LSB [Floating Point Work Area]
 BLKHI   EQU $27   ;Block Pointer MSB [Floating Point Work Area]
 STKLO   EQU $28   ;Stack Pointer LSB [Floating Point Work Area]
 STKHI   EQU $29   ;Stack Pointer MSB [Floating Point Work Area]
-RDSEED  EQU $2A   ;Random Seed [Software Jiffy Clock (Low Byte)]
+RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)]
 TEMP0   EQU $FB   ;Temporary Variable [Unused Byte]
 TEMP1   EQU $FC   ;Temporary Variable [Unused Byte]
 TEMP2   EQU $FD   ;Temporary Variable [Unused Byte]
 TEMP3   EQU $FE   ;Temporary Variable [Unused Byte]
 
+;System Variables
 USER0   EQU $0310 ;Free Byte for User Programs
-RANDOM  EQU $0311 ;Random Number Storage [Unused Byte]
-STKSAV  EQU $0312 ;Machine Stack Storage [Unused Byte]
-STKSLO  EQU $0313 ;Stack Start LSB [Unused Byte]
-STKSHI  EQU $0334 ;Stack Start MSB [Unused Byte]
-STKELO  EQU $0335 ;Stack End LSB [Unused Byte]
-STKEHI  EQU $0336 ;Stack End MSB [Unused Byte]
-BLKSLO  EQU $0337 ;Block Start LSB [Unused Byte]
-BLKSHI  EQU $0338 ;Block Start MSB [Unused Byte]
-BLKELO  EQU $0339 ;Block Start MSB [Unused Byte]
-BLKEHI  EQU $033A ;Block End MSB [Unused Byte]
-BLKLEN  EQU $033B ;Block Length [Unused Byte]
+USER1   EQU $0311 ;Free Byte for User Programs
+USER2   EQU $0312 ;Free Byte for User Programs
+USER3   EQU $0313 ;Free Byte for User Programs
+
+BLKSLO  EQU $0334 ;Block Start LSB [Unused Byte]
+BLKSHI  EQU $0335 ;Block Start MSB [Unused Byte]
+BLKELO  EQU $0336 ;Block Start MSB [Unused Byte]
+BLKEHI  EQU $0337 ;Block End MSB [Unused Byte]
+BLKLEN  EQU $0338 ;Block Length [Unused Byte]
+
+RANDOM  EQU $0339 ;Random Number Storage [Unused Byte]
+STKSAV  EQU $033A ;Machine Stack Storage [Unused Byte]
+USER11  EQU $033B ;Free Byte for User Programs
 TBFFR   EQU $033C ;Cassette I/O Buffer
-USER12  EQU $03FC ;Free Byte for User Programs
-USER13  EQU $03FD ;Free Byte for User Programs
-USER14  EQU $03FE ;Free Byte for User Programs
-USER15  EQU $03FF ;Free Byte for User Programs
+
+STKSLO  EQU $03FC ;Stack Start LSB [Unused Byte]
+STKSHI  EQU $03FD ;Stack Start MSB [Unused Byte]
+STKELO  EQU $03FE ;Stack End LSB   [Unused Byte]
+STKEHI  EQU $03FF ;Stack End MSB   [Unused Byte]
 
 START:  TSX         ;Get Stack Pointer
         STX STKSAV  ;and Save for Exit
@@ -50,19 +54,22 @@ EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
 POLKEY  EQU $FFE4   ;Aliased to Kernal GETIN Routine
 
 ;Get Character from Keyboard
-GETKEY: JSR POLKEY  ;Get Key From Keybord
-        ;The below is not working...
-        LDY $9005   ;Get Character Memory Offset
-        CPY #242    ;If Upper/Lower
-        BNE GETKEX
-        BIT $FF     ;  Bit 7 -> C, Bit 6 -> V
-        BVC GETKEX  ;  If Bit 6 Set (Alpha)
-        BCC GETKEL  ;    If Bit 7 Set (PETSCII Upper)
-        AND #$7F    ;      Clear Bit 7 (ASCII Upper)
-        BNE GETKEX  ;    Else
-GETKEL: ORA #$20    ;      Set Bit 5 (ASCII Lower)
-GETKEX: ORA #$00    ;Set Flags
-        RTS
+GETKEY  EQU POLKEY  ;Get Key From Keybord
+
+;Get Character from Keyboard
+;GETKEY: JSR POLKEY  ;Get Key From Keybord
+;        ;The below is not working...
+;        LDY $9005   ;Get Character Memory Offset
+;        CPY #242    ;If Upper/Lower
+;        BNE GETKEX
+;        BIT $FF     ;  Bit 7 -> C, Bit 6 -> V
+;        BVC GETKEX  ;  If Bit 6 Set (Alpha)
+;        BCC GETKEL  ;    If Bit 7 Set (PETSCII Upper)
+;        AND #$7F    ;      Clear Bit 7 (ASCII Upper)
+;        BNE GETKEX  ;    Else
+;GETKEL: ORA #$20    ;      Set Bit 5 (ASCII Lower)
+;GETKEX: ORA #$00    ;Set Flags
+;        RTS
 
 ;A = $41 %0100 0001
 ;a = $C1 %1100 0001 PETSCII
@@ -77,33 +84,16 @@ GETCHR: JSR GETKEY  ;Poll Keyboard
 
 ;Print Character to Console
 ;uses direct call to SCRNOUT instead of CHROUT 
-PUTCHR  EQU $E742  ;Aliased to SRCNOUT Routine
+PUTCHR  EQU $E742   ;Aliased to SRCNOUT Routine
 
 ;Delete Previous Character
 DELCHR: LDA #DELKEY ;Load Delete Character
         JMP PUTCHR  ;Print and Return
 
 ;Advance Character to Next line
-NEWLIN: LDA #RTNKEY ;Load C/R into Accumulator
-        JMP PUTCHR  ;Print and Return
-
-;Clear the Screen
-CLRSCR  EQU $E55F   ;Alias to CLSR Routine
-
-;Move Cursor to Specified Coordinates
-SETPOS: STA $D3     ;Save Cursor Column
-        STY $D6     ;Save Cursor Row
-        JMP $E587   ;Set Screen Poiners and Return
-
-;Get Cursor Position
-GETPOS: LDY $D6     ;Load Cursor Row
-        LDA $D3     ;Load Cursor Column
-        RTS
-
-;Get Screen Size
-GETSIZ: JSR $FFED   ;Call SCREEN Kernal Routine
-        TXA         ;Transfer Width to Accumulator
-        RTS
+NEWLIN: LDX #0      ;Store 0
+        STX $D3     ;in Cursor Column and
+        JMP $E8C3   ;Execute NXTLINE Routine
 
 ;Print Byte as Two-Digit Hex Number to Console
 PRBYTE: PHA         ;Save Accumulater

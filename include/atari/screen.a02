@@ -1,0 +1,103 @@
+;Screen Control Assembly Language Routines for Oric-1
+
+; Display Colors
+BLACK   EQU $00     Black
+RED     EQU $00     Red
+GREEN   EQU $00     Green
+YELLOW  EQU $00     Yellow
+BLUE    EQU $00     Blue
+MAGENT  EQU $00     Magenta
+CYAN    EQU $00     Cyan
+WHITE   EQU $00     White
+
+;ASCII Screen Control Characters
+CHRBCK  EQU $7E     Backspace 
+CHRBEL  EQU $FD     Beep (Buzzer)
+CHRCLR  EQU $7D     Clear Screen
+CHRDEL  EQU $FE     Delete (Character)
+CHRDWN  EQU $1C     Cursor Down
+CHRFLS  EQU $00     Flash On
+CHRHOM  EQU $00     Home (None) 
+CHRINS  EQU $FF     Insert (Character)
+CHRLFT  EQU $1E     Cursor Left
+CHRRGT  EQU $1F     Cursor Right
+CHRRTN  EQU $9B     Return (End of Line)
+CHRTAB  EQU $7F     Tab
+CHRUP   EQU $1B     Cursor Up
+
+;ATASCII Symbolic Characters
+CHRBLK  EQU $A0   Block
+
+;ASCII Box Drawing Characters
+BOXBLC  EQU $0A   Bottom Left Corner
+BOXBRC  EQU $03   Bottom Right Corner
+BOXBCT  EQU $18   Bottom to Cetter Tee
+BOXCTR  EQU $13   Center Cross
+BOXHLN  EQU $12   Horizontal Line
+BOXLCT  EQU $01   Left To Center T)
+BOXRCT  EQU $04   Right To Center T 
+BOXTLC  EQU $11   Top Left Corner
+BOXTRC  EQU $05   Top Right Corner
+BOXTCT  EQU $17   Top to Center T
+BOXVLN  EQU $7C   Vertical Line (|)
+
+;Set Background Color
+;Args: A = Atari Color Code
+;Uses: TEMP0 - Temporary Storage
+;Affects: A,C,N,Z
+SCRBKG: AND $07     ;Strip High Bits
+        ORA $90     ;Convert to Control Character
+        JMP PRCHR   ;Print Character and Return
+
+;Set Text Color
+;Args: A = Vic color code
+;Affects: A,X,C,N,Z
+SCRTXT: AND $07     ;Strip High Bits
+        ORA $80     ;Convert to Control Character
+        JMP PRCHR   ;Print Character and Return
+
+;Clear Screen
+;Affects A,C,N,Z
+SCRCLR: LDA #CHRCLR  ;Load Clear Screen Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Down
+;Affects A,C,N,Z
+SCRDWN: LDA #CHRDWN ;Load Cursor Down Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor To Home Position
+;Affects A,C,N,Z
+SCRHOM: LDA #0      ;Column 0
+        TAY         ;Row 0
+        BEQ SRCMOV  ;Move Cursor
+
+;Move Cursor Left
+;Affects A,C,N,Z
+SCRLFT: LDA #CHRLFT ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Right
+;Affects A,C,N,Z
+SCRRGT: LDA #CHRRGT ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor Up
+;Affects A,C,N,Z
+SCRUP:  LDA #CHRUP  ;Load Cursor Left Character
+        JMP PRCHR   ;Print it and Return
+
+;Move Cursor to Specified Coordinates
+;Args: A = screen column (0 = top)   
+;      Y = screen line (0 = left)
+SCRMOV: RTS         ;Not Yet Implemented
+
+;Get Cursor Position
+;Returns: A = current cursor column
+;         Y = current cursor row
+SCRPOS: RTS         ;Not Yet Implemented
+
+;Get Screen Size
+;Returns: A = width of screen in columns
+;         Y = height of screen in rows
+SCRSIZ: RTS         ;Not Yet Implemented

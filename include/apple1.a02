@@ -93,17 +93,3 @@ DELCHR: LDA #DELKEY ;Load Underscore Character
 ;Advance Character to Next line
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
         JMP PUTCHR  ;  and Print it
-
-;Clear the Screen
-CLRSCR:             ;Do Nothing (Drop to RTS)
-
-;Move Cursor to Specified Coordinates
-SETPOS: RTS         ;No Action
- 
-;Get Cursor Position
-GETPOS  EQU LGTPEN  ;Return Error 
-
-;Get Screen Size
-GETSIZ: LDA #40     ;40 Columns
-        LDY #24     ;24 Lines
-        RTS

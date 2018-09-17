@@ -76,21 +76,3 @@ PRCHRX: JMP $FDF0   ;Call Monitor Routine COUT1
 
 ;Advance Character to Next line
 NEWLIN   EQU $FD8E  ;Monitor Routine CROUT
-
-;Clear the Screen
-CLRSCR:  EQU $FC58  ;Applesoft Routine HOME
-
-;Move Cursor to Specified Coordinates
-SETPOS: STA $24     ;Store Column in CH
-        TYA         ;Transfer Row to Accumulator
-        JMP $FB5B   ;Call Monitor Routine TABV
-
-;Get Cursor Position
-GETPOS: LDA $24     ;Load Column from CH
-        LDY $25     ;Load Row from CV
-        RTS
-
-;Get Screen Size
-GETSIZ: LDA $21     ;Load Width from WNDWDTH
-        LDY $23     ;Load Height from WNDBTM
-        RTS
