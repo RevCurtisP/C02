@@ -3,6 +3,7 @@
  ************************************/
 
 //use -h option on command line
+#include <screen.h02>
 #include <paddle.h02>
 
 char i,b,p;

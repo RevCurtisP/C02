@@ -3,6 +3,7 @@
  *************************************/
 
 //use -h option on command line
+#include <screen.h02>
 #include <joystk.h02>
 
 char i,j,r;

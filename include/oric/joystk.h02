@@ -1,0 +1,16 @@
+/* Joystick Library Header File for Oric-1 *
+ * with ALTAI Joystick Adapter - UNTESTED! */
+
+#define JYSTKS $02 //Number of Joysticks
+
+#define JOYUP $10 //Bit 4 - Up    
+#define JOYDN $08 //Bit 3 - Down  
+#define JOYLF $01 //Bit 0 - Left  
+#define JOYRT $02 //Bit 1 - Right 
+#define JOYB0 $20 //Bit 5 - Button
+
+/* Read Joystick State             *
+ * Args: n = Joystick Number       *
+ * Returns: Joystick Status        *
+ *          $FF = Invalid Argument */
+char joystk(); 

@@ -1,21 +1,53 @@
-/**************************************************
- * TESTHDR - Test C02 system specific Header file *
- **************************************************/
+/************************************
+ * TESTHDR - Test C02 screen module *
+ ************************************/
  
+//use -h amd -s options on command line
+#include <screen.h02>
 
-//use -h option on command line
+char col, row, wdth, hght;
+char c, f, i, aa, yy;
+
+void prtaxy(aa,yy) {
+  if (aa & $F0) prbyte(aa); else prhex(aa);
+  putchr('X');
+  if (yy & $F0) prbyte(yy); else prhex(yy);
+}
 
 main:
 
-  prchr('P');
-  prchr('R');
-  prchr('C');
-  prchr('H');
-  prchr('R');
-  newlin();
+  wdth, hght = getsiz(); //Get Screen Width & Height
+  prtaxy(wdth,hght); newlin();
+
+  for (i=1; i<6; i++) putchr('.');
+  col, row = getpos(); //Get Cursor Position
+  prtaxy(col,row); 
+  crsrhm(); prtaxy(getpos());
+  getchr(); newlin(); //Wait For keypress
+
+  clrscr(); //Clear Screen
+  col, row = getpos(); //Get Cursor Position
+  prtaxy(col, row);
+  f = (col == 255) ? 0 : $FF;
+  getchr(); 
+
+  if (f) clrscr(); else newlin();
   
-  getkey();
+  if (wdth:- or hght:-) goto exit;
+  for (c='@'; c<'`'; c++) {
+    if (!f) newlin();
+    for (row=hght-2; row; row--) {
+      if (!f) putchr(' ');
+      for (col=wdth-2; col; col--) {
+        if (f) setpos(col,row); 
+        putchr(c);
+      }
+      if (!f) newlin();
+      if (getkey() == #ESCKEY) goto exit;
+    }
+    if (!f) getchr();
+  }
+  if (f) getchr();  //Wait For keypress
   newlin();
 
 goto exit;
-

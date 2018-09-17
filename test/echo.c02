@@ -12,11 +12,11 @@ char key;  //Key value
 
 main:
   while() {
-    key = getkey();
+    key = getchr();
     select (key) {
       case #DELKEY: delchr(); 
       case #RTNKEY: newlin();
       case #ESCKEY: goto exit;
-      default: prchr(key);
+      default: putchr(key);
     }
   }

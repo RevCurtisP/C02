@@ -1,0 +1,30 @@
+;Joystick Assembly Language Library for Oric-1
+
+JYSTKS  EQU $02     ;Number of Joysticks
+
+;Joystick Bit Masks
+JOYUP   EQU $10     ;Bit 4 - Up    
+JOYDN   EQU $08     ;Bit 3 - Down  
+JOYLF   EQU $01     ;Bit 0 - Left  
+JOYRT   EQU $02     ;Bit 1 - Right 
+JOYB0   EQU $20     ;Bit 5 - Button
+
+;Read Joystick (ALTAI)
+;http://wiki.defence-force.org/doku.php?id=oric:hardware:altai_drivers
+JOYSTK: CMP #JYSTKS     ;If Joystick# >= Maximum
+        BCS JOYSTZ      ;  Return Error
+        TAX             ;Copy Joystick# to X 
+        LDY JOYSTT,X    ;Load Y from Table
+        LDA #%11000000
+        STA $0303       ;Set Data Direction Register A
+        STY $0301       ;Select Joystick
+        LDA $0301       ;Read Joystick
+        LDY #%11111111
+        STY $0303       ;Restore Data Direction Register A
+        AND #%00111111  ;Mask Bits
+        EOR #%00111111  ;and Invert Them
+        RTS
+JOYSTZ: LDA #$FF        ;Return Error
+        RTS
+JOYSTT: DC #%10000000,#%01000000
+

@@ -6,7 +6,7 @@ IF EXIST %1.c02 GOTO COMPILE
 
 :COMPILE
 ECHO Compiling File %1.c02
-..\c02.exe -h oric %1 >%1.dbg
+..\c02.exe -h oric -s oric %1 >%1.dbg
 IF ERRORLEVEL 1 EXIT /B
 
 ECHO Assembling File %1.asm
@@ -15,8 +15,9 @@ IF ERRORLEVEL 1 EXIT /B
 
 ECHO Building Tape Image
 python ..\util\orictap.py %1
+COPY %1.tap C:\Programs\Oricutron\tapes
 IF ERRORLEVEL 1 EXIT /B
-DEL %1.obj
+DEL %1.obj %1.tap
 
 REM ECHO Starting Emulator
 REM START C:\Programs\Oricutron\oricutron.exe -m1 -t%1.tap 

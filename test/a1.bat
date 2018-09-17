@@ -6,7 +6,7 @@ IF EXIST %1.c02 GOTO COMPILE
 
 :COMPILE
 ECHO Compiling File %1.c02
-..\c02.exe -h apple1 %1 >%1.dbg
+..\c02.exe -h apple1 -s apple1 %1 >%1.dbg
 IF ERRORLEVEL 1 EXIT /B
 
 ECHO Assembling File %1.asm

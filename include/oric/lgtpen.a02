@@ -1,0 +1,9 @@
+;Lightpen Assembly Language Module for Oric-1
+
+LGTPNS  EQU #$FF        ;Light Pen Status (Supported)
+
+;Read Light Pen
+LGTPEN  LDA $03E0   ;Load X Position into A
+        LDY $03E1   ;Load Y Position into Y
+        LDX #0      ;Set Trigger to 0
+        RTS

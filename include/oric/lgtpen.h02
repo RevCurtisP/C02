@@ -1,0 +1,5 @@
+/* Lightpen Module Header File for Oric-1 */
+
+#define LGTPNS $FF //Light Pen Status (Supported)
+
+char lgtpen(); //Read Light Pen

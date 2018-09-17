@@ -3,6 +3,7 @@
  ************************************/
 
 //use -h option on command line
+#include <screen.h02>
 #include <lgtpen.h02>
 
 char aa,xx,yy;
@@ -18,6 +19,7 @@ void prtbyt(aa,yy,xx) {
 }
 
 char px,py,pt;
+char lx,ly,lt;
 
 main:
   clrscr();
@@ -27,11 +29,11 @@ main:
   prtlbl(1,1,'X');
   prtlbl(1,2,'Y');
   prtlbl(1,3,'T');
-  
+
 loop:
   if (getkey() == #ESCKEY) goto exit;
   px,py,pt = lgtpen();
-  prtbyt(4,1,px);
-  prtbyt(4,2,py);
-  prtbyt(4,3,pt);
+  if (px<>lx) {prtbyt(4,1,px); lx=px;}
+  if (py<>ly) {prtbyt(4,2,py); ly=py;}
+  if (pt<>lt) {prtbyt(4,3,pt); lt=pt;}
   goto loop;

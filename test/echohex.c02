@@ -10,8 +10,8 @@ char key;  //Key value
 
 main:
   while() {
-    key = rdkey();
+    key = getchr();
     prbyte(key);
-    prchr(' ');
+    putchr(' ');
     if (key==#ESCKEY) goto exit;
   }
