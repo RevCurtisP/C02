@@ -39,9 +39,7 @@ The following functions should be defined:
   w,h = getsiz ();  Returns the current screen or window width and height
                     in rows and columns.
 
-                    Note: Returns 255 for both the width and height if
-                    the platform does not support any sort of screen display.
-
-                    Returns 0 for width or height if either or both are
-                    variable and the current value cannot be determined via
-                    software.
+                    Note: Returns 255 for width and/or height if either or
+                    both are cannot be determined via software. Since all
+                    supported platforms have less than 128 screen rows and
+                    columns, the :- test can be used on these values.

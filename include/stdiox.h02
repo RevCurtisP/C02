@@ -12,13 +12,17 @@ void anykey();
  * Returns: ASCII value of key pressed  */
 void getcpr();
 
-/* Print Formatted Byte to Screen         *
- * Args: b  - byte to format              *
- *       &s - formatting string           */
+/* Print Formatted Byte to Screen *
+ * Args: b  - byte to format      *
+ *       &s - formatting string   */
 void printf();
 
-/* Print Byte as Decimal Number          *
- * Args: b - Number to print             */
+/* Print Byte as Binary Number *
+ * Args: b - Number to print   */
+void putbin(); 
+
+/* Print Byte as Decimal Number *
+ * Args: b - Number to print    */
 void putdec(); 
 
 /* Print Byte as Left Justified Decimal *
@@ -31,6 +35,10 @@ void putder();
 
 /* Print Destination String */
 void putdst(); 
+
+/* Print Byte as Hexadecimal Number *
+ * Args: b - Number to print        */
+void puthex(); 
 
 /* Print a Space Character */
 void putspc(); 

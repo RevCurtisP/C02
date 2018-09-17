@@ -28,6 +28,20 @@ GETCPR: JSR PUTS        ;Print Prompt
         LDA TEMP0       ;Load Key Code
         RTS
 
+;void putbin(b) - PUT Binary
+;Args: A = number to print
+;Sets: TEMP0 = 0
+;Affects: A,Y,C,N,X
+PUTBIN: STA TEMP0       ;Save Number
+        LDX #8          ;Print 8 Binary Digits
+PUTBIL: LDA #0
+        ASL TEMP0       ;Shift Top Bit Out
+        ADC #$30        ;Convert to '0' or '1'
+        JSR PUTCHR      ;Print Digit
+        DEX             ;Decremebt Index
+        BNE PUTBIL      ;Loop if Not Done
+        RTS
+
 ;void putdel(b) - PUT DEcimal Left justified
 ;Args: A = number to print
 ;Sets: TEMP0 - ones digit
@@ -74,7 +88,7 @@ PUTDE1: LDA TEMP1       ;Get Low Byte
 PUTDE2: JSR PUTDEP      ;  Convert It
 PUTDE3: LDA TEMP0       ;Get Low Byte
 PUTDEP: ORA #$30        ;Convert to ASCII digit
-        JSR PRCHR       ;And Print
+        JSR PUTCHR      ;And Print
         RTS
 
 ;puthex(&word) - PUT HEXadecimal
@@ -95,7 +109,7 @@ PUTWRA: LDA TEMP2       ;Load Address MSB
 
 ;Print a Space
 PUTSPC: LDA #32         ;Load Space Character
-        JMP PRCHR       ;and Print it
+        JMP PUTCHR      ;and Print it
 
 ;void printf(b, &s) - PRINT Formatted byte and/or string
 ;Args: A = byte to format
@@ -111,7 +125,7 @@ PRINTL: LDA (SRCLO),Y   ;Read next character in string
         BEQ PRINTX      ;If Not 0
         CMP #'%         ;'  If Format Specified 
         BEQ PRINTP      ;    Jump to Formatter
-PRINTC: JSR PRCHR       ;  Print character at offset,
+PRINTC: JSR PUTCHR      ;  Print character at offset,
 PRINTY: INY             ;  increment offset, and
         BPL PRINTL      ;  loop if less than 128
 PRINTX: RTS             ;  characters printed
@@ -126,26 +140,31 @@ PRINTP: INY             ;Increment Offset
         BNE PRINTR
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTDEM      ;  Print Left Justified
-        JMP PRINTY      ;  and Continue Printing Screen
+        JMP PRINTY      ;  and Continue Printing String
 PRINTR: CMP #'R         ;'If "r" or "R" 
         BNE PRINTD
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTDES      ;  Print Right Justified
-        JMP PRINTY      ;  and Continue Printing Screen
+        JMP PRINTY      ;  and Continue Printing String
 PRINTD: CMP #'D         ;'Else If "d" or "D" 
         BNE PRINTH
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTDEC      ;  Print as Decimal
-        JMP PRINTY      ;  and Continue Printing Screen
+        JMP PRINTY      ;  and Continue Printing String
 PRINTH: CMP #'H         ;'Else If "h" or "H" 
-        BNE PRINTN
+        BNE PRINTB
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTHEX      ;  Print as Hexadecimal
-        JMP PRINTY      ;  and Continue Printing Screen
+        JMP PRINTY      ;  and Continue Printing String
+PRINTB: CMP #'B         ;'Else If "b" or "B" 
+        BNE PRINTN
+        LDA TEMP3       ;  Load Byte to Format
+        JSR PUTBIN      ;  Print as Binary
+        JMP PRINTY      ;  and Continue Printing String
 PRINTN: CMP #'N         ;'Else If "n" or "N" 
         BNE PRINTS
         JSR NEWLIN      ;  Execute Newline Function
-        JMP PRINTY      ;  and Continue Printing Screen
+        JMP PRINTY      ;  and Continue Printing String
 PRINTS: CMP #'S         ;'Else If "s" or "S" 
         BNE PRINTW
         STY TEMP0       ;  Save Index
@@ -153,13 +172,13 @@ PRINTS: CMP #'S         ;'Else If "s" or "S"
         LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;
 PRINTW: CMP #'W         ;'Else If "w" or "W" 
-        BNE PRINTB
+        BNE PRINTZ
         STY TEMP0       ;  Save Index
         JSR SAVDST      ;  Save Destination Address
         JSR PUTWRA      ;  Print MSB and LSB as Hex
         LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;
-PRINTB: LDA TEMP3       ;Else
+PRINTZ: LDA TEMP3       ;Else
         JMP PRINTC      ;  Print Raw Byte and Continue
 
                        ;char putdst()

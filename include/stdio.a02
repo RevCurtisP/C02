@@ -8,7 +8,7 @@
 ;Uses: System Dependent
 ;Affects:  System Dependent
 ;Returns: A = Character Code of Key 
-GETC    EQU RDKEY       ;Alias to external RDKEY routine
+GETC    EQU GETCHR      ;Alias to external GETCHRroutine
 
 ;void putc(c) - PUT Character to screen
 ;Args: Character code to display 
@@ -16,7 +16,7 @@ GETC    EQU RDKEY       ;Alias to external RDKEY routine
 ;Uses: System Dependent
 ;Affects:  System Dependent
 ;Returns: System Dependent
-PUTC    EQU PRCHR      ;Alias to external PRCHR Routine
+PUTC    EQU PUTCHR     ;Alias to external PUTCHRRoutine
 
 ;char gets(&s) - GET String input from keyboard
 ;Args: Y,X = Address of String
