@@ -4,7 +4,6 @@
 DELKEY  EQU $7F     ;Delete/Backspace Key (Delete)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
-NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
 
 ;Zero Page Locations
 SRCLO   EQU $00     ;Source String Pointer (stdio.asm)
@@ -24,13 +23,6 @@ BLKSLO  EQU $0A     ;Block Start Address
 BLKSHI  EQU $0B
 BLKELO  EQU $0C     ;Block End Address
 BLKEHI  EQU $0D
-
-;Oric-1 Memory Locations
-CAPLCK  EQU $020C   ;Caps Lock: 127=Off, 255 = On
-
-;Oric-1 ROM Funxtions
-GTORKB EQU $E905    ;Get Character from Keyboard
-VDU    EQU $F409    ;Print character in X to screen
 
 ;Oric-1 Tape images have the file extension ".tap"
 ;and have the following header prepended to the code
@@ -61,37 +53,40 @@ BASIC:  .DC $0C,$05 ;Address of Next Line
         .DC $00,$00 ;End of Program Marker
 
 START:  LDA #127    ;Set Caps Lock Off
-        STA CAPLCK
+        STA $020C
+        LDA #$0B    ;Turn Cursor On, Keyclick Off
+        STA $026A   ;and Protect Columns 0 & 1
         JMP MAIN    ;Execute Program
 
 ;Poll Character from Keyboard
-PLKEY:  INC RDSEED  ;Cycle the Random Seed
-        JMP GTORKB  ;Call ROM Key Reading function and return
+POLKEY: INC RDSEED  ;Cycle the Random Seed
+        JMP $E905   ;Execute GETORKB
 
 ;Read Character from Console
-GETKEY;             ;Drop into RDKEY routine
+GETKEY  EQU POLKEY  ;Aliased to POLKEY
 
 ;Wait for Character from Console
-RDKEY:  JSR PLKEY   ;Usually calls PLKEY 
-        BEQ RDKEY   ;  until a non-zero is returned
+GETCHR  JSR POLKEY  ;Calls POLKEY
+        BEQ GETCHR  ;  until a non-zero is returned
         RTS         
 
 ;Delete Previous Character
 DELCHR: LDA #DELKEY ;Load Delete Character
-        BNE PRCHR   ;and Print to Screem
+        BNE PUTCHR  ;and Print to Screem
 
 ;Advance Cursor to Next line
-NEWLIN: LDA #$0D    ;Load Carriage Return
-        JSR PRCHR   ;and Print It
-        LDA #$0A    ;Load Line Feed and fall through to PRCHR
+NEWLIN  EQU $CB9F   ;Basic NEWLINE Routine ($CBF0 for ATMOS)
+;       LDA #$0D    ;Load Carriage Return
+;       JSR PUTCHR  ;and Print It
+;       LDA #$0A    ;Load Line Feed and fall through to PRCHR
 
 ;Print Character to Screen
-PRCHR:  TAX         ;Transfer Character to X Register
-        JMP VDU     ;Call ROM Print Function and Return
+PUTCHR  TAX         ;Transfer Character to X Register
+        JMP $F409   ;Execute VDU Routine
 
 ;Exit Program and Return to Operating System or Monitor
 EXIT    LDA #255    ;Set Caps Lock On
-        STA CAPLCK
+        STA $020C
         JMP $C003   ;BASIC Warm Start
 ;       
 ;Note: The following two functions replicate calls available 
@@ -114,4 +109,4 @@ PRHEX:  AND #$0F    ;Strip High Nybble
         BCC PRHEXC  ;  
         ADC #$06    ;  Convert ':' to 'A'...
 PRHEXC: ADC #$30    ;Convert to ASCII Character
-        JMP PRCHR   ;Print Hex Digit and Return
+        JMP PUTCHR  ;Print Hex Digit and Return

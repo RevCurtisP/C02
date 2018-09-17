@@ -1,4 +1,5 @@
 ;Joystick Assembly Language Library for Oric-1
+;Untested
 
 JYSTKS  EQU $02     ;Number of Joysticks
 
