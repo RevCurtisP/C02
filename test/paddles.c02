@@ -17,13 +17,12 @@ main:
     setpos(1,i);
     putchr('P'); prhex(i); putchr(':');
   }
-
   for (i=0;i<#BUTTNS;i++) {
     setpos(7,i);
     putchr('B'); prhex(i); putchr(':');
   }
 
-loop:
+  loop:
   if (getkey() == #ESCKEY) goto exit;
   for (i=0;i<#PADDLS;i++) {
     p = paddle(i);

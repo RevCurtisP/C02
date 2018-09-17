@@ -1,0 +1,15 @@
+/* Joystick Module Header File for C64 */
+
+#define JYSTKS 2 //Number of Joysticks
+
+#define JOYUP $01 //Bit 0 - Up    
+#define JOYDN $02 //Bit 1 - Down  
+#define JOYLF $04 //Bit 2 - Left  
+#define JOYRT $08 //Bit 3 - Right 
+#define JOYB0 $10 //Bit 4 - Button
+
+/* Read Joystick State             *
+ * Args: n = Joystick Number       *
+ * Returns: Joystick Status        *
+ *          $FF = Invalid Argument */
+char joystk(); 

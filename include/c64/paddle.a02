@@ -1,0 +1,57 @@
+;Paddle Controller Constants and Functions for C64
+
+PADDLS  EQU #$04      ;Maximum Numbers of Paddles
+
+;Read Paddle
+;Args: A = Paddle #
+;Affects: X,Y
+;Returns: A = Paddle Value
+;             0 and Carry Set if Paddle # Invalid
+PADDLE: CMP #PADDLS     ;If Invalid Paddle #
+        BCS BUTTOZ      ;  Return 0 & Carry Set
+        EOR #$03        ;Invert Paddle #
+        TAY             ;Copy Paddle # to Y
+        AND #$01        ;Get Paddle Index
+        TAX             ;and Copy to X
+        SEI             ;Turn off Interrupts
+        LDA $DC02       ;Save Data Direction Register A
+        PHA
+        LDA #$C0
+        STA $DC02       ;Set Port A for Output
+        LDA PADDLT,Y    ;Get Bit Mask and
+        STA $DC00       ;Address Pair of Paddles
+        LDY #$FF        ;Wait for SID to Read Paddles
+PADDLL: NOP
+        DEY 
+        BMI PADDLL      ;Y contains $7F when Done
+        PLA             ;Restore Data Direction Register A
+        STA $DC02
+        LDA $D419,X     ;Read Paddle
+        STY $DC00       ;Reset Port A for Button Read 
+        CLI             ;Turn on Interrupts
+        RTS
+PADDLT: DC $80,$80,$40,$40  ;Port A Bit Mask Table
+        
+BUTTNS  EQU #$04      ;Maximum Numbers of Paddle Buttons
+
+;Read Paddle Button
+;Args: A = Button #
+;Affects: X,Y
+;Returns: A = $FF if Paddle Button Pressed
+;             $00 if Paddle Button Not Pressed
+;         Carry Set if Button Number Invalid
+BUTTON: CMP #BUTTNS     ;If Button# >= # of Buttons
+        BCS BUTTOZ      ;  Return FALSE & Carry Set
+        EOR #$03        ;Invert Button #
+        TAX             ;and Copy to X Register
+        ROR             ;Divide Button # by 2
+        TAY             ;and Transfer to Y Register
+        LDA $DC00,Y     ;Read Joystick Port
+        AND BUTTOM,X    ;Mask off Relevant Bit
+        BNE BUTTOZ      ;If Bit is 0
+        LDA #$FF        ;  Return TRUE
+        RTS             ;Else
+BUTTOZ: LDA #$00        ;  Return FALSE
+        RTS
+;Paddle Buttons 0 = S2 (bit 2), 1 = S3 (bit 3)
+BUTTOM: DC  $08,$04,$08,$04 ;Paddle Button Bit Masks

@@ -22,6 +22,10 @@ main:
     setpos(1,r);
     putchr('J'); prhex(i); putchr(':');
   }
+  for (i=0; i<4; i++) {
+    setpos(25,i);
+    prbyte($D0); prbyte(i);
+  }
   while() {
     for(i=0; i<#JYSTKS; i++) {
       j = joystk(i);
