@@ -1,0 +1,31 @@
+/*********************************************
+ * stackx - Extended Stack Functions for C02 *
+ *********************************************/
+
+/* Duplicate Top Stack Entry            * 
+ * Returns: A=Number of bytes retrieved *
+ *            0 if none or overflow     */
+char stkdup();
+
+/* Duplicate Entry Under Top of Stack   * 
+ * Returns: A=Number of bytes retrieved *
+ *            0 if none or overflow     */
+char stkovr();
+
+/* Push String onto Stack                 * 
+ * Args: &m - String to push              *
+ * Returns: A=$FF if bytes were written   *
+ *            $00 if block was overflowed */
+char stkstr();
+
+/* Swap Top and Second Stack Entries     * 
+ * Returns: A=Number of bytes in new top *
+ *            0 if none or overflow      */
+char stkswp();
+
+/* Copy Top Stack Entry into Array       * 
+ * Args: n  - Number of bytes to write   *
+ *       &m - Array to pop contents into *
+ * Returns: A=Number of bytes retrieved  *
+ *            0 if none                  */
+char stktop();

@@ -1,10 +1,19 @@
-/******************************************
- * stack - Stack Memory Functions for C02 *
- ******************************************/
+/********************************************
+ * stack - Software Stack Functions for C02 *
+ ********************************************/
+
+/* Add to Stack Pointer Address     *
+ *   Internal Utility Function      *
+ * Args: b - Number of Bytes to Add */
+void stkadd();
 
 /* Set Stack Start Address     *
  * Args: &addr - Start Address */
 void stkbgn();
+
+/* Decrement Stack Pointer Address *
+ *   Internal Utility Function     */
+void stkdec();
 
 /* Drop Top Entry from Stack             * 
  * Returns: A=Number of bytes dropped    *
@@ -15,19 +24,13 @@ char stkdrp();
  * Returns: Y,X=Pointer Address      */
 void stkdst();
 
-/* Duplicate Top Stack Entry            * 
- * Returns: A=Number of bytes retrieved *
- *            0 if none or overflow     */
-char stkdup();
-
 /* Set Stack End Address     *
  * Args: &addr - End Address */
 void stkend();
 
-/* Duplicate Entry Under Top of Stack   * 
- * Returns: A=Number of bytes retrieved *
- *            0 if none or overflow     */
-char stkovr();
+/* Increment Stack Pointer Address *
+ *   Internal Utility Function     */
+void stkinc();
 
 /* Pop Top Stack Entry into Array        * 
  * Args: n  - Number of bytes to write   *
@@ -47,24 +50,30 @@ char stkpsh();
  * Returns: Y,X=Pointer Address */
 void stkptr();
 
+/* Restore Stack Pointer Address *
+ *   Internal Utility Function   */
+void stkrsp();
+
 /* Reset Stack Pointer to Stack Start *
  * Returns: Y,X=Pointer Address       */
 void stkrst();
 
 /* Set Stack Pointer Address     *
+ *   Internal Utility Function   *
  * Args: &addr - Pointer Address */
 void stkset();
 
-/* Push String onto Stack                 * 
- * Args: &m - String to push              *
- * Returns: A=$FF if bytes were written   *
- *            $00 if block was overflowed */
-char stkstr();
+/* Save Stack Pointer Address  *
+ *   Internal Utility Function */
+void stkssp();
 
-/* Copy Top Stack Entry into Array       * 
- * Args: n  - Number of bytes to write   *
- *       &m - Array to pop contents into *
- * Returns: A=Number of bytes retrieved  *
- *            0 if none                  */
-char stktop();
+/* Get Stack Size                        *
+ * Returns: A=$FF if size greater than 0 *
+ *            $00 if stack is empty      *
+ *        Y,X=Stack size in bytes        */
+void stksiz();
 
+/* Subtract from Stack Pointer Address   *
+ *   Internal Utility Function           *
+ * Args: b - Number of Bytes to Subtract */
+void stksub();

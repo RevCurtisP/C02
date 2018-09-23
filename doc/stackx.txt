@@ -1,0 +1,125 @@
+Sta Functions
+
+This module contains extended stack manipulation functions. 
+
+Usage: at the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <memory.h02>
+  #include <string.h02>
+  #include <stack.h02>
+  #include <stackx.h02>
+
+The following application functions are defined:
+
+  r = stkstr(&s);       Stack String: Creates a new entry at the end of
+                        the stack consisting the characters in string 
+                        s, including the terminating ASCII null. This 
+                        ensures that when the entry is popped off the
+                        stack, the destination string will be properly
+                        terminated.
+
+                        If the string is empty or the bew entry would 
+                        overflow the end of the stack space, no entry is 
+                        created and a value of 0 is returned. Otherwise, 
+                        the number of bytes in the new entry is returned.
+
+                        Note: Calls the strlen function, then calls the
+                        stkpsh function.
+
+  r = stktop(&m);       Stack Top: Copies the bytes from the last entry of
+                        the stack into array m and leaves the entry on the
+                        stack.
+
+                        If the stack is empty, the value 0 is returned.
+                        Otherwise, the number of bytes in the entry is
+                        returned.
+
+                        Note: Calls stkpop, then restores stklo and stkhi
+                        to their prior values.
+
+  r = stkdup();         Stack Duplicate: Creates a new entry at the end of
+                        the stack consisting of the bytes in the last entry
+                        of the stack.
+
+                        If the stack is empty or the new entry would 
+                        overflow the end of the stack space, no entry is 
+                        created and a value of 0 is returned. Otherwise, 
+                        the number of bytes in the new entry is returned.
+
+                        Note: Sets dstlo and dsthi to the stklo and stkhi, 
+                        sets srclo and srchi to point to the beginning 
+                        of the last entry, updates stklo and stkhi, then 
+                        calls the memcpy function. 
+
+  r = stkovr();         Stack Over: Creates a new entry at the end of
+                        the stack consisting of the bytes in the second 
+                        to last entry of the stack.
+
+                        If there are less than two entries in the stack 
+                        or the new entry would overflow the end of the 
+                        stack space, no entry is created and a value of 
+                        0 is returned. Otherwise, the number of bytes in 
+                        the new entry is returned.
+
+                        Note: Sets dstlo and dsthi to the stklo and stkhi, 
+                        sets srclo and srchi to point to the beginning 
+                        of the second to last entry, updates stklo and 
+                        stkhi, then calls the memcpy function. 
+
+  r = stkswp();         Stack Swap: Moves the last entry in the stack to
+                        the second to last position and the second to 
+                        last entry to the last position.
+
+                        If there are less than two entries in the stack 
+                        or there is not enough room in the stack space
+                        to make a copy of the second to last entry, the 
+                        entries are not swapped and a value of 0 is 
+                        returned. Otherwise, the number of bytes in the
+                        new last entry is returned.
+
+                        Note: Calls stkovr, creating a copy of the second
+                        to last stack entry, restores stklo and stkhi to
+                        their original values, then calls the memcpy twice.
+
+  *,m,l = stkptr();     Stack Pointer: Returns the address contained in
+                        the stack pointer as the most significant byte
+                        and the least significant byte.
+
+                        This is a utility function not normally used in
+                        application code.
+
+                        Note: Gets variables stkslo and stkshi.
+
+  stkset(&d);           Stack Set: Sets stack pointer to address d.
+
+                        This is a utility function not normally used in
+                        application code.
+
+                        Note: Sets variables stkslo and stkshi.
+
+Note: This library expects the following functions to be defined
+
+  memcpl                Copy memory (alternate entry point) 
+  stkadd                Add to stack pointer
+  stkdrn                Stack drop (alternate entry point)
+  stkpsa                Push entry onto stack (alternate entry point)
+  stkrsp                Restore Stack Pointer
+  stkssp                Save Stack Pointer
+  strlen                Get string length
+
+along with the zero page variable pairs
+  
+  srclo, srchi          Source String Pointer 
+  dstlo, dsthi          Destination String Pointer
+  stklo, stkhi          stack Pointer
+
+the static variables
+
+  stkslo, stkshi        Stack Start Address
+  stkelo, stkehi        Stack End Address
+
+and the transient variables 
+
+  temp0, temp1          Temporary storage
+  temp2, temp3
