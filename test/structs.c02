@@ -1,0 +1,115 @@
+/**********************************************
+ * STRINGS - Demonstrate string.h02 functions *
+ **********************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memory.h02>
+#include <string.h02>
+
+char d, i;
+char aa,xx,yy;
+
+//Define Structure
+struct record {
+  char name[8];
+  char index;
+  data[128];
+};
+
+//Declare Structure Variable
+struct record srcrec;
+struct record dstrec;
+
+//Struct Containing Structs
+struct point { char xpos; char ypos; };
+struct point pnt;
+struct rect {struct point toplft; struct point btmrgt; };
+struct rect box;
+struct frame {struct rect outer; struct rect inner; };
+struct frame fram;
+
+main:
+
+//Set Structure Members
+strdst(&srcrec.name); strcpy("RECNAME");
+srcrec.index = 1;
+for (i = 0; i<=@srcrec.data; i++)
+  srcrec.data[i] = i;
+
+//Clear Destination Record
+memclr(@dstrec,&dstrec);
+prtdst();
+
+//Copy Source Record into Destination Record
+memdst(&dstrec);
+memcpy(@srcrec, &srcrec);
+
+prtdst();
+
+//Clear Box
+memclr(@box, &box); //Clear Box Members
+prtbox(); //Print Box Members
+
+//Set Box Members
+box.toplft.xpos=1; box.toplft.ypos=2;
+box.btmrgt.xpos=8; box.btmrgt.ypos=9;
+prtbox();
+newlin();
+
+//Clear Frame
+memclr(@fram, &fram); //Clear Frame Members
+prtfrm(); //Print Frame Members
+
+//Set Frame Members
+fram.outer.toplft.xpos=10; fram.outer.toplft.ypos=11;
+fram.outer.btmrgt.xpos=98; fram.outer.btmrgt.ypos=99;
+fram.inner.toplft.xpos=22; fram.inner.toplft.ypos=23;
+fram.inner.btmrgt.xpos=86; fram.inner.btmrgt.ypos=87;
+prtfrm();
+newlin();
+
+goto exit;
+
+//Print Destination Record
+void prtdst() {
+  puts("REC.NAME="); putln(&dstrec.name);
+  puts("REC.INDEX="); putdec(dstrec.index); newlin();
+  puts("REC.DATA={");
+  for (i = 0; i<@dstrec.data; i++) {
+    if (i) putc(',');
+    putdec(dstrec.data[i]);
+  }
+  putln("}");
+  newlin();
+}
+
+//Print Frame
+void prtfrm() {
+  puts("outer."); cpybox(&fram.outer); prtbox();
+  puts("inner."); cpybox(&fram.inner); prtbox();
+  newlin();
+}
+
+void cpybox() {
+  savrxy(); setdst(&box);
+  resrxy(); memcpy(@box);
+}
+
+//Print Box
+void prtbox() {
+  puts("toplft."); prtpnt(&box.toplft);
+  puts("btmrgt."); prtpnt(&box.btmrgt);
+  newlin();
+}
+
+//Print Point
+void prtpnt() {
+  savrxy(); setdst(&pnt); 
+  resrxy(); memcpy(@pnt); 
+  printf(pnt.xpos,"xpos=%d,");
+  printf(pnt.ypos,"ypos=%d ");
+}
