@@ -31,6 +31,7 @@ void poptrm(void) {
 
 /* Parse value (literal or identifier)   *
  * Args: alwreg - allow registers        *
+ 8       alwcon - allow constants        *
  * Sets: value - the value (as a string) *
  *       valtyp - value type             */
 void prsval(int alwreg, int alwcon) {
@@ -170,13 +171,16 @@ int chkadr(int adract) {
 /* Parse function call */
 void prsfnc(char trmntr) {
   DEBUG("Processing Function Call '%s'\n", term)
+  //int argexp = FALSE; //Expression(s) in second and third argument
   pshtrm(); //Push Function Name onto Term Stack
   skpchr(); //skip open paren
   CCMNT('(');
   if (!chkadr(0) && isxpre() || match('*')) {
     if (!look('*')) prsxpr(0);
     if (look(',') && !chkadr(0)) {
-      if (!look('*')) { prstrm(); asmlin("LDY", term); }
+      if (!look('*')) {
+        prstrm(); asmlin("LDY", term); 
+	  }
       if (look(',')) { prsval(FALSE, TRUE); asmlin("LDX", value); }
     }
   }
