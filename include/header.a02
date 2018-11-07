@@ -42,6 +42,14 @@ START:  NOP         ;System specific initialization code
         STX STKSAV  ;  the Stack Pointer should be preserved
         JMP MAIN    ;Execute Program
 
+
+;Exit Program and Return to Operating System or Monitor
+EXIT:   BRK         ;Usually BRK if returning to Monitor
+        LDX STKSAV  ;If an RTS is used to return to the Operating System,
+        TXS         ;  the Stack Pointer should be restored to original state 
+        RTS         ;  in case program exits in the middle of a Function
+        JMP WSTART  ;Or it may just execute the BASIC Warm Start Routine
+
 ;Poll Character from Keyboard
 PLKEY:  INC RDSEED  ;Cycle the Random Seed (if not provided by system)
         NOP         ;Code Read from Keyboad         
@@ -52,8 +60,8 @@ GETKEY;             ;Usually Drops into RDKEY, but may need to call RDKEY
                     ;  then clean/convert returned value (e.g. Apple-1) 
 
 ;Wait for Character from Console
-RDKEY:  JSR PLKEY   ;Usually calls PLKEY 
-        BEQ RDKEY   ;  until a non-zero is returned
+GETCHR: JSR POLKEY  ;Usually calls POLKEY
+        BEQ GETCHR  ;  until a non-zero is returned
         RTS         
 
 ;Delete Previous Character
@@ -65,13 +73,19 @@ NEWLIN: RTS         ;Code to move Cursor to beginning of next line
                     ;May emit Carriage Return, Line Feed, or both
 
 ;Print Character to Screen
-PRCHR:  RTS         ;Code to write ASCII character to Screen
+PUTCHR RTS         ;Code to write ASCII character to Screen
 
-;Exit Program and Return to Operating System or Monitor
-EXIT:   BRK         ;Usually BRK if returning to Monitor
-        LDX STKSAV  ;If an RTS is used to return to the Operating System,
-        TXS         ;  the Stack Pointer should be restored to original state 
-        RTS         ;  in case program exits in the middle of a Function
+;Clear the Screen
+CLRSCR: RTS         ;Code to Clear Screen
+
+;Move Cursor to Specified Coordinates
+SETPOS: RTS         ;Move Cursor to Column A, Row Y
+
+;Get Cursor Position
+GETPOS: RTS         ;Return Cursor Column in A, Row in Y
+
+;Get Screen Size
+GETSIZ: RTS         ;Return Screen Width in A, Height in Y
 
 ;Note: The following two functions replicate calls available 
 ;in the Apple-1 monitor and are included for test purposes
@@ -94,7 +108,7 @@ PRHEX:  AND #$0F    ;Strip High Nybb
         ADC #$90    ;Convert to $90-$99,$00-$05
         ADC #$40    ;Convert to $30-$39,$41-$46
         CLD         ;Clear Decimal Flag
-        JMP PRCHR   ;Print Hex Digit and Return   
+        JMP PUTCHR  ;Print Hex Digit and Return   
 
 ;Alternate Code for Systems with Interrupts that don't CLD
 PRHEX:  AND #$0F    ;Strip High Nybble
@@ -102,4 +116,4 @@ PRHEX:  AND #$0F    ;Strip High Nybble
         BCC PRHEXC  ;  
         ADC #$06    ;  Convert ':' to 'A'...
 PRHEXC: ADC #$30    ;Convert to ASCII Character
-        JMP PRCHR   ;Print Hex Digit and Return
+        JMP PUTCHR  ;Print Hex Digit and Return

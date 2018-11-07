@@ -16,17 +16,17 @@ START:  JMP MAIN    ;Execute Program
 ;Delete Previous Character
 DELCHR: JSR DELCHB  ;Print Backspace
         LDA #$20    ;Load Space into Accumulater
-        JSR PRCHR   ;  and Print it
+        JSR PUTCHR  ;  and Print it
 DELCHB: LDA #$08    ;Load Backspace into Accumulator
-        BNE PRCHR   ;  and Print it
+        BNE PUTCHR  ;  and Print it
 
         ;Advance Character to Next line
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
-        JSR PRCHR   ;  and Print it
+        JSR PUTCHR  ;  and Print it
         LDA #$0A    ;Load L/F into Accumulater
                     ;  and fall into PRCHR
 ;Print Character to Console
-PRCHR:  STA PUTCON ;Write Character to Console
+PUTCHR STA PUTCON ;Write Character to Console
         RTS
 
 ;Poll Keyboard for Keypress
@@ -34,8 +34,8 @@ PLKEY:  LDA GETCON  ;Read Character from Console
         RTS
 
 ;Wait for Character from Console
-RDKEY:  JSR PLKEY   ;Read Character from Console
-        BEQ RDKEY   ;  Loop if None Received
+GETCHR: JSR POLKEY  ;Read Character from Console
+        BEQ GETCHR  ;  Loop if None Received
         RTS
 
 EXIT:   BRK        ;Return to Monitor

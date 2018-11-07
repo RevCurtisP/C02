@@ -1,0 +1,20 @@
+;Assembly Header Include File for platforms
+;that do not have PRBYTE amnd PRHEX routines in ROM
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE: PHA         ;Save Accumulater
+        LSR         ;Shift Hi Nybble to Low Nybble
+        LSR 
+        LSR 
+        LSR 
+        JSR PRHEX   ;  and Print it
+        PLA         ;Restore Accumulator 
+                    ;  and fall into prhex
+
+;Print Low Nybble as Hex Digit to Console
+PRHEX:  AND #$0F    ;Strip High Nybble
+        CMP #$0A    ;If Low Nybble >= 10
+        BCC PRHEXC  ;  
+        ADC #$06    ;  Convert ':' to 'A'...
+PRHEXC: ADC #$30    ;Convert to ASCII Character
+        JMP PUTCHR  ;Print Hex Digit and Return

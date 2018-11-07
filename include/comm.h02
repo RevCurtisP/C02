@@ -1,0 +1,88 @@
+/***********************************************
+ * comm - Serial Communication Library for C02 *
+ ***********************************************/
+
+/* Command Register Constants */
+#define BR50   = $01    //Baud Rate -   50 BPS
+#define BR75   = $02    //Baud Rate -   75 BPS
+#define BR110  = $03    //Baud Rate -  110 BPS
+#define BR134  = $04    //Baud Rate -  134 BPS
+#define BR150  = $05    //Baud Rate -  140 BPS
+#define BR300  = $06    //Baud Rate -  300 BPS
+#define BR600  = $07    //Baud Rate -  300 BPS
+#define BR1200 = $08    //Baud Rate - 1200 BPS
+#define BR1800 = $09    //Baud Rate - 1800 BPS
+#define BR2400 = $0A    //Baud Rate - 2400 BPS
+#define BR4800 = $0B    //Baud Rate - 4800 BPS
+#define BR9600 = $0C    //Baud Rate - 9600 BPS
+
+#define SBITS1 = $00    //1 Stop Bit
+#define SBITS2 = $80    //2 Stop Bits
+
+#define WRDLN5 = $60    //Word Length - 5 Bits
+#define WRDLN6 = $40    //Word Length - 5 Bits
+#define WRDLN7 = $20    //Word Length - 5 Bits
+#define WRDLN8 = $00    //Word Length - 5 Bits
+
+/* Control Register Constants */
+#define PTYOFF = $00    //Parity - Disable
+#define PTYODD = $01    //Parity - Odd
+#define PTYEVN = $02    //Parity - Even
+#define PTYMRK = $03    //Parity - Mark
+#define PTYSPC = $04    //Parity - Space
+
+#define DPXFUL = $00    //Duplex - Full
+#define DPXHLF = $80    //Duplex - Half
+
+#define XLTNON = $00    //No Translation
+#define XTLASC = $10    //ASCII Translation
+
+#define LFNONE = $00    //No LF after CR
+#define LFSEND = $40    //Send LF after CR
+
+#define SHKSFT = $00    //Handshake - Software
+#define SHKHRD = $80    //Handshake - Hardware
+
+/* Return Serial Buffer Status             *
+ * Args: fp - file pointer                 *
+ * Returns: tuple: number of characters in *
+            input buffer and output buffer */
+char cbffrs();
+
+/* Close Serial Port        *
+ * Args: fp - file pointer  *
+ * Returns: 0 if successful *
+ *          255 if error    */
+ char cclose();
+
+/* Get Serial Port Error Status *
+ * Returns: Error Code     *
+ *          0 if No Error  */
+ char cerror();
+
+/* Read Character from Serial Port       *
+ * Args: fp - file pointer               *
+ * Returns: character read               */
+char cgetc();
+
+/* Open Serial Port for Communication    *
+ * Args: prt - Serial Port Number        *
+ *       cmd - Command Register          *
+ *       ctl - Control Register          *
+ * Returns: File Pointer for Opened Port *
+ *          0 if Error                   */
+ char copen();
+
+/* Write Character to Serial Port *
+ * Args: fp - file pointer        *
+ *       c - character to write   *
+ * Returns: 0 if successful       *
+            255 if error          */
+char cputc(); 
+
+/* Write String to Serial Port *
+ * Args: fp - file pointer     *
+ *       &s - string to write  *
+ * Returns: 0 if successful    *
+            255 if error       */
+char cputs(); 

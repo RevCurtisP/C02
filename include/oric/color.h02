@@ -1,0 +1,84 @@
+/*****************************************************
+ * Screen Control Functions and Constants for Oric-1 *
+ * INCOMPLETE: Copied from VIC20/C64                 *
+ *****************************************************/
+
+/* Display Colors */
+enum {BLACK, WHITE, RED, CYAN, MAGENT, GREEN, BLUE, YELLOW};
+
+/* PETSCII Color Code Table */
+const char clrtbl = {144, 5, 28, 159, 156, 30, 32, 158};
+
+;PETSCII Screen Control Characters
+CHRCLR  EQU 147   Clear (CLR)
+CHRDEL  EQU 20    Delete (DEL)
+CHRDN   EQU 17    Cursor Down
+CHRRTN  EQU 13    Return
+CHRFN1  EQU 133   Function Key 1 (F1)
+CHRFN2  EQU 137   Function Key 2 (F2)
+CHRFN3  EQU 134   Function Key 3 (F3)
+CHRFN4  EQU 138   Function Key 4 (F4)
+CHRFN5  EQU 135   Function Key 5 (F5)
+CHRFN6  EQU 139   Function Key 6 (F6)
+CHRFN7  EQU 136   Function Key 7 (F7)
+CHRFN8  EQU 140   Function Key 8 (F8)
+CHRHOM  EQU 19    Home 
+CHRINS  EQU 148   Insert
+CHRLFT  EQU 157   Cursor Left
+CHRRGT  EQU 29    Cursor Left
+CHRRVF  EQU 146   Reverse Off
+CHRRVN  EQU 18    Reverse On
+CHRUP   EQU 145   Cursor Up
+
+
+/* PETSCII Box Drawing Characters */
+#define BOXBLC = 173  //Bottom Left Corner
+#define BOXBRC = 189  //Bottom Right Corner
+#define BOXBCT = 177  //Bottom to Cetter Tee 
+#define BOXCTR = 123  //Center Cross
+#define BOXHLN = 96   //Horizontal Line
+#define BOXLCT = 171  //Left To Center T
+#define BOXRCT = 179  //Right To Center T
+#define BOXTLC = 176  //Top Left Corner
+#define BOXTRC = 174  //Top Right Corner
+#define BOXTCT = 178  //Top to Center T
+#define BOXVLN = 98   //Verical Line
+
+/* Set Background Color *
+ * Args: c - color         */
+char scrbkg();
+
+/* Clear Screen*/
+char scrclr();
+
+/* Move Cursor Down */
+char scrdwn();
+
+/* Move Cursor Home */
+char scrhom();
+
+/* Move Cursor Left */
+char scrlft();
+
+/* Move Cursor        *
+ * Args: col - column *
+ *       row - row    */
+char scrmov();
+
+/* Get Cursor Position  *
+ * Returns: column, row */
+char scrpos();
+
+/* Move Cursor Right */
+char scrrgt();
+
+/* Get Screen Size        *
+ * Returns: width, height */
+char scrsiz();
+
+/* Set Text Color *
+ * Args: c - color   */
+char scrtxt();
+
+/* Move Cursor Upt */
+char scrup();

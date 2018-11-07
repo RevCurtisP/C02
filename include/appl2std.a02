@@ -46,7 +46,7 @@ STORY   EQU $C3B3   ;Store Accumulator at Current Screen Position
 PRBLNK  EQU $F94C   ;Print 3 blanks
 PRBLNX  EQU $F94C   ;Print X blanks
 PRBLAX  EQU $F94C   ;Print character in A followed by X-1 blanks
-RDKEY   EQU $FD0C   ;Waits for keypress and return in A
+GETCHR  EQU $FD0C   ;Waits for keypress and return in A
 KEYIN   EQU $FD1B   ;Waits for keypress and cycle random-number generator
 RDCHAR  EQU $FD35   ;Read keyboard (processing escapes)
 GETLIN  EQU $FD6A   ;Get Line from Keyboard into Input Buffer
@@ -74,13 +74,13 @@ PLKEY:  LDA #0      ;Clear Accumulator
 PLKEYR: RTS
 
 ;Read Keyboard
-GETKEY  JSR PLKEY   ;Poll Keyboard
+GETKEY  JSR POLKEY  ;Poll Keyboard
         BEQ GETKEY  ;Loop if No Key	
         AND #$7F    ;Strip High Bit
         RTS
 
 ;Print Character to Screen
-PRCHR:  ORA #$80    ;Set High Bit
+PUTCHR ORA #$80    ;Set High Bit
         CMP #$E0    ;
         BCC PRCHRX  ;If Lower Case 
         AND #$1F    ;  Convert to Inverse
@@ -91,7 +91,7 @@ DELCHR: LDX #2      ;Two Characters Total
         LDA #$88    ;Load Backspace Character
         JSR PRBLAX  ;Print Accumulator and X-1 Blanks
         LDA #$88    ;Load Backspace Character
-        JMP PRCHR   ;and Print it
+        JMP PUTCHR  ;and Print it
 
 ;Advance Character to Next line
 NEWLIN   EQU CROUT  ;Alias to Monitor Routine

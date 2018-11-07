@@ -1,0 +1,20 @@
+/* Psddle Controllers Header File for Atari 400 & 800 */
+
+#define BUTTNS 4 //Number of Paddle Buttons
+#define PADDLS 4 //Number of Paddles
+
+/* Get Paddle Button Status        *
+ * Args: b = Button Number         *
+ *           Same as Paddle Number *
+ * Returns: $FF if Button Pressed  *
+ *          $00 if Not Pressed     */
+void button(); 
+
+/* Get Paddle Status       *
+ * Args: p = Paddle Number *
+ *           0 - Port 1 Paddle X  *
+ *           1 - Port 1 Paddle Y  *
+ *           2 - Port 2 Paddle X  *
+ *           3 - Port 2 Paddle Y  *
+ * Returns: Paddle Value (0-255) */
+void paddle();

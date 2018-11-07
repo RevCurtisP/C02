@@ -1,0 +1,24 @@
+;Interrupt Vector Manipulation Routines
+
+;Interrupt Vectors
+NMILO   EQU $FFFA   ;Non-Maskable Interrupt
+NMIHI   EQU $FFFB
+RSTLO   EQU $FFFC   ;Reset
+RSTHI   EQU $FFFD
+IRQLO   EQU $FFFE   ;Maskable Interrupt
+IRQHI   EQU $FFFF
+
+;Set Non-Maskable Interrupt Handler
+SETNMI: STY NMIHI
+        STX NMILO
+        RTS
+
+;Set Reset Handler
+SETRST: STY RSTHI
+        STX RSTLO
+        RTS
+
+;Set Maskable Interrupt Handler
+SETIRQ: STY IRQHI
+        STX IRQLO
+        RTS

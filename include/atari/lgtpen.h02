@@ -1,0 +1,5 @@
+/* Lightpen Module Header File for Atari 400 & 800 */
+
+#define LGTPNS $FF //Light Pen Status (Supported)
+
+char lgtpen(); //Read Light Pen

@@ -27,10 +27,10 @@ void prbyte();    //Print Accumulator as Hexadadecimal number
 void prhex();     //Print Low Nybble of Accumulator as Hex Digit
 
 //System Subroutines
-char plkey();   //Poll Console for character
-char rdkey();   //Wait for character from Console
+char polkey();  //Poll Console for character
+char getchr();  //Wait for character from Console
 char getkey();  //Read ASCII character from Console
 void newlin();  //Advance cursor to beginning of next line
-void prchr();   //Print ASCII character to Console
+char putchr();  //Print ASCII character to Console
 void setdst();  //Set Destination Pointer
 void setsrc();  //Set Source Pointer

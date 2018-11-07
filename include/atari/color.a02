@@ -1,0 +1,43 @@
+;Color and Character Assembly Language Equates for Atari 400 & 800
+
+; Display Colors
+BLACK   EQU $00     Black
+RED     EQU $00     Red
+GREEN   EQU $00     Green
+YELLOW  EQU $00     Yellow
+BLUE    EQU $00     Blue
+MAGENT  EQU $00     Magenta
+CYAN    EQU $00     Cyan
+WHITE   EQU $00     White
+
+;ASCII Screen Control Characters
+CHRBCK  EQU $7E     Backspace 
+CHRBEL  EQU $FD     Beep (Buzzer)
+CHRCLR  EQU $7D     Clear Screen
+CHRDEL  EQU $FE     Delete (Character)
+CHRDWN  EQU $1C     Cursor Down
+CHRFLS  EQU $00     Flash On
+CHRHOM  EQU $00     Home (None) 
+CHRINS  EQU $FF     Insert (Character)
+CHRLFT  EQU $1E     Cursor Left
+CHRRGT  EQU $1F     Cursor Right
+CHRRTN  EQU $9B     Return (End of Line)
+CHRTAB  EQU $7F     Tab
+CHRUP   EQU $1B     Cursor Up
+
+;ATASCII Symbolic Characters
+CHRBLK  EQU $A0   Block
+
+;ASCII Box Drawing Characters
+BOXBLC  EQU $0A   Bottom Left Corner
+BOXBRC  EQU $03   Bottom Right Corner
+BOXBCT  EQU $18   Bottom to Cetter Tee
+BOXCTR  EQU $13   Center Cross
+BOXHLN  EQU $12   Horizontal Line
+BOXLCT  EQU $01   Left To Center T)
+BOXRCT  EQU $04   Right To Center T 
+BOXTLC  EQU $11   Top Left Corner
+BOXTRC  EQU $05   Top Right Corner
+BOXTCT  EQU $17   Top to Center T
+BOXVLN  EQU $7C   Vertical Line (|)
+

@@ -38,14 +38,6 @@ STKEHI  EQU $4F
 PUTCON  EQU $F001   ;Write Character to Console
 GETCON  EQU $F004   ;Read Character from Console
 
-;Interrupt Vectors
-NMILO   EQU $FFFA   ;Non-Maskable Interrupt
-NMIHI   EQU $FFFB
-RSTLO   EQU $FFFC   ;Reset
-RSTHI   EQU $FFFD
-IRQLO   EQU $FFFE   ;Maskable Interrupt
-IRQHI   EQU $FFFF
-
         ORG $0200   ;START Directly Above Stack
 
 START:  JMP MAIN    ;Execute Program
@@ -53,19 +45,20 @@ START:  JMP MAIN    ;Execute Program
 ;Poll Character from Keyboard
 POLKEY: INC RDSEED  ;Cycle the RANDOM Seed (if not provided by system)
         LDA GETCON  ;Read Character from Console
-        CMP #$E0
-        BEQ POLKEX  ;If Not E0 Extended Key 
-        ORA #$00    ;  Set Status Flags
-        RTS         ;  and Return
-POLKEX: LDA GETCON  ;Else Get Second Byte
-        ORA #$80    ;  Set High Byte
-        RTS         ;  and Return
+        RTS
 
 ;Read Character from Console
-GETKEY             ;Same As RDKEY
+GETKEY  JSR POLKEY  ;Get Raw Key Character
+        CMP #$E0
+        BEQ GETKEX  ;If Not E0 Extended Key 
+        ORA #$00    ;  Set Status Flags
+        RTS         ;  and Return
+GETKEX: JSR POLKEY  ;Else Get Second Byte
+        ORA #$80    ;  Set High Bit
+        RTS         ;  and Return
 
 ;Wait for Character from Console
-GETCHR: JSR POLKEY  ;Read Character from Console
+GETCHR: JSR GETKEY  ;Read Character from Console
         BEQ GETCHR  ;  Loop if None Received
         RTS
 
@@ -89,36 +82,4 @@ PUTCHR STA PUTCON  ;Write Character to Console
 
 EXIT:   BRK        ;Return to Monitor
 
-;Print Byte as Two-Digit Hex Number to Console
-PRBYTE: PHA        ;Save Accumulater
-        LSR        ;Shift Hi Nybble to Low Nybble
-        LSR 
-        LSR 
-        LSR 
-        JSR PRHEX  ;  and Print it
-        PLA        ;Restore Accumulator 
-                   ;  and fall into PRHEX
-                    
-;Print Low Nybble as Hex Digit to Console
-PRHEX:  AND #$0F   ;Strip High Nybb
-        SED        ;Set Decimal Flag for 
-        CLC        ;  Addition Wizardry
-        ADC #$90   ;Convert to $90-$99,$00-$05
-        ADC #$40   ;Convert to $30-$39,$41-$46
-        CLD        ;Clear Decimal Flag
-        JMP PUTCHR ;Print Hex Digit and Return
-
-;Set Non-Maskable Interrupt Handler
-SETNMI: STY NMIHI
-        STX NMILO
-        RTS
-
-;Set Reset Handler
-SETRST: STY RSTHI
-        STX RSTLO
-        RTS
-
-;Set Maskable Interrupt Handler
-SETIRQ: STY IRQHI
-        STX IRQLO
-        RTS
+        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines

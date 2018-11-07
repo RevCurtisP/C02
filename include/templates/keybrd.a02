@@ -1,0 +1,27 @@
+;Keyboard Assembly Language Equates for Oric-1
+
+;ASCII Keyboard Codes
+KEYBCK  EQU $00   Backspace 
+KEYBRK  EQU $03   Break 
+KEYCLR  EQU $0C   Clear
+KEYCPY  EQU $0C   Copy (Acorn Atom)
+KEYDEL  EQU $7F   Delete
+KEYDN   EQU $0A   Cursor Down
+KEYESC  EQU $1B   Escape
+KEYFN1  EQU $00   Function Key 1
+KEYFN2  EQU $00   Function Key 2
+KEYFN3  EQU $00   Function Key 3
+KEYFN4  EQU $00   Function Key 4
+KEYFN5  EQU $00   Function Key 5
+KEYFN6  EQU $00   Function Key 6
+KEYFN7  EQU $00   Function Key 7
+KEYFN8  EQU $00   Function Key 8
+KEYFN9  EQU $00   Function Key 9
+KEYFNA  EQU $00   Function Key 10
+KEYHOM  EQU $00   Home
+KEYINS  EQU $00   Insert
+KEYLFT  EQU $08   Cursor Left
+KEYRGT  EQU $09   Cursor Right
+KEYRTN  EQU $0D   Return
+KEYTAB  EQU $09   Tab
+KEYUP   EQU $0B   Cursor Up

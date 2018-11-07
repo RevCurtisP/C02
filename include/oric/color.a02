@@ -1,49 +1,51 @@
-;Screen Control Assembly Language Routines for Atari 400 & 800
-;*** Incomplete - Copied from Oric-1 ***
+;Screen Control Assembly Language Routines for Oric-1
 
 ; Display Colors
-BLACK   EQU $00     Black
-RED     EQU $00     Red
-GREEN   EQU $00     Green
-YELLOW  EQU $00     Yellow
-BLUE    EQU $00     Blue
-MAGENT  EQU $00     Magenta
-CYAN    EQU $00     Cyan
-WHITE   EQU $00     White
+BLACK   EQU 0     Black
+RED     EQU 1     Red
+GREEN   EQU 2     Green
+YELLOW  EQU 3     Yellow
+BLUE    EQU 4     Blue
+MAGENT  EQU 5     Magenta
+CYAN    EQU 6     Cyan
+WHITE   EQU 7     White
 
 ;ASCII Screen Control Characters
-CHRBCK  EQU $7E     Backspace 
-CHRBEL  EQU $FD     Beep (Buzzer)
-CHRCLR  EQU $7D     Clear Screen
-CHRDEL  EQU $FE     Delete (Character)
-CHRDWN  EQU $1C     Cursor Down
-CHRFLS  EQU $00     Flash On
-CHRHOM  EQU $00     Home (None) 
-CHRINS  EQU $FF     Insert (Character)
-CHRLFT  EQU $1E     Cursor Left
-CHRRGT  EQU $1F     Cursor Right
-CHRRTN  EQU $9B     Return (End of Line)
-CHRTAB  EQU $7F     Tab
-CHRUP   EQU $1B     Cursor Up
-
-;ATASCII Symbolic Characters
-CHRBLK  EQU $A0   Block
+CHRBEL  EQU $07   Beep (Bell)
+CHRBLK  EQU $FF   Block
+CHRCAP  EQU $14   Caps Lock ()
+CHRCKR  EQU $7E   Checkerboard
+CHRCLR  EQU $0C   Clear (Form Feed)
+CHRDEL  EQU $7F   Delete (Delete)
+CHRDWN  EQU $0A   Cursor Down (Line Feed)
+CHRFLS  EQU 140   Flash On
+CHRHOM  EQU $00   Home (None) 
+CHRINS  EQU $00   Insert
+CHRLFT  EQU $08   Cursor Left (Backspace)
+CHRRGT  EQU $09   Cursor Right (Tab)
+CHRRTN  EQU $0D   Return (Carriage Return)
+CHRRVF  EQU $00   Reverse Off
+CHRRVN  EQU $00   Reverse On
+CHRUP   EQU $0B   Cursor Up (Vertical Tab)
 
 ;ASCII Box Drawing Characters
-BOXBLC  EQU $0A   Bottom Left Corner
-BOXBRC  EQU $03   Bottom Right Corner
-BOXBCT  EQU $18   Bottom to Cetter Tee
-BOXCTR  EQU $13   Center Cross
-BOXHLN  EQU $12   Horizontal Line
-BOXLCT  EQU $01   Left To Center T)
-BOXRCT  EQU $04   Right To Center T 
-BOXTLC  EQU $11   Top Left Corner
-BOXTRC  EQU $05   Top Right Corner
-BOXTCT  EQU $17   Top to Center T
-BOXVLN  EQU $7C   Vertical Line (|)
+BOXBLC  EQU 43    Bottom Left Corner (+)
+BOXBRC  EQU 43    Bottom Right Corner (+)
+BOXBCT  EQU 45    Bottom to Cetter Tee  (-)
+BOXCTR  EQU 123   Center Cross (+)
+BOXHLN  EQU 45    Horizontal Line (-)
+BOXLCT  EQU 124   Left To Center T (|)
+BOXRCT  EQU 124   Right To Center T (|)
+BOXTLC  EQU 43    Top Left Corner (+)
+BOXTRC  EQU 43    Top Right Corner (+)
+BOXTCT  EQU 45   Top to Center T (-)
+BOXVLN  EQU 124   Vertical Line (|)
+
+;ASCII Color Code Table
+CLRCDS  DC  128, 129, 130, 131, 132, 133, 134, 136
 
 ;Set Background Color
-;Args: A = Atari Color Code
+;Args: A = Oric Color Code
 ;Uses: TEMP0 - Temporary Storage
 ;Affects: A,C,N,Z
 SCRBKG: AND $07     ;Strip High Bits

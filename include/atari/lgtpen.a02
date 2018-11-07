@@ -1,0 +1,21 @@
+;Lightpen Assembly Language Module for Atari 400 & 800
+
+LGTPNS  EQU #$FF        ;Light Pen Status (Supported)
+
+;Read Light Pen
+;Returns: A = X Position / 2
+;         Y = Y Position
+;         X = Trigger Status ($FF = Pressed)
+LGTPEN: LDX #0      ;Initialize X to FALSE (0)
+        LDA $0284   ;Check Joystick Button
+        EOR #$FF    ;Invert and
+        AND #$01    ;Mask Bits
+        BEQ LGTPET  ;If Trigger Pulled, Set X to $FF
+        LDA $0278   ;Read Joystick Switches
+        EOR #$FF    ;Invert and
+        AND #$0F    ;Mask Bits
+        BEQ LGTPEP  ;If Trigger Pulled
+LGTPET: DEX         ;  Set X to TRUE ($FF)
+LGTPEP: LDY $0234   ;Read Y Position into Y
+        LDA $0235   ;Read X Position into A
+        RTS

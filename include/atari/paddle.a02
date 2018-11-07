@@ -1,0 +1,33 @@
+;Paddle Controller Constants and Functions for Atari 400 & 800
+
+PADDLS  EQU #$08      ;Maximum Numbers of Paddles
+
+;Read Paddle
+;Args: A = Paddle #
+;Affects: X
+;Returns: A = Paddle Value
+;             0 and Carry Set if Paddle # Invalid
+PADDLE: CMP #PADDLS     ;If Invalid Paddle #
+        BCS BUTTOZ      ;  Return 0 & Carry Set
+        TAX             ;Copy Paddle # to X
+        LDA $0270,X     ;Read Paddle Shadow Register
+        RTS
+
+BUTTNS  EQU #$04      ;Maximum Numbers of Paddle Buttons
+
+;Read Paddle Button
+;Args: A = Button #
+;Affects: X,Y
+;Returns: A = $FF if Paddle Button Pressed
+;             $00 if Paddle Button Not Pressed
+;         Carry Set if Button Number Invalid
+BUTTON: CMP #BUTTNS     ;If Button# >= # of Buttons
+        BCS BUTTOZ      ;  Return FALSE & Carry Set
+        TAX             ;and Copy to X Register
+        LDA $027C,Y     ;Read Button Shadow Register
+        AND #$01        ;Mask off Relevant Bit
+        BNE BUTTOZ      ;If Bit is 0
+        LDA #$FF        ;  Return TRUE
+        RTS             ;Else
+BUTTOZ: LDA #$00        ;  Return FALSE
+        RTS

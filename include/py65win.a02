@@ -55,26 +55,26 @@ PLKEYX: RTS
 GETKEY             ;Same As RDKEY
 
 ;Wait for Character from Console
-RDKEY:  JSR PLKEY   ;Read Character from Console
-        BEQ RDKEY   ;  Loop if None Received
+GETCHR: JSR POLKEY  ;Read Character from Console
+        BEQ GETCHR  ;  Loop if None Received
         RTS
 
 ;Delete Previous Character
 DELCHR: LDA #$08    ;Load Backspace into Accumulator
-        JSR PRCHR   ;  and Print it
+        JSR PUTCHR  ;  and Print it
         LDA #$20    ;Load Space into Accumulater
-        JSR PRCHR   ;  and Print it
+        JSR PUTCHR  ;  and Print it
         LDA #$08    ;Load Backspace into Accumulator
-        JMP PRCHR   ;  and Print it
+        JMP PUTCHR  ;  and Print it
 
 ;Advance Character to Next line
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
-        JSR PRCHR   ;  and Print it
+        JSR PUTCHR  ;  and Print it
         LDA #$0A    ;Load L/F into Accumulater
                     ;  and fall into PRCHR
 
 ;Print Character to Console
-PRCHR:  STA PUTCON  ;Write Character to Console
+PUTCHR STA PUTCON  ;Write Character to Console
         RTS
 
 EXIT:   BRK        ;Return to Monitor
@@ -96,4 +96,4 @@ PRHEX:  AND #$0F   ;Strip High Nybb
         ADC #$90   ;Convert to $90-$99,$00-$05
         ADC #$40   ;Convert to $30-$39,$41-$46
         CLD        ;Clear Decimal Flag
-        JMP PRCHR  ;Print Hex Digit and Return
+        JMP PUTCHR ;Print Hex Digit and Return
