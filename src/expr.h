@@ -2,6 +2,8 @@
  * C02 Expession Parsing Routines *
  **********************************/
 
+enum adacts {ADNONE, ADLDYX, ADPUSH};
+
 char term[255]; //Term parsed from equation
 
 char oprstk[MAXTRM];	         //Operator Stack
@@ -10,7 +12,7 @@ int  trmidx;                     //Next Index in Stack
 
 int  trmcnt;  //Number of total terms in current expression
 
-int  chkadr(int adract);    //Check for and Process Address or String
+int  chkadr(int adract, int alwstr);  //Check for and Process Address or String
 void chkidx();              //Check for, Parse, and Process Index
 void prcftm();              //Process First Term
 void prsadr(int adract);    //Parse and Compile Address of Operator

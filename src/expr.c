@@ -122,31 +122,38 @@ void prstrm(void) {
   skpspc();
 }
 
-/* Process Address Reference */
+/* Process Address Reference 
+ * Args: adract = Address Action (adacts) * 
+ *       symbol = Symbol to Process       */
 void prcadr(int adract, char* symbol) {
   DEBUG("Processing address '%s'\n", word)
   strcpy(word,"#>(");
   strcat(word,symbol);
   strcat(word,")");
-  if (adract == 1) { asmlin("LDA", word); asmlin("PHA", ""); }
+  if (adract == ADPUSH) { asmlin("LDA", word); asmlin("PHA", ""); }
   else asmlin("LDY", word);
   strcpy(word,"#<(");
   strcat(word,symbol);
   strcat(word,")");
-  if (adract == 1) { asmlin("LDA", word); asmlin("PHA", ""); }
+  if (adract == ADPUSH) { asmlin("LDA", word); asmlin("PHA", ""); }
   else asmlin("LDX", word);
 } 
 
-/* Parse and Compile Address of Operator */
+/* Parse and Compile Address of Operator *
+ * Args: adract = Address Action         */
 void prsadr(int adract) {
   DEBUG("Parsing address\n", 0)
   if (isnpre()) prsnum(0xFFFF);
   else prsvar(FALSE, TRUE);
-  prcadr(adract, value);  //Compile Address Reference
+  if (adract) prcadr(adract, value);  //Compile Address Reference
+  else strcpy(word, value); //Save for Calling Routine
 }
 
-/* Parse and Create Anonymous String */
-void prsstr(int adract) {
+/* Parse and Create Anonymous String *
+ * Args: adract = Address Action     *
+ *       alwstr = Allow String       */
+void prsstr(int adract, int alwstr) {
+  if (!alwstr) ERROR("Illegal String Reference", 0, EXIT_FAILURE)
   DEBUG("Parsing anonymous string\n", 0)
   newlbl(vrname);         //Generate Variable Name
   value[0] = 0;           //Use Variable Size 0
@@ -154,15 +161,18 @@ void prsstr(int adract) {
   prsdts();               //Parse Data String
   setdat();               //Set Variable Data
   varcnt++;               //Increment Variable Counter
-  prcadr(adract, vrname);  //Compile Address Reference
+  if (adract) prcadr(adract, vrname); //Compile Address Reference
+  else strcpy(word, vrname); //Save for Calling Routine
 }
 
-/* Check for and Process Address or String */
-int chkadr(int adract) {
+/* Check for and Process Address or String *
+ * Args: adract = Address Action           *
+ *       alwstr = Allow String             */
+int chkadr(int adract, int alwstr) {
   DEBUG("Checking for Address or String\n", 0)
   int result = TRUE;
   if (look('&')) prsadr(adract);
-  else if (match('"')) prsstr(adract);
+  else if (match('"')) prsstr(adract, alwstr);
   else result = FALSE;
   skpspc();
   return result;
@@ -175,9 +185,9 @@ void prsfnc(char trmntr) {
   pshtrm(); //Push Function Name onto Term Stack
   skpchr(); //skip open paren
   CCMNT('(');
-  if (!chkadr(0) && isxpre() || match('*')) {
+  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('*')) {
     if (!look('*')) prsxpr(0);
-    if (look(',') && !chkadr(0)) {
+    if (look(',') && !chkadr(ADLDYX, TRUE)) {
       if (!look('*')) {
         prstrm(); asmlin("LDY", term); 
 	  }

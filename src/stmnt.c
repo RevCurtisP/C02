@@ -274,7 +274,7 @@ void pelse(void) {
 /* parse and compile if statement */
 void pgoto(void) {
   DEBUG("Parsing GOTO statement\n", 0)
-  getwrd();
+  if (!chkadr(ADNONE, FALSE)) getwrd();
   expect(';');  
   asmlin("JMP", word);
 }
@@ -333,7 +333,7 @@ void ppop(void) {
 void ppush(void) {
   DEBUG("Parsing PUSH statement\n", 0)
   do { 
-    if (!chkadr(1)) {
+    if (!chkadr(ADPUSH, TRUE)) {
       prsxpr(0);        //Parse Expression
       asmlin("PHA",""); //Push Result on Stack
     }

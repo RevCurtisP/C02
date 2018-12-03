@@ -57,6 +57,12 @@ enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 #define MTZP     4 //Zero Page
 #define MTALGN 128 //Aligned
 
+/*Value Parsing Flags (BitMask) */
+#define ALWDEF	0  //Allow Default
+#define ALWREG	1  //Allow Register
+#define ALWCON  2  //Allow CONST Variable
+#define ALWINT  4  //Allow Integer
+
 int symdef(char *name);         //Is Variable defined (TRUE or FALSE)
 int rambas;						//RAM Base Address (0=None)
 int wrtbas;						//Write Base Address (0=None)
