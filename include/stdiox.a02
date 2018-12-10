@@ -163,7 +163,9 @@ PRINTB: CMP #'B         ;'Else If "b" or "B"
         JMP PRINTY      ;  and Continue Printing String
 PRINTN: CMP #'N         ;'Else If "n" or "N" 
         BNE PRINTS
+        STY TEMP0       ;  Save Index
         JSR NEWLIN      ;  Execute Newline Function
+        LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;  and Continue Printing String
 PRINTS: CMP #'S         ;'Else If "s" or "S" 
         BNE PRINTW
