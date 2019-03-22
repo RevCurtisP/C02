@@ -274,7 +274,12 @@ void pelse(void) {
 /* parse and compile if statement */
 void pgoto(void) {
   DEBUG("Parsing GOTO statement\n", 0)
+  int indrct = look('(');
   if (!chkadr(ADNONE, FALSE)) getwrd();
+  if (indrct) {
+    expect(')');
+	ERROR("Indirect GOTO Not Implemented\n", 0, EXIT_FAILURE)
+  }
   expect(';');  
   asmlin("JMP", word);
 }
