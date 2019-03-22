@@ -8,16 +8,16 @@
 #include <string.h02>
 
 char slen, scmp, spos, stot;
-char frst  = "string one.";
-char scnd  = "string two.";
+const char frst  = "string one.";
+const char scnd  = "string two.";
 char temp[32];
 char dest[32];
-char less = "less";
-char more = "more";
-char most = "most";
-char test = "test";
-char pass = "Pass  ";
-char fail = "Fail  ";
+const char less = "less";
+const char more = "more";
+const char most = "most";
+const char test = "test";
+const char pass = "Pass  ";
+const char fail = "Fail  ";
 
 main:
   //Test strchr

@@ -3,9 +3,10 @@
  **********************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
-#include <stdlib.h02>
 #include <memory.h02>
 #include <string.h02>
 

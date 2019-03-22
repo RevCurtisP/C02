@@ -12,9 +12,11 @@ char key;  //Key value
 main:
 while() {
   key = rdkey();
-  if (key = $1B) break;
-  prchr(key);
-  if (key = $0D) prchr($0A);
+  if (key = #ESCKEY) break;
+  select (key) {
+    case #DELKEY: delchr();
+    case #RTNKEY: newlin();
+    default:     prchr(key);
+  }
 }
 goto exit;
-

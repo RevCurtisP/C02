@@ -3,6 +3,7 @@
  ****************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
 #include <stdlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
@@ -10,16 +11,16 @@
 #include <memio.h02>
 #include <string.h02>
 
-char zp = $80; //Zero Page Location for Memory Pointer
+#define ZP $80 //Zero Page Location for Memory Pointer
 char lsb, msb; //Memory Pointer Contents
 char passed;   //Flags
 char f[255];   //Array to use as file
 char fp,mp,op; //Memory File Pointers
 char c, e, i;  //Testing Variables
 char s[128];    //Array for String Read/Writes
-char digits = "0123456789";
-char upcase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-char locase = "abcdefghijklmnopqrstuvwxyz";
+const char digits = "0123456789";
+const char upcase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char locase = "abcdefghijklmnopqrstuvwxyz";
 
 alias char outfil = $9000; //Output File
 
@@ -28,11 +29,11 @@ main:
 mp = 0; //Initialize Memory Pointer
 
 putln("Opening memory file at $8000.");
-mp = mopen(zp, &$8000);
+mp = mopen(#ZP, &$8000);
 
 puts("  Memory pointer: ");
 prbyte(mp);
-if (mp == zp) pass(); else fail();
+if (mp == #ZP) pass(); else fail();
 
 puts("  Address: ");
 lsb, msb = maddr(mp);
@@ -60,7 +61,7 @@ newlin();
 anykey();
 
 putln("Reading File using mgets()");
-mp = mopen(zp, &$8000);
+mp = mopen(#ZP, &$8000);
 while (!meof(mp)) {
   lsb, msb = maddr(mp);
   prbyte(msb); prbyte(lsb);
@@ -76,7 +77,7 @@ anykey();
 /* Test mputc() with mopen() to array */
 
 putln("Opening array f as memory file");
-fp = mopen(zp+2, &f);
+fp = mopen(#ZP+2, &f);
 puts("  Memory pointer: "); prbyte(fp);
 if (merror(fp)) fail(); else pass();
 
@@ -98,7 +99,7 @@ putln("Filling memory area outfil");
 for (i = 0; i<255; i++) outfil[i] = '@';
 
 putln("Opening location outfil as memory file");
-op = mopen(zp+4, &outfil);
+op = mopen(#ZP+4, &outfil);
 puts("  Memory pointer: "); prbyte(op);
 if (merror(op)) fail(); else pass();
 
@@ -122,7 +123,7 @@ anykey();
 /* Test mgetc(), and mgets() with mopen() to alias */
 
 putln("Opening location outfil as memory file");
-op = mopen(zp+4, &outfil);
+op = mopen(#ZP+4, &outfil);
 puts("  Memory pointer: "); prbyte(op);
 if (merror(op)) fail(); else pass();
 
@@ -155,7 +156,7 @@ memset(0, 255);
 mp = 0; //Initialize Memory Pointer
 
 putln("Opening memory file at $9000.");
-mp = mopen(zp, &$9000);
+mp = mopen(#ZP, &$9000);
 
 putln("Writing to memory file using mwrite()");
 msrc(&digits); mwrite(mp, 10);
@@ -164,17 +165,15 @@ msrc(&locase); mwrite(mp, 26);
 newlin();
 
 putln("Opening memory file at $9000.");
-mp = mopen(zp, &$9000);
+mp = mopen(#ZP, &$9000);
 
 putln("Reading from memory file using mread()");
-iarray(&s); mread(mp, 10); puts(&s); putc(':'); if (strcmp(&digits)) pass(); else fail();
-iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&upcase)) pass(); else fail();
-iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&locase)) pass(); else fail();
+iarray(&s); mread(mp, 10); puts(&s); putc(':'); if (strcmp(&digits)) fail(); else pass();
+iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&upcase)) fail(); else pass();
+iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&locase)) fail(); else pass();
 mread(mp,0); putdec(s); putc(':'); if (s) fail(); else pass();
 
 goto exit;
-
-void anykey() {newlin(); putln("Press any key..."); getc(); newlin();}
 
 void pass() { putln(" Passed"); }
 void fail() { putln(" Failed"); }

@@ -148,24 +148,6 @@ caloop:
   prchr('K');
   newlin(); 
 
-doswap:
-  char i,j,m,n,p,r;
-  for (i=0;i<16;i++) {
-    for (j=0;j<16;j++) {
-      m = shiftl(i,4)+j; prbyte(m);
-      n = shiftl(j,5)+i; prchr('~');
-      p = swap(m); prbyte(p);
-      prchr(' ');
-    }
-    newlin();
-  }
-  prchr('s');
-  prchr('w');
-  prchr('a');
-  prchr('p');
-  prchr(' ');
-  prchr('O');
-  prchr('K');
 
 goto exit;
 

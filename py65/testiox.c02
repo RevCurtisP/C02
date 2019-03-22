@@ -9,7 +9,7 @@
 #include <stdiox.h02>
 
 char c, i, j;
-char s = "string";
+const char s = "string";
 
 main:
 
@@ -53,6 +53,15 @@ do {
 } while (i);
 anykey();
 
+putln("prtbin()");
+do {
+  putbin(i);
+  putc(':');
+  i++;
+  if (!i&7) newlin();
+} while (i);
+anykey();
+
 putln("prtwrd()");
 do {
   j = i ^ $FF;
@@ -80,7 +89,7 @@ done:
   goto exit;
 
 void pfchar(c) {
-  if (c<32) printf(c,"      H='%h' R='%r' L='%l' D='%d'");
-  else      printf(c,"C='%c' H='%h' R='%r' L='%l' D='%d'");
+  if (c<32) printf(c,"      B='%b' H='%h' R='%r' L='%l' D='%d'");
+  else      printf(c,"C='%c' B= '%b' H='%h' R='%r' L='%l' D='%d'");
 }
 

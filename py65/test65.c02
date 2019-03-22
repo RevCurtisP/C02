@@ -9,7 +9,7 @@ char key;      //Key read from keyboard
 
 main:
   key = getkey();  //Read key from console
-  if (key = $1B)   //If Escape was pressed
+  if (key = #ESCKEY)   //If Escape was pressed
     goto exit;     //  return to monitor 
   prbyte(key);     //Print ASCII value of key
   prchr(' ');      //  and a space

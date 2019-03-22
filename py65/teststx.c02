@@ -3,20 +3,20 @@
  ********************************************/
  
 #include <py65.h02>
+#include <stddef.h02>
 #include <stdio.h02>
 #include <string.h02>
 #include <stringx.h02>
 
 char slen, sres;
-char span = "abcdef";
+const char span = "abcdef";
 char smax[128];
-char scba = "cba";
-char sfed = "fed";
-char sxyz = "xyz";
-char snul = "";
-char pass = "Pass  ";
-char fail = "Fail  ";
-
+const char scba = "cba";
+const char sfed = "fed";
+const char sxyz = "xyz";
+const char snul = "";
+const char pass = "Pass  ";
+const char fail = "Fail  ";
 
 void tests(slen) {
 

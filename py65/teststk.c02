@@ -11,13 +11,11 @@
 #include <memory.h02>
 #include <stack.h02>
 
-char TRUE=$FF, FALSE=$00;
-
 char c,f,g,i;
 char aa,xx,yy;
 char lo,hi;
-char r={6,7,8,9};
-char s="Test String";
+const char r={6,7,8,9};
+const char s="Test String";
 char t[255];
 
 main:
@@ -73,7 +71,7 @@ puts("Pushing Array onto Stack\t");
 puts("stkpsh(@r,$r)\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkpsh(@r,&r); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? TRUE : FALSE;
+setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8004);
 
@@ -81,7 +79,7 @@ puts("Duplicating Top of Stack\t");
 puts("stkdup()\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkdup(); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? TRUE : FALSE;
+setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8009);
 
@@ -89,7 +87,7 @@ puts("Pushing String onto Stack\t");
 puts("stkstr(&s)\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkstr(&s); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(strcmp(&s)==0) ? TRUE : FALSE;
+setdst(*,hi,lo); g=(strcmp(&s)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8016);
 
@@ -97,7 +95,7 @@ puts("Duplicating Second Stack Entry\t");
 puts("stkovr()\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkovr(); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? TRUE : FALSE;
+setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$801B);
 
@@ -106,35 +104,35 @@ c = anykey(); if (c == #esckey) goto exit;
 puts("Dropping Duplicate off Stack\t");
 puts("stkdrp()\t");
 f=stkdrp(); printf(f,"bytes=%d:");
-g=(f==4) ? TRUE : FALSE;
+g=(f==4) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8016);
 
 puts("Copying String from Stack\t");
 puts("stktop(&t)\t"); 
 f=stktop(&t); setdst(&t); printf("\"%s\":");
-g=(strcmp(&s)==0) ? TRUE : FALSE;
+g=(strcmp(&s)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8016);
 
 puts("Popping String off Stack\t");
 puts("stkpop(&t)\t"); 
 f=stkpop(&t); setdst(&t); printf("\"%s\":");
-g=(strcmp(&s)==0) ? TRUE : FALSE;
+g=(strcmp(&s)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8009);
 
 puts("Dropping Duplicate off Stack\t");
 puts("stkdrp()\t");
 f=stkdrp(); printf(f,"bytes=%d:");
-g=(f==4) ? TRUE : FALSE;
+g=(f==4) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8004);
 
 puts("Popping Array off Stack\t\t");
 puts("stkpop(&t)\t"); 
 f=stkpop(&t); prtary(f); puts(": ");
-g=(memcmp(f,&r)==0) ? TRUE : FALSE;
+g=(memcmp(f,&r)==0) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$7FFF);
 
@@ -157,8 +155,8 @@ goto exit;
 void chkptr(aa,yy,xx) {
   puts("\tChecking Stack Pointer\t\t\t");
   puts("address=$"); prbyte(stkhi); prbyte(stklo); putc(':');
-  xx = (stklo == xx) ? TRUE : FALSE;
-  yy = (stkhi == yy) ? TRUE : FALSE;
+  xx = (stklo == xx) ? #TRUE : #FALSE;
+  yy = (stkhi == yy) ? #TRUE : #FALSE;
   psorfl(xx & yy);
 }
 
@@ -174,8 +172,8 @@ void prtary(aa) {
 void cklohi(aa,yy,xx) {
   putdst(); puts("lo=$"); prbyte(lo); putc(' ');
   putdst(); puts("hi=$"); prbyte(hi); putc(':');
-  xx = (lo == xx) ? TRUE : FALSE;
-  yy = (hi == yy) ? TRUE : FALSE;
+  xx = (lo == xx) ? #TRUE : #FALSE;
+  yy = (hi == yy) ? #TRUE : #FALSE;
   psorfl(xx & yy);
 }
 
@@ -188,14 +186,14 @@ void fail() {putln(" Fail");}
 puts("Swapping Top and Second Entry\t");
 puts("stkswp()\t");
 f=stkswp(); printf(f,"bytes=%d:");
-g=(f==12) ? TRUE : FALSE;
+g=(f==12) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$801B);
 
 puts("Dropping Swapped Entry off Stack\t");
 puts("stkdrp()\t");
 f=stkdrp(); printf(f,"bytes=%d:");
-g=(f==4) ? TRUE : FALSE;
+g=(f==4) ? #TRUE : #FALSE;
 psorfl(f & g);
 chkptr(&$8016);
 
