@@ -8,7 +8,7 @@
 ;Uses: System Dependent
 ;Affects:  System Dependent
 ;Returns: A = Character Code of Key 
-GETC    EQU GETCHR      ;Alias to external GETCHRroutine
+GETC    EQU GETCHR      ;Alias to external GETCHR Routine
 
 ;void putc(c) - PUT Character to screen
 ;Args: Character code to display 
@@ -16,15 +16,17 @@ GETC    EQU GETCHR      ;Alias to external GETCHRroutine
 ;Uses: System Dependent
 ;Affects:  System Dependent
 ;Returns: System Dependent
-PUTC    EQU PUTCHR     ;Alias to external PUTCHRRoutine
+PUTC    EQU PUTCHR     ;Alias to external PUTCHR Routine
 
 ;char gets(&s) - GET String input from keyboard
 ;Args: Y,X = Address of String
 ;Sets: SRCLO,SRCLHI = Address of String
-;Affects: N,Z,C
+;Uses: TEMP3
+;Affects: X,N,Z,C
 ;Returns: A,Y = Number of Characters in String
 GETS:   JSR SETSRC      ;Initialize Source String
-GETSL:  JSR GETC        ;Get Keypress
+GETSL:  STY TEMP3       ;Save Y Index
+        JSR GETC        ;Get Keypress
         CMP #DELKEY     ;If Delete
         BNE GETSE       ;Then  
         TYA             ;  If Offset is Zero
@@ -39,10 +41,12 @@ GETSE:  CMP #ESCKEY     ;Else If Escape
 GETSC:  CMP #RTNKEY     ;Else If Not Carriage Return 
         BEQ GETSX
         JSR PUTC        ;  Echo Character
+        LDY TEMP3       ;Restore Y Index
         STA (SRCLO),Y   ;  Store Character at offset
         INY             ;  increment offset and
         BPL GETSL       ;  loop if less than 128
 GETSX:  JSR NEWLIN      ;Else Advance Cursor to Next Line
+        LDY TEMP3       ;Restore Y Index
         LDA #$00        ;  Terminate String        
         STA (SRCLO),Y   ;  and 
 GETSY:  TYA             ;  Return String Length

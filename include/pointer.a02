@@ -22,7 +22,6 @@ PTRRTN: LDY (1,X)       ;Load Pointer MSB into Y
         LDA TEMP0       ;Load Pointer Addres into A
         RTS
 
-        
 ;ptrset(ptr, &addr) - Store Address in Pointer
 ;Args: A = Zero Page Pointer Address
 ;      X,Y = Address to Store

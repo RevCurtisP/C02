@@ -1,6 +1,6 @@
 ; C02 library stdlib.h02 assembly language subroutines
 ; Requires 
-; external zero page locations SRCLO and srchi
+; external zero page locations SRCLO and SRCHI
 ; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
 
 ;abs(n) - Get ABSolute Value

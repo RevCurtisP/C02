@@ -42,12 +42,12 @@ ISFLS:  LDA #$00    ;  Return FALSE
         RTS
 
 ;C02/ML Character Conversion Routines
-tolowr: JSR ISUPR   ;If Char IS Not Upper Case
+TOLOWR: JSR ISUPR   ;If Char IS Not Upper Case
         BCC ISRTS   ;  Return
         ORA #$20    ;Else Set Bit 5 
         RTS         ; and Return
 
-touppr: JSR ISLWR   ;If Char IS Not Lower Case
+TOUPPR: JSR ISLWR   ;If Char IS Not Lower Case
         BCC ISRTS   ;  Return
         AND #$DF    ;Else Clear Bit 5 
         RTS         ; and Return
