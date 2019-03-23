@@ -22,6 +22,8 @@ BLKSHI  EQU $ED
 BLKELO  EQU $ED     ;Block End Address
 BLKEHI  EQU $EE
 BLKLEN  EQU $EF     ;Block Segment Length    
+BFRLO   EQU $FA     ;Work Buffer Pointer
+BFRHI   EQU $FB
 TEMP0   EQU $FC     ;Temporary Storage
 TEMP1   EQU $FD
 TEMP2   EQU $FE

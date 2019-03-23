@@ -21,10 +21,12 @@ SRCLO   EQU $30     ;Source String Pointer (stdio.a02)
 SRCHI   EQU $31
 DSTLO   EQU $32     ;Destination String Pointer (string.a02)
 DSTHI   EQU $33
-BLKLO   EQU $34     ;Block Segment Pointer (block.a02)
-BLKHI   EQU $35
-STKLO   EQU $35     ;System Pointer (pointer.a02)
-STKHI   EQU $36
+DSTLO   EQU $34     ;Destination String Pointer (string.a02)
+DSTHI   EQU $35
+BLKLO   EQU $36     ;Block Segment Pointer (block.a02)
+BLKHI   EQU $37
+STKLO   EQU $38     ;System Pointer (pointer.a02)
+STKHI   EQU $39
 
 RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
 RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
