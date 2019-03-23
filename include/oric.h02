@@ -8,14 +8,16 @@
 /* Zero Page Variables used as Pointers         */
 char srclo,srchi; //String pointer for String and I/O functions
 char dstlo,dsthi; //Secondary string pointer for String functions
+char bfrlo,bfrhi; //Buffer Pointer for Library Functions
 
-char temp0,temp1,temp2,temp3;  //Temporary variables 
+/* Temporary Variables */
+char temp0,temp1,temp2,temp3;
 
 /* Static Library Variables */
 char random;      //Last Result of Pseudo-Random Number Generator
 char rdseed;      //System Seed for Pseudo-Random Number Generator 
 
-//System Subroutines
+/* System Subroutines */
 char polkey();    //Poll Console for character
 char getchr();    //Wait for character from Console
 char getkey();    //Read ASCII character from Console
@@ -23,4 +25,3 @@ void newlin();    //Advance cursor to beginning of next line
 char putchr();    //Print ASCII character to Console
 void prbyte();    //Print Accumulator as Hexadadecimal number
 void prhex();     //Print Low Nybble of Accumulator as Hex Digit
- 

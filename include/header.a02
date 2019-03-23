@@ -8,10 +8,12 @@ RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
 NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
 
 ;Zero Page Locations
-SRCLO   EQU $00     ;Source String Pointer (stdio.asm)
+SRCLO   EQU $00     ;Source String/Array Pointer
 SRCHI   EQU $01
-DSTLO   EQU $02     ;Destination String Pointer (string.asm)
+DSTLO   EQU $02     ;Destination String/Array Pointer
 DSTHI   EQU $03
+BFRLO   EQU $04     ;Work Buffer Pointer
+BFRHI   EQU $05
 
 STKSAV  EQU $0D     ;Stack Pointer Storage
 RDSEED  EQU $0E     ;Pseudo-RANDOM Seed

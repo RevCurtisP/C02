@@ -2,7 +2,7 @@ C02 Header File for py65mon
 
 At the beginning of the program use the directive
 
-  #include <py65,h02>
+  #include <py65.h02>
   
 This must be the first include directive.
 

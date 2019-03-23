@@ -6,23 +6,35 @@ ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
 
 ;Zero Page Locations
-SRCLO   EQU $00     ;Source String Pointer (stdio.asm)
-SRCHI   EQU $01
-DSTLO   EQU $02     ;Destination String Pointer (string.asm)
-DSTHI   EQU $03
+SRCLO   EQU $10     ;Source String Pointer (stdio.asm)
+SRCHI   EQU $11
+DSTLO   EQU $12     ;Destination String Pointer (string.asm)
+DSTHI   EQU $13
+BFRLO   EQU $14     ;Work Buffer Pointer
+BFRHI   EQU $15
 
-RDSEED  EQU $04     ;Pseudo-RANDOM Seed
-RANDOM  EQU $05     ;Pseudo-RANDOM Number Storage
+TEMP0   EQU $16     ;Temporary Storage
+TEMP1   EQU $17
+TEMP2   EQU $18
+TEMP3   EQU $19
 
-TEMP0   EQU $06     ;Temporary Storage
-TEMP1   EQU $07
-TEMP2   EQU $08
-TEMP3   EQU $09
+RDSEED  EQU $1A     ;Pseudo-RANDOM Seed
+RANDOM  EQU $1B     ;Pseudo-RANDOM Number Storage
 
-BLKSLO  EQU $0A     ;Block Start Address
-BLKSHI  EQU $0B
-BLKELO  EQU $0C     ;Block End Address
-BLKEHI  EQU $0D
+;       EQU $1C     ;Unused
+;       EQU $1D     ;Unused
+
+BLKLEN  EQU $1F     ;Block Length
+BLKSLO  EQU $20     ;Block Start Address
+BLKSHI  EQU $21
+BLKELO  EQU $22     ;Block End Address
+BLKEHI  EQU $23
+
+STKSLO  EQU $24 ;Stack Start LSB
+STKSHI  EQU $25 ;Stack Start MSB
+STKELO  EQU $26 ;Stack End LSB  
+STKEHI  EQU $27 ;Stack End MSB  
+
 
 ;Oric-1 Tape images have the file extension ".tap"
 ;and have the following header prepended to the code

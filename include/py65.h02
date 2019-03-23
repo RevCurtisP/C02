@@ -8,6 +8,7 @@
 //Library Pointer Variables
 char srclo,srchi; //Source String Pointer for Library Functions
 char dstlo,dsthi; //Destination String Pointer for Library Functions
+char bfrlo,bfrhi; //Buffer Pointer for Library Functions
 char blklo,blkhi; //Block Segment Pointer
 char stklo,stkhi; //Stack Pointer
 

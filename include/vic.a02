@@ -14,7 +14,9 @@ BLKLO   EQU $26   ;Block Pointer LSB [Floating Point Work Area]
 BLKHI   EQU $27   ;Block Pointer MSB [Floating Point Work Area]
 STKLO   EQU $28   ;Stack Pointer LSB [Floating Point Work Area]
 STKHI   EQU $29   ;Stack Pointer MSB [Floating Point Work Area]
-RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)]
+BFRLO   EQU $35   ;Buffer Pointer LSB [Temporary String Pointer]
+BFRHI   EQU $36   ;Buffer Pointer MSB [Temporary String Pointer]
+RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)
 TEMP0   EQU $FB   ;Temporary Variable [Unused Byte]
 TEMP1   EQU $FC   ;Temporary Variable [Unused Byte]
 TEMP2   EQU $FD   ;Temporary Variable [Unused Byte]
@@ -84,7 +86,7 @@ GETCHR: JSR GETKEY  ;Poll Keyboard
 
 ;Print Character to Console
 ;uses direct call to SCRNOUT instead of CHROUT 
-PUTCHR  EQU $E742   ;Aliased to SRCNOUT Routine
+PUTCHR  EQU $E742   ;Aliased to SRCOUT Routine
 
 ;Delete Previous Character
 DELCHR: LDA #DELKEY ;Load Delete Character
