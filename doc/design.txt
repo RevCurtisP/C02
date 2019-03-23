@@ -156,7 +156,7 @@ Likewise if a 16-bit integer variable type was added to C02,
 then one could be assigned to the other using the exact same
 assembly code.
 
-A derefenced pointer can be used anywhere an array references
+A dereferenced pointer can be used anywhere an array references
 is allowed and would be subject to the same restrictions.
 
 A raw pointer used as an argument to a function will be passed
@@ -198,10 +198,10 @@ For the declarations
 
 references to the members of the struct REC will generate the code:
 
-    XXA REC+$09     ;REC.INDEX
+    XXX REC+$09     ;REC.INDEX
 
     LDX I           ;REC.DATA[I]
-    XXA REC+$0A,X
+    XXX REC+$0A,X
 
 Using the address of operator on a struct member generates assembly 
 code with parentherical expressions, which are not recognized by all
@@ -214,13 +214,13 @@ assemblers:
 The compiler could optimize the generation of code for references
 to the first member of a struct, producing
 
-    XXA REC     ;REC.NAME
+    XXX REC     ;REC.NAME
     
 instead of 
 
-    XXA REC+$00 ;REC.NAME
+    XXX REC+$00 ;REC.NAME
     
-but the machine code produced by the assembler should be indentical
+but the machine code produced by the assembler should be identical
 in either case.
 
 
@@ -233,19 +233,19 @@ Array Indexes
 Array indexing normally uses the X register and indexed addressing mode:
 
     LDX I       ;R[I]
-    XXA R,X
+    XXX R,X
     
 If the index is a constant or literal, absolute addressing is used:
 
     LDA R+1     ;R[1] 
-    XXA S+0     ;S[0]
+    XXX S+0     ;S[0]
  
 Specifying a register as the index also uses indexed addressing mode:
 
     TAX         ;R[A]
-    XXA R,X
-    XXA R,Y     ;R[Y]
-    XXA R,X     ;R[X]
+    XXX R,X
+    XXX R,Y     ;R[Y]
+    XXX R,X     ;R[X]
 
 Allowing for an expression as the index in the first term of an 
 expression uses only one extra byte of code and two machine cycles:
@@ -261,7 +261,7 @@ and ten machine cycles:
     expr code   ;code to evaluate the expression
     TAX
     PLA
-    XXA R,X
+    XXX R,X
     
 compared to the extra four to six bytes and six to eight machine cycles
 used by the equivalent C02 code required to achieve the same result:
@@ -269,7 +269,7 @@ used by the equivalent C02 code required to achieve the same result:
     expr code   ;Z = expr
     STA Z
     LDX Z       ;R[Z]
-    XXA R,X
+    XXX R,X
 
 Function Calls
 --------------
@@ -348,20 +348,20 @@ withing an expression:
 
     DEC I       ;R[--I]
     LDX I
-    XXA R,X
+    XXX R,X
 
     LDX I       ;R[I++]
-    XXA R,X
+    XXX R,X
     INC I
 
 Is indentical to the code generated when using a standalone post-operator;
 
     DEC I       ;I--
     LDX I       ;R[I]
-    XXA R,X
+    XXX R,X
 
     LDX I       ;R[I]
-    XXA R,X
+    XXX R,X
     INC I       ;I++
 
 Assignments
@@ -449,7 +449,7 @@ and works with all three variables of a plural assignment.
 Conditionals
 ============
 
-Conditionals are separate and distinct from expessions, due to the fact
+Conditionals are separate and distinct from expressions, due to the fact
 that the comparison operators all set status flags which affect the various
 branch instructions:
 
@@ -458,10 +458,21 @@ branch instructions:
     Reg = Data       BEQ          BNE
     Reg ≥ Data       BCS          BCC
     Reg ≠ Data       BNE          BEQ
-    
+
+The remaining operators can be implemented with CLC and SBC, but this will
+change the value in the accumulator.
+
     CLC:SBC DATA    Normal      Inverted   
     Reg ≤ Data       BCC          BCS
     Reg > Data       BCS          BCC
+
+Or they could be implemented using multiple branch instructions. This would
+leave the value of the left side expression in the accumulator, but use one 
+more byte of code and require and extra label.
+
+     CMP DATA         Normal           Inverted   
+    Reg ≤ Data   BEQ exec:BCC exec   BNE exec:BCS exec
+    Reg > Data   BEQ skip:BCS exec   BNE skip:BCC exec
 
 When compiling a comparison, the generated code will usually, but not 
 always, branch when the condition is false, skipping to the end of the 
@@ -491,16 +502,16 @@ Logical Operators
 Parsing the logical operators && and || is trivial if the preceding 
 condition is a comparison or flag operation, since any expression 
 evaluation is complete before the parse encounters the initial & or |
-character. For a standalone evaluation of an expression as true or\
+character. For a standalone evaluation of an expression as true or
 false, however, the expression evaluator will mistake the initial
 character of the && or || as a bitwise operator. Differentiating
 the two would require changing to a look-ahead parser.
 
-One solution is to enclose require parenthises around each comparison
+One solution is to enclose require parentheses around each comparison
 when using logical operators, which is allowable in C syntax, but
 it's just as easy, and arguably cleaner looking, to use the words 
-"and" and "or" instead. This is be allowble in standard C by using
-the @define directive to alias "and" to "&&" and "or" to "||".
+"and" and "or" instead. This is allowable in standard C by using
+the #define directive to alias "and" to "&&" and "or" to "||".
  
 The most efficient way to implement logical operators is to use shortcut 
 evaluations.
@@ -529,3 +540,4 @@ first comparison was false.
 
 When chaining multiple && and/or || operators, the shortcut evaluation
 effectively make them right-associative.
+

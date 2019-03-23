@@ -398,7 +398,7 @@ the form of an = character and literal after the variable name.
 A const array may be declared in one of two ways: the variable name
 suffixed with a [ character, a literal specifying the upper bound of
 the array, and a ] character; or a variable name followed by an = character
-and string literal or series of atring and numeric literals separated by 
+and string literal or series of atring and/or numeric literals separated by 
 commas and surrounded by the { or } characters.
 
 The zeropage modifier specifies that the variable will be defined in page
@@ -406,15 +406,17 @@ zero (addresses 0 through 255). It should be used in conjunction with the
 pragma zeropage directive.
 
 Examples:
-  alias char putcon = $F001; //Defines variable putcon with address $F001
-  alias char alpha = omega;  //Defines variable alpha aliased to omega  
-  aligned char table[240];   //Defines 241 byte array aligned to page boundary
-  const char debug = #TRUE;  //Defines variable debug initialized to constant
-  const char flag = 1;       //Defines variable flag initialized to 1
-  const char s = "string";   //Defines 7 byte string s initialized to "string"
-  const char m = {1,2,3};    //Defines 3 byte array m containing 1, 2, and 3   
+  alias char putcon = $F001;    //Defines variable putcon with address $F001
+  alias char alpha = omega;     //Defines variable alpha aliased to omega  
+  aligned char table[240];      //Defines 241 byte array aligned to page boundary
+  const char debug = #TRUE;     //Defines variable debug initialized to constant
+  const char flag = 1;          //Defines variable flag initialized to 1
+  const char s = "string";      //Defines 7 byte string s initialized to "string"
+  const char n = {1,2,3};       //Defines 3 byte array m containing 1, 2, and 3
+  const char m = {"abc", 123);  //Defines 5 byte array containing string and byte
+  const char t = {"ab", "cd");  //Defines 6 byte array of two strings
   aligned const char fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
-  zeropage char ptr, tmp;    //Defines zero page variables
+  zeropage char ptr, tmp;       //Defines zero page variables
 
 EXPRESSIONS
 

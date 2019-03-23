@@ -42,11 +42,6 @@ module. The available modules are as follows:
                 Contains functions for writing formatted data to the
                 screen, including decimal and hexadecimal numbers.
 
-    memio       Memory Input/Ouput
-
-                Provides functions to simulate reading and writing to
-                a section of memory as though it were a file.
-
     string      String functions
 
                 Contains functions for copying, searching, comparing,
@@ -68,7 +63,18 @@ module. The available modules are as follows:
                 for fixed length segments of data to an arbitrarily large 
                 section of memory.
 
-    Stack       Stack functions
+    stack       Stack functions
 
                 Contains functions for pushing and popping variable 
                 length segments of data onto and off of a stack in memory.
+
+    memio       Memory Input/Ouput
+
+                Provides functions to simulate reading and writing to
+                a section of memory as though it were a file.
+
+    fileio      File Input/Ouput
+
+                Provides functions to access, read from, and write to
+                files on cassette and/or disk.
+
