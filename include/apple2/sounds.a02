@@ -1,0 +1,26 @@
+; C02 library sounds.h02 assembly language subroutines
+
+;beep() - Produce System Beep Sound
+;Affects: A,Y
+BEEP    EQU $FBDD   ;Sound Bell
+
+;bomb() - Produce System Explosion Sound
+;Affects: None
+BOMB:   RTS         ;Function Not Available
+
+;shoot() - Produce Shooting Sound
+;Affects: None
+SHOT:   RTS         ;Function Not Available
+
+;tick() - Produce System Tick Sound
+;Affects: None
+TICK:   LDA $C030   ;Click Speaker Once
+        RTS
+
+;tock() - Produce System Tock Sound
+;Affects: None
+TOCK:   RTS         ;Function Not Available
+
+;zap() - Produce System Zap Sound
+;Affects: None
+ZAP:   RTS          ;Function Not Available

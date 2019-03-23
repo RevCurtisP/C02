@@ -1,0 +1,106 @@
+;C02 Interrupt Vector Assembly Language Routines for Apple 2
+
+;getbrk() - Return BRK Interrupt Address
+;Returns: A = $00 - Software Definable Address
+;         Y = Address MSB
+;         X = Address LSB
+GETBRK: LDA #$00    ;Return software definable
+        LDX $03F0   ;and Address in Soft Break Vector
+        LDY $03F1
+        RTS
+
+;getrst() - Return RST Interrupt Address
+;Returns: A = $00 - Autostart ROM (Vectored through RAM)
+;             $7F - Monitor ROM (Hard Coded)
+;         Y = Address MSB
+;         X = Address LSB
+GETRST: JSR GETRSC  ;Check ROM Version
+        BNE GETRSX  ;If Autostart ROM
+        LDX $03F2   ;  Return Address in Soft Reset Vector
+        LDY $03F3
+        RTS
+GETRSX: LDX $FFFC   ;Else
+        LDY $FFFD   ;  Return Address in 6502 RESET Vector
+        RTS
+
+;Check 6502 RESET Vector
+;Returns: A = $00 - Autostart ROM (Vectored through RAM)
+;             $7F - Monitor ROM (Hard Coded)
+;Notes: $FFFC contains $FF59 on Apple ][ (Monitor ROM)
+;             $FA62 on all other machines (Autostart ROM)
+GETRSC: LDA $FFFD   ;Load MSB of Vector
+        CMP #$FF    ;
+        BEQ GETRSF  ;If Not Monitor ROM
+        LDA #$00    ;  Return $00
+        RTS
+GETRSF: LDA #$7F    ;Else Return $FF
+        RTS
+
+;getnmi() - Return NMI Interrupt Address
+;Returns: A = $00 - Software Definable Address
+;         Y = Address MSB
+;         X = Address LSB
+;Notes: $FFFA contains $03FB in all ROMs
+GETNMI: LDA #$00    ;Return software definable
+        LDX $03FB   ;and Address in NMI vector
+        LDY $03FC
+        RTS
+
+;getirq() - Return IRQ Interrupt Address
+;Returns: A = $00 - Software Definable Address
+;         Y = Address MSB
+;         X = Address LSB
+;Notes: $FFFE contains $FA86 on Apple ][ (Monitor ROM)
+;             $FA40 on Apple ][+ and Pravets
+;             $C3FA on Apple //e, $FAC3 on TK3000//e
+;             $FF59 on Franklin 1000 and Laser 128
+GETIRQ: LDA #$00    ;Return software definable
+        LDX $03FE   ;and Address in CINV
+        LDY $03FF
+        RTS
+
+;setbrk() - Set BRK Interrupt Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 - Successfully Set
+SETBRK: SEI         ;Disable Interrupts
+        STX $03F0   ;Store Address in Soft Rreak Vector
+        STY $03F1
+        CLI         ;Enable Interrupts
+        LDA #$00    ;Return Success
+        RTS
+
+;setrst() - Set RST Interrupt Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 If Autostart ROM (Success)
+;             $7F If Monitor ROM (Failure)
+SETRST: JSR GETRSC  ;Check ROM Version
+        BNE SETRSX  ;If Autostart ROM
+        SEI         ;  Disable Interrupts
+        STX $03F2   ;  Store Address in Soft Reset Vector
+        STY $03F3
+        CLI         ;  Enable Interrupts
+SETRSX: RTS
+
+;setnmi() - Set NMI Interrupt Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 - Successfully Set
+SETNMI: SEI         ;Disable Interrupts
+        STX $03FB   ;Store Address in NMI vector
+        STY $03FC
+        CLI         ;Enable Interrupts
+        LDA #$00    ;Return Success
+        RTS
+
+;setirq() - Set Maskable Interrupt Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 - Successfully Set
+SETIRQ: SEI         ;Disable Interrupts
+        STX $03FE   ;Store Address in ????
+        STY $03FF
+        CLI         ;Enable Interrupts
+        LDA #$00
+        RTS

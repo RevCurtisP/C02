@@ -1,0 +1,22 @@
+/*************************************************
+ * sounds - Predefined Sounds Module for Apple 2 *
+ *************************************************/
+
+/* Produce System Beep Sound */
+char beep();
+
+/* Produce Explosion Sound */
+char bomb();
+
+/* Produce Shooting Sound */
+char shot();
+
+/* Produce High Click Sound */
+char tick();
+
+/* Produce Low Click Sound */
+char tock();
+
+/* Produce Zap Sound */
+char zap();
+
