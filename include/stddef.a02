@@ -28,7 +28,7 @@ RESRXY: LDX TEMP1   ;Load X Index
         LDY TEMP2   ;Load Y Index
         RTS
 
-;Set Destinatioon Pointer to Source Pointer
+;Set Destination Pointer to Source Pointer
 SETDSS: JSR GETSRC  ;Get Destination Pointer
         JMP SETDST  ;Store in Source Pointer
 
@@ -62,3 +62,18 @@ GETDST: LDX DSTLO
 GETSRC: LDX SRCLO
         LDY SRCHI
         RTS
+
+;Add to Destination Address
+ADDDST: LDX #DSTLO       ;Set Index
+        BNE ADDZPW      ;and Execute ADDZPW
+
+;Add to Source Address
+ADDSRC: LDX #SRCLO       ;Set Index and Drop into ADDZPW
+        
+;Add to Zero Page Word
+ADDZPW: CLC             ;Clear Carry
+        ADC 0,X         ;Add Argument to LSB
+        STA 0,X         ;and Save Result
+        BCC ADDZPX      ;If Carry
+        INC 1,X       ;  Increment MSB
+ADDZPX: RTS

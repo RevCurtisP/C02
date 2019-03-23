@@ -6,13 +6,17 @@
 #define TRUE  $FF
 #define FALSE $00 
 
+/* Get Buffer Pointer          *
+ * Returns: Y,X=Buffer address */
+char getdst(); 
+
 /* Get Destination Pointer          *
  * Returns: Y,X=Destination address */
-void getdst();
+char getdst();
 
 /* Get Source Pointer          *
  * Returns: Y,X=Source address */
-void getsrc();
+char getsrc();
 
 /* Retore Destination Pointer */
 void resdst(); 
@@ -37,6 +41,10 @@ void savrxy();
 
 /* Save Source Pointer */
 void savsrc(); 
+
+/* Set Buffer Pointer        *
+ * Args: &d - Buffer address */
+void setbfr();
 
 /* Set Destination Pointer to Source Pointer */
 void setdss();  
