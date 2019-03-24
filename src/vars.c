@@ -240,6 +240,7 @@ void setvar(int m, int t) {
 /* Parse and Compile Variable Declaration *
  * Uses: word - variable name             */
 void addvar(int m, int t) {
+  if (t == VTINT) ERROR("Integer Variables not yet Implemented", 0, EXIT_FAILURE)
   strcpy(vrname, word); //Save Variable Name
   if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)

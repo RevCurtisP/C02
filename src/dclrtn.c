@@ -114,13 +114,14 @@ void pdecl(int m, int t) {
 /* Check for and Parse Type Keyword *
  * Args: m - Modifier Type          */
 int ptype(int m) {
-  int result = TRUE;
-  if     (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration
-  else if  (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
-  else if  (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
-  else if  (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
-  else                      result = FALSE;
-  return result;
+  int reslt = TRUE;
+  if    (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration
+  else if (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
+  else if (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
+  else if (wordis("INT"))  pdecl(m, VTINT);  //Parse 'int' declaration
+  else if (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
+  else                     reslt = FALSE;
+  return reslt;
 }
 
 int pmtype(int m) {
