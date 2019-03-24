@@ -6,32 +6,33 @@
 #define TRUE  $FF
 #define FALSE $00 
 
-/* Get Buffer Pointer          *
- * Returns: Y,X=Buffer address */
-char getdst(); 
-
 /* Get Destination Pointer          *
  * Returns: Y,X=Destination address */
-char getdst();
+int getdst();
 
 /* Get Source Pointer          *
  * Returns: Y,X=Source address */
-char getsrc();
+int getsrc();
 
-/* Retore Destination Pointer */
-void resdst(); 
+/* Restore Destination Pointer      *
+ * Returns: Y,X=Destination address */
+int resdst(); 
 
-/* Restore A, X, and Y Registers */
-void resreg();
+/* Restore A, X, and Y Registers *
+ * Returns: A,Y,X=Saved Values   */
+char resreg();
 
-/* Restore X, and Y Registers */
-void resrxy();
+/* Restore X, and Y Registers *
+ * Returns: Y,X=Saved Values  */
+int resrxy();
 
-/* Retore Source Pointer */
-void ressrc(); 
+/* Restore Source Pointer      *
+ * Returns: Y,X=Source address */
+int ressrc(); 
 
-/* Save Destination Pointer */
-void savdst(); 
+/* Save Destination Pointer         *
+ * Returns: Y,X=Destination address */
+int savdst(); 
 
 /* Save A, X, and Y Registers */
 void savreg();
@@ -39,15 +40,16 @@ void savreg();
 /* Save X, and Y Registers */
 void savrxy();
 
-/* Save Source Pointer */
-void savsrc(); 
+/* Save Source Pointer         *
+ * Returns: Y,X=Source address */
+int savsrc(); 
 
 /* Set Buffer Pointer        *
  * Args: &d - Buffer address */
 void setbfr();
 
 /* Set Destination Pointer to Source Pointer */
-void setdss();  
+int setdss();
 
 /* Set Destination Pointer        *
  * Args: &d - Destination address */

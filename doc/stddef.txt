@@ -105,17 +105,29 @@ The following functions are defined:
                         the setdst function, copying temp1 and temp2
                         to dstlo and dsthi, respectively.
 
+  addzpw(z,&n);         Adds the 16 bit value &n to the zero page word 
+                        with address z.
+
+                        Note: Stores the zero page address in temp3.
+
+  adddst(&n);           Adds the 16 bit value &n to the destination 
+                        pointer.
+  
+                        Note: Calls the addzpw function, passing dstlo
+                        as the first argument.
+
+  addsrc(&n);           Adds the 16 bit value &n to the source pointer.
+  
+                        Note: Calls the addzpw function, passing srclo
+                        as the first argument.
+
 Note: This library expects the following to be defined:
 
 the zero page variables
 
-  srclo,srchi:        Source pointer
-  dstlo,dsthi:        Destination pointer
+  srclo,srchi           Source pointer
+  dstlo,dsthi           Destination pointer
 
 and the transient variables
   
-  temp0               Temporary storage
-  temp1
-  temp2
-  
-
+  temp0,temp1,temp2      Temporary storage
