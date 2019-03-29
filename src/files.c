@@ -77,17 +77,18 @@ void clslog(void) { fclose(logfil); }
  * Uses: incnam - Include File Name                *
  *       subnam - Include File Name (Subdirectory) *
  * Sets: incfil - Include File Handle              */
-void opninc(void)
+void opninc(int chksub)
 {
-  if (subnam[0]) {
-    DEBUG("Attempting to open include file '%s'\n", subnam)
-    incfil = fopen(subnam, "r");
-    if (incfil == NULL) DEBUG("Open failed\n", 0)
-    else {
-      strcpy(incnam, subnam);
-      DEBUG("INCNAM set to '%s'\n", incnam);
-	  subnam[0] = 0;
-      return;
+  if (chksub) {
+	for (subidx=0; subidx<subcnt; subidx++) {
+      DEBUG("Attempting to open include file '%s'\n", subnam[subidx])
+      incfil = fopen(subnam[subidx], "r");
+      if (incfil == NULL) DEBUG("Open failed\n", 0)
+      else {
+        strcpy(incnam, subnam[subidx]);
+        DEBUG("INCNAM set to '%s'\n", incnam);
+        return;
+      }
     }
   }
 

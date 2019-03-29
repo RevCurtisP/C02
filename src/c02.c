@@ -51,7 +51,7 @@ void init(void) {
   wrtofs[0] = 0;  //Write Offset
   xsnvar[0] = 0;  //Assigned X Variable Name
   ysnvar[0] = 0;  //Assigned Y Variable Name
-  subdir[0] = 0;  //Include Subdirectory
+  subcnt = 0;     //Include Subdirectories
   strcpy(incdir, "../include/");
 }
 
@@ -141,8 +141,10 @@ int popt(int arg, int argc, char *argv[]) {
       DEBUG("Header Name set to '%s'\n", hdrnam)
       break;
     case 'S':
-      strcpy(subdir, optarg);
-      DEBUG("Header Name set to '%s'\n", hdrnam)
+      strcpy(subdir[subcnt], optarg);
+	  DEBUG("subdir[%d] ", subcnt)
+      DEBUG("set to '%s'\n", subdir[subcnt])
+      subcnt++;
       break;
     default:
       ERROR("Illegal option -%c\n", opt, EXIT_FAILURE)

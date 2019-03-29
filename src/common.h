@@ -14,6 +14,7 @@
 #define MAXVAR 255        //Maximum Number of Variables
 #define MAXTRM 16         //Maximum Terms in Stack
 #define DATASPC 4096      //Space to Allocate for Variable Data
+#define SUBMAX 4          //Maximum Number of Sub Directories
 
 #define LABLEN 6          //Maximum Label Length
 #define LABFMT "L_%04d"   //Label Format
@@ -66,7 +67,9 @@ char cmtasm[LINELEN]; //Assembly Language Comment Text
 char hdrnam[FNAMLEN]; //Header File Name
 char incdir[FNAMLEN]; //Include File Directory
 char inpnam[FNAMLEN]; //Input File Name 
-char subdir[FNAMLEN]; //Include File SubDirectory
+char subdir[SUBMAX][FNAMLEN]; //Include File SubDirectory
+int  subcnt; //Number of Include Directories
+int  subidx; //Index into subdir[]
 
 int alcvar; //Allocate Variables Flag
 int inblck; //Multiline Block Flag

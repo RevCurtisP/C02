@@ -23,38 +23,46 @@
 void pincnm(void) {
   char dlmtr;
   int inclen = 0;
-  int sublen = 0;
+  int sublen[SUBMAX];
   skpspc();
   dlmtr = getnxt();
   if (dlmtr == '<') {
     strcpy(incnam, incdir);
     inclen = strlen(incnam);
-    if (subdir[0]) {
-      strcpy(subnam, incdir);
-      strcat(subnam, subdir);
-      sublen = strlen(subnam);
-      subnam[sublen++] = '/';
-    }
+    if (subcnt) {
+      for (subidx = 0; subidx < subcnt; subidx++) {
+	    sublen[subidx] = 0;
+        strcpy(subnam[subidx], incdir);
+        strcat(subnam[subidx], subdir[subidx]);
+        sublen[subidx] = strlen(subnam[subidx]);
+        subnam[subidx][sublen[subidx]++] = '/';
+      }
     dlmtr = '>';
+	}
   }
   else if (dlmtr != '"')
     ERROR("Unexpected character '%c' after include\n", dlmtr, EXIT_FAILURE)
   while (!match(dlmtr))
   {
     incnam[inclen++] = nxtchr;
-    if (sublen) subnam[sublen++] = nxtchr;
+    for (int subidx = 0; subidx < subcnt; subidx++) {
+      if (sublen[subidx]) subnam[subidx][sublen[subidx]++] = nxtchr;
+	}
     skpchr();
   }
   skpchr(); //skip end dlmtr
   incnam[inclen] = 0;
-  subnam[sublen] = 0;
   DEBUG("Set INCNAM to '%s'\n", incnam);
-  DEBUG("Set SUBNAM to '%s'\n", subnam);
+  for (int subidx = 0; subidx < subcnt; subidx++) {
+    subnam[subidx][sublen[subidx]] = 0;
+    DEBUG("Set SUBNAM[%d] ", subidx)
+    DEBUG("to '%s'\n", subnam[subidx]);
+  }
 }
 
 /* Process assembly language include file  */
-void incasm(void) {
-  opninc();
+void incasm(int chksub) {
+  opninc(chksub);
   setcmt("======== Assembler File ");
   addcmt(incnam);
   addcmt(" =======");
@@ -212,9 +220,9 @@ void rstsrc(void) {
 }
 
 /* Process header include file  */
-void inchdr(void) {
+void inchdr(int chksub) {
   savsrc();  //Save Source File Information
-  opninc();  //Open Include File
+  opninc(chksub);  //Open Include File
   setinc();  //Set Include File Information
   skpchr();  
   while (TRUE)  
@@ -242,9 +250,9 @@ void phdrfl(void) {
   if (hdrnam[0] == 0) return;
   DEBUG("Processing Header '%s'\n", hdrnam)
   setinm(".h02");
-  inchdr();
+  inchdr(TRUE);
   setinm(".a02");
-  incasm();
+  incasm(FALSE);
 }
 
 /* Process include file                    */
@@ -256,15 +264,15 @@ void pincfl(void) {
     ERROR("Invalid include file name '%sn", incnam, EXIT_FAILURE)
   }
   if (strcmp(dot, ".a02") == 0) 
-    incasm();
+    incasm(TRUE);
   if (strcmp(dot, ".asm") == 0) 
-    incasm();
+    incasm(TRUE);
   else if (strcmp(dot, ".h02") == 0) { 
-    inchdr();  //Process Header File
+    inchdr(TRUE);  //Process Header File
     dot = strrchr(incnam, '.'); //find extension
     strcpy(dot, ".a02");
     DEBUG("INCNAM set to '%s'\n", incnam)
-    incasm();  //Process Assembly File with Same Name
+    incasm(FALSE);  //Process Assembly File with Same Name
   }
   else {
     ERROR("Unrecognized include file extension '%s'\n'", dot, EXIT_FAILURE)

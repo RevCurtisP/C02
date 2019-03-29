@@ -3,10 +3,10 @@
  *************************************/
 
 /* Variable Table */
-char varnam[MAXVAR+1][VARLEN+1]; //Variable Name Table
-char varmod[MAXVAR+1];           //Variable Modifier
-char vartyp[MAXVAR+1];           //Variable Type
-char varsiz[MAXVAR+1][4];        //Variable Array Size
+char varnam[MAXVAR+1][VARLEN+1]; //Variable Name Table (string)
+char varmod[MAXVAR+1];           //Variable Modifier (MTxxx)
+char vartyp[MAXVAR+1];           //Variable Type (VTxxx)
+char varsiz[MAXVAR+1][4];        //Variable Array Size (string)
 char varstc[MAXVAR+1];           //Variable Struct Index
 int  varcnt;                     //Number of Variables in Table
 int  varidx;                     //Index into Variable Tables
@@ -50,7 +50,7 @@ int  dsize;                    //Total Data Length
 
 enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
 
-/*Variable Modifier Types (Bit Mask) */
+/* Variable Modifier Types (Bit Mask) */
 #define MTNONE   0 //No Modifier
 #define MTALS    1 //Alias
 #define MTCONST  2 //Constant
