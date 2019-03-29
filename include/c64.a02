@@ -46,9 +46,8 @@ VICSCN  EQU $0400 ;Video Screen Memory Area (Unexpanded)
 CHRROM  EQU $D000 ;Character Generator ROM
 VICCLR  EQU $D800 ;Color RAM (Unexpanded)
 
-;Kernal Routines
-chrin   EQU $FFCF ;Input Character to Channel
-chrout  EQU $FFD2 ;Output Character to Channel
+;ROM Routines
+FSFLFA  EQU $F314 ;Find Logical File A
 
 ;Machine Language Basic Stub
         ORG $0801              ;Start of Basic Program 

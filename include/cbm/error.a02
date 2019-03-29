@@ -1,0 +1,41 @@
+;error.a02 - Error Code Definitions for all Commodore 8-bit machines
+
+;Generic System Errors
+ENOSYS EQU 255 ;*Function not implemented
+
+;Kernal Errors
+ECNCLD EQU  $01 ;Operation Canceled
+ENFILE EQU  $02 ;Too Many Open Files (in System)
+EBADF  EQU  $03 ;File Not Open (Bad File Descriptor)
+ENOENT EQU  $04 ;File Not Found (No Such Entry)
+ENODEV EQU  $05 ;Device Does Not Exist (No Such Device)
+EINVAL EQU  $06 ;File Name Missing (Invalid Argument)
+ENXIO  EQU  $07 ;Illegal Device Number (No Such Device or Address)
+
+;Cassette/EIC Bus/RS-232 Errors
+ETMOUT EQU  $09 ;Read/Write Time Out (Connection timed out)
+EMSIZE EQU  $0A ;Short/Long Block/Record (Message too Long)
+EBADM  EQU  $0B ;Checksum/Framing Error (Bad Message)
+EFAULT EQU  $0C ;End of Tape/Device Not Present (Bad Address)
+ECOMM  EQU  $0D ;CTS Missing (Communication error on send)
+EBUSY  EQU  $0E ;DTS Missing (Device or resource busy)
+ECNRST EQU  $0F ;BREAK Detected (Connection Reset)
+
+;Commodore DOS Errors (Error Numbers)
+;No Error   $00 ;(00-19)
+EREAD  EQU  $10 ;Read Error (20-24) 
+EWRITE EQU  $11 ;Write Error (25)
+EROFS  EQU  $12 ;Write-Protect On (26)
+EIO    EQU  $13 ;Input/Output Error (27-29)
+ENOSUP EQU  $14 ;Command/Syntax Error (30-23)
+ENOMSG EQU  $15 ;Record Error (50-51)
+EFBIG  EQU  $16 ;File too large (52)
+EPERM  EQU  $17 ;File Open for Write (60)
+EBADFD EQU  $18 ;File Not Open/Not Found (61-62)
+EEXIST EQU  $19 ;File exists (63)
+ETYPE  EQU  $1A ;File Type Mismatch (64)
+ENOBLK EQU  $1B ;Block Read/Write Error (65-67)
+EMFILE EQU  $1C ;No Channels Available (70)
+ENODIR EQU  $1D ;Directory Error (71)
+ENOSPC EQU  $1E ;Disk or Directory Full (72)
+EAGAIN EQU  $1F ;DOS Mismatch/Drive Not Ready (73-74)

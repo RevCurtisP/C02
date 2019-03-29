@@ -1,0 +1,205 @@
+; C02 filesys.h02 assembly language subroutines
+; for all Commodore 8 bit machines
+; Requires external functions ADDDST, FOPENA, FREAD, FSKIP, 
+; FSBCMD, FSCBFR, FSCDRA, FSGBFR, FSOPTS, and SETSRC
+; external zero page locations BFRHI, BFRLO, DSTHI, DSTLO, 
+; SRCHI, and SRCLO
+; and external locations FSCNTR, FSDVNO, FSLFNO, and TEMP0
+
+;String Constants
+FSDIRP  DC "$0:",0  ;Disk Directory Prefix
+
+;opndir() - Open Directory for Reading
+;Args: A = Drive/Options 
+;      Y,X = Pointer to Directory Name
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: SRCHI,SRCLO = Pointer to Directory Name
+;Returns: A = File Pointer
+;             0 - Error
+OPNDIR: JSR SETSRC      ;Save Directory Pointer
+        STY FSCNTR      ;Set File Count to 0
+        JSR FSOPTS      ;Parse Options Byte
+        JSR FSCDRV      ;If Device is Not Disk Drive
+        BEQ CLSDIX      ;  Return Error
+        LDA #36         ;Set Command to "$"
+        JSR FSBCMD      ;and Build Command String
+        SEC             ;Set Flag to Concatenate
+        JSR FSCBFR      ;Concatenate Directory Name to Buffer
+        JSR FSGBFR      ;Get String Buffer Address
+        JMP FOPENA      ;Execute File Open (Alternate Entry Point)
+
+;clsdir() - Close Directory File
+;Args: A = Directory File Pointer
+;Returns: A = Error Code
+;             0 - Success
+CLSDIR: ORA #0          ;Check File Pointer
+        BEQ CLSDIX      ;If Not Zero
+        JMP FCLOSE      ;Close File Channel
+CLSDIX: RTS
+
+;rdhdr() - Read Directory Header
+;Note: Call once before first rddir()
+;Args: A = Directory File Pointer
+;      Y,X = Pointer to HDRENT buffer
+;Sets: DSTHI,DSTLO = Pointer to HDRENT buffer
+;Returns: A = Disk Type
+;         Y = Error Code (0=None)
+RDHDR:  JSR SETDST      ;Set Destination Address
+        LDY #2          ;Set Record Length
+        JSR FREAD       ;and Read Record
+        BCS RDHDRZ      ;If Error, Exit
+        STY TEMP0       ;Set Skipped Bytes to 0
+        LDA (DSTLO),Y   ;Get Disk Version
+        PHA             ;and Save It
+        CMP #$43        ;If 8050/8250
+        LDY #2          ;Skip Unused bytes
+        BNE RDHDRC
+        CMP #$41        ;If 4040/1541/1571
+        BNE RDHDRD      ;  Skip BAM
+        LDA FSLFNO      ;  Get Channel
+        LDY #140        ;  Set Record Length
+RDHDRC: STY TEMP0       ;  Save Number of Skipped Bytes
+        JSR FSKIP       ;  and Skip Bytes
+        BCS RDHDRX      ;  If Error, Exit
+RDHDRD: LDA #2          ;Add 2 Bytes
+        JSR ADDDST      ;to Destination Address
+        LDA FSLFNO      ;Get Channel
+        LDY #24         ;Set Record Length
+        JSR FREAD       ;and Read Record
+        BCS RDHDRX      ;If Error, Exit
+        LDA #228        ;Set Padding Bytes
+        SEC
+        SBC TEMP0       ;Subtract Bytes Skipped
+        TAY             ;Set as Record Length
+        LDA FSLFNO      ;Get Channel
+        JSR FSKIP       ;and Skip Bytes
+        LDY #23         ;Set Index to 24
+RDHDRN: LDA (DSTLO),Y   ;Load Byte
+        CMP #$A0        ;If Shifted Space
+        BNE RDHDRS
+        LDA #0          ;Change to 0
+        STA (DSTLO),Y
+RDHDRS: DEY             ;Decrement Index
+        BPL RDHDRN      ;and Loop if Not Negative
+        INY             ;Set Error Code to 0
+RDHDRX: PLA             ;Retrieve Disk Type
+RDHDRZ: RTS
+
+;rddir() - Read Directory Entry
+;Args: A = Directory File Pointer
+;      Y,X = Pointer to DIRENT buffer
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: DSTHI,DSTLO = Pointer to DIRENT buffer
+;Returns: A = File Type (0=Null Entry)
+;         Y = Error Code (0=None)
+RDDIR:  JSR SETDST      ;Set Destination Address
+        TAX             ;Save LFN
+        LDY #32         ;Set Record Length
+        INC FSCNTR      ;Increment File Count
+        LDA FSCNTR      ;Load It
+        AND #$07        ;Modulo 8
+        BNE RDDIRB      ;If 0
+        LDY #30         ;  Change Record Length
+RDDIRB: TXA             ;Restore LFN
+        JSR FREAD       ;and Read Record
+RDDIRC: LDA #0          ;Initialize Return Value
+        BCS RDDIRX      ;If Error, Exit
+        LDA (DSTLO),Y   ;Get File Type
+        PHA             ;and Save it
+        LDA #3          ;Add 3 Bytes
+        JSR ADDDST      ;to Destination Address
+        LDY #15         ;Set Index to 15
+RDDIRN: LDA (DSTLO),Y   ;Load Byte
+        CMP #$A0        ;If Shifted Space
+        BNE RDDIRS
+        LDA #0          ;Change to 0
+        STA (DSTLO),Y
+RDDIRS: DEY             ;Decrement Index
+        BPL RDDIRN      ;and Loop if Not Negative
+        INY             ;Set Error Code to 0
+        PLA             ;Restore File Type
+RDDIRX: RTS
+
+;setdrv() - Set Current Drive
+;Args: A = Drive Identifier
+;Returns: A = Drive Identifier
+;             0 - None/Error
+SETDRV: JSR FSCDRA      ;Check Device Number
+        BCS SETDRX      ;If Disk Drive
+        STA FSDVNO      ;  Write to Device#
+SETDRX: RTS
+
+;getdrv() - Get Current Drive
+;Returns: A = Drive Identifier
+;             0 - None/Error
+GETDRV: LDA FSDVNO      ;Load Current Device#
+        JMP FSCDRA      ;Check if Disk Drive
+
+;setdir() - Set Current Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to Directory Name
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: SRCHI,SRCLO = Pointer to Directory Name
+;Returns: A = Error Code
+;             $00 - Successful
+;             $FF - Inapplicable
+SETDIR: JSR SETSRC      ;Save Pointer
+        JSR FSOPTS      ;Parse Drive Argument
+        JSR FSGBFR      ;Get String Buffer Address
+        ;command is "/0:Directory"
+        ;assuming 0 is disk number
+        ;of course this is switched from normal command syntax
+        RTS
+
+;getdir() - Get Current Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to String
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: DSTHI,DSTLO = Pointer to String
+;Returns: A - Length of Directory Name
+;             $00 - Root
+;             $FF - Inapplicable
+GETDIR: ;Return Inapplicable (fall through)
+
+;mkdir() - Create Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to Directory Name
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: SRCHI,SRCLO = Pointer to Directory Name
+;Returns: A = Error Code
+;             $00 - Successful
+;             $FF - Inapplicable
+MKDIR:  ;Return Inapplicable (fall through)
+
+;rmdir() - Remove Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to Directory Name
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: SRCHI,SRCLO = Pointer to Directory Name
+;Returns: A = Error Code
+;             $00 - Successful
+;             $FF - Inapplicable
+RMDIR:  ;Return Inapplicable (fall through)
+
+;remove() - Delete File
+;Args: A = Drive Identifier
+;      Y,X = Pointer to File Name
+;Uses: BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: SRCHI,SRCLO = Pointer to File Name
+;Returns: A = Error Code
+;             $00 - Successful
+;             $FF - Inapplicable
+REMOVE: ;Return Inapplicable (fall through)
+
+;rename() - Rename File
+;Args: A = Drive Identifier
+;      Y,X = Pointer to Destination File Name
+;Uses: SRCHI,SRCLO = Pointer to Source File Name 
+;      BFRHI,BFRLO = Pointer to Work Buffer
+;Sets: DSTHI,DSTLO = Pointer to Destination File Name
+;Returns: A = Error Code
+;             $00 - Successful
+;             $FF - Inapplicable
+RENAME: LDA #$FF    ;Return Inapplicable
+        RTS
+

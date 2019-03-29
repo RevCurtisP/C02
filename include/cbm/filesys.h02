@@ -1,0 +1,56 @@
+/***************************************
+ * filesys - File System functions for *
+ *        all Commodore 8 bit machines *
+ **************************************/
+
+struct dirblk {char track; char sector;};
+struct dirdts {char year; char month; char day; char hour; char minute; };
+
+struct dirent {
+  char filtyp;
+  struct dirblk datblk;
+  char filnam[15];
+  struct dirblk relblk;
+  char recsiz;
+  char exttyp;
+  struct dirdts tstamp;
+  char sizelo;
+  char sizehi;
+  char unused[1];
+};
+
+struct dirhdr {
+  char dskver;
+  char dblsid;
+  char dsknam[17];
+  char diskid[2];
+  char dosver[2];
+};
+
+/* Open Directory for Reading   *
+ * Args: drv - Drive Identifier *
+ *       &dir - Directory Name  *
+ * Returns: Directory Channel   *
+ *          (0 if Error)        */
+char opndir();
+
+/* Read Disk/Directory Header   *
+ * Args: dc - Directory Channel *
+ *       &de - dirhdr Struct    *
+ * Returns: Length of Header    *
+ *          (0 if N/A or Error) */
+char rdhdr();
+
+/* Read Directory Entry         *
+ * Args: dc - Directory Channel *
+ *       &de - dirent Struct    *
+ * Returns: Length of Entry     *
+ *          (0 at End or Error) */
+char rddir();
+
+/* Close Directory Channel      *
+ * Args: dc - Directory Channel *
+ * Returns: Error Code          *
+ *           $00 = Successful)  */
+char clsdir();
+

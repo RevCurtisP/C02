@@ -1,0 +1,694 @@
+;C02 Module file.h02 Assembly Language Routines
+;for all Commodore 8 bit machines
+; Requires error code definitions from error.a02,
+; External routines FSFLFA, RESRXY, STRLEN
+; and the following RAM locations definitions
+; external zero page byte pairs SRCLO,SRCHI and DSTLO,DSTHI
+; and external bytes TEMP1, TEMP2
+; NOTE: Reading from CASSETTE will not produce an EOF
+
+;Kernal Device Numbers
+KEYBRD  EQU 0
+CASST1  EQU 1
+MODEM1  EQU 2
+SCREEN  EQU 3
+PRNTR1  EQU 4
+PRNTR2  EQU 5
+PRNTR3  EQU 6
+PRNTR4  EQU 7
+DRIVE1  EQU 8
+DRIVE2  EQU 9
+DRIVE3  EQU 10
+DRIVE4  EQU 11
+DRIVE5  EQU 12
+DRIVE6  EQU 13
+DRIVE7  EQU 14
+DRIVE8  EQU 15
+
+;Disk Numbers (Within Drive)
+DISK0   EQU $00
+DISK1   EQU $40
+
+;File Open Modes
+MWRITE  EQU $80
+MREAD   EQU $00
+
+;File Load Modes
+MABSLT  EQU $80 ;Absolute (Use File Header Address)
+MRELCT  EQU $00 ;Relocate (Use Specified Address)
+
+;File Types
+FTASC   EQU $00 ;ASCII Text (SEQ)
+FTBAS   EQU $10 ;Basic Program (PRG)
+FTBIN   EQU $20 ;Binary File (PRG)
+FTUSR   EQU $30 ;User-Defined (USR)
+
+;Zero Page System Variables (Names Subject to Change)
+FSIOST  EQU $90 ;Kernal I/O Status Word
+FSNOFL  EQU $98 ;Number of Open I/O Files
+FSRCVB  EQU $A4	;Serial Bus Received Byte
+FSSVLO  EQU $AC ;Save Address (Low Byte)
+FSSVHI  EQU $AD ;Save Address (High Byte)
+FSFNLN  EQU $B7 ;Length of Current Filename
+FSLFNO  EQU $B8 ;Current Logical File Number
+FSSADR  EQU $B9 ;Current Secondary Address
+FSDVNO  EQU $BA ;Current Device Number
+FSFNLO  EQU $BB ;Pointer: Current Filename (LSB)
+FSFNHI  EQU $BC ;Pointer: Current Filename (MSB)
+
+;IEC STATUS Bit Masks
+FSSTTO  EQU $03 ;Disk - Read/Write Timeout  $21 //Error - Operation Timed Out
+FSSTSB  EQU $04 ;Tape - Short Block         
+FSSTLB  EQU $08 ;Tape - Long Block
+FSSTRE  EQU $10 ;Tape - Read Error
+FSSTCE  EQU $20 ;Both - Checksum Error
+FSSTEF  EQU $40 ;Both - End of File
+FSSTNP  EQU $80 ;Disk - Device Not Present
+FSSTET  EQU $80 ;Tape - End of Tape
+
+;RS-232 Status Bit Masks
+;$01 - Parity Error
+;$02 - Framing Error
+;$04 - Receive Overrun
+;$10 - CTS Missing
+;$40 - DSR Missing
+;$80 - BREAK Detected
+
+;fsioet[15] - I/O Error Table by Channel Number 
+FSIOET  EQU $0140   ;Bottom of BASIC Stack Area
+
+;fscntr - File Counter
+FSCNTR  EQU $0150   ;Byte Following Error Table
+
+;fsbufr - Buffer for String Concatenation
+FSBUFR  EQU $0200   ;BASIC Line Editor Input Buffer
+
+;Error Code Conversion Tables
+;FSCSST  DC FSSSPE,FSSSFE,FSSSRO,FSSSCM,FSSSDM,FSSSBD
+FSCSTT  DC FSSTTO,FSSTSB,FSSTLB,FSSTRE,FSSTCE  ;STATUS to Error Code
+
+;String Constants
+FSCMDI  DC "I",0        ;Command - Initialize Drive
+FSWSFX  DC  ",S,W",0    ;Filename Suffix for Write
+
+;fsbcmd(command) - Build Disk Command String
+;Args: A = Disk Command (Single Letter Abbreviation)
+;Uses: FSBUFR = Command String
+;      TEMP2 = Mode/Option Byte
+FSBCMD: STA FSBUFR      ;Store Command in FSBUFR[0]
+        JSR FSDSKN      ;Get Disk Number
+        STA FSBUFR+1    ;and Store in FSBUFR[1]
+        LDA #58         ;Load ':'
+        STA FSBUFR+2    ;and Store in FSBUFR[2]
+        LDA #0          ;Load String Terminator
+        STA FSBUFR+3    ;and Store in FSBUFR[3]
+        RTS
+
+;fsdskn() - Get Disk Number
+;Uses: TEMP2 = Mode/Option Byte
+;Returns: A = Disk Number "0" or "1"
+FSDSKN: LDA TEMP2       ;Get Option Byte
+        AND #$01        ;Isolate Drive Number
+        ORA #$30        ;Convert to ASCII
+        RTS
+
+;fschan(chan) - Find Channel Info
+;Args: A = Logical File Number
+;Uses: $0259 = LAT File number table
+;      $0263 = FAT Device number table
+;      $026D = SAT Secondary address table
+;Returns: A = Device Number
+;         Y = Secondary Address
+;         X = Index into File Tables
+;             $FF if Channel Not Open
+FSCHAN: JSR FSFLFA  ;Find File Table Index
+        BMI FSCHAX  ;If Found
+        LDA $026D,X ;Load Secondary Address into Y
+        TAY
+        LDA $0263,X ;Load Device Number into X
+FSCHAX: RTS
+
+;fsinit(device) - Initialize Disk Drive
+;Args: A = Device Number
+;      Y,X = Pointer to Command String
+;Uses: FSBUFR - String Concatenation Buffer
+;Sets: TEMP2 = Number of Bytes Read from Drive
+;Returns: A = Drive Status Code
+;         Y = Kernal or I/O Error
+FSINIT: LDX #<FSCMDI    ;Load Pointer to Command String
+        LDY #>FSCMDI    ;and Fall Trhough to FSDCMD
+
+;fsdcmd(device) - Send Command to Drive
+;Args: A = Device Number
+;      Y,X = Pointer to Command String
+;Uses: FSBUFR - String Concatenation Buffer
+;Sets: TEMP2 = Number of Bytes Read from Drive
+;Returns: A = Drive Status Code
+;         Y = Kernal or I/O Error
+FSDCMD: JSR SETSRC  ;Save Command String Pointer
+        JSR FSOCMD  ;Open Command Channel
+        BEQ FSCHAX  ;If Not Open, Return
+        ORA #$80    ;Set flag to Emit C/R
+        JSR FPUTSA  ;Call fputs() - Alternate Entry Point
+        BCC FSDSTR  ;If No Error, Get Disk Status
+        RTS         ;Else Return
+
+;fscste(status) - Convert STATUS byte into Error Code
+FSCSTE: LDY #5          ;Set Index to Table Size
+FSCSTL: AND FSCSTT-1,Y  ;Mask Bits Against Table Entry
+        BNE FSCSTS      ;If Bits Not Set
+        DEY             ;  Decrement Index
+        BNE FSCSTL      ;  and Loop if Not Zero
+FSCSTS: TYA             ;Copy Index to Accumulator
+        BEQ FSCSTX      ;If Not Zero
+        ORA #$10        ;  Convert from $0x to $1x
+FSCSTX: RTS
+
+;fscdst(status) - Convert Drive Status
+;Args: A = Drive Status Code
+;Returns: Y = Converted Error Code
+
+
+;fsdsts(device) - Get Drive Status
+;Args: A = Device Number
+;Uses: FSBUFR - String Concatenation Buffer
+;Returns: A = Drive Status Code
+;         Y = Kernal or I/O Error
+FSDSTS: JSR FSOCMD  ;Open Command Channel
+        BCS FSCHAX  ;If Error, Return
+FSDSTR: JSR FSRCMD  ;Read Command Channel
+        BEQ FSDSTX  ;If Bytes Read
+        JSR FSGBFR  ;  Get Buffer Address
+        JSR ATOC    ;  Convert Error# to Byte
+        LDY #0      ;  Set Error to 0
+FSDSTX: RTS         ;and Return
+
+;fscbfr() - Copy Source String to String Buffer
+;Args: C = Mode
+;Uses: SRCLO,SRCHI = Pointer to Source String
+FSCBFR: JSR FSGBFR      ;Get String Buffer Address
+        JSR SETDST      ;Set Buffer as Destination
+        LDY #0          ;Initialize Index
+        BCS FSCBFS      ;If Carry Clear
+        JMP STRCPL      ; Copy String
+FSCBFS: JMP STRCAL      ;Else Concatenate String
+
+;fsgbfr() - Get String Buffer Address
+FSGBFR: LDX #<FSBUFR    ;Load LSB into X
+        LDY #>FSBUFR    ;Load MSB into Y
+        RTS
+
+;fsocmd(device) - Open Command Channel
+;Args: A = Device Number
+;Returns: A = Logical File Number
+FSOCMD: ORA #$10     ;Set LFN to Device# + 16
+        JSR FSFLFA  ;Find File Table Index
+        BPL FSCHAX  ;If Already Open, Return
+        TAX         ;Copy Device Number to X
+FSOCMX: LDA #0      ;Set Filename to None
+        JSR $FFBD   ;Call Kernal SETNAM Routine
+FSET15: LDA #15     ;Set LFN to 15
+        BNE FSOPEY  ;Copy to SA and Open Channel
+
+;fsname(&s) - Set Filename for Load, Save
+;Args: Y,X = Pointer to string containing filename
+FSNAME: JSR STRLEN      ;Get Length of String
+        JSR GETSRC      ;Retrieve String Address
+        JMP $FFBD       ;Execute Kernal SETNAM Routine
+
+;fsonam(&s) - Set Filename for Open
+;Args: Y,X = Pointer to string containing filename
+FSONAM: LDA TEMP1       ;Get Device Number
+        AND TEMP2       ;AND with Mode/Option
+        AND #$08        ;Check Disk + Write Bit 
+        BEQ FSNAME      ;Execute FSNAME/FSWNAM 
+
+;fswnam(&s) - Set Filename for Write to Disk
+;Args: Y,X = Pointer to string containing filename
+FSWNAM: JSR SETSRC      ;Set Filename as Source
+        CLC             ;Set Flag to Copy
+        JSR FSCBFR      ;and Copy to String Buffer
+        LDX #<FSWSFX    
+        LDY #>FSWSFX
+        JSR STRCAT      ;Append Write Suffix
+        JSR FSGBFR      ;Get String Buffer Address
+        JMP $FFBD       ;Execute Kernal SETNAM Routine
+
+;fsldsv() - Setup for Load and Save
+;Args: A = Logical File Number
+;      Y = Mode
+;      X = Device Number
+;Returns: Y,X = Destination Address (DSTHI,DSTLO)
+FSLDSV: PHA             ;Save LFN
+        TYA             ;Copy Mode to Accumulator
+        LSR             ;Rotate Bit 3 to Bit 1
+        LSR
+        LSR
+        TAY             ;Use as Secondary Address
+        PLA             ;Restore LFN
+        JSR $FFBA       ;Call Kernal SETLFS Routine
+        JMP GETDST      ;Get Load/End Address into X,Y
+
+;fsopts() - Parse Load/Save/Open Options Byte
+;Args: A = Combined Options Byte
+;          Bits 0-3 = Device Number
+;          Bits 4-7 = Mode/Option
+;Sets: TEMP0 = Combined Option
+;      TEMP1 = Device
+;      TEMP2 = Mode/Option
+;              Bit 1 = Disk Number
+;              Bits 1-2 = File Type
+;              Bit 3 = Mode (0=Read/1=Write)
+;Returns: A = Mode/Option
+FSOPTS: STA TEMP0   ;Save Argument
+        AND #$0F    ;Isolate Device Number
+        STA TEMP1   ;and Save it
+        LDA TEMP0   ;Restore Argument
+        LSR         ;Shift to Low Nybble
+        LSR
+        LSR
+        LSR
+        STA TEMP2   ;and Save it
+        RTS
+
+;fsopen(chan, mode, device) - Open Channel to Device
+;Requires prior call to FSNAME
+;Args: A = Logical File Number
+;      Y = Mode: 0=Read, !0= Write
+;      X = Device 0=Keyboard, 1=Cassette, 2=RS232, 3=Screen
+;                 4-7=Printers, 8-15=Disks, 31=All Devices 
+;Returns: A,X = Channel Number (0=Error)
+;         Y = Error Number (0=None)
+FSOPEN: CPX #1
+        BNE FSOPEY      ;If Device is Cassette
+        CPY #0
+        BEQ FSOPEZ      ;  If Mode is Not Zero
+        LDY #2          ;     Set Secondary Address to 2
+        BNE FSOPEZ      ;Else
+FSOPEY: TAY             ;  Copy LFN to Secondary Address
+FSOPEZ: JSR $FFBA       ;Call Kernal SETLFS Routine
+        JSR $FFC0       ;Call Kernal OPEN Routine
+        BCS FSERRV      ;If Error Return A=0, Y=Error#
+        BCC FSOPED      ;** Skip Drive Check for now; **
+        LDA FSDVNO      ;Get Current Device Number
+        CMP #8          ;Check Device Number
+        BCC FSOPED      ;If Disk Drive
+        JSR FSDSTS      ;  Get Drive Status
+        BCS FSERRV      ;  If Error Return A=0, Y=Error#
+FSOPED: LDA #0          ;Set Error Code to 0
+        STA FSIOET      ;Clear General Error Entry
+        LDX FSLFNO      ;Get LFN
+        STA FSIOET,X    ;Clear Error Table Entry
+        TAY             ;Clear Error Code
+        TXA             ;Return LFN
+        RTS
+
+;fsload(chan, mode, device) - Load File from Device
+;Requires: DSTLO,DSTHI = Load Address
+;          Prior call to FSNAME
+;Args: A = Logical File Number
+;      Y = Mode: 0=Read, !0= Write
+;      X = Device 1=Cassette, 8-15=Disks
+;Returns: A = Error Number (0=None)
+;         Y,X = Address at Last Byte Loaded
+FSLOAD: JSR FSLDSV      ;Set up for Load/Save
+        LDA TEMP3       ;Get Load/Verify Flag
+FSLOAK: JSR $FFD5       ;Call Kernal LOAD Routine
+        BCC FSZERO      ;If No Error, Return 0
+        RTS
+
+;fssave(chan, mode, device) - Save File to Device
+;Requires: DSTLO,DSTHI = Load Address
+;          Prior call to FSNAME
+;Args: A = Logical File Number
+;      Y = Mode: 0=Read, !0= Write
+;      X = Device 1=Cassette, 8-15=Disks
+;Returns: A = Error Number (0=None)
+;         Y,X = Address at Last Byte Loaded
+FSSAVE: JSR FSLDSV      ;Set up for Load/Save
+        LDA #FSSVLO     ;Load Start Address Pointer
+        JSR $FFD8       ;Call Kernal SAVE Routine
+        BCC FSZERO      ;If No Error, Return 0
+        RTS
+
+;fsrdst() - Read I/O Status Byte
+;Replaces Kernal READST Routine, fixing RS-232 bug,
+;bypassing Kernal messages, and preserving Accumulator
+;Affects: X
+;Returns: Carry Set if Error
+;         Overflow Set if EOF
+;         Y = I/O Status
+;         Bit  Cassette Read  Serial Bus I/O     Tape Load/Verify
+;         $01                  Write Timeout
+;         $02                  Read Timeout
+;         $04   Short Block                         Short Block
+;         $08   Long Block                          Long Block
+;         $10   Read Error                          Any Mismatch
+;         $20   Checksum Err                        Checksum Err
+;         $40   End of File    EOI Line
+;         $80   End of Tape    Device Not Present   End of Tape
+FSRDST: TAX             ;Save Accumulator
+        CLV             ;Clear Overflow Flag
+        LDY $BA         ;Get Current Device Number
+        CPY #$02        ;Check Device Number
+        BNE FSRDSS      ;If Serial Port
+        LDA $0297       ;  Read RS-232 Status Word
+        LDY #0          ;  then 
+        STY $0297       ;  Clear It
+        BEQ FSRDSX      ;Else
+FSRDSS: LDA FSIOST      ;  Load I/O Status Byte
+        BIT FSIOST      ;  EOF Bit into Overflow Flag
+        BEQ FSRDSX      ;  If Error 
+        BVS FSRDSX      ;  And Not EOF
+        JSR FSCSTE      ;    Convert ST into Error
+FSRDSX: LDY FSLFNO      ;Get Logical File Number
+        STA FSIOET,Y    ;Save Error in Table
+        BVC FSRDSY      ;If EOF
+        AND #$BF        ;  Clear EOF Flag
+FSRDSY: CMP #1          ;Set Carry if Error
+        TAY             ;Copy Error Code to Y
+        TXA             ;Restore Accumulator
+        RTS
+
+;fsunch() - Find Unused Channel Number
+;Affects: X,Y
+;Returns: A = Channel Number
+;             0=No Channel Available
+FSUNCH: LDY #2      ;Start with Channel 2
+FSUNCL: TYA         ;Copy Channel to Accumulator`
+        JSR FSFLFA  ;Find File Table Index
+        BMI FSUNCX  ;If Channel Allocated
+        INY         ;  Increment Channel
+        CPY #15     ;  If less than 15
+        BCC FSUNCL  ;    Loop
+        LDY #0      ;  Else Return 0
+FSUNCX: TYA         ;Copy Channel to Set Flags
+        RTS
+
+;fscdrv() - Check if Device is Disk Drive
+;Uses: TEMP1 = Device Number
+;Returns: A = Device Number
+;             0 if Not a Disk Drive
+;         Y = Error Code
+;             0 = None
+FSCDRV: LDA TEMP1       ;Get Device Number
+FSCDRA: CMP #8          ;If >=8 
+        BCS FSRTS       ; Return
+;fserr7() - Return General Error 7
+FSERR7: LDA #7          ;Set Error to Illegal Device Number
+        DC  $2C         ;BIT - Skip Next Instruction 
+;fserr2() - Return General Error 2
+FSERR2: LDA #2          ;Set Error to 2
+;fserrv(error) - Write General Error Entry
+FSERRV: LDX #0          ;Set No Logical File Number
+        DC  $2C         ;BIT - Skip Next Instruction 
+;fserrw() - Write Error To Table and Return in Y
+FSERRW: LDX FSLFNO      ;Get Logical File Number
+FSERRX: STA FSIOET,X    ;Save Error To Table
+FSERRY: TAY             ;Move Error Code to Y
+FSZERO: LDA #0          ;Return 0
+FSRTS:  RTS
+
+;fload(args, &name) - Load File
+;Args: A = Mode + Device #
+;      Y,X = Pointer to File Name
+;Returns: A = Error Number (0=None)
+;         Y,X = Address at Last Byte Loaded
+FLOAD:  JSR FSOPTS      ;Parse Options Argument
+        LDA #0          ;Set Flag to LOAD
+FLOADA: STA TEMP3       ;and Save It
+        JSR FSNAME      ;Set Filename for Open
+        JSR FSUNCH      ;Find Unused Channel Number
+        BEQ FSERR2      ;If None Available, Return Error
+        JSR RESRXY      ;Load Device, Mode into X, Y
+        JMP FSLOAD      ;and Load File
+
+;fsave(args, &name) - Save File
+;Requires: SRCLO,SRCHI = Start Address
+;          DSTLO,DSTHI = End Address
+;Args: A = Mode + Device #
+;      Y,X = Pointer to File Name
+;Returns: A = Error Number (0=None)
+;         Y,X = Address at Last Byte Loaded
+FSAVE:  JSR SAVREG      ;Save Arguments
+        JSR GETSRC      ;Get Start Address
+        STX FSSVLO      ;and Store It
+        STY FSSVHI
+        JSR RESREG      ;Restore Arguments
+        JSR FSOPTS      ;Parse Options Argument
+        JSR FSNAME      ;Set Filename for Open
+        JSR FSUNCH      ;Find Unused Channel Number
+        BEQ FSERR2      ;If None Available, Return 0
+        JSR RESRXY      ;Load Device, Mode into X, Y
+        JMP FSSAVE      ;and Load File
+
+;fvrfy(args, &name) - Verify File
+;Args: A = Mode + Device #
+;      Y,X = Pointer to File Name
+;Returns: A = Error Number (0=None)
+;         Y,X = Address at Last Byte Loaded
+FVRFY:  JSR FSOPTS      ;Parse Options Argument
+        LDA #1          ;Set Flag to VERIFY
+        BNE FLOADA      ;Execute FLOAD Alternate Entry Point
+
+;fopen(args, &name) - Open File
+;Args: A = Mode + Device #
+;      Y,X = Pointer to File Name
+;Returns: A = File Channel (0=File Not Opened)
+;         Y  = File Error (0=None)
+FOPEN:  JSR FSOPTS      ;Parse Options Argument
+FOPENA: JSR FSONAM      ;Set Filename for Open
+        JSR FSUNCH      ;Find Unused Channel Number
+        BEQ FSERR2      ;If None Available, Return Error 2
+        JSR RESRXY      ;Load Device, Mode into X, Y
+        JMP FSOPEN      ;and Open File
+
+;fsccmd() - Close Command Channel
+;Args: A = Device Number
+;Returns: A = Logical File Number
+FSCCMD: ORA #$10     ;Set LFN to Device# + 16
+        
+;fclose(chan) - Close File
+;Args: A = Channel Number (0=Close All)
+FCLOSE: ORA #0          ;Check File Number
+        BEQ FCLOSS      ;If Not 0
+        JMP $FFC3       ;  Execute Kernal Routine CLOSE
+FCLOSS: JMP $FFE7       ;Else Execute Kernal Routine CLALL
+
+;feof(lfn) - Check for End of File
+;Args: A = Logical file number
+;Affects: A,X
+;Returns: A = $FF If End of File
+;             $00 Otherwise
+FEOF:   JSR FERROR      ;Get Error Code
+        AND #$40        ;Mask off EOF Bit
+        BEQ FEOFX       ;If Not 0
+FSTRUE:	LDA #$FF        ;  Return TRUE
+FEOFX:	RTS             ;Return from Subroutine
+
+;ferror(lfn) - Get Error on Channel`
+;Args: A = Channel Number (0=None)
+;Returns: A = Error Code
+;             1 = Terminated by the STOP key
+;             2 = Too many open files
+;             3 = File Not Open
+;             4 = File not found
+;             5 = Device not present
+;             6 = Not an input file
+;             7 = Not an output file
+;             8 = File name is missing
+;             9 = Illegal device number
+FERROR: TAX             ;Copy LFN to X
+        LDA FSIOET,X    ;Load I/O Status for LFN
+        RTS
+
+;fflush() - Flush file buffer
+;Args: A = Logical File Number
+FFLUSH:	RTS             ;No Logic Needed
+
+;fgetc(lfn) - Read character from file
+;Args: A = Logical file number
+;Affects: X
+;Returns: A = Character
+;         Y = Error Code (0=None)
+FGETC:  TAX             ;Move logical file number to X register
+        JSR $FFC6       ;Call Kernal Routine CHKIN
+FGETCW: BCS FSERRW      ;If Error, Write to Table and Return in Y
+        JSR $FFCF       ;Call Kernal Routine CHRIN
+        TAY             ;Save Character
+FGETCC: JSR $FFCC       ;Call Kernal Routine CLRCHN
+        TYA             ;Restore Character
+        JSR FSRDST      ;Read Status Byte
+        BVS FSORA0      ;If Not EOF
+        BCS FSZERO      ;and Error, Return NUL
+FSORA0: ORA #0          ;Else Set Flags Based on Character
+        RTS
+
+;fsrcmd() - Read Command Channel
+FSRCMD: LDA #15    ;Set LFN to 15
+        JSR FSGBFR  ;Get Buffer Address
+
+;fgets(lfn, &s) - Read string from file
+;Args: A = Logical file number
+;      Y,X = Pointer to String
+;Affects: X
+;Returns: A = Number of bytes read
+;         Y = Error Code
+FGETS:  JSR SETDST      ;Save string address 
+        TAX             ;Move logical file number to X register
+        JSR $FFC6       ;Call Kernal Routine CHKIN
+        BCS FGETCW      ;If Error, Write to Table and Return in Y
+        LDY #0          ;Initialize Index
+FGETSL: STY TEMP3       ;and Save It
+        JSR $FFCF       ;Call Kernal Routine CHRIN
+        LDY TEMP3       ;Restore Index
+        CMP #$0D        ;If Not C/R (Real or from Error)
+        BEQ FGETSX
+        STA (DSTLO),Y   ;Store Character in String
+        INY             ;Increment Pointer
+        BPL FGETSL      ;and Loop if Less Than 128
+FGETSX: LDA #0          ;Store NUL Terminator
+        STA (DSTLO),Y   ;at End of String
+        JSR $FFCC       ;Call Kernal Routine CLRCHN
+        TYA             ;Copy Length of String to Acuumulator
+        JSR FSRDST      ;Get I/O Status in Y Register
+        ORA #0          ;Set Flags based on Accumulator
+FGETSR: RTS
+
+;fread(lfn, count) - Read bytes from file
+;Requires: DSTLO, DSTHI - Pointer to destination string
+;Args: A = Logical file number
+;      Y = Number of Bytes to Read
+;Sets: TEMP1 = Number of Bytes to Read
+;      TEMP2 = 0 (Read Mode)
+;      TEMP3 = Number of Bytes Read
+;Affects: X
+;Returns: A = Number of bytes read
+;         Y = Error Code (0=None)
+;         Carry Set if Error, Clear if None
+FREAD:  LDX #0          ;Mode = READ
+FREADA: STX TEMP2       ;Save Mode
+        STY TEMP1       ;Save Number of Bytes
+        TAX             ;Move logical file number to X register
+        JSR $FFC6       ;Call Kernal Routine CHKIN
+FREADE: BCS FGETCW      ;If Error, Write to Table and Return in Y
+        LDY #0          ;Initialize Index
+        STY TEMP3       ;and Save It
+FREADL: JSR $FFCF       ;Call Kernal Routine CHRIN
+        JSR FSRDST      ;Get I/O Status in Y Register
+        BCS FREADX      ;If No Error 
+        LDY TEMP3       ;  Retrieve Index
+        LDX TEMP2       ;  Get Mode
+        BNE FREADN      ;  If READ
+        STA (DSTLO),Y   ;    Store Character in String
+FREADN: INY             ;  Increment Pointer
+        STY TEMP3       ;  and Save It
+        BVS FREADS      ;  If Not EOF
+        CPY TEMP1       ;    Compare against Count
+        BNE FREADL      ;    and Loop if Less
+FREADS: LDY #0          ;  Set Error to None
+FREADX: JSR $FFCC       ;Call Kernal Routine CLRCHN
+        CLC             ;Clear Carry
+        TYA             ;Copy Error Code to Accumulator
+        ADC #$FF        ;Set Carry if Error
+        LDA TEMP3       ;Return Length of String
+        RTS
+
+;fputc(lfn, chr) - Write character from file
+;Args: A = Logical file number
+;      Y = Character to Write
+;Returns: A = Character (0 if Error)
+;         Y = Error Code (0=None)
+FPUTC:  TAX             ;Move LFN to X register
+        JSR $FFC9       ;Call Kernal Routine CHKOUT
+        BCS FREADE      ;If Error, Write to Table and Return in Y
+        TYA             ;Copy Character to Accumulator
+FPUTCO: JSR $FFD2       ;Call Kernal Routine CHROUT
+        JMP FGETCC      ;Clear Channel and Check STATUS
+
+;fputln(lfn, &s) - Write Line to File
+;Args: A = Logical file number
+;      Y,X = Pointer to String
+;Sets: SRCLO,SRCHI = Pointer to String
+;Affects: X,Y
+;Returns: A = Number of bytes written
+;         Y = Error Code (0=None)
+FPUTLN: ORA #$80        ;Set High Bit and Fall Through
+
+;fputs(lfn, &s) - Write String to File
+;Args: A = Logical file number
+;      Y,X = Pointer to String
+;Sets: SRCLO,SRCHI = Pointer to String
+;Affects: X,Y
+;Returns: A = Number of bytes written
+;         Y = Error Code (0=None)
+FPUTS:  JSR SETSRC      ;Save string address & initialize pointer
+FPUTSA: STA TEMP2       ;Save LFN Argument
+        AND #$7F        ;Strip High Bit
+        TAX             ;Copy LFN to X Register
+        JSR $FFC9       ;Call Kernal Routine CHKOUT
+        BCS FREADE      ;If Error, Write to Table and Return in Y
+        LDY #0          ;Initialize Index
+        STY TEMP3       ;and Save It
+FPUTSL: LDA (SRCLO),Y   ;Load next character
+        BEQ FPUTSX      ;If NUL, Finish Up
+        JSR $FFD2       ;Call Kernal Routine CHROUT
+        STY TEMP3       ;Save Index
+        JSR FSRDST      ;Read I/O Status
+        BCS FREADX      ;If Error, Return in Y
+        LDY TEMP3       ;Restore Index
+        INY             ;Increment Index
+        BPL FPUTSL      ;Loop if Less than 128
+        BMI FREADS      ;Else Finish Up
+FPUTSX: LDA TEMP2       ;Retrieve LFN Argument
+        BPL FREADS      ;Finish Up if High Bit Not Set
+        INY             ;Else Increment Count
+        LDA #$0D        ;Load Carriage Return
+        BNE FPUTCO      ;and Write It
+
+FSKIP:  LDX #$FF        ;Set Mode to Skip
+        BNE FREADA      ;and Execute FREAD
+
+;fwrite(lfn, count) - Write bytes from file
+;Requires: SRCLO, SRCHI - Pointer to destination string
+;Args: A = Logical File Number
+;      Y = Number of Bytes to Write
+;Affects: X
+;Returns: A = Number of bytes read
+;         Y = Error Code (0=None)
+FWRITE: STY TEMP1       ;Save Number of Bytes
+        TAX             ;Move logical file number to X register
+        JSR $FFC9       ;Call Kernal Routine CHKOUT
+        BCS FREADE      ;If Error, Return in Y (FSERRY)
+        LDY #0          ;Initialize Index
+        STY TEMP3       ;and Save It
+FWRITL: LDA (SRCLO),Y   ;Load next character
+        JSR $FFD2       ;Call Kernal Routine CHROUT
+        JSR FSRDST      ;Read I/O Status
+        BCS FREADX      ;If Error, Return In Y 
+        INC TEMP3       ;Increment Index
+        LDY TEMP3       ;and Load it Index
+        CPY TEMP1       ;Compare against Count
+        BNE FWRITL      ;and Loop if Less
+        BEQ FREADS      ;Else Return No Error
+
+;fgetw(lfn) - Read Word from File
+;Args: A = Logical file number
+;Sets: TEMP0 = Logical File Number
+;      TEMP1 = LSB
+;      TEMP2 = MSB
+;Returns: A = Error Code (0=None)
+;         Y,X = Word (MSB, LSB)
+FGETW:  STA TEMP0       ;Save LFN
+FGETWA: LDA TEMP0       ;Load LFN (Alternate Entry Point)
+        JSR FGETC       ;Read LSB
+        BCS FGETWX      ;If No Error
+        STA TEMP1       ;  Save in TEMP1
+        LDA TEMP1       ;  Restore LFN
+        JSR FGETC       ;  Read MSB
+        STA TEMP2       ;  Save in TEMP2
+FGETWX: TYA             ;Copy Error to A
+        JSR RESRXY      ;Load Word into Y,X
+        ORA #0          ;Set Flags
+        RTS
+

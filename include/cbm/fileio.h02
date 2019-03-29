@@ -1,23 +1,45 @@
-/******************************************
- * file - Standard File Functions for C02 *
- ******************************************/
+/***************************************
+ * file - Standard File Functions for  *
+ *        all Commodore 8 bit machines *
+ ***************************************/
 
-/* Device List */
-enum {CASST1, MODEM1, PRNTR1, PRNTR2, 
-      DRIVE1, DRIVE2, DRIVE3, DRIVE4};
+/* Device IDs */
+enum {KEYBRD, CASST1, MODEM1, SCREEN,
+      PRNTR1, PRNTR2, PRNTR3, PRNTR4,
+      DRIVE1, DRIVE2, DRIVE3, DRIVE4,
+      DRIVE5, DRIVE6, DRIVE7, DRIVE8};
 
-/* File Open Modes */
 #define MWRITE $80 //Open File for Write
 #define MREAD  $00 //Open File for Read
 
-/* File Load Modes */
 #define MRELCT $00 //Relocate (Load at Specified Address)
 #define MABSLT $80 //Absolute (Load at Address in File Header)
 
 
+/* RS-232 Errors */
+
+/* Other Errors */
+#define ERRFNA $FF //Error - Function Not Available
+
+/* Zero Page System Variables *
+ * for diagnostic purposes    *
+ * Names subject to change    */
+char fsiost; //Kernal I/O Status Word
+char fsnofl; //Number of Open I/O Files
+char fslfno; //Current Logical File Number
+char fsdvno; //Current Device Number
+char fssadr; //Current Secondary Address
+char fsfnlo,fsfnhi; //Pointer: Current Filename
+char fsfnln; //Length of Current Filename
+char fsrcvb; //Serial Bus Received Byte
+
+/* System Variables */
+char fsbufr[]; //String Concatenation Buffer
+char fscntr; //Directory Entry Count
+
 /* File Load                    *
  *   Loads File into Memory     *
- * Args: d - Options | DeviceID *
+ * Args: md - Mode | DriveID    *
  ^       &n - Filename          *
  * Returns: Error Code (0=None) *
  *          Load Address        */
@@ -25,17 +47,17 @@ char fload();
 
 /* File Save                    *
  *   Save File from Memory      *
- * Args: d - Options | DeviceID *
+ * Args: md - Mode | driveid    *
  ^       &n - Filename          *
  * Returns: Error Code (0=None) */
 char fsave();
 
-/* File Open                       *
- *   Opens File Specified by Name  *
- * Args: d - Options | DeviceID    *
- ^       &n - Filename             *
- * Returns: File Pointer (0=Error) *
-            Error Code (0=None)    */
+/* File Open                              *
+ *   Opens File Specified by Name         *
+ * Args: m  - mode | driveid              *
+ *       &f - string containing filename  *
+ * Returns: file pointer if successful    *
+            0 if an error occurs          */
 char fopen();
 
 /* File Close                             *
@@ -49,7 +71,7 @@ char fclose();
  * Returns: EOF Indicator            *
  *          (0 if not at end of file *
  *           255 if not implemented  *
- *           or non-zero EOF value)  */
+             or non-zero EOF value)  */
 char feof();
 
 /* File Error                              *
@@ -75,6 +97,16 @@ char fflush();
  *          (0 if no error                 *
  *           255 if not implemented)       */
 char fgetc();
+
+/* Load to Memory from File              *
+ * Args: md - mode + device#             *
+ *       &f - string containing filename *
+ * Requires: setdst();                   *
+ * Returns: platform specific error      *
+ *          (0 if no error               *
+ *           255 if not implemented)     *
+ *          end address of load          */
+char fload();
 
 /* Write Character to File            *
  * Args: fp - file pointer            *
@@ -117,15 +149,36 @@ char fputln();
  *   Reads until EOF is reached      *
  * Args: fp - file pointer           *
  *       n - number of bytes to read *
+ * Requires: setdst();               *
  * Returns: number of bytes read,    *
  *          platform specific error  *
  *          (0 if no error           *
  *           255 if not implemented) */
 char fread(); 
 
+/* Save Memory to File                   *
+ * Args: d - device#                     *
+ *       &f - string containing filename *
+ * Requires: setsrc(); setdst();         *
+ * Returns: platform specific error      *
+ *          (0 if no error               *
+ *           255 if not implemented)     */
+char fload();
+
+/* Verify File against Memory            *
+ * Args: md - mode + device#             *
+ *       &f - string containing filename *
+ * Requires: setdst();                   *
+ * Returns: platform specific error      *
+ *          (0 if no error               *
+ *           255 if not implemented)     *
+ *          end address of verify        */
+char fload();
+
 /* Write Bytes to File                *
  * Args: fp - file pointer            *
  *       n - number of bytes to write *
+ * Requires: setdst();               *
  * Returns: number of bytes written,  *
  *          platform specific error   *
  *          (0 if no error            *

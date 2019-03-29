@@ -44,6 +44,9 @@ STKSHI  EQU $03FD ;Stack Start MSB [Unused Byte]
 STKELO  EQU $03FE ;Stack End LSB   [Unused Byte]
 STKEHI  EQU $03FF ;Stack End MSB   [Unused Byte]
 
+;ROM Routines
+FSFLFA  EQU $F3D4 ;Find Logical File A
+
 START:  TSX         ;Get Stack Pointer
         STX STKSAV  ;and Save for Exit
         JMP MAIN    ;Execute Program
