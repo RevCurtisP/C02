@@ -1,0 +1,109 @@
+/*********************************
+ * FILES - File Module Test/Demo *
+ * currently coded for CBM 8-bit *
+ *********************************/
+
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <fileio.h02>
+
+const char binfil = "BNRYFILE.TXT";
+const char txtfil = "TEXTFILE.TXT";
+const char blkfil = "BLCKFILE.TXT";
+const char device = #DRIVE2;
+char bfp;       //Binary File Pointer
+char tfp;       //Text File Pointer
+char kfp;       //Block File Pointer
+char err;       //Error Code
+char ch;        //Character Read from File
+char i;         //Loop Index Variable
+char n;         //Number of Characters Read
+char s[128];    //String Read from File
+char r[255];    //Array Buffer for Read
+char aa,xx,yy;  //Function Arguments
+
+main:
+  clrscr();
+  bfp = opnfil(device, &binfil);
+  tfp = opnfil(device, &txtfil);
+  kfp = opnfil(device, &blkfil);
+  if (bfp) rdbinf();
+  if (tfp) rdtxtf();
+  if (kfp) rdblkf();
+  clsfil(bfp);
+  clsfil(tfp);
+  clsfil(kfp);
+goto exit;
+
+void opnfil(aa,yy,xx) {
+  puts("OPENING "); putln(*,yy,xx); 
+  printf(aa, " ON DEVICE %d%n");
+  aa, yy = fopen(aa, yy, xx);
+  if (aa) printf(aa, "OPENED ON CHANNEL %d%n");
+  else printf(yy, "ERROR %d OPENING FILE%n");
+  newlin();
+  return aa;
+}
+
+void clsfil(aa) {
+  printf(aa, "CLOSING CHANNEL %d%n");
+  fclose(aa);
+}
+
+void rdbinf() {
+  printf(bfp, "%n<READING CHANNEL %d>%n");
+  while(!feof(bfp)) {
+    ch, err = fgetc(bfp);
+    if (err) break;
+    puthex(ch); putspc();
+  }
+  newlin();
+  if (err) printf(err,"<ERROR %d READING FILE>%n");
+  else putln("<END OF FILE>");
+  newlin();
+}
+
+void rdtxtf() {
+  printf(tfp, "<READING CHANNEL %d>%n");
+  while(!feof(tfp)) {
+    n, err = fgets(tfp, &s);
+    if (err) break;
+    printf(n,"%l %s%n");
+  }
+  if (err) printf(err,"<ERROR %d READING FILE>%n");
+  else putln("<END OF FILE>");
+  newlin();
+}
+
+void rdblkf() {
+  printf(kfp, "<READING CHANNEL %d>%n");
+  while(!feof(kfp)) {
+    setdst(&r);
+    n, err = fread(kfp, 16);
+    if (err) break;
+    printf(n,"%l ");
+    for (i=0; i<n; i++) putc(r[i]);
+    newlin();
+  }
+  if (err) printf(err,"<ERROR %d READING FILE>%n");
+  else putln("<END OF FILE>");
+  newlin();
+}
+
+/* Print File System Info */
+void prtfsi() {
+  printf(fslfno, ".LFN=%d, "); printf(fsdvno, "DEV=%d, "); printf(fssadr, "SA=%d%n");
+  setdst(*,fsfnhi,fsfnlo); printf(".NAME='%s'%n.ADR=$%w, "); 
+  printf(fsfnln,"LEN=%d%n");
+  prtopf(); 
+}
+
+/* Print Number of Open Files */
+void prtopf() {
+  printf(fsnofl,".OPEN FILES: %d%n");
+}
