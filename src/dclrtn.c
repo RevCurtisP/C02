@@ -84,12 +84,17 @@ void penum(int m, int bitmsk) {
   if (m != MTNONE) ERROR("Illegal Modifier %d in Enum Definition", m, EXIT_FAILURE)
   expect('{');
   do {
-    getwrd(); //get defined identifier
-    DEBUG("Enumerating '%s'\n", word)
     if (enmval > 0xFF) ERROR("Maximum ENUM or BITMASK value exceeded\n", 0, EXIT_FAILURE)
-    strncpy(defnam, word, VARLEN);
-    sprintf(value, "%d", enmval);
-	addcon(enmval);
+    if (look('*')) 
+      DEBUG("Skipping sequence %d\n", enmval)
+	else {
+      getwrd(); //get defined identifier
+      DEBUG("Enumerating '%s'", word)
+      DEBUG(" as %d\n", enmval);
+      strncpy(defnam, word, VARLEN);
+      sprintf(value, "%d", enmval);
+      addcon(enmval);
+    }    
     if (bitmsk) enmval = enmval << 1;
     else enmval++;
   } while (look(','));
