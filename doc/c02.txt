@@ -287,17 +287,39 @@ generate sets of related but distinct values.
 
 An enumeration is defined using an enum statement. When using the enum
 keyword, it is followed by a { character, one or more constant names
-separated by commas, and a } character. The enum statement is terminated
-with a semicolon.
+separated by commas, and a } character. An asterisk may be used in place
+of a constant name, in which case the sequence will be skipped. The enum 
+statement is terminated with a semicolon.
 
 Examples:
   enum {BLACK, WHITE, RED, CYAN, PURPLE, GREEN, BLUE, YELLOW};
-  enum {NONE, FIRST, SECOND, THIRD};
+  enum {*, FIRST, SECOND, THIRD};
   enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
 
 Note: Values are automatically assigned to the constants in an enumeration.
-The first constant following an #enum directive is assigned the value 0,
-the second is assigned the value 1, and so on.
+The first constant in the enumeration is assigned the value 0, the second 
+is assigned the value 1, and so on.
+
+BITMASKS
+
+Bitmasks are a list of constants with values that correspond to each bit
+in a byte. Bitmasks are used to allow multiple true/false flags to be 
+combined into a single char variable.
+
+An enumeration is defined using a bitmask statement. When using the bitmask
+keyword, it is followed by a { character, one to eight constant names
+separated by commas, and a } character. An asterisk may be used in place
+of a constant name, in which case the bit value will be skipped. The 
+bitmask statement is terminated with a semicolon.
+
+Examples:
+  bitmask {BLUE, GREEN, RED, BRIGHT, INVERT, BLINK, FLIP, BKGRND};
+  bitmask {RD, RTS, DTR, RI, CD, *, CTS, DSR};
+
+Note: Values are automatically assigned to the constants in a bitmask, 
+each of which is a sequential power of two. The first constant in the 
+bitmask is assigned the value 1, the second is assigned the value 2, 
+the third is assigned the value 4, and so on.
 
 DECLARATIONS
 
