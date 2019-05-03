@@ -12,11 +12,13 @@
 #include "files.h"
 #include "asm.h"
 #include "parse.h"
+#include "label.h"
 
 /* Various tests against nxtchr */
 int match(char c) {return TF(nxtchr == c);}
 int inbtwn(char mn, char mx) {return TF(nxtupc >= mn && nxtupc <= mx);}
 int isalph(void) {return isalpha(nxtchr);}
+int isalst(void) {return TF(isalph() || match('*'));}
 int isanum(void) {return isalnum(nxtchr);}
 int isapos(void) {return match('\'');}
 int isbin(void)  {return inbtwn('0', '1');}
@@ -354,8 +356,10 @@ void poperr(char* name) {
 }
 
 /* Process Post Operator */
-void prcpst(char* name, char *index) {
+void prcpst(int isint, char* name, char *index) {
   DEBUG("Processing post operation '%c'\n", oper)
+  char name1[VARLEN+3];
+  strcpy(name1, name); strcat(name1, "+1");
   if (strlen(index)) { 
       asmlin("LDX", index);
       strcat(name,",X");
@@ -365,25 +369,48 @@ void prcpst(char* name, char *index) {
       if      (strcmp(name, "X")==0) asmlin("INX", "");
       else if (strcmp(name, "Y")==0) asmlin("INY", "");
       else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit INC, 6502 does not
-      else asmlin("INC", name);
-      break;
+      else {
+	    asmlin("INC", name);
+		if (isint) {
+		  newlbl(skplbl);
+		  asmlin("BNE", skplbl);
+		  asmlin("INC", name1);
+		  setlbl(skplbl);
+        }
+      }   
+	  break;
     case '-':
       if      (strcmp(name, "X")==0) asmlin("DEX", "");
       else if (strcmp(name, "Y")==0) asmlin("DEY", "");
       else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit DEC, 6502 does not
-      else asmlin("DEC", name);
+      else {
+        if (isint) {
+		  newlbl(skplbl);
+		  asmlin("LDA", name);
+		  asmlin("BNE", skplbl);
+		  asmlin("DEC", name1);
+		  setlbl(skplbl);
+	    }
+        asmlin("DEC", name);
+      }
       break;
     case '<':
       if      (strcmp(name, "X")==0) poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "Y")==0) poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "A")==0) asmlin("ASL", ""); 
-      else asmlin("ASL", name);
+      else {
+	    asmlin("ASL", name);
+	    if (isint) asmlin("ROL", name1);
+	  }
       break;
     case '>':
       if      (strcmp(name, "X")==0) poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "Y")==0) poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "A")==0) asmlin("LSR", "");
-      else asmlin("LSR", name);
+      else {
+		asmlin("LSR", name);
+	    if (isint) asmlin("ROR", name1);
+      }
       break;
     default:
       ERROR("Unrecognized post operator '%c'\n", oper, EXIT_FAILURE)
@@ -391,7 +418,7 @@ void prcpst(char* name, char *index) {
 }
 
 /* Parse Post Operator */
-int prspst(char trmntr, char* name, char* index) {
+int prspst(char trmntr, int isint, char* name, char* index) {
   oper = getnxt();
   CCMNT(oper);
   DEBUG("Checking for post operation '%c'\n", oper)
@@ -399,7 +426,7 @@ int prspst(char trmntr, char* name, char* index) {
     skpchr();
     CCMNT(oper);
     expect(trmntr);
-    prcpst(name, index);  //Process Post-Op
+    prcpst(isint, name, index);  //Process Post-Op
     return 0;
   }
   DEBUG("Not a post operation\n", 0)

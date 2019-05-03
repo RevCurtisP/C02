@@ -17,10 +17,16 @@
 #include "stmnt.h"
 #include "dclrtn.h"
 
-void addprm(char* prmtr) {
+int addprm(char* prmtr) {
   reqvar(FALSE);          //Get Variable Name
+  if (vartyp[varidx] == VTINT) {
+    strcpy(prmtrx, value);
+    strcpy(prmtry, value);
+    strcat(prmtry, "+1");
+    return TRUE;
+  }
   strcpy(prmtr, value);   //Copy to Parameter Variable
-  prmcnt++;               //Increment # of Parameters
+  return FALSE;
 }
 
 /* Add Function Definition */
@@ -28,25 +34,28 @@ void addfnc(void) {
   if (infunc) ERROR("Nested Function Definitions Not Allowed\n", 0, EXIT_FAILURE)
   expect('(');
   strcpy(fncnam, word);   //Save Function Name
-  prmcnt = 0;             //Initialze Number of Parameters
+  prmtra[0] = 0;          //Initialze Parameters
+  prmtry[0] = 0;
+  prmtrx[0] = 0;
   skpspc();               //Skip Spaces
-  if (isalph()) {         //Parse Parameters
-    addprm(prmtra);       //Get First Parameter
+  if (isalph() || match('*')) {         //Parse Parameters
+    if (!look('*')) {if (addprm(prmtra)) goto addfne;} //Get First Parameter
     if (look(',')) {      //Look for Comma
-      addprm(prmtry);     //Get Second Parameter
+      if (addprm(prmtry)) goto addfne;     //Get Second Parameter
       if (look(',')) {    //Look for Comma
         addprm(prmtrx);   //Get Third Parameter
       }
     }
   }
+  addfne:
   expect(')');
   if (look(';')) return;    //Forward Definition
   infunc = TRUE;          //Set Inside Function Definition Flag
   DEBUG("Set infunc to %d\n", infunc)
   setlbl(fncnam);         //Set Function Entry Point
-  if (prmcnt > 0) asmlin("STA", prmtra); //Store First Parameter
-  if (prmcnt > 1) asmlin("STY", prmtry); //Store Second Parameter
-  if (prmcnt > 2) asmlin("STX", prmtrx); //Store Third Parameter
+  if (prmtra[0]) asmlin("STA", prmtra); //Store First Parameter
+  if (prmtry[0]) asmlin("STY", prmtry); //Store Second Parameter
+  if (prmtrx[0]) asmlin("STX", prmtrx); //Store Third Parameter
   endlbl[0] = 0;          //Create Dummy End Label
   pshlbl(LTFUNC, endlbl); //and Push onto Stack
   bgnblk('{');           //Start Program Block
@@ -67,18 +76,22 @@ void addcon(int numval) {
     if (!alcvar) SCMNT(""); //Clear Comment
 }
 
-/* Parse Enum Declaration*/
-void penum(int m) {
-  int enmval = 0;
-  DEBUG("Processing Enum Declarations\n", 0)
+/* Parse Enum Declaration
+*/
+void penum(int m, int bitmsk) {
+  int enmval = (bitmsk) ? 1 : 0;
+  DEBUG("Processing Enum Declarations with BITMSK %d\n", bitmsk)
   if (m != MTNONE) ERROR("Illegal Modifier %d in Enum Definition", m, EXIT_FAILURE)
   expect('{');
   do {
     getwrd(); //get defined identifier
     DEBUG("Enumerating '%s'\n", word)
+    if (enmval > 0xFF) ERROR("Maximum ENUM or BITMASK value exceeded\n", 0, EXIT_FAILURE)
     strncpy(defnam, word, VARLEN);
     sprintf(value, "%d", enmval);
-	addcon(enmval++);
+	addcon(enmval);
+    if (bitmsk) enmval = enmval << 1;
+    else enmval++;
   } while (look(','));
   expect('}');
   expect(';');
@@ -115,11 +128,12 @@ void pdecl(int m, int t) {
  * Args: m - Modifier Type          */
 int ptype(int m) {
   int reslt = TRUE;
-  if    (wordis("STRUCT")) pstrct(m);        //Parse 'const' declaration
-  else if (wordis("ENUM")) penum(m);         //Parse 'enum' declaration
-  else if (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
-  else if (wordis("INT"))  pdecl(m, VTINT);  //Parse 'int' declaration
-  else if (wordis("VOID")) pdecl(m, VTVOID); //Parse 'void' declaration
+  if       (wordis("STRUCT")) pstrct(m);         //Parse 'struct' declaration
+  else if    (wordis("ENUM")) penum(m, FALSE);   //Parse 'enum' declaration
+  else if (wordis("BITMASK")) penum(m, TRUE);    //Parse 'enum' declaration
+  else if     (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
+  else if     (wordis("INT"))  pdecl(m, VTINT);  //Parse 'int' declaration
+  else if    (wordis("VOID")) pdecl(m, VTVOID);  //Parse 'void' declaration
   else                     reslt = FALSE;
   return reslt;
 }

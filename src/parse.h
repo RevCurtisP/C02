@@ -25,6 +25,7 @@ int mskasc;                    //Set High Bit Flag
 
 int match(char c);             //Does Next Character match c
 int isalph();                  //Is Next Character Alphabetic
+int isalst();                  //Is Next Character Alpha or Asterisk
 int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
 int isbin();                   //Is Next Character a Binary Digit
@@ -54,7 +55,7 @@ int  prsbyt();              //Parse Numeric Byte
 void prslit();              //Parse Literal
 int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
-int  prspst(char trmntr, char* name, char* index);  //Parse Post Operator
+int  prspst(char trmntr, int isint, char* name, char* index);  //Parse Post Operator
 int  psizof(void);          //Parse SizeOf Operator
 int  pidxof(void);          //Parse SizeOf Operator
 void skpchr();              //Skip Next Character

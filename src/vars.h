@@ -48,7 +48,7 @@ int  dtype;                    //Data Type
 int  dlen;                     //Length of Variable Data
 int  dsize;                    //Total Data Length
 
-enum dtypes {DTBYTE, DTSTR, DTARRY};  //Variable Data Types
+enum dtypes {DTBYTE, DTINT, DTSTR, DTARRY};  //Variable Data Types
 
 /* Variable Modifier Types (Bit Mask) */
 #define MTNONE   0 //No Modifier

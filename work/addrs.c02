@@ -1,0 +1,29 @@
+/***************************
+ * Test Address References *
+ ***************************/
+char b , i;  //byte type has been removed
+char c,d,f;  //a char is an unsigned 8 bit number
+char r[15];  //reserves dimension bytes
+char z[15];
+const char s = "This is a string.";
+
+
+funcx:
+f = testfn(&s);          //Pointer
+f = testfn(b,&s);        //Byte and Pointer
+f = testfn(r[i],&s);     //Array Element and Pointer
+f = testfn(r[1],&s);     //Array Element and Pointer
+f = testfn(b+c+d,&s);    //Expression in Function Call 
+f = testfn(getkey(b)+c); //Nested Function Call 
+
+funcs:
+testfn(&s); //Print a String
+
+goto &$C000;
+
+push &s, b+c+d, r[i];
+isort(); inline &r;
+
+blkbgn(&$C000);
+blkend(&$C400);
+

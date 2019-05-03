@@ -77,11 +77,8 @@ void setasn(char *name) {
   if (wrtofs[0]) strcat(word, wrtofs);
 }
 
-/* Process Assignment */
-void prcasn(char trmntr) {
-  expect('=');
-  if (look('(')) prssif(trmntr); //Parse Shortcut If 
-  else           prsxpr(trmntr); //Parse Expression
+/* Process Assignment of X and Y variables */
+void prcaxy(void) {
   DEBUG("Processing X assignment variable '%s'\n", xsnvar)
   if (xsnvar[0]) {
     setasn(xsnvar);
@@ -107,6 +104,14 @@ void prcasn(char trmntr) {
     asmlin("STY", word); //Store Return Value
     ysnvar[0] = 0;
   }
+}
+
+/* Process Assignment */
+void prcasn(char trmntr) {
+  expect('=');
+  if (look('(')) prssif(trmntr); //Parse Shortcut If 
+  else           prsxpr(trmntr); //Parse Expression
+  prcaxy(); //Process X and Y assignments
   DEBUG("Checking if '%s' is a register\n", asnvar)
   if      (strcmp(asnvar, "X")==0) asmlin("TAX", "");
   else if (strcmp(asnvar, "Y")==0) asmlin("TAY", "");
@@ -115,6 +120,17 @@ void prcasn(char trmntr) {
   setasn(asnvar);
   if (asnidx[0]) prcidx(asnivt, word, asnidx); //Process Index 
   asmlin("STA", word); //Store Return Value
+}
+
+/* Process Integer Assignment */
+void prcasi(char trmntr) {
+  DEBUG("Processing Integer Assignment\n", 0);
+  expect('=');
+  strcpy(xsnvar, word); //Set Assignment LSB
+  strcpy(ysnvar, word); strcat(ysnvar, "+1"); //Set Assignment MSB
+  ysnidx[0] = 0; //No Y Index
+  prsxpi(trmntr);
+  prcaxy();
 }
 
 /* Parse and Return Array Index and Type */
@@ -129,9 +145,14 @@ int getidx(char* idx) {
 /* Process Assignment Variable(s) */
 void prcvar(char trmntr) {
   chksym(TRUE, FALSE, word);
+  if (vartyp[varidx] == VTINT) {
+    if (ispopr()) {if (prspst(trmntr, TRUE, word, "")) expctd("post operator");}
+    else prcasi(trmntr); //Process Integer Assignment
+    return;
+  }
   strcpy(asnvar, word);  //save variable to assign to
   if (valtyp == VARIABLE && match('.')) prsmbr(asnvar);
-  asntyp = valtyp; //Set Assigned Varable Type
+  asntyp = valtyp; //Set Assigned Variable Type
   DEBUG("Set STA variable to %s\n", asnvar)
   if (asntyp == VARIABLE && look(';')) {
     asmlin("STA", asnvar);
@@ -141,7 +162,7 @@ void prcvar(char trmntr) {
   else asnidx[0] = 0;
   DEBUG("Set STA index to '%s'", asnidx) DETAIL(" and type to %d\n", asnivt)
   if (ispopr()) {
-    if (prspst(trmntr, asnvar, asnidx)) expctd("post operator");
+    if (prspst(trmntr, FALSE, asnvar, asnidx)) expctd("post operator");
 	return;
   }
   if (look(',')) {     
@@ -349,7 +370,8 @@ void ppush(void) {
 /* parse and compile return statement */
 void pretrn(void) {
   DEBUG("Parsing RETURN statement\n", 0)
-  if (!look(';')) prsxpr(';');
+  skpspc();
+  prsfpr(';'); //Parse Function Return Valuea
   asmlin("RTS", "");
   lsrtrn = TRUE;  //Set RETURN flag
 }
@@ -382,7 +404,7 @@ void pcase(void) {
   newlbl(cndlbl);          //Create Conditional Label
   pshlbl(LTCASE, cndlbl);  //and Push onto Stack
   while(TRUE) {
-    prstrm();              //Parse CASE argument
+    prstrm(FALSE);         //Parse CASE argument
     if (!fcase || valtyp != LITERAL || litval) 
       asmlin("CMP", term); //Emit Comparison
     if (look(',')) {

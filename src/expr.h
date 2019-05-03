@@ -14,12 +14,15 @@ int  trmcnt;  //Number of total terms in current expression
 
 int  chkadr(int adract, int alwstr);  //Check for and Process Address or String
 void chkidx();              //Check for, Parse, and Process Index
-void prcftm();              //Process First Term
+int  prcftm(int alwint);    //Process First Term
+void prcvri(void);			//Process Integer Variable
 void prsadr(int adract);    //Parse and Compile Address of Operator
+void prsval(int alwreg, int alwcon); //Parse Value
 void prsfnc(char trmntr);   //Parse function call
+void prsfpr(char trmntr);   //Parse Function Paraeters or Return
 void prsidx();              //Parse Array Index
-void prstrm();              //Parse Term in Expression
-void prsrxp(char trmntr);    //Parse Rest of Expression 
+int  prstrm(int alwint);    //Parse Term in Expression
+void prsrxp(char trmntr);   //Parse Rest of Expression 
+int  prsxpf(char trmntr);   //Parse Expression in Function Call
 void prsxpr(char trmntr);   //Parse Expression
-
-
+void prsxpi(char trmntr);   //Parse Integer Expression

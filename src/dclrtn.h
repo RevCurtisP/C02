@@ -5,7 +5,7 @@
 char fncnam[VARLEN+1]; //Function Name
 char prmtra[VARLEN+1]; //Function Parameter A
 char prmtrx[VARLEN+1]; //Function Parameter X
-char prmtry[VARLEN+1]; //Function Parameter Y
+char prmtry[VARLEN+3]; //Function Parameter Y
 int  prmcnt;           //Number of Parameters
 //int  lpemtd;                    //Location Prefix Emitted
 

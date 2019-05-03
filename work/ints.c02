@@ -1,0 +1,52 @@
+/* Test Integer Variables */
+
+#pragma origin $F000
+#pragma zeropage $80
+
+char b,d;
+char s[128];
+char aa,yy,xx;
+
+zeropage int zp80, zp82;
+alias int c0 = $C000;
+const int c = $1234;
+int e;
+int i,j;
+int m,n;
+int yx;
+
+i<<;
+j>>;
+m++;
+n--;
+
+e = $5678;
+e = c;
+e = &$D000;
+e = &s;
+
+b = fnb(e);
+d = fnd(b,c);
+
+i = fni(c);
+j = fnj(b,c);
+
+int fnb(*,yy,xx) {
+  return *,xx,yy;
+}
+
+int fnd(aa,yy,xx) {
+  if (aa) return *,xx,yy;
+  else return *,yy,xx;
+}
+
+int fni(yx) {
+  yx++;
+  return yx;
+}
+
+int fnj(aa, yx) {
+  if (aa:-) yx--;
+  else {if (aa) yx++;}
+  return yx;
+}

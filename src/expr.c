@@ -85,7 +85,7 @@ void prcsix(void) {
 void prcxix(void) {
   pshtrm(); //Push Array Variable onto Term Stack
   if (trmcnt) asmlin("PHA", ""); //Save Accumulator if not first term
-  prcftm();    //Process First Term of Expression
+  prcftm(FALSE);    //Process First Term of Expression
   prsrxp(']'); //Parse Rest of Expression
   asmlin("TAX", ""); //Transfer Result of Expression to Index Register
   if (trmcnt) asmlin("PLA", ""); //Restore Accumator if not first term
@@ -112,14 +112,20 @@ void chkidx(void) {
 
 /* Parse Term in Expression           *
  * Sets: term - the term (as a string) */
-void prstrm(void) {
+int prstrm(int alwint) {
   DEBUG("Parsing term\n", 0)
   prsval(FALSE, TRUE); //Parse Term - Disallow Registers
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
+  if (valtyp == VARIABLE && vartyp[varidx] == VTINT) {
+    if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", term, EXIT_FAILURE)
+	prcvri(); //Process Integer Variable
+	return TRUE;
+  }
   DEBUG("Parsed term %s\n", term)
   chkidx();  //Check for Array Index
   skpspc();
+  return FALSE;
 }
 
 /* Process Address Reference 
@@ -178,6 +184,22 @@ int chkadr(int adract, int alwstr) {
   return result;
 }
 
+/* Parse Function Parameters or Return Values */
+void prsfpr(char trmntr) {
+  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('*')) {
+    if (!look('*')) {if (prsxpf(0)) goto prsfne;}
+    if (look(',') && !chkadr(ADLDYX, TRUE)) {
+      if (!look('*')) {
+		if (prstrm(TRUE)) goto prsfne;
+        asmlin("LDY", term); 
+	  }
+      if (look(',')) { prsval(FALSE, TRUE); asmlin("LDX", value); }
+    }
+  }
+  prsfne:
+  expect(trmntr);
+}
+
 /* Parse function call */
 void prsfnc(char trmntr) {
   DEBUG("Processing Function Call '%s'\n", term)
@@ -185,38 +207,43 @@ void prsfnc(char trmntr) {
   pshtrm(); //Push Function Name onto Term Stack
   skpchr(); //skip open paren
   CCMNT('(');
-  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('*')) {
-    if (!look('*')) prsxpr(0);
-    if (look(',') && !chkadr(ADLDYX, TRUE)) {
-      if (!look('*')) {
-        prstrm(); asmlin("LDY", term); 
-	  }
-      if (look(',')) { prsval(FALSE, TRUE); asmlin("LDX", value); }
-    }
-  }
-  expect(')');
+  prsfpr(')'); //Parse Function Parameters
   expect(trmntr);
   poptrm(); //Pop Function Name off Term Stack
   asmlin("JSR", term);
   skpspc();
 }
 
+/* Process Integer Variable */
+void prcvri(void) {
+  DEBUG("Processing Integer Variable '%s'\n", value)
+  asmlin("LDX", value);
+  strcat(value, "+1");
+  asmlin("LDY", value);
+}
+
 /* Process first term of expression */
-void prcftm(void) {
+int prcftm(int alwint) {
   DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
+  if (valtyp == VARIABLE && vartyp[varidx] == VTINT) {
+    if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
+    prcvri();
+	return TRUE;
+  }
   if (valtyp == FUNCTION) prsfnc(0); //Parse Expression Function
-  else if (wordis("A"))   return;
+  else if (wordis("A"))   return FALSE;
   else if (wordis("X"))   asmlin("TXA", "");
   else if (wordis("Y"))   asmlin("TYA", "");
   else                  { chkidx(); asmlin("LDA", term); }
+  return FALSE;
 }
 
 /* Parse first term of expession            *
  * First term can include function calls    */
-void prsftm(void) {
+int prsftm(int alwint) {
   prsval(TRUE, TRUE); //Parse Value, Allowing Registers
-  prcftm();
+  return prcftm(alwint);
 }
 
 /* Process Arithmetic or Bitwise Operator *
@@ -241,19 +268,56 @@ void prsrxp(char trmntr) {
   while (isoper()) {
 	trmcnt++; //Increment Expression Depth
     prsopr(); //Parse Operator
-    prstrm(); //Parse Term
+    prstrm(FALSE); //Parse Term
     prcopr(); //Process Operator
 	trmcnt--; //Decrement Expression Depth
   } 
   expect(trmntr);
 }
 
-/* Parse and compile expression */
-void prsxpr(char trmntr) {
+int prsxpp(char trmntr, int alwint) {
   DEBUG("Parsing expression\n", 0)
   skpspc();
   trmcnt = 0; //Initialize Expression Depth
   if (match('-')) prcmns(); //Process Unary Minus
-  else prsftm();  //Parse First Term
+  else if (prsftm(alwint)) return TRUE;  //Parse First Term
   prsrxp(trmntr); //Parse Remainder of Express
+  return FALSE;
+}
+
+/* Parse and compile expression */
+void prsxpr(char trmntr) {
+  prsxpp(trmntr, FALSE);
+}
+
+/* Parse and compile function parameter expression *
+ * Returns: TRUE if Integer Expression */
+int prsxpf(char trmntr) {
+  return prsxpp(trmntr, TRUE);
+}
+
+/* Parse and compile integer expression */
+void prsxpi(char trmntr) {
+  skpspc();
+  if (!chkadr(TRUE, FALSE)) {
+    if (isnpre()) {
+    DEBUG("Parsing Integer Literal\n", 0) 
+      int number = prsnum(0xFFFF);
+      sprintf(value, "%d", number & 0xFF); asmlin("LDX", value);
+      sprintf(value, "%d", number >> 8); asmlin("LDY", value);
+    } else if (isalph()) {
+      prsvar(FALSE, TRUE);
+      if (valtyp == FUNCTION) {
+        strcpy(term, value);
+        prsfnc(0); //Parse Expression Function
+      } else if (valtyp == VARIABLE && vartyp[varidx] == VTINT) {
+        prcvri(); //Process Integer Variable
+      } else {
+        ERROR("Illegal Variable %s In Integer Expression", value, EXIT_FAILURE)
+      }  
+    } else {
+      ERROR("Expected Integer Value or Function\n", 0, EXIT_FAILURE);
+    }
+  }
+  expect(trmntr);
 }

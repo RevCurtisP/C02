@@ -10,6 +10,7 @@
 
 enum {SOLO};
 enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
+bitmask {BLUE, GREEN, RED, BRIGHT, INVERT, BLINK, FLIP, BKGRND};
 
 const char b = {#TRUE, #FALSE};
 char c, i;

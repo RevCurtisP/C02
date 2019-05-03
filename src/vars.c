@@ -198,6 +198,12 @@ void setdat(void) {
     dlen = 1;
     datvar[dsize++] = litval;
   }
+  else if (dtype == DTINT) {
+    DEBUG("Setting variable data to '%d'\n", litval)
+    dlen = 2;
+    datvar[dsize++] = litval & 0xFF;
+	datvar[dsize++] = litval >> 8;
+  }
   else if (dtype == DTARRY) {
 	DEBUG("Setting variable data to array of length %d\n", dlen)
     for (i=0; i<dlen; i++)  datvar[dsize++] = dattmp[i];   
@@ -213,15 +219,16 @@ void setdat(void) {
 }
 
 /* Parse and store variable data */
-void prsdat(int m) {
+void prsdat(int m, int t) {
   if ((m & MTCONST) == 0) ERROR("Initialization allowed only on variables declared CONST\n", 0, EXIT_FAILURE);
   DEBUG("Parsing variable data\n", 0)
   skpspc();
-  if (islpre()) {dtype = DTBYTE; prslit(); } //Parse Data Literal
+  if (t == VTINT) {dtype = DTINT; litval = prsnum(0xFFFF); } //Parse Integer
+  else if (islpre()) {dtype = DTBYTE; prslit(); } //Parse Data Literal
   else if (match('"')) prsdts();       //Parse Data String
   else if (match('{')) prsdta();       //Parse Data Array
   else expctd("numeric or string literal");
-  if (alcvar || dtype == DTBYTE) setdat();   //Store Data Value
+  if (alcvar || dtype <= DTINT) setdat();   //Store Data Value
 }
 
 /* Add Variable to Variable table *
@@ -240,13 +247,14 @@ void setvar(int m, int t) {
 /* Parse and Compile Variable Declaration *
  * Uses: word - variable name             */
 void addvar(int m, int t) {
-  if (t == VTINT) ERROR("Integer Variables not yet Implemented", 0, EXIT_FAILURE)
+  //if (t == VTINT) ERROR("Integer Variables not yet Implemented\n", 0, EXIT_FAILURE)
   strcpy(vrname, word); //Save Variable Name
   if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m & MTZP) {
     setlbl(vrname);
     sprintf(word, "$%hhX", zpaddr++);
+	if (t == VTINT) zpaddr++; //int uses two bytes
     asmlin(EQUOP, word);
     strcpy(value, "*"); //Set Variable to Non Allocated  
   }
@@ -255,7 +263,13 @@ void addvar(int m, int t) {
     skpspc();
     expect('=');
     skpspc();
-    if (isnpre()) prsnum(0xFFFF); else prsvar(FALSE, FALSE);
+    if (isnpre()) 
+      prsnum(0xFFFF); 
+    else {
+	  prsvar(FALSE, FALSE);
+	  if (t == VTINT && vartyp[varidx] != t)
+	    ERROR("ALIAS Type Mismatch\n", 0, EXIT_FAILURE)
+    }
     asmlin(EQUOP, word);
     strcpy(value, "*"); //Set Variable to Non Allocated  	
   }
@@ -263,7 +277,10 @@ void addvar(int m, int t) {
     if (t == VTSTRUCT) {
       DEBUG("Setting variable size to %d\n", strct.size)
       sprintf(value, "%d", strct.size);
-    } else if (match('[')) {
+    } else if (t == VTINT) {
+      DEBUG("Setting variable size to %d\n", 2)
+      sprintf(value, "%d", 2);  
+	} else if (match('[')) {
       CCMNT('[')
       skpchr();
       if (alcvar) {
@@ -276,7 +293,7 @@ void addvar(int m, int t) {
     if (!alcvar) strcpy(value, "*");  
   }  
   setvar(m, t);  //Add to Variable Table
-  if (look('=')) prsdat(m); //Parse Variable Data
+  if (look('=')) prsdat(m, t); //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 
