@@ -2,6 +2,15 @@
  * C02 Variable Management Routines  *
  *************************************/
 
+/* Variable Record */
+struct varrec {
+  char name[VARLEN+1]; //Variable Name Table (string)
+  char modifr;         //Variable Modifier (MTxxx)
+  char type;           //Variable Type (VTxxx)
+  char size[4];        //Variable Array Size (string)
+  char stcidx;         //Variable Struct Index
+};
+
 /* Variable Table */
 char varnam[MAXVAR+1][VARLEN+1]; //Variable Name Table (string)
 char varmod[MAXVAR+1];           //Variable Modifier (MTxxx)
@@ -11,6 +20,7 @@ char varstc[MAXVAR+1];           //Variable Struct Index
 int  varcnt;                     //Number of Variables in Table
 int  varidx;                     //Index into Variable Tables
 char vrname[MAXVAR+1];           //Variable Name
+int  vrtype;					 //Variable Type
 int  vrwrtn;                     //Variables Written Flag
 
 struct strctd {                  //Struct Definition

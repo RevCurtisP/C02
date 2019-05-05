@@ -58,6 +58,6 @@ int  prspst(char trmntr, int isint, char* name, char* index);  //Parse Post Oper
 int  psizof(void);          //Parse SizeOf Operator
 int  pidxof(void);          //Parse SizeOf Operator
 void skpchr();              //Skip Next Character
-void skpcmt();              //Skip to End of Comment
+void skpcmt(int exslsh);    //Skip to End of Comment
 void skpspc();              //Advance to Next Printable Character
 int  wordis(char *s);       //Does word match s

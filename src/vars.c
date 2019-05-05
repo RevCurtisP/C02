@@ -375,6 +375,7 @@ void defstc(void) {
   strncpy(strct.name, word, STCLEN);
   DEBUG("Set struct name to '%s'\n", word);
   strct.size = 0; //Initialize Struct Length
+  while (look('/')) skpcmt(FALSE); //Skip Comments
   do {
 	getwrd(); //Get Member Name
     if (wordis("STRUCT")) {
@@ -411,6 +412,7 @@ void defstc(void) {
     membrs[mbrcnt++] = membr;
     strct.size += membr.size;
     expect(';');
+    while (look('/')) skpcmt(FALSE); //Skip Comments
   } while (!look('}'));
   expect(';');
   if (strct.size > 256) ERROR("Structure Size %d Exceeds Limit of 256 bytes.\n", strct.size, EXIT_FAILURE);  

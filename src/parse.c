@@ -106,13 +106,13 @@ void skpeol(void) {while (!isnl()) getnxt();}
 
 /* Advance Source File to end of comment    *
  * Recognizes both C and C++ style comments */
-void skpcmt(void)
+void skpcmt(int exslsh)
 {
   DEBUG("Skipping Comment\n", 0) 
-  skpchr();               //skip initial /
+  if (exslsh) expect('/');  //skip initial /
   if (match('/')) skpeol(); //if C style comment skip rest of line
-  else if (match('*'))    //if C++ style comment
-    while (TRUE)          //  skip to */
+  else if (match('*'))      //if C++ style comment
+    while (TRUE)            //  skip to */
     {
       skpchr(); 
       if (!match('*')) continue;

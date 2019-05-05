@@ -12,12 +12,13 @@
 
 char d, i;
 char aa,xx,yy;
+int yx;
 
 //Define Structure
-struct record {
-  char name[8];
-  char index;
-  data[128];
+struct record { /* Sample Record */
+  char name[8]; //Name 
+  char index;   //Index
+  data[128];    //Data
 };
 
 //Declare Structure Variable
@@ -76,22 +77,22 @@ goto exit;
 
 //Print Destination Record
 void prtdst() {
-  puts("REC.NAME="); putln(&dstrec.name);
-  puts("REC.INDEX="); putdec(dstrec.index); newlin();
-  puts("REC.DATA={");
+  setdst(&dstrec.name); printf("REC.NAME=\"%s\"%n");
+  printf(dstrec.index, "REC.INDEX=%d%n");
+  puts("REC.DATA=[");
   for (i = 0; i<@dstrec.data; i++) {
     if (i) putc(',');
     putdec(dstrec.data[i]);
   }
-  putln("}");
-  newlin();
+  putln("]");
+  anykey();
 }
 
 //Print Frame
 void prtfrm() {
-  puts("outer."); cpybox(&fram.outer); prtbox();
-  puts("inner."); cpybox(&fram.inner); prtbox();
-  newlin();
+  putln("OUTER."); cpybox(&fram.outer); prtbox();
+  putln("INNER."); cpybox(&fram.inner); prtbox();
+  anykey();
 }
 
 void cpybox() {
@@ -101,15 +102,14 @@ void cpybox() {
 
 //Print Box
 void prtbox() {
-  puts("toplft."); prtpnt(&box.toplft);
-  puts("btmrgt."); prtpnt(&box.btmrgt);
-  newlin();
+  puts(" TOPLFT."); prtpnt(&box.toplft);
+  puts(" BTMRGT."); prtpnt(&box.btmrgt);
 }
 
 //Print Point
 void prtpnt() {
   savrxy(); setdst(&pnt); 
   resrxy(); memcpy(@pnt); 
-  printf(pnt.xpos,"xpos=%d,");
-  printf(pnt.ypos,"ypos=%d ");
+  printf(pnt.xpos,"XPOS=%d,");
+  printf(pnt.ypos,"YPOS=%d%n");
 }

@@ -233,7 +233,7 @@ void inchdr(int chksub) {
     if (match('#'))
       pincdr();
     else if (match('/')) 
-      skpcmt();
+      skpcmt(TRUE);
     else if (isalph()) 
       phdwrd();
     else {

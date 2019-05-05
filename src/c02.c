@@ -109,7 +109,7 @@ void compile(void) {
     if      (match(EOF)) break;         //Stop Parsing (End of File)
     else if (match('}')) endblk(TRUE);  //End Multi-Line Program Block
     else if (match('#')) pdrctv();      //Parse Directive
-    else if (match('/')) skpcmt();      //Skip Comment
+    else if (match('/')) skpcmt(TRUE);  //Skip Comment
     else if (isalph())   pword();       //Parse Word
     else ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE)
   }    
