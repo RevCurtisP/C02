@@ -19,7 +19,7 @@
 
 int addprm(char* prmtr) {
   reqvar(FALSE);          //Get Variable Name
-  if (vartyp[varidx] == VTINT) {
+  if (varble.type == VTINT) {
     strcpy(prmtrx, value);
     strcpy(prmtry, value);
     strcat(prmtry, "+1");

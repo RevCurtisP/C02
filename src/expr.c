@@ -117,7 +117,7 @@ int prstrm(int alwint) {
   prsval(FALSE, TRUE); //Parse Term - Disallow Registers
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
-  if (valtyp == VARIABLE && vartyp[varidx] == VTINT) {
+  if (valtyp == VARIABLE && varble.type == VTINT) {
     if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", term, EXIT_FAILURE)
 	prcvri(); //Process Integer Variable
 	return TRUE;
@@ -226,7 +226,7 @@ void prcvri(void) {
 int prcftm(int alwint) {
   DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
-  if (valtyp == VARIABLE && vartyp[varidx] == VTINT) {
+  if (valtyp == VARIABLE && varble.type == VTINT) {
     if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
     prcvri();
 	return TRUE;
@@ -310,7 +310,7 @@ void prsxpi(char trmntr) {
       if (valtyp == FUNCTION) {
         strcpy(term, value);
         prsfnc(0); //Parse Expression Function
-      } else if (valtyp == VARIABLE && vartyp[varidx] == VTINT) {
+      } else if (valtyp == VARIABLE && varble.type == VTINT) {
         prcvri(); //Process Integer Variable
       } else {
         ERROR("Illegal Variable %s In Integer Expression", value, EXIT_FAILURE)

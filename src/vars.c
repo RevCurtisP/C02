@@ -16,13 +16,17 @@
 #include "vars.h"
 
 /* Lookup variable name in variable table  *
- * Sets: varidx = index into varnam array  *
+ * Sets: varidx = index into vartbl array  *
  *                varcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
 int fndvar(char *name) {
   DEBUG("Looking up variable '%s'\n", name)
-  for (varidx=0; varidx<varcnt; varidx++) 
-    if (strcmp(varnam[varidx], name) == 0) return TRUE;
+  for (varidx=0; varidx<varcnt; varidx++) {
+    if (strcmp(vartbl[varidx].name, name) == 0) {
+      memcpy(&varble, &vartbl[varidx], sizeof(varble));
+      return TRUE;
+    }
+}
   return FALSE;
 }
 
@@ -65,7 +69,7 @@ void chksym(int alwreg, int alwcon, char *name) {
   }
   if (!fndvar(name))
     ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE)
-  if (!alwcon && (varmod[varidx] & MTCONST)) 
+  if (!alwcon && (varble.modifr & MTCONST)) 
     ERROR("Illegal use of const variable '%s'\n", name, EXIT_FAILURE)
 }
 
@@ -89,7 +93,7 @@ void prcmbr(char* name) {
  *       valtyp - Member Type       */
 void prsmbr(char* name) {
   mbrofs = 0;
-  stcidx = varstc[varidx]; //Get Struct Index
+  stcidx = varble.stcidx; //Get Struct Index
   prcmbr(name);
   while (membrs[mbridx].stype == STRUCTURE && nxtchr == '.') {
     stcidx = membrs[mbridx].symidx;    
@@ -152,11 +156,11 @@ int psizof(void) {
     sprintf(value, "$%hhX", datlen[varidx]);
     return datlen[varidx];
   }
-  if (strlen(varsiz[varidx]) == 0) {
+  if (strlen(varble.size) == 0) {
     strcpy(value,"1");
     return 1;
   }
-  strcpy(value, varsiz[varidx]);
+  strcpy(value, varble.size);
   if (strcmp(value, "*") == 0) ERROR("Unable to Determine Size of Variable %s\n", vrname, EXIT_FAILURE);
   return atoi(value);
 }
@@ -236,11 +240,11 @@ void prsdat(int m, int t) {
  *       value - variable size    */
 void setvar(int m, int t) {
   DEBUG("Added variable '%s' ", vrname);
-  strncpy(varnam[varcnt], vrname, VARLEN);
-  varmod[varcnt] = m;
-  vartyp[varcnt] = t;
-  strncpy(varsiz[varcnt], value, 3);
-  varstc[varcnt] = (t == VTSTRUCT) ? stcidx : -1;
+  strncpy(vartbl[varcnt].name, vrname, VARLEN);
+  vartbl[varcnt].modifr = m;
+  vartbl[varcnt].type = t;
+  strncpy(vartbl[varcnt].size, value, 3);
+  vartbl[varcnt].stcidx = (t == VTSTRUCT) ? stcidx : -1;
   DETAIL("at index %d\n", varcnt);
 }
 
@@ -267,7 +271,7 @@ void addvar(int m, int t) {
       prsnum(0xFFFF); 
     else {
 	  prsvar(FALSE, FALSE);
-	  if (t == VTINT && vartyp[varidx] != t)
+	  if (t == VTINT && varble.type != t)
 	    ERROR("ALIAS Type Mismatch\n", 0, EXIT_FAILURE)
     }
     asmlin(EQUOP, word);
@@ -305,17 +309,18 @@ void vardef(int m) {
   fprintf(logfil, "\n%-8s %s %s %s %s %s\n", "Variable", "Mod", "Type", "Size", "Struct", "Data");
   dlen = 0;
   for (i=0; i<varcnt; i++) {
-    if ((varmod[i] & MTCONST) != m) { dlen += datlen[i]; continue; }
-    fprintf(logfil, "%-8s %3d %4d %4s %6d %1d-%d\n", varnam[i], varmod[i], vartyp[i], varsiz[i], varstc[i], dattyp[i], datlen[i]);
-    strcpy(lblasm, varnam[i]);
+	memcpy(&varble, &vartbl[i], sizeof(varble));
+    if ((varble.modifr & MTCONST) != m) { dlen += datlen[i]; continue; }
+    fprintf(logfil, "%-8s %3d %4d %4s %6d %1d-%d\n", varble.name, varble.modifr, varble.type, varble.size, varble.stcidx, dattyp[i], datlen[i]);
+    strcpy(lblasm, varble.name);
     DEBUG("Set Label to '%s'\n", lblasm)
-    if (strcmp(varsiz[i], "*") == 0) continue;
-    if (varmod[i] & MTALGN) {
-      DEBUG("Aligning variable '%s'\n", varnam[i])
+    if (strcmp(varble.size, "*") == 0) continue;
+    if (varble.modifr & MTALGN) {
+      DEBUG("Aligning variable '%s'\n", varble.name)
       asmlin(ALNOP, "256");
     }
     if (datlen[i]) {
-      DEBUG("Building Data for Variable '%s'", varnam[i])
+      DEBUG("Building Data for Variable '%s'", varble.name)
       DETAIL(" with length %d\n", datlen[i]);
       value[0] = 0;
       for (j=0; j<datlen[i]; j++) {
@@ -328,15 +333,15 @@ void vardef(int m) {
         if (strlen(value)) strcat(value,",");
         strcat(value, "$00");
       }
-      DEBUG("Allocating Data for Variable '%s'\n", varnam[i])
+      DEBUG("Allocating Data for Variable '%s'\n", varble.name)
       asmlin(BYTEOP, value);
     }
-    else if (strlen(varsiz[i]) > 0) {
-      DEBUG("Allocating array '%s'\n", varnam[i])
-      asmlin(STROP, varsiz[i]);
+    else if (strlen(varble.size) > 0) {
+      DEBUG("Allocating array '%s'\n", varble.name)
+      asmlin(STROP, varble.size);
     }
     else {
-      DEBUG("Allocating variable '%s'\n", varnam[i])
+      DEBUG("Allocating variable '%s'\n", varble.name)
       asmlin(BYTEOP, "0");
     }
   }
@@ -344,7 +349,7 @@ void vardef(int m) {
 }
 
 /* Write Variable Table */
-void vartbl(void) {
+void wvrtbl(void) {
   LCMNT("Variables declared CONST")
   vardef(MTCONST); //Write CONST Definitions
   //Emit Segment Mnemonic for RAM Variables here

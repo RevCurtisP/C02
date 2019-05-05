@@ -134,7 +134,7 @@ void pzropg(void) {
 /* Process Vartable Subdirective */
 void pvrtbl(void) {
   if (vrwrtn) ERROR("Variable table already written", 0, EXIT_FAILURE)
-  vartbl(); //Write Variable Table
+  wvrtbl(); //Write Variable Table
 }
 
 /* Parse Pragma Directive */

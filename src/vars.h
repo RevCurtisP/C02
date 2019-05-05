@@ -11,16 +11,12 @@ struct varrec {
   char stcidx;         //Variable Struct Index
 };
 
-/* Variable Table */
-char varnam[MAXVAR+1][VARLEN+1]; //Variable Name Table (string)
-char varmod[MAXVAR+1];           //Variable Modifier (MTxxx)
-char vartyp[MAXVAR+1];           //Variable Type (VTxxx)
-char varsiz[MAXVAR+1][4];        //Variable Array Size (string)
-char varstc[MAXVAR+1];           //Variable Struct Index
+struct varrec vartbl[MAXVAR+1];	//Variable Table
+struct varrec varble;		    //Variable Table Entry
+
 int  varcnt;                     //Number of Variables in Table
 int  varidx;                     //Index into Variable Tables
 char vrname[MAXVAR+1];           //Variable Name
-int  vrtype;					 //Variable Type
 int  vrwrtn;                     //Variables Written Flag
 
 struct strctd {                  //Struct Definition
@@ -94,5 +90,5 @@ int  pidxof(void);                   //Parse IndexOf Operator
 void reqvar(int alwary);             //Require and Parse Variable Name
 void setdat();                       //Store variable data
 void setvar(int m, int t);           //Add Variable to Variable table
-void vartbl();                       //Create Variable Table
+void wvrtbl();                       //Create Variable Table
 void logstc(void);                   //Print Struct Tables to Log File

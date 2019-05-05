@@ -145,7 +145,7 @@ int getidx(char* idx) {
 /* Process Assignment Variable(s) */
 void prcvar(char trmntr) {
   chksym(TRUE, FALSE, word);
-  if (vartyp[varidx] == VTINT) {
+  if (varble.type == VTINT) {
     if (ispopr()) {if (prspst(trmntr, TRUE, word, "")) expctd("post operator");}
     else prcasi(trmntr); //Process Integer Assignment
     return;

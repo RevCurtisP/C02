@@ -89,7 +89,7 @@ void prolog(void) {
 }
 
 void epilog(void) {
-  if (!vrwrtn) vartbl();  //Write Variable Table
+  if (!vrwrtn) wvrtbl();  //Write Variable Table
   if (padcnt) {
 	SCMNT("PADDING BYTES")
     sprintf(word, "$%hhX", padcnt);
