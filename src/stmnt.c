@@ -343,7 +343,7 @@ void pinlne(void) {
 void ppop(void) {
   DEBUG("Parsing POP statement\n", 0)
   do {  
-    if (look('*')) term[0]=0; 
+    if (look('?')) term[0]=0; 
     else {
       reqvar(TRUE);
       strcpy(term, value);

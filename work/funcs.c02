@@ -53,10 +53,10 @@ testfn(prchr(b));
 testfn(b,c,d);
 testfn(b+c+d,r[i],f);
 testfn(&s); //Print a String
-dofn(*,yy);
-dofn(*,yy,xx);
-dofn(aa,*,xx);
-dofn(*,*,XX);
+dofn(?,yy);
+dofn(?,yy,xx);
+dofn(aa,?,xx);
+dofn(?,?,XX);
 
 
 funcyx:

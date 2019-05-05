@@ -119,7 +119,7 @@ void prscnd(char trmntr, int revrse) {
     revcmp = revrse;
     if (look('!')) revcmp = (revcmp) ? FALSE: TRUE;
     DEBUG("Set REVCMP to %d\n", revcmp)
-    if (!look('*')) prsxpr(0);
+    if (!look('?')) prsxpr(0);
     if (look(':')) prsflg(revcmp);  //Parse Flag Operator
     else           prscmp(revcmp);  //Parse Comparison Operator
     prslop(); //Parse Logical Operator

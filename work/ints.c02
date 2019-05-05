@@ -31,13 +31,13 @@ d = fnd(b,c);
 i = fni(c);
 j = fnj(b,c);
 
-int fnb(*,yy,xx) {
-  return *,xx,yy;
+int fnb(?,yy,xx) {
+  return ?,xx,yy;
 }
 
 int fnd(aa,yy,xx) {
-  if (aa) return *,xx,yy;
-  else return *,yy,xx;
+  if (aa) return ?,xx,yy;
+  else return ?,yy,xx;
 }
 
 int fni(yx) {

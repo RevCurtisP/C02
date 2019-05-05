@@ -186,10 +186,10 @@ int chkadr(int adract, int alwstr) {
 
 /* Parse Function Parameters or Return Values */
 void prsfpr(char trmntr) {
-  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('*')) {
-    if (!look('*')) {if (prsxpf(0)) goto prsfne;}
+  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('?')) {
+    if (!look('?')) {if (prsxpf(0)) goto prsfne;}
     if (look(',') && !chkadr(ADLDYX, TRUE)) {
-      if (!look('*')) {
+      if (!look('?')) {
 		if (prstrm(TRUE)) goto prsfne;
         asmlin("LDY", term); 
 	  }

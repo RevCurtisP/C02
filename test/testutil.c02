@@ -1,0 +1,36 @@
+/***********************************
+ * TESTUTIL - Test util.h02 module *
+ ***********************************/
+ 
+
+//use -h option on command line
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <util.h02>
+
+char addlo,addhi;   //Value to Add
+char chklo,chkhi;   //Expected Result
+char retlo,rethi;   //Returned Value
+
+char i; //Loop Variable
+
+main:
+
+putln("TESTING ADDDST");
+
+addlo = 0; addhi = 0;   //Clear Added Value
+chklo = 0; chkhi = 0;   //Clear Expected Result
+setdst(?,chkhi,chklo);  //and Destination Pointer
+
+for (i=0; i<16; i++) {
+    addlo = addlo | 1;    //Set bit 0
+    chklo = chklo + addlo;  //Add Low Byte
+    //How do I check for carry???
+}
+
+anykey();
+
+goto exit;

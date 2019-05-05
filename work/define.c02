@@ -10,10 +10,10 @@
 
 enum {SOLO};
 enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
-enum {*, FIRST, SECOND, THIRD};
+enum {?, FIRST, SECOND, THIRD};
 bitmask {BLUE, GREEN, RED, BRIGHT, INVERT, BLINK, FLIP, BKGRND};
-bitmask {RD, RTS, DTR, RI, CD, *, CTS, DSR};
-bitmask {HNDSHK, *, *, *, DUPLEX};
+bitmask {RD, RTS, DTR, RI, CD, ?, CTS, DSR};
+bitmask {HNDSHK, ?, ?, ?, DUPLEX};
 
 const char b = {#TRUE, #FALSE};
 char c, i;

@@ -28,6 +28,15 @@ const char m = {"mixed", 1, "const", 2, "array", 3};
 char aa,xx,yy ; //Function parameter variables
 char STROBE; //Strobe Register
 
+/* Aliased Variables */
+alias char zp = $80;    //aliased to zero page
+alias char via = $D000; //aliased to i/o mapped device
+alias char cc = c;      //aliased to variable
+alias char rr = r;      //aliased to array
+
+/* Aliased Function */
+//alias void chrout() = $F000; //aliased to ROM routine
+
 /* Function Declaration */
 char myfunc();
   return b-c-d;
@@ -94,10 +103,10 @@ testfn(prchr(b));
 testfn(b,c,d);
 testfn(b+c+d,r[i],f);
 testfn(&s); //Print a String
-dofn(*,yy);
-dofn(*,yy,xx);
-dofn(aa,*,xx);
-dofn(*,*,XX);
+dofn(?,yy);
+dofn(?,yy,xx);
+dofn(aa,?,xx);
+dofn(?,?,XX);
 
 /*
 defs:
@@ -117,6 +126,8 @@ else
 here: if (getkey() & $7F == $1B) goto exit;  
 
 there: goto flwctl;
+
+goto &$C000;
 
 if (#TRUE) putln("TRUE");
 else if (#FALSE) putln("FALSE");
@@ -170,7 +181,7 @@ void vdfnc3(aa, yy, xx) {
 
 push &s, b+c+d, r[i];
 stkfnc(); //Push/Pop Parameters
-pop d, *, z[f];
+pop d, ?, z[f];
 
 
 iprint(); inline "Hello World";

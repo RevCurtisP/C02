@@ -25,13 +25,13 @@ main:
 
 for (i=0;i<$20;i++) srclo[i]=0; //Initialize Pointers
 
-puts("Setting Stack Start Address\t");
-puts("stkbgn($7FFF)\t");
+putln("SETTING STACK START");
+putln(" STKBGN(&$7FFF)");
 stkbgn(&$7FFF); lo=stkslo; hi=stkshi;
 setdst("stks"); cklohi(&$7FFF);
 
-puts("Setting Stack End Address\t");
-puts("stkend($807E)\t");
+putln("SETTING STACK END");
+putln(" STKEND(&$807E)\t");
 stkend(&$807E); lo=stkelo; hi=stkehi;
 setdst("stke"); cklohi(&$807E);
 
@@ -45,14 +45,14 @@ puts("Pushing Array onto Stack\t");
 puts("stkpsh(@r,$r)\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkpsh(@r,&r); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
+setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g); chksiz(#TRUE, &5); chkptr(&$8004); 
 
 puts("Pushing String onto Stack\t");
 puts("stkstr(&s)\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkstr(&s); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(strcmp(&s)==0) ? #TRUE : #FALSE;
+setdst(?,hi,lo); g=(strcmp(&s)==0) ? #TRUE : #FALSE;
 psorfl(f & g); chksiz(#TRUE, &18); chkptr(&$8011);
 
 puts("Swapping Top and Second Entry\t");

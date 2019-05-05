@@ -18,7 +18,6 @@
 int match(char c) {return TF(nxtchr == c);}
 int inbtwn(char mn, char mx) {return TF(nxtupc >= mn && nxtupc <= mx);}
 int isalph(void) {return isalpha(nxtchr);}
-int isalst(void) {return TF(isalph() || match('*'));}
 int isanum(void) {return isalnum(nxtchr);}
 int isapos(void) {return match('\'');}
 int isbin(void)  {return inbtwn('0', '1');}

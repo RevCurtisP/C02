@@ -56,7 +56,7 @@ do {
 putln("PRTWRD()");
 do {
   j = i ^ $FF;
-  putwrd(*,i,j);
+  putwrd(?,i,j);
   putc(':');
   i++;
   if (!i&3) newlin();

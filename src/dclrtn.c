@@ -38,8 +38,8 @@ void addfnc(void) {
   prmtry[0] = 0;
   prmtrx[0] = 0;
   skpspc();               //Skip Spaces
-  if (isalph() || match('*')) {         //Parse Parameters
-    if (!look('*')) {if (addprm(prmtra)) goto addfne;} //Get First Parameter
+  if (isalph() || match('?')) {         //Parse Parameters
+    if (!look('?')) {if (addprm(prmtra)) goto addfne;} //Get First Parameter
     if (look(',')) {      //Look for Comma
       if (addprm(prmtry)) goto addfne;     //Get Second Parameter
       if (look(',')) {    //Look for Comma
@@ -85,7 +85,7 @@ void penum(int m, int bitmsk) {
   expect('{');
   do {
     if (enmval > 0xFF) ERROR("Maximum ENUM or BITMASK value exceeded\n", 0, EXIT_FAILURE)
-    if (look('*')) 
+    if (look('?')) 
       DEBUG("Skipping sequence %d\n", enmval)
 	else {
       getwrd(); //get defined identifier

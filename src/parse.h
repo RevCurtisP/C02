@@ -25,7 +25,6 @@ int mskasc;                    //Set High Bit Flag
 
 int match(char c);             //Does Next Character match c
 int isalph();                  //Is Next Character Alphabetic
-int isalst();                  //Is Next Character Alpha or Asterisk
 int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
 int isbin();                   //Is Next Character a Binary Digit

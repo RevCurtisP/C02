@@ -79,28 +79,28 @@ puts("Pushing Array onto Stack\t");
 puts("stkpsh(@r,$r)\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkpsh(@r,&r); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
+setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g); chksiz(#TRUE, &5); chkptr(&$8004); 
 
 puts("Duplicating Top of Stack\t");
 puts("stkdup()\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkdup(); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
+setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g); chksiz(#TRUE, &10); chkptr(&$8009); 
 
 puts("Pushing String onto Stack\t");
 puts("stkstr(&s)\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkstr(&s); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(strcmp(&s)==0) ? #TRUE : #FALSE;
+setdst(?,hi,lo); g=(strcmp(&s)==0) ? #TRUE : #FALSE;
 psorfl(f & g); chksiz(#TRUE, &23); chkptr(&$8016);
 
 puts("Duplicating Second Stack Entry\t");
 puts("stkovr()\t");
 aa,hi,lo=stkptr(); //Save Stack Pointer
 f=stkovr(); printf(f,"bytes=%d:");
-setdst(*,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
+setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
 psorfl(f & g); chksiz(#TRUE, &28); chkptr(&$801B);
 
 c = anykey(); if (c == #esckey) goto exit;
