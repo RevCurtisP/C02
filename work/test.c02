@@ -88,13 +88,17 @@ funcx:
 f = testfn(b);           //Simple Variable
 f = testfn(r[i]);        //Array Element
 f = testfn(r[i],b);      //Two Parameters
+f = testfn(r[i],b);      //Two Parameters
+f = testfn(r[b],r[c]);   //Two Array Elements
 f = testfn(r[1],r[2]);   //Two Array Elements
 f = testfn(r[1],r[2],b); //Three Parameters
-f = testfn(&s);          //Pointer
-f = testfn(b,&s);        //Byte and Pointer
-f = testfn(r[i],&s);     //Array Element and Pointer
-f = testfn(r[1],&s);     //Array Element and Pointer
-f = testfn(b+c+d,&s);    //Expression in Function Call 
+f = testfn(s);           //Implicit Address
+f = testfn(&s);          //Explicit Address
+f = testfn(b,s);         //Byte and Implicit Address
+f = testfn(b,&s);        //Byte and Explicit Address
+f = testfn(r[i],s);      //Array Element and Implicit Address
+f = testfn(r[1],&s);     //Array Element and Explicit Address
+f = testfn(b+c+d,r);     //Expression in Function Call 
 f = testfn(getkey(b)+c); //Nested Function Call 
 
 funcs:
@@ -102,7 +106,8 @@ prchr(b+c+d);
 testfn(prchr(b));
 testfn(b,c,d);
 testfn(b+c+d,r[i],f);
-testfn(&s); //Print a String
+testfn(&s); //Explicit Address Reference
+testfn(s); //Implicit Address Reference
 dofn(?,yy);
 dofn(?,yy,xx);
 dofn(aa,?,xx);

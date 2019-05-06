@@ -117,11 +117,7 @@ int prstrm(int alwint) {
   prsval(FALSE, TRUE); //Parse Term - Disallow Registers
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
-  if (valtyp == VARIABLE && varble.type == VTINT) {
-    if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", term, EXIT_FAILURE)
-	prcvri(); //Process Integer Variable
-	return TRUE;
-  }
+  if (valtyp == VARIABLE && prcvar(alwint)) return TRUE;
   DEBUG("Parsed term %s\n", term)
   chkidx();  //Check for Array Index
   skpspc();
@@ -184,7 +180,7 @@ int chkadr(int adract, int alwstr) {
   return result;
 }
 
-/* Parse Function Parameters or Return Values */
+/* Parse Function Argument or Return Values */
 void prsfpr(char trmntr) {
   if (!chkadr(ADLDYX, TRUE) && isxpre() || match('?')) {
     if (!look('?')) {if (prsxpf(0)) goto prsfne;}
@@ -193,7 +189,11 @@ void prsfpr(char trmntr) {
 		if (prstrm(TRUE)) goto prsfne;
         asmlin("LDY", term); 
 	  }
-      if (look(',')) { prsval(FALSE, TRUE); asmlin("LDX", value); }
+      if (look(',')) { 
+        prsval(FALSE, TRUE);
+        if (valtyp > VARIABLE) ERROR("Illegal Value Function Argument\n", 0, EXIT_FAILURE);
+        if (valtyp == VARIABLE && varble.type != VTCHAR) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
+        asmlin("LDX", value); }
     }
   }
   prsfne:
@@ -222,15 +222,31 @@ void prcvri(void) {
   asmlin("LDY", value);
 }
 
+/* Process Variable in Term */
+int prcvar(int alwint) {
+    switch (varble.type) {
+      case VTINT:
+        if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
+        prcvri();
+	    return TRUE; 
+	  case VTARRAY:
+        if (!alwint) ERROR("Illegal Reference to Array %s\n", word, EXIT_FAILURE)
+        prcadr(ADNONE, term);
+	    return TRUE; 
+      case VTSTRUCT:
+        if (!alwint) ERROR("Illegal Reference to Struct %s\n", word, EXIT_FAILURE)
+        prcadr(ADNONE, term);
+	    return TRUE; 
+	  default:
+        return FALSE;
+    }
+}
+
 /* Process first term of expression */
 int prcftm(int alwint) {
   DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
-  if (valtyp == VARIABLE && varble.type == VTINT) {
-    if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
-    prcvri();
-	return TRUE;
-  }
+  if (valtyp == VARIABLE && prcvar(alwint)) return TRUE;
   if (valtyp == FUNCTION) prsfnc(0); //Parse Expression Function
   else if (wordis("A"))   return FALSE;
   else if (wordis("X"))   asmlin("TXA", "");

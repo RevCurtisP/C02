@@ -44,7 +44,7 @@ int mbrcnt;                      //Number of Struct Members Defined
 int mbridx;                      //Index into Struct Member Tables
 int mbrofs;						 //Member Offset
 
-enum vtypes {VTVOID, VTCHAR, VTINT, VTSTRUCT}; //Variable Types
+enum vtypes {VTVOID, VTREG, VTCHAR, VTINT, VTARRAY, VTSTRUCT}; //Variable Types
 
 char datvar[DATASPC+1];        //Variable Data Storage
 int  datlen[MAXVAR+1];         //Variable Data Length

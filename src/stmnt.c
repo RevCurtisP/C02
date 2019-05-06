@@ -143,7 +143,7 @@ int getidx(char* idx) {
 }
 
 /* Process Assignment Variable(s) */
-void prcvar(char trmntr) {
+void prcavr(char trmntr) {
   chksym(TRUE, FALSE, word);
   if (varble.type == VTINT) {
     if (ispopr()) {if (prspst(trmntr, TRUE, word, "")) expctd("post operator");}
@@ -151,7 +151,7 @@ void prcvar(char trmntr) {
     return;
   }
   strcpy(asnvar, word);  //save variable to assign to
-  if (valtyp == VARIABLE && match('.')) prsmbr(asnvar);
+  if (valtyp == STRUCTURE) prsmbr(asnvar);
   asntyp = valtyp; //Set Assigned Variable Type
   DEBUG("Set STA variable to %s\n", asnvar)
   if (asntyp == VARIABLE && look(';')) {
@@ -210,7 +210,7 @@ void pasm(void) {
 /* Parse and Compile an Assignment */
 void prsasn(char trmntr) {
   getwrd();               //Get Variable to be Assigned
-  prcvar(trmntr);
+  prcavr(trmntr);
 }
 
 /* parse and compile 'break'/'continue' statement */
@@ -461,7 +461,7 @@ void prssym(void) {
   DEBUG("Parsing Identifier %s\n", word)
   valtyp = gettyp();
   if (valtyp == FUNCTION) prsfns();  //Parse Statement Function Call
-  else prcvar(';'); //Parse Assignment
+  else prcavr(';'); //Parse Assignment
 }
 
 /* parse and compile program statement */

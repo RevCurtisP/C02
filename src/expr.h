@@ -16,6 +16,7 @@ int  chkadr(int adract, int alwstr);  //Check for and Process Address or String
 void chkidx();              //Check for, Parse, and Process Index
 int  prcftm(int alwint);    //Process First Term
 void prcvri(void);			//Process Integer Variable
+int  prcvar(int alwint);    //Process Variable in Term
 void prsadr(int adract);    //Parse and Compile Address of Operator
 void prsval(int alwreg, int alwcon); //Parse Value
 void prsfnc(char trmntr);   //Parse function call

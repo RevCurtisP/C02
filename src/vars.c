@@ -113,7 +113,7 @@ void prsvar(int alwreg, int alwcon) {
   if (valtyp != FUNCTION) chksym(alwreg, alwcon, word);
   strcpy(value, word);
   DEBUG("Parsed variable '%s'\n", value)
-  if (valtyp == VARIABLE && match('.')) prsmbr(value);
+  if (valtyp == STRUCTURE) prsmbr(value);
 }
 
 /* Require and Parse Variable Name                         *
@@ -219,7 +219,7 @@ void setdat(void) {
   } 
   datlen[varcnt] = dlen;
   dattyp[varcnt] = dtype;
-  DEBUG("Total data alllocated: %d bytes\n", dsize)
+  DEBUG("Total data allocated: %d bytes\n", dsize)
 }
 
 /* Parse and store variable data */
@@ -251,7 +251,6 @@ void setvar(int m, int t) {
 /* Parse and Compile Variable Declaration *
  * Uses: word - variable name             */
 void addvar(int m, int t) {
-  //if (t == VTINT) ERROR("Integer Variables not yet Implemented\n", 0, EXIT_FAILURE)
   strcpy(vrname, word); //Save Variable Name
   if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
@@ -273,6 +272,7 @@ void addvar(int m, int t) {
 	  prsvar(FALSE, FALSE);
 	  if (t == VTINT && varble.type != t)
 	    ERROR("ALIAS Type Mismatch\n", 0, EXIT_FAILURE)
+      if (t > VTINT) ERROR("Type may not be ALIASed\n", 0, EXIT_FAILURE)
     }
     asmlin(EQUOP, word);
     strcpy(value, "*"); //Set Variable to Non Allocated  	
@@ -285,6 +285,7 @@ void addvar(int m, int t) {
       DEBUG("Setting variable size to %d\n", 2)
       sprintf(value, "%d", 2);  
 	} else if (match('[')) {
+	  t = VTARRAY;	//Set Type to Array
       CCMNT('[')
       skpchr();
       if (alcvar) {
@@ -295,9 +296,12 @@ void addvar(int m, int t) {
     }
     else value[0] = 0;
     if (!alcvar) strcpy(value, "*");  
-  }  
+  }
+  if (look('=')) {
+    prsdat(m, t); //Parse Variable Data
+    if (dtype > DTINT) t = VTARRAY;
+  }
   setvar(m, t);  //Add to Variable Table
-  if (look('=')) prsdat(m, t); //Parse Variable Data
   varcnt++;   //Increment Variable Counter
 }
 

@@ -336,6 +336,7 @@ void prslit(void) {
 int gettyp(void) {
   if (match('(')) return FUNCTION;
   else if (match('[')) return ARRAY;
+  else if (match('.')) return STRUCTURE;
   else return VARIABLE;
 }
 
