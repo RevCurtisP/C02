@@ -28,8 +28,8 @@ LIB = $(PellesCDir)\Lib\Win64;$(PellesCDir)\Lib#
 # Build c02.exe.
 # 
 c02.exe: \
-	output\c02.obj \
 	output\asm.obj \
+	output\c02.obj \
 	output\common.obj \
 	output\cond.obj \
 	output\dclrtn.obj \
@@ -165,6 +165,7 @@ output\parse.obj: \
 	src\asm.h \
 	src\common.h \
 	src\files.h \
+	src\label.h \
 	src\parse.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
@@ -190,6 +191,7 @@ output\vars.obj: \
 	src\vars.c \
 	src\asm.h \
 	src\common.h \
+	src\dclrtn.h \
 	src\files.h \
 	src\label.h \
 	src\parse.h \
@@ -197,3 +199,5 @@ output\vars.obj: \
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 .SILENT:
+
+.EXCLUDEDFILES:

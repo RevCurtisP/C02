@@ -11,4 +11,7 @@ int  prmcnt;           //Number of Parameters
 
 void addcon(int numval); //Add Constant
 int pmodfr();            //Check for and Parse Modifier
+int ctype(int reqtyp);	 //Check for Type Keyword
 int ptype(int m);        //Check for and Parse Type Keyword
+
+enum types {TNONE, TVOID, TENUM, TBITMASK,TCHAR, TINT, TSTRUCT};

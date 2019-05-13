@@ -4,6 +4,7 @@
 #pragma zeropage $80
 
 char b,d;
+char hi,lo;
 char s[128];
 char aa,yy,xx;
 
@@ -14,6 +15,9 @@ int e;
 int i,j;
 int m,n;
 int yx;
+
+hi = >c; lo = <c;
+hi = >&c; lo = <&c;
 
 i<<;
 j>>;
@@ -31,13 +35,13 @@ d = fnd(b,c);
 i = fni(c);
 j = fnj(b,c);
 
-int fnb(?,yy,xx) {
-  return ?,xx,yy;
+int fnb(.,yy,xx) {
+  return .,xx,yy;
 }
 
 int fnd(aa,yy,xx) {
-  if (aa) return ?,xx,yy;
-  else return ?,yy,xx;
+  if (aa) return .,xx,yy;
+  else return .,yy,xx;
 }
 
 int fni(yx) {

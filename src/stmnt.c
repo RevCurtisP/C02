@@ -126,8 +126,8 @@ void prcasn(char trmntr) {
 void prcasi(char trmntr) {
   DEBUG("Processing Integer Assignment\n", 0);
   expect('=');
-  strcpy(xsnvar, word); //Set Assignment LSB
-  strcpy(ysnvar, word); strcat(ysnvar, "+1"); //Set Assignment MSB
+  strcpy(xsnvar, vrname); //Set Assignment LSB
+  strcpy(ysnvar, vrname); strcat(ysnvar, "+1"); //Set Assignment MSB
   ysnidx[0] = 0; //No Y Index
   prsxpi(trmntr);
   prcaxy();
@@ -145,13 +145,15 @@ int getidx(char* idx) {
 /* Process Assignment Variable(s) */
 void prcavr(char trmntr) {
   chksym(TRUE, FALSE, word);
-  if (varble.type == VTINT) {
-    if (ispopr()) {if (prspst(trmntr, TRUE, word, "")) expctd("post operator");}
+  DEBUG("Processing assignment of variable %s\n", word);
+  strcpy(vrname, word);  //save variable to assign to
+  if (valtyp == STRUCTURE) prsmbr(vrname); //Updates word and vartyp
+  if (vartyp == VTINT) {
+    if (ispopr()) {if (prspst(trmntr, TRUE, vrname, "")) expctd("post operator");}
     else prcasi(trmntr); //Process Integer Assignment
     return;
   }
-  strcpy(asnvar, word);  //save variable to assign to
-  if (valtyp == STRUCTURE) prsmbr(asnvar);
+  strcpy(asnvar, vrname);
   asntyp = valtyp; //Set Assigned Variable Type
   DEBUG("Set STA variable to %s\n", asnvar)
   if (asntyp == VARIABLE && look(';')) {
@@ -210,6 +212,7 @@ void pasm(void) {
 /* Parse and Compile an Assignment */
 void prsasn(char trmntr) {
   getwrd();               //Get Variable to be Assigned
+  DEBUG("Parsing assignment of word %s\n", word)
   prcavr(trmntr);
 }
 
@@ -343,7 +346,7 @@ void pinlne(void) {
 void ppop(void) {
   DEBUG("Parsing POP statement\n", 0)
   do {  
-    if (look('?')) term[0]=0; 
+    if (look('.')) term[0]=0; 
     else {
       reqvar(TRUE);
       strcpy(term, value);

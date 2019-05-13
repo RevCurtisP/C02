@@ -3,41 +3,77 @@
 #pragma origin 1000
 
 char d, i;
+char lo, hi;
 char index, name[8], data[128];
+int addr;
 
-//Define Structure
-struct record {
-  char name[8];
-  char index;
-  char data[128];
+//Define Structures
+struct point {
+  char x, y;
 };
 
-//Declare Structure Variable
+struct line {
+  struct point bgnpnt, endpnt;
+};
+
+struct record {
+  /* This is a Record */ //Extra Comment
+  char name[8];         //Name
+  char index;           //Index
+  int addr;             //Address
+  struct point pnt;     //Point
+  char data[128];       //Data
+};
+
+//Declare Structure Variables
+struct point pnt;
+struct point bgnpnt, endpnt;
+struct line lin;
 struct record rec;
 
 //Display Structure Info
+printf(?pnt.x,"?pnt.x=%d\t");
+printf(@pnt.x,"@pnt.x=%d\n");
+printf(?pnt.y,"?pnt.y=%d\t");
+printf(@pnt.y,"@pnt.y=%d\n");
+
 printf(@rec,"@rec=%d\n");
 printf(?rec.name,"?rec.name=%d\t");
 printf(@rec.name,"@rec.name=%d\n");
 printf(?rec.index,"?rec.index=%d\t");
 printf(@rec.index,"@rec.index=%d\n");
+printf(?rec.addr,"?rec.addr=%d\t");
+printf(@rec.addr,"@rec.addr=%d\n");
+printf(?rec.pnt,"?rec.pnt=%d\t");
+printf(@rec.pnt,"@rec.pnt=%d\n");
 printf(?rec.data,"?rec.data=%d\t");
 printf(@rec.data,"@rec.data=%d\n");
+
+//Get Member LSB & MSB
+hi = >rec.addr; lo = <rec.addr;
+hi = >&rec.data; lo = <&rec.data;
 
 //Set Structure Members
 strdst(&rec.name); strcpy(name);
 rec.index = index;
+rec.addr = $ABCD;
+rec.pnt.x = 33;
+rec.pnt.y = 44;
 for (i = 0; i<=128; i++)
   rec.data[i] = d;
 
 //Pass Entire Structure into Function
 blkput(@rec, &rec);
 
+//Print Structure Members
+setdst(rec.name); putln("rec.name=\"%s\"");
+
 //Copy Struct Member
 memdst(&data); memcpy(@rec.data, &rec.data);
 
 //Get Structure Members
 index = rec.index;
+addr = rec.addr;
 for (i = 0; i<129; i++)
   d = rec.data[i];
 

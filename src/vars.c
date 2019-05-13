@@ -14,6 +14,7 @@
 #include "parse.h"
 #include "label.h"
 #include "vars.h"
+#include "dclrtn.h"
 
 /* Lookup variable name in variable table  *
  * Sets: varidx = index into vartbl array  *
@@ -24,6 +25,7 @@ int fndvar(char *name) {
   for (varidx=0; varidx<varcnt; varidx++) {
     if (strcmp(vartbl[varidx].name, name) == 0) {
       memcpy(&varble, &vartbl[varidx], sizeof(varble));
+      vartyp = varble.type;
       return TRUE;
     }
 }
@@ -49,7 +51,11 @@ int fndmbr(int idx, char *name) {
   DEBUG("Looking up member '%s'\n", word)
   for (mbridx=0; mbridx<mbrcnt; mbridx++) {
     if (membrs[mbridx].strcti != idx) continue;
-    if (strcmp(membrs[mbridx].name, name) == 0) return TRUE;
+    if (strcmp(membrs[mbridx].name, name) == 0) {
+      memcpy(&membr, &membrs[mbridx], sizeof(membr));
+      vartyp = membr.vartyp;
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -84,7 +90,7 @@ void prcmbr(char* name) {
   if (valtyp == FUNCTION) ERROR("Illegal Function Reference\n", 0, EXIT_FAILURE)  
   DEBUG("Checking for member %s", word) DETAIL(" with struct index %d\n", stcidx)
   if (!fndmbr(stcidx, word)) ERROR("Struct does Not Contain Member %s\n", word, EXIT_FAILURE)
-  mbrofs += membrs[mbridx].offset; //Get Member Offet in Struct
+  mbrofs += membr.offset; //Get Member Offet in Struct
 }
 
 /* Parse next word as struct member *
@@ -95,9 +101,9 @@ void prsmbr(char* name) {
   mbrofs = 0;
   stcidx = varble.stcidx; //Get Struct Index
   prcmbr(name);
-  while (membrs[mbridx].stype == STRUCTURE && nxtchr == '.') {
-    stcidx = membrs[mbridx].symidx;    
-    prcmbr(membrs[mbridx].name);
+  while (membr.vartyp == VTSTRUCT && nxtchr == '.') {
+    stcidx = membr.symidx;    
+    prcmbr(membr.name);
   }
   sprintf(word, "+$%hhX", mbrofs); //Get Member Offet in Struct  
   strcat(name, word); //Add Offset to Struct  
@@ -133,8 +139,8 @@ int pidxof(void) {
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
   if (mbridx > -1) {
-    sprintf(value, "$%hhX", membrs[mbridx].offset);
-    return membrs[mbridx].offset;
+    sprintf(value, "$%hhX", membr.offset);
+    return membr.offset;
   }
   ERROR("IndexOf operator requires a struct member\n", 0, EXIT_FAILURE);
   return 0; //Suppress Warning
@@ -149,8 +155,8 @@ int psizof(void) {
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
   if (mbridx > -1) {
-    sprintf(value, "$%hhX", membrs[mbridx].size);
-    return membrs[mbridx].size;
+    sprintf(value, "$%hhX", membr.size);
+    return membr.size;
   }
   if (datlen[varidx]) {
     sprintf(value, "$%hhX", datlen[varidx]);
@@ -270,7 +276,7 @@ void addvar(int m, int t) {
       prsnum(0xFFFF); 
     else {
 	  prsvar(FALSE, FALSE);
-	  if (t == VTINT && varble.type != t)
+	  if (t == VTINT && vartyp != t)
 	    ERROR("ALIAS Type Mismatch\n", 0, EXIT_FAILURE)
       if (t > VTINT) ERROR("Type may not be ALIASed\n", 0, EXIT_FAILURE)
     }
@@ -370,8 +376,10 @@ void wvrtbl(void) {
 void addstc(void) {
   if (!fndstc(word)) ERROR("Undefined Struct '%s\n", word,EXIT_FAILURE)
   strct = strcts[stcidx]; //Retrieve Structure
-  getwrd(); //Get Variable Name
-  addvar(MTNONE, VTSTRUCT);
+  do {
+    getwrd(); //Get Variable Name
+    addvar(MTNONE, VTSTRUCT);
+  } while (look(','));
   expect(';');
 }
 
@@ -380,46 +388,63 @@ void addstc(void) {
 void defstc(void) {
   DEBUG("Parsing struct definition\n", 0)
   if (fndstc(word)) ERROR("Duplicate Declaration of Struct '%s\n", word,EXIT_FAILURE)
+  int type;
   int prnidx = stcidx;
   strncpy(strct.name, word, STCLEN);
   DEBUG("Set struct name to '%s'\n", word);
   strct.size = 0; //Initialize Struct Length
   while (look('/')) skpcmt(FALSE); //Skip Comments
   do {
-	getwrd(); //Get Member Name
-    if (wordis("STRUCT")) {
-      getwrd(); //Get Structure Name
-      if (!fndstc(word)) ERROR("Structure '%s' Not Defined\n", word, EXIT_FAILURE)
-	  membr.stype = STRUCTURE;
-      membr.size = strcts[stcidx].size;
-      membr.symidx = stcidx;
-	  getwrd(); //Get Member Name
-    } else {
-      if (wordis("CHAR")) getwrd(); //Skip Optional Type Declaration
-	  membr.stype = VARIABLE;
-      membr.size = 1;
-      membr.symidx = -1;
+	getwrd(); //Get Next word
+    type = ctype(TRUE); //Check if word is a type declaration
+    switch (type) {
+      case TSTRUCT:
+        vartyp = VTSTRUCT;
+        getwrd(); //Get Structure Name
+        if (!fndstc(word)) ERROR("Structure '%s' Not Defined\n", word, EXIT_FAILURE)
+        mbrsiz = strcts[stcidx].size;
+        break;
+      case TINT:
+        vartyp = VTINT;
+        mbrsiz = 2;
+        stcidx = -1;
+        break;
+      case TCHAR:
+        vartyp = VTCHAR;
+        mbrsiz = 1;
+        stcidx = -1;
+        break;
+      default:
+        ERROR("Invalid Type %s in Struct Definition\n", word, EXIT_FAILURE)
     }
-    if (fndmbr(stccnt, word)) ERROR("Duplicate Declaration of Struct Member '%s\n", word,EXIT_FAILURE)
-    DEBUG("Parsing member %s\n", word)
-    strncpy(membr.name, word, STMLEN); //Set Member Name
-    membr.strcti = prnidx;             //Set Parent Struct Index
-    membr.offset = strct.size;         //Set Offset into Struct
-    if (membr.stype == VARIABLE) {
-    DEBUG("Checking for array definition\n", 0)
-      if (match('[')) {
-        CCMNT('[');
-        skpchr();
-        membr.stype = ARRAY;
-        DEBUG("Parsing array size\n", 0)
-        membr.size = prsnum(0xFF) + 1;
-        expect(']');
+	DEBUG("Parsing members of type %s\n", word)
+    do {
+      getwrd(); //Get Member Name
+      DEBUG("Parsing member %s\n", word)
+      if (fndmbr(stccnt, word)) ERROR("Duplicate Declaration of Struct Member '%s\n", word,EXIT_FAILURE)
+      if (strlen(word) > STMLEN) ERROR("Member Name %s too long\n", word, EXIT_FAILURE)
+      strcpy(membr.name, word);  //Set Member Name
+      membr.strcti = prnidx;     //Set Parent Struct Index
+      membr.vartyp = vartyp;     //Set Member Variable Type
+      membr.symidx = stcidx;     //Set Member Symbol Index
+      membr.offset = strct.size; //Set Offset into Struct
+      membr.size   = mbrsiz;     //Set Member Size
+      if (membr.vartyp == VTCHAR) {
+      DEBUG("Checking member for array definition\n", 0)
+        if (match('[')) {
+          CCMNT('[');
+          skpchr();
+          membr.vartyp = VTARRAY;
+          DEBUG("Parsing member array size\n", 0)
+          membr.size = prsnum(0xFF) + 1;
+          expect(']');
+        }
       }
-    }
-    DEBUG("Set member type to %d", membr.stype) DETAIL(" and size to %d\n", membr.size);
-    DEBUG("Adding member at index %d\n", mbrcnt);
-    membrs[mbrcnt++] = membr;
-    strct.size += membr.size;
+      DEBUG("Set member type to %d", membr.vartyp) DETAIL(" and size to %d\n", membr.size);
+      DEBUG("Adding member at index %d\n", mbrcnt);
+      membrs[mbrcnt++] = membr;
+      strct.size += membr.size;
+    } while (look(','));
     expect(';');
     while (look('/')) skpcmt(FALSE); //Skip Comments
   } while (!look('}'));
@@ -440,7 +465,7 @@ void logstc(void) {
   for (mbridx=0; mbridx<mbrcnt; mbridx++) {
     membr = membrs[mbridx];
     fprintf(logfil, "%-8s %-8s", strcts[membr.strcti].name, membr.name);
-    fprintf(logfil, " %5d %5d %6d %5d\n", membr.stype, membr.symidx, membr.offset, membr.size);
+    fprintf(logfil, " %5d %5d %6d %5d\n", membr.vartyp, membr.symidx, membr.offset, membr.size);
   }
 
 }

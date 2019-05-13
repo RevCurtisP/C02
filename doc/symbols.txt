@@ -1,34 +1,34 @@
 Character Symbols Recognized by the C02 Compiler
 
-Symbol  Prefix          Operator        Comparator      Delimiter
-  !                     Bitwise Or      Logical Not
-  "                                                     String Literal
+Symbol  Prefix/Suffix       Operator        Contention      Other
+  !                         Bitwise Or      Logical Not
+  "     String Literal
   #     Constant
   $     Hexadecimal
   %     Binary
-  &     Address Of      Bitwise And
-  '                                                     Character Literal
-  (                                                     Comparison
-  )                                                     Comparison
-  *                                     (pointer)
-  +                     Addition
-  ,                                                     Declarations
-  -                     Subtraction
-  .                                                     Struct Members
+  &     Address Of          Bitwise And
+  '     Character Literal   
+  (     Contention
+  )     Contention
+  *     (pointer)
+  +                         Addition
+  ,                                                         Argument Separator
+  -                         Subtraction
+  .     Null Placeholder                                    Struct Member Separator
   /     Comment
-  :                                     Status Flag     Shortcut Else
-  ;                                                     Statement
-  <                                     Less Than
-  =                                     Equal To        Assignment
-  >                                     Greater Than
-  ?     Index Of                                        Shortcut If
+  :                                         Status Flag     Shortcut Else
+  ;                                                         Statement
+  <     Integer LSB                         Less Than
+  =                                         Equal To        Assignment
+  >     Integer MSB                         Greater Than
+  ?     Index Of                                            Shortcut If
   @     Length Of
-  [                                                     Array Element
-  \
-  ]                                                     Array Element
-  ^                                     (pointer)
+  [                                                         Array Element
+  \     
+  ]                                                         Array Element
+  ^                                         (pointer)
   _
-  {                                                     Block Start
-  |                     Bitwise Or
-  }                                                     Block End
+  {     Block Start
+  |                         Bitwise Or
+  }     Block End
   ~

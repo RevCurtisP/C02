@@ -19,7 +19,7 @@
 
 int addprm(char* prmtr) {
   reqvar(FALSE);          //Get Variable Name
-  if (varble.type == VTINT) {
+  if (vartyp == VTINT) {
     strcpy(prmtrx, value);
     strcpy(prmtry, value);
     strcat(prmtry, "+1");
@@ -38,8 +38,8 @@ void addfnc(void) {
   prmtry[0] = 0;
   prmtrx[0] = 0;
   skpspc();               //Skip Spaces
-  if (isalph() || match('?')) {         //Parse Parameters
-    if (!look('?')) {if (addprm(prmtra)) goto addfne;} //Get First Parameter
+  if (isalph() || match('.')) {         //Parse Parameters
+    if (!look('.')) {if (addprm(prmtra)) goto addfne;} //Get First Parameter
     if (look(',')) {      //Look for Comma
       if (addprm(prmtry)) goto addfne;     //Get Second Parameter
       if (look(',')) {    //Look for Comma
@@ -85,7 +85,7 @@ void penum(int m, int bitmsk) {
   expect('{');
   do {
     if (enmval > 0xFF) ERROR("Maximum ENUM or BITMASK value exceeded\n", 0, EXIT_FAILURE)
-    if (look('?')) 
+    if (look('.')) 
       DEBUG("Skipping sequence %d\n", enmval)
 	else {
       getwrd(); //get defined identifier
@@ -130,17 +130,32 @@ void pdecl(int m, int t) {
 }
 
 /* Check for and Parse Type Keyword *
+ * Returns: Type (enum types)       */
+int ctype(int reqtyp) {
+  if     (wordis("BITMASK")) return TBITMASK;
+  else if (wordis("STRUCT")) return TSTRUCT;
+  else if   (wordis("ENUM")) return TENUM;
+  else if   (wordis("CHAR")) return TCHAR;
+  else if    (wordis("INT")) return TINT;
+  else if   (wordis("VOID")) return TVOID;
+  else if (reqtyp) ERROR("Type Declaration Expected\n", 0, EXIT_FAILURE)
+  return TNONE;
+}
+
+/* Check for and Parse Type Keyword *
  * Args: m - Modifier Type          */
 int ptype(int m) {
-  int reslt = TRUE;
-  if       (wordis("STRUCT")) pstrct(m);         //Parse 'struct' declaration
-  else if    (wordis("ENUM")) penum(m, FALSE);   //Parse 'enum' declaration
-  else if (wordis("BITMASK")) penum(m, TRUE);    //Parse 'enum' declaration
-  else if     (wordis("CHAR")) pdecl(m, VTCHAR); //Parse 'char' declaration
-  else if     (wordis("INT"))  pdecl(m, VTINT);  //Parse 'int' declaration
-  else if    (wordis("VOID")) pdecl(m, VTVOID);  //Parse 'void' declaration
-  else                     reslt = FALSE;
-  return reslt;
+  int type = ctype(FALSE);
+  switch (type) {
+    case TSTRUCT:  pstrct(m); break;        //Parse 'struct' declaration
+    case TENUM:    penum(m, FALSE); break;  //Parse 'enum' declaration
+    case TBITMASK: penum(m, TRUE); break;   //Parse 'enum' declaration
+    case TCHAR:    pdecl(m, VTCHAR); break; //Parse 'char' declaration
+    case TINT:     pdecl(m, VTINT); break;  //Parse 'int' declaration
+    case TVOID:    pdecl(m, VTVOID); break; //Parse 'void' declaration
+    default:       return FALSE;
+  }
+  return TRUE;
 }
 
 int pmtype(int m) {

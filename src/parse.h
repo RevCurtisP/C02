@@ -29,6 +29,7 @@ int isanum();                  //Is Next Character AlphaNumeric
 int isapos();                  //Is Next Character an Apostrophe
 int isbin();                   //Is Next Character a Binary Digit
 int isbpre();                  //Is Next Character a Binary Prefix
+int isbtop();                  //Is Next Character a Byte Operator
 int isdec();                   //Is Next Character a Decimal Digit
 int iscpre();                  //Is Next Character a Constant Prefix
 int ishexd();                  //Is Next Character a Hexadecimal Digit

@@ -17,6 +17,7 @@ struct varrec varble;		    //Variable Table Entry
 int  varcnt;                     //Number of Variables in Table
 int  varidx;                     //Index into Variable Tables
 char vrname[MAXVAR+1];           //Variable Name
+int  vartyp;	 				 //Variable/Member Type
 int  vrwrtn;                     //Variables Written Flag
 
 struct strctd {                  //Struct Definition
@@ -32,7 +33,7 @@ int  stcidx;                     //Index into Struct Tables
 struct membrd {                  //Struct Membetr Definition
   char name[STMLEN+1];           //Member Name
   int  strcti;                   //Parent Struct Index
-  int  stype;                    //Member Symbol Type
+  int  vartyp;                   //Member Symbol Type
   int  symidx;					 //Member Symbol Index
   int  offset;                   //Offset into Struct
   int  size;                     //Member Size
@@ -43,6 +44,7 @@ struct membrd membr;             //Defined Member
 int mbrcnt;                      //Number of Struct Members Defined
 int mbridx;                      //Index into Struct Member Tables
 int mbrofs;						 //Member Offset
+int mbrsiz;                      //Member Size
 
 enum vtypes {VTVOID, VTREG, VTCHAR, VTINT, VTARRAY, VTSTRUCT}; //Variable Types
 

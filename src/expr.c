@@ -37,8 +37,9 @@ void poptrm(void) {
 void prsval(int alwreg, int alwcon) {
   DEBUG("Parsing value\n", 0)
   skpspc();
-  if      (islpre()) prslit();       //Parse Literal
+  if      (islpre()) prslit();               //Parse Literal
   else if (isalph()) prsvar(alwreg, alwcon); //Parse Variable
+  else if (isbtop()) prsbop();				 //Parse Byte Operator
   else               expctd("literal or variable");
   DEBUG("Parsed value of type %d\n", valtyp)
   skpspc();
@@ -56,7 +57,7 @@ void prcmns(void) {
  *             "" if no index defined     */
 void prsidx(int clbrkt) {
   expect('[');
-  prsval(TRUE, TRUE); //Parse Value, Allowing Registers
+  prsval(TRUE, TRUE); //Parse Value, Allow Registers & Constants
   DEBUG("Parsed array index '%s'\n", value)
   if (clbrkt) expect(']');
 }
@@ -114,7 +115,7 @@ void chkidx(void) {
  * Sets: term - the term (as a string) */
 int prstrm(int alwint) {
   DEBUG("Parsing term\n", 0)
-  prsval(FALSE, TRUE); //Parse Term - Disallow Registers
+  prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
   if (valtyp == VARIABLE && prcvar(alwint)) return TRUE;
@@ -180,19 +181,36 @@ int chkadr(int adract, int alwstr) {
   return result;
 }
 
+/* Parse Byte Operator */
+void prsbop(void) {
+  char byteop = getnxt();
+  CCMNT(byteop);
+  DEBUG("Parsing byte operator '%c'\n", byteop)
+  if (chkadr(FALSE, FALSE)) {
+    sprintf(value, "%c(%s)", byteop, word);
+    valtyp = LITERAL;
+  } else {
+    reqvar(FALSE);
+    if (vartyp != VTINT) ERROR("Integer Value Expected\n", 0, EXIT_FAILURE) 
+    if (byteop == '>') strcat(value, "+1");
+    vartyp = VTCHAR;
+  }
+  DEBUG("Set value to \"%s\"\n", value)
+}
+
 /* Parse Function Argument or Return Values */
 void prsfpr(char trmntr) {
-  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('?')) {
-    if (!look('?')) {if (prsxpf(0)) goto prsfne;}
+  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('.')) {
+    if (!look('.')) {if (prsxpf(0)) goto prsfne;}
     if (look(',') && !chkadr(ADLDYX, TRUE)) {
-      if (!look('?')) {
+      if (!look('.')) {
 		if (prstrm(TRUE)) goto prsfne;
         asmlin("LDY", term); 
 	  }
       if (look(',')) { 
-        prsval(FALSE, TRUE);
+        prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
         if (valtyp > VARIABLE) ERROR("Illegal Value Function Argument\n", 0, EXIT_FAILURE);
-        if (valtyp == VARIABLE && varble.type != VTCHAR) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
+        if (valtyp == VARIABLE && vartyp != VTCHAR) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
         asmlin("LDX", value); }
     }
   }
@@ -224,7 +242,7 @@ void prcvri(void) {
 
 /* Process Variable in Term */
 int prcvar(int alwint) {
-    switch (varble.type) {
+    switch (vartyp) {
       case VTINT:
         if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
         prcvri();
@@ -258,7 +276,7 @@ int prcftm(int alwint) {
 /* Parse first term of expession            *
  * First term can include function calls    */
 int prsftm(int alwint) {
-  prsval(TRUE, TRUE); //Parse Value, Allowing Registers
+  prsval(TRUE, TRUE); //Parse Value, Allow Registers & Constants
   return prcftm(alwint);
 }
 
@@ -326,7 +344,10 @@ void prsxpi(char trmntr) {
       if (valtyp == FUNCTION) {
         strcpy(term, value);
         prsfnc(0); //Parse Expression Function
-      } else if (valtyp == VARIABLE && varble.type == VTINT) {
+      } else if (valtyp == STRUCTURE) {
+        prsmbr(value);
+        if (vartyp != VTINT) ERROR("Illegal Member %s In Integer Expression", value, EXIT_FAILURE)        
+      } else if (valtyp == VARIABLE && vartyp == VTINT) {
         prcvri(); //Process Integer Variable
       } else {
         ERROR("Illegal Variable %s In Integer Expression", value, EXIT_FAILURE)

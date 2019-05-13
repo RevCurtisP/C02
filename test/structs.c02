@@ -1,6 +1,6 @@
-/**********************************************
- * STRINGS - Demonstrate string.h02 functions *
- **********************************************/
+/*********************************
+ * STRUCTS - Test C02 structures *
+ *********************************/
  
 //Specify System Header using -H option
 #include <stddef.h02>
@@ -16,60 +16,64 @@ int yx;
 
 //Define Structure
 struct record { /* Sample Record */
-  char name[8]; //Name 
-  char index;   //Index
-  data[128];    //Data
+  char name[8];   //Name 
+  char index;     //Index
+  int  addr;      //Address
+  char data[128]; //Data
 };
 
 //Declare Structure Variable
 struct record srcrec;
 struct record dstrec;
 
-//Struct Containing Structs
-struct point { char xpos; char ypos; };
+//Structs Containing Structs
+struct point {char x, y; };
 struct point pnt;
-struct rect {struct point toplft; struct point btmrgt; };
+
+struct rect {struct point toplft, btmrgt; };
 struct rect box;
-struct frame {struct rect outer; struct rect inner; };
+
+struct frame {struct rect outer, inner; };
 struct frame fram;
 
 main:
 
 //Set Structure Members
-strdst(&srcrec.name); strcpy("RECNAME");
+strdst(srcrec.name); strcpy("RECNAME");
 srcrec.index = 1;
+srcrec.addr = &srcrec;
 for (i = 0; i<=@srcrec.data; i++)
   srcrec.data[i] = i;
 
 //Clear Destination Record
-memclr(@dstrec,&dstrec);
+memclr(@dstrec, dstrec);
 prtdst();
 
 //Copy Source Record into Destination Record
-memdst(&dstrec);
-memcpy(@srcrec, &srcrec);
+memdst(dstrec);
+memcpy(@srcrec, srcrec);
 
 prtdst();
 
 //Clear Box
-memclr(@box, &box); //Clear Box Members
-prtbox(); //Print Box Members
+memclr(@box, box); //Clear Box Members
+prtbox(""); //Print Box Members
 
 //Set Box Members
-box.toplft.xpos=1; box.toplft.ypos=2;
-box.btmrgt.xpos=8; box.btmrgt.ypos=9;
-prtbox();
+box.toplft.x=1; box.toplft.y=2;
+box.btmrgt.x=8; box.btmrgt.y=9;
+prtbox("");
 newlin();
 
 //Clear Frame
-memclr(@fram, &fram); //Clear Frame Members
+memclr(@fram, fram); //Clear Frame Members
 prtfrm(); //Print Frame Members
 
 //Set Frame Members
-fram.outer.toplft.xpos=10; fram.outer.toplft.ypos=11;
-fram.outer.btmrgt.xpos=98; fram.outer.btmrgt.ypos=99;
-fram.inner.toplft.xpos=22; fram.inner.toplft.ypos=23;
-fram.inner.btmrgt.xpos=86; fram.inner.btmrgt.ypos=87;
+fram.outer.toplft.x=10; fram.outer.toplft.y=11;
+fram.outer.btmrgt.x=98; fram.outer.btmrgt.y=99;
+fram.inner.toplft.x=22; fram.inner.toplft.y=23;
+fram.inner.btmrgt.x=86; fram.inner.btmrgt.y=87;
 prtfrm();
 newlin();
 
@@ -77,8 +81,9 @@ goto exit;
 
 //Print Destination Record
 void prtdst() {
-  setdst(&dstrec.name); printf("REC.NAME=\"%s\"%n");
+  setdst(dstrec.name); printf("REC.NAME=\"%s\"%n");
   printf(dstrec.index, "REC.INDEX=%d%n");
+  setdst(dstrec.addr); printf("REC.ADDR=$%w%n");
   puts("REC.DATA=[");
   for (i = 0; i<@dstrec.data; i++) {
     if (i) putc(',');
@@ -90,26 +95,26 @@ void prtdst() {
 
 //Print Frame
 void prtfrm() {
-  putln("OUTER."); cpybox(&fram.outer); prtbox();
-  putln("INNER."); cpybox(&fram.inner); prtbox();
+  cpybox(fram.outer); prtbox("OUTER.");
+  cpybox(fram.inner); prtbox("INNER.");
   anykey();
 }
 
 void cpybox() {
-  savrxy(); setdst(&box);
+  savrxy(); setdst(box);
   resrxy(); memcpy(@box);
 }
 
 //Print Box
-void prtbox() {
-  puts(" TOPLFT."); prtpnt(&box.toplft);
-  puts(" BTMRGT."); prtpnt(&box.btmrgt);
+void prtbox(yx) {
+  puts(yx); puts("TOPLFT."); prtpnt(box.toplft);
+  puts(yx); puts("BTMRGT."); prtpnt(box.btmrgt);
 }
 
 //Print Point
 void prtpnt() {
-  savrxy(); setdst(&pnt); 
+  savrxy(); setdst(pnt);
   resrxy(); memcpy(@pnt); 
-  printf(pnt.xpos,"XPOS=%d,");
-  printf(pnt.ypos,"YPOS=%d%n");
+  printf(pnt.x,"X=%d,");
+  printf(pnt.y,"Y=%d%n");
 }

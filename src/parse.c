@@ -22,6 +22,7 @@ int isanum(void) {return isalnum(nxtchr);}
 int isapos(void) {return match('\'');}
 int isbin(void)  {return inbtwn('0', '1');}
 int isbpre(void) {return TF(isnpre() || isapos());}
+int isbtop(void) {return TF(match('<') || match('>'));}
 int isdec(void)  {return inbtwn('0', '9');}
 int iscpre(void) {return match('#');}
 int ishexd(void) {return TF(isdec() || inbtwn('A', 'Z'));}

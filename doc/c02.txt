@@ -287,13 +287,13 @@ generate sets of related but distinct values.
 
 An enumeration is defined using an enum statement. When using the enum
 keyword, it is followed by a { character, one or more constant names
-separated by commas, and a } character. An asterisk may be used in place
-of a constant name, in which case the sequence will be skipped. The enum 
-statement is terminated with a semicolon.
+separated by commas, and a } character. A period may be used in place 
+of a constant name, in which case the sequence will be skipped. The 
+enum statement is terminated with a semicolon.
 
 Examples:
   enum {BLACK, WHITE, RED, CYAN, PURPLE, GREEN, BLUE, YELLOW};
-  enum {*, FIRST, SECOND, THIRD};
+  enum {., FIRST, SECOND, THIRD};
   enum {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN};
 
 Note: Values are automatically assigned to the constants in an enumeration.
@@ -308,13 +308,13 @@ combined into a single char variable.
 
 An enumeration is defined using a bitmask statement. When using the bitmask
 keyword, it is followed by a { character, one to eight constant names
-separated by commas, and a } character. An asterisk may be used in place
-of a constant name, in which case the bit value will be skipped. The 
-bitmask statement is terminated with a semicolon.
+separated by commas, and a } character. A period may be used in place of a 
+constant name, in which case the bit value will be skipped. The bitmask 
+statement is terminated with a semicolon.
 
 Examples:
   bitmask {BLUE, GREEN, RED, BRIGHT, INVERT, BLINK, FLIP, BKGRND};
-  bitmask {RD, RTS, DTR, RI, CD, *, CTS, DSR};
+  bitmask {RD, RTS, DTR, RI, CD, ., CTS, DSR};
 
 Note: Values are automatically assigned to the constants in a bitmask, 
 each of which is a sequential power of two. The first constant in the 
@@ -323,43 +323,72 @@ the third is assigned the value 4, and so on.
 
 DECLARATIONS
 
-A declaration statement consists of type keyword (char or void) followed
-by one or more variable names and optional definitions, or a single
-function name and optional function block.
+A declaration statement consists of type a keyword (char, int, or void) 
+followed one or more variable names (and optional definitions) or a single
+function name and optional function block, or the struct keyword followed
+by a structure name and either a definition or a variable name. 
 
-Variables may only be of type char and all variable declaration statements
-are suffixed with a ; character.
+Variables may only be of type char or int, and all variable declaration 
+statements are suffixed with a ; character. Variables of type char may be
+delared as arrays, by appending the variable name with the [ character,
+the upper bound of the array (0 to 255), and the ] character.
 
 Examples:
-  char c;             //Defines variable c
-  char i, j;          //Defines variables i and j
-  char r[7];          //Defines 8 byte array r
+  char c;       //Defines 8-bit variable c
+  char hi,lo;   //Defines 8-bit variables hi and lo
+  char r[7];    //Defines 8 byte array r
+  int addr;     //Defines 16-bit variable addr
+  int i, j;     //Defines 16-bit variables i and j
 
 A function declaration consists of the function name suffixed with a (
-character, followed zero to three comma separated simple variables and
-a ) character. A function declaration terminated with a ; character is
-called a forward declaration and does not generate any code, while one
-followed by a program block creates the specified function. Functions of
-type char explicitly return a value (using a return statement), while
-functions of type void do not.
+character, followed by an optional parameter set and a ) character. 
+
+The parameter set, if specified, may be either one to three simple 
+char variables, a single int variable, or a char variable followed
+by an int variable.
+
+A function declaration terminated with a ; character is called a forward 
+declaration and does not generate any code, while one followed by a 
+program block creates the specified function. 
+
+Functions of type char and int explicitly return one or more values 
+(using a return statement), while functions of type void return no
+explicit value. 
+
+The return statement causes the function to exit, after which control
+returns to the statement immediately following the function call. If 
+the last statement before the closing } of the function body is not
+a return, then an implicit return is assumed.
+
+A return statement may be followed by an list of one to three variables
+following the same rules as function arguments (see FUNCTION CALLS, 
+below), in which case those values are returned by the function call, 
+otherwise the function call will not return any explicit values.
 
 Examples:
   void myfunc();            //Forward declaration of function myfunc
+  char not(tmp) {tmp = tmp ^ $FF;}
+  char max(tmp1, tmp2) {if (tmp1 > tmp2) return tmp1; else return tmp2;}
   char min(tmp1, tmp2) {if (tmp1 < tmp2) return tmp1; else return tmp2;}
+  char test(b,c,d) {if (b:-) return min(c,d); else return max(c,d);} 
+  int swap(*,msb,lsb) {return *,lsb,msb;} //Swap bytes in integer
+  int incdec(m,i) {if (m:-) i--; else i++; return i}; //inc/dec integer
 
 Note: Like all variables, function parameters are global. They must be
-declared prior to the function decaration, and retain there values after
+declared prior to the function declaration, and retain there values after
 the function call. Although functions may be called recursively, they are
 not re-entrant. Allocation of variables and functions is implementation
 dependent, they could be placed in any part of memory and in any order.
 The default behavior is to place variables directly after the program code,
 including them as part of the generated object file.
 
-The return value of a function is passed through the A register. A return
-statement with an explicit expression will simply process that expression
-(which leaves the result in the A register) before returning. A return
-statement without an expression (including an implicit return) will, by
-default, return the value of the last processed expression.
+Function arguments and return values are passed through the 6502 registers. 
+Char type values are passed by loading A, Y, and X respectively, while int
+type values are passed by loading Y with the most significant byte and
+X with the least significant bit.
+
+A return statement without explicit return values will return whatever
+happens to be in the registers at that time.
 
 STRUCTS
 
@@ -378,19 +407,29 @@ as well as declaring struct type variables.
 When defining a struct type, the struct keyword is followed by the name of
 the struct type, the { character, the member definitions separated by
 commas, and the } character. The struct definition is terminated with a
-semicolon. Each member definition is composed of the optional char keyword,
-and the member name. If the member is an array, the member name is suffixed
-the [ character, the upper bound of the array, and the ] character. Each
-member definition is terminated with a semicolon.
+semicolon. Each member definition is composed of a type keyword (char, int,
+or struct) and one or more member names, separated with commas. If a member 
+is an array, the member name is suffixed the [ character, the upper bound of 
+the array, and the ] character. Each member definition is terminated with a 
+semicolon. Any number of comments may appear before the first member, between 
+members, and after the last member.
 
-When declaring a struct variable, the struct keyword is followed by the struct
-type name, and the name of the struct variable. The struct declaration is
-terminated with a semicolon.
+Member names are limited to six alphanumeric characters, the first of which
+must be alphabetic. Any names are allowed including reserved words, as well
+as A, X, and Y (which in this case, do not refer to registers).
+
+When declaring a struct variable, the struct keyword is followed by the 
+struct type name, and one or more variable names, separated with commas. 
+The struct declaration is terminated with a semicolon.
 
 Examples:
 
-  struct record {char name[8]; char index; data[128];};
+  struct record {char name[8]; char index; int addr, char data[128];};
   struct record rec;
+  struct record srcrec, dstrec;
+  struct point {char x, y;}
+  struct point pnt;
+  struct line {struct pnt bgnpnt, endpnt;}
 
 Note: Unlike simple and array variable, the members of a struct variable
 may not be initialized during declaration.
@@ -412,12 +451,13 @@ a page variable. This is used to ensure that accessing an array element will
 not cross a page boundary, which requires extra CPU cycles to execute.
 
 The const modifier specifies that a variable or array should not be changed 
-by program code.  The const modifier may be preceded by the aligned modifier.
+by program code.  The const modifier may be preceded by an` aligned or 
+zeropage modifier.
 
 A const variable declaration may include an initial value definition in
 the form of an = character and literal after the variable name.
 
-A const array may be declared in one of two ways: the variable name
+A const array is declared in one of two ways: the variable name
 suffixed with a [ character, a literal specifying the upper bound of
 the array, and a ] character; or a variable name followed by an = character
 and string literal or series of atring and/or numeric literals separated by 
@@ -437,20 +477,22 @@ Examples:
   const char n = {1,2,3};       //Defines 3 byte array m containing 1, 2, and 3
   const char m = {"abc", 123);  //Defines 5 byte array containing string and byte
   const char t = {"ab", "cd");  //Defines 6 byte array of two strings
-  aligned const char fbncci[] = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
+  aligned const char fbncci = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34};
   zeropage char ptr, tmp;       //Defines zero page variables
 
 EXPRESSIONS
 
 An expression is a series of one or more terms separated by operators.
 
-The first term in an expression may be a function call, subscripted array
-element, simple variable, literal, or register (A, X, or Y). An expression
-may be preceded with a - character, in which case the first term is assumed
-to be a literal 0.
+Each term in an expression may be any of the following:
+  function call (first term only)
+  subscripted array element
+  char type variable, struct member, constant, or literal
+  byte operation
+  register (A, X, or Y). 
 
-Additional terms are limited to subscripted array elements, simple variables,
-literals, and constants.
+An expression may be preceded with a - character, in which case the first 
+term is assumed to be a literal 0.
 
 Operators:
   + — Add the following value.
@@ -471,9 +513,27 @@ result.
 
 Note: Function calls are allowed in the first term of an expression
 because upon return from the function the return value will be in the
-Accumulator. However, due to the 6502 having only one Accumulatorm which
+Accumulator. However, due to the 6502 having only one Accumulator, which
 is used for all operations between two bytes, there is no simple system
 agnostic method for allowing function calls in subsequent terms.
+
+BYTE OPERATIONS
+
+Byte operation allows the the bytes in an integer value to be accessed
+as individual character values. A byte operation consists of a byte
+operator prefixed to an integer value.
+
+Byte Operators:
+  < - Get Least Significant Byte
+  > - Get Most Significant Byte
+
+The integer value may be an integer literal, an address, or an int type 
+variable or struct member.
+
+Examples: 
+  hi = >&r; lo = <&r; //Set hi, lo to MSB, LSB of address of array R
+  page = >53281;      //Set page to MSB of the integer literal 53281
+  lsb = <count;       //Set lsb to low byte of integer variable count
 
 CONTENTIONS
 
@@ -624,7 +684,7 @@ a variable length.
 INDEX-OF OPERATOR
 
 The index-of operator ? generates a literal value equal to the offset in bytes
-of a specified stucture member. It is allowed anywhere a literal would be and
+of a specified structure member. It is allowed anywhere a literal would be and
 should be used anytime the offset of the member of a struct is required.
 
 When using the size-of operator, it is prefixed to the member specification.
@@ -634,7 +694,7 @@ Examples:
   blkmem(?rec.data, &s);    //Search block for segment where data contains s
   memcpy(?rec.data, &t);    //Copy bytes of rec up to member data into t
 
-Note: The idex-of operator is evaluated at compile time and generates two
+Note: The index-of operator is evaluated at compile time and generates two
 bytes of machine language code. It is the most efficient method of specifying
 a the offset of a struct member.
 
@@ -645,21 +705,21 @@ term in an expression. A function call consists of the function name
 appended with a ( character, followed by zero to three arguments separated
 with commas, and a closing ) character.
 
-The first argument of a function call may be an expression, address, or
-string (see below).
+The first argument of a function call may be an expression, integer, 
+address, or string (see below).
 
 The second argument may be a term (subscripted array element, simple
-variable, or constant), address, or string,
+variable, or constant), integer, address, or string,
 
 The third argument may only be a simple variable or constant.
 
-If the first or second argument is an address or string, then no more
-arguments may be passed.
+If the first or second argument is an integer address or string, then 
+no more arguments may be passed.
 
 When passing the address of a variable, array, struct, or struct member
 into a function, the variable specification is prefixed with the
-address-of operator &. When passing a string, the string is simply
-specified as the argument with.
+address-of operator &. When passing a literal string, it is simply
+specified as is.
 
 Examples:
   c = getc();            //Get character from keyboard
@@ -671,7 +731,7 @@ Examples:
   puts("Hello World");   //Write "Hello World" to screen
   memdst(&dstrec);       //Set struct variable as destination
   memcpy(140, &srcrec);  //Copy struct variable to destination struct
-  puts(&rec.name);       //Write struct membet to screen
+  puts(&rec.name);       //Write struct member to screen
 
 Note: This particular argument passing convention has been chosen because
 of the 6502's limited number of registers and stack processing instructions.
@@ -698,14 +758,14 @@ The pop statement is likewise used to pop arguments off of the machine
 stack after a function call. When using a pop statement, it is followed
 with one or more simple variables or subscripted array elements , separated
 by commas, and terminated with a semicolon. If any of the arguments are to
-be discarded, an asterisk can be specified instead of a variable name.
+be discarded, a period may be specified instead of a variable name.
 
 The number of arguments pushed and popped may or may not be the same,
 depending on how the machine language routine manipulates the stack pointer.
 
 Examples:
   push d,r; mult(); pop p; //multiply d times r and store in p
-  push x1,y1,x2,y2; rect(); pop *,*,*,*; //draw rectangle from x1,y1 to x2,y2
+  push x1,y1,x2,y2; rect(); pop .,.,.,.; //draw rectangle from x1,y1 to x2,y2
   push &s, "tail"; strcat();  //concatenate "tail" onto string s
   push x[i],y[i]; rotate(d); pop x[i],y[i]; //rotate point x[1],y[i] by d
 
@@ -845,8 +905,10 @@ of code to be executed if the conditional was false.
 
 Examples:
   if (c = 27) goto end;
-  if (n) q = div(n,d) else puts("Division by 0!");
-  if (r[j]<r[i]) {t=r[i],r[i]=r[j],r[j]=t)}
+  if (n) q = div(n,d) else putln("Division by 0!");
+  if (r[q]<r[p]) {t=r[p],r[p]=r[q],r[q]=t)}
+  if (!>i | <i) puts("i is zero.");
+  if (>i > >j || >i = >j && <i > <j) k = i; else k = j; 
 
 Note: In order to optimize the compiled code, the if and else statements
 are to 6502 relative branch instructions. This limits the amount of
@@ -958,6 +1020,7 @@ if it is true, the code block is repeated.
 Examples:
   do c = rdkey(); while (c=0);                //Wait for keypress
   do (c = getchr(); putchr(c); while (c<>13)  //Echo line to screen
+  i=0; do {i++;} while (>i <= >j && <i < <j); //Count from 0 to J
 
 Note: Unlike the other loop structures do/while statements do not use
 6502 JMP instructions. This optimizes the compiled code, but limits
@@ -1021,10 +1084,11 @@ The #define directive allows the definition of constants but not macros.
 The #if, #else, and #endif directives are not recognized at all by the
 compiler. They may be added in the future.
 
-The only type recognized by the compiler is char. Since the 6502 is an
-8-bit processor, multi-byte types would generate over-complicated code.
-In addition, the signed and unsigned keywords are unrecognized, due to the
-6502's limited signed comparison functionality.
+The only types recognized by the compiler are char and int. Int values
+may only be used in limited contexts. Since the 6502 is an 8-bit processor, 
+multi-byte types would generate over-complicated code. In addition, the 
+signed and unsigned keywords are unrecognized, due to the 6502's limited 
+signed comparison functionality.
 
 Because of the 6502's peculiar indirect addressing modes, pointers are not
 currently implemented. Limited pointer operations may be implemented using
