@@ -129,7 +129,7 @@ void prcasi(char trmntr) {
   strcpy(xsnvar, vrname); //Set Assignment LSB
   strcpy(ysnvar, vrname); strcat(ysnvar, "+1"); //Set Assignment MSB
   ysnidx[0] = 0; //No Y Index
-  prsxpi(trmntr);
+  prsxpi(trmntr, TRUE); //Parse Integer Expression, Allowing Functions
   prcaxy();
 }
 
@@ -298,11 +298,12 @@ void pelse(void) {
 /* parse and compile if statement */
 void pgoto(void) {
   DEBUG("Parsing GOTO statement\n", 0)
-  int indrct = look('(');
-  if (!chkadr(ADNONE, FALSE)) getwrd();
-  if (indrct) {
-    expect(')');
-	ERROR("Indirect GOTO Not Implemented\n", 0, EXIT_FAILURE)
+  if (look('(')) {
+    DEBUG("Processing Indirect GOTO\n", 0);
+	prsxpi(')', FALSE); //Parse Integer Expression w/o Assembly
+    sprintf(word, "(%s)", value); //Set Indirect Argument
+  } else {
+    if (!chkadr(ADNONE, FALSE)) getwrd();
   }
   expect(';');  
   asmlin("JMP", word);

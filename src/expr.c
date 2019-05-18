@@ -330,15 +330,23 @@ int prsxpf(char trmntr) {
   return prsxpp(trmntr, TRUE);
 }
 
-/* Parse and compile integer expression */
-void prsxpi(char trmntr) {
+/* Parse and Compile Integer Expression *
+ * (Address, Integer Literal, Variable, *
+ *  Struct Member, or Function)         *
+ * Args: trmntr - expression terminator *
+ *       asmxpr - assemble expression   * 
+ * Sets: value - Parsed Value or Symbol */
+void prsxpi(char trmntr, int asmxpr) {
   skpspc();
+  DEBUG("Parsing integer expression\n", 0)
   if (!chkadr(TRUE, FALSE)) {
     if (isnpre()) {
     DEBUG("Parsing Integer Literal\n", 0) 
-      int number = prsnum(0xFFFF);
-      sprintf(value, "%d", number & 0xFF); asmlin("LDX", value);
-      sprintf(value, "%d", number >> 8); asmlin("LDY", value);
+      int number = prsnum(0xFFFF); //Parse Number into value
+      if (asmxpr) {
+        sprintf(value, "%d", number & 0xFF); asmlin("LDX", value);
+        sprintf(value, "%d", number >> 8); asmlin("LDY", value);
+      }
     } else if (isalph()) {
       prsvar(FALSE, TRUE);
       if (valtyp == FUNCTION) {
@@ -348,7 +356,7 @@ void prsxpi(char trmntr) {
         prsmbr(value);
         if (vartyp != VTINT) ERROR("Illegal Member %s In Integer Expression", value, EXIT_FAILURE)        
       } else if (valtyp == VARIABLE && vartyp == VTINT) {
-        prcvri(); //Process Integer Variable
+        if (asmxpr) prcvri(); //Process Integer Variable
       } else {
         ERROR("Illegal Variable %s In Integer Expression", value, EXIT_FAILURE)
       }  

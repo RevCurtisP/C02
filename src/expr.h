@@ -27,4 +27,4 @@ int  prstrm(int alwint);    //Parse Term in Expression
 void prsrxp(char trmntr);   //Parse Rest of Expression 
 int  prsxpf(char trmntr);   //Parse Expression in Function Call
 void prsxpr(char trmntr);   //Parse Expression
-void prsxpi(char trmntr);   //Parse Integer Expression
+void prsxpi(char trmntr, int asmxpr); //Parse Integer Expression
