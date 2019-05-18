@@ -65,18 +65,20 @@ int fndmbr(int idx, char *name) {
  * Args: alwreg - allow register name       *
  *       alwcon - allow const variable      *
  *       name - variable name               */
-void chksym(int alwreg, int alwcon, char *name) {
+int chksym(int types, char *name) {
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
-    if (alwreg && valtyp != ARRAY) { 
+    if (types & SYMREG && valtyp < ARRAY) { 
       valtyp = REGISTER;
-  	  return;
+  	  return SYMREG;
     }
     ERROR("Illegal reference to register %s\n", name, EXIT_FAILURE)
   }
-  if (!fndvar(name))
-    ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE)
-  if (!alwcon && (varble.modifr & MTCONST)) 
+  if (fndvar(name)) {
+    if (!(types &symvar)) ERROR("Illegal reference to variable %s\n", name, EXIT_FAILURE)
+  if (!(types & CONVAR) && (varble.modifr & MTCONST)) 
     ERROR("Illegal use of const variable '%s'\n", name, EXIT_FAILURE)
+  } else 
+    ERROR("Undeclared variable '%s' encountered\n", name, EXIT_FAILURE)
 }
 
 /* Process struct member *
@@ -115,6 +117,7 @@ void prsmbr(char* name) {
  *       valtyp - Identifier Type               */
 void prsvar(int alwreg, int alwcon) {
   getwrd(); //Get Variable Name
+  DEBUG("Parsing \"%s\" as variable or function\n", word)
   valtyp = gettyp(); //Determine Variable Type
   if (valtyp != FUNCTION) chksym(alwreg, alwcon, word);
   strcpy(value, word);

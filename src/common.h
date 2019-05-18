@@ -4,6 +4,8 @@
 
 #define FNAMLEN 255       //Maximum File Name Length
 #define LINELEN 255       //Maximum Input/Output Line Length
+#define SYMLEN 6          //Maximum Symbol Length
+#define MAXSYM 255        //Maximum Number of Symbols
 #define CONLEN 6          //Maximum Constant Name Length
 #define MAXCON 255        //Maximum Number of Constants
 #define STCLEN 6          //Maximum Struct Name Length
@@ -16,10 +18,10 @@
 #define DATASPC 4096      //Space to Allocate for Variable Data
 #define SUBMAX 4          //Maximum Number of Sub Directories
 
-#define LABLEN 6          //Maximum Label Length
-#define LABFMT "L_%04d"   //Label Format
-#define LABSFX ":"        //Label Suffix
-#define MAXLAB 15         //Maximum Number of Labels (Nesting Depth)
+#define LABLEN 6          //Maximum Internal Label Length
+#define LABFMT "L_%04d"   //Internal Label Format
+#define LABSFX ":"        //Internal Label Suffix
+#define MAXLAB 15         //Maximum Number of Internal Labels (Nesting Depth)
 #define LOCPFX "."        //Local Variable Prefix
 
 #define CPUOP  "PROCESSOR"  //Target CPU Pseudo-Operator 
@@ -61,7 +63,7 @@ int savchr; //Holds nxtchr when switching input files
 
 int  wrdlen;          //Length of Parsed Word
 char word[LINELEN];   //Word parsed from source file
-char uword[LINELEN];  //Word converted too uppercase
+char uword[LINELEN];  //Word converted to uppercase
 char cmtasm[LINELEN]; //Assembly Language Comment Text
 
 char hdrnam[FNAMLEN]; //Header File Name

@@ -16,6 +16,21 @@
 const char lblflg[] = {LFNONE, LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE, LFNONE}; //Label Type Flags
 //        enum ltypes {LTNONE, LTIF, LTELSE, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
 
+/* Add Symbol to Symbol Table */
+void addsym(char *name, int type) {
+  strcpy(symbol.name, name);
+  symbol.type = type;
+  memcpy(&symtbl[symcnt++], &symbol, sizeof(symbol));
+}
+
+/* Find Symbol in Table */
+int fndsym(char *name) {
+  for (int i=0; i<symcnt; i++)
+    if (strcmp(symtbl[i].name, name)) 
+      return symtbl[i].type;
+  return 0;
+}
+
 /* Find Last Label of Specified Types *
  * Args: lbtyp1: First label type     *
  *       lbtyp2: Second label type    *
@@ -53,6 +68,7 @@ void prslbl(void) {
   DEBUG("Parsing Label '%s''\n", word)
   CCMNT(nxtchr);
   skpchr(); //skip ':'
+  addsym(word, SYMLBL);
   setlbl(word);
 }
 
