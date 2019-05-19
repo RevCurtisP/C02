@@ -46,3 +46,7 @@ void newlin();  //Advance cursor to beginning of next line
 char polkey();  //Poll Console for character
 char putchr();  //Print ASCII character to Console
 char getchr();  //Wait for character from Console
+
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System

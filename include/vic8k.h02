@@ -35,3 +35,7 @@ void clrscr(); //Clear the Screen
 char getsiz(); //Get Screen Size
 char getpos(); //Get Cursor Position
 void setpos(); //Set Cursor Position
+
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System

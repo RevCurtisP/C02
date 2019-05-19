@@ -25,3 +25,7 @@ void newlin();    //Advance cursor to beginning of next line
 char putchr();    //Print ASCII character to Console
 void prbyte();    //Print Accumulator as Hexadadecimal number
 void prhex();     //Print Low Nybble of Accumulator as Hex Digit
+
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System

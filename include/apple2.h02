@@ -29,7 +29,7 @@ char kbd; //Keyboard Data Register
 char akd; //Keyboard Strobe Register
 
 /* Monitor Subroutines */
-void prbyte(); //Print Accumulator as Hexadadecimal number
+void prbyte(); //Print Accumulator as Hexadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
 
 /* System Subroutines */
@@ -43,3 +43,7 @@ void newlin(); //Advance cursor to beginning of next line
 char polkey(); //Poll Console for character
 char putchr(); //Print ASCII character to Console
 void setpos(); //Set Cursor Position
+
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System

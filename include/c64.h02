@@ -33,3 +33,7 @@ void prbyte(); //Print Accumulator as Hexadadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
 char getchr(); //Wait for character from Keyboard
 void setpos(); //Set Cursor Position
+
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System

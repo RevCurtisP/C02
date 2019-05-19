@@ -16,3 +16,6 @@ char getchr(); //Wait for character from Console
 char getkey(); //Read ASCII character from Console
 char putchr(); //Print ASCII character to Console
 
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System
