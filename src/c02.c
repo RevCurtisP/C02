@@ -193,6 +193,7 @@ int main(int argc, char *argv[]) {
 
   logstc();
   logcon();
+  loglab();
 
   clssrc();  //Close Source File
   clsout();  //Close Output File

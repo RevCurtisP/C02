@@ -507,7 +507,8 @@ void pstmnt(void) {
     return;  
   }
   if(match(':')) {
-    prslbl();  //Parse Label
+    prslab();      //Parse Program Label
+    setlbl(word);  //Set Label to Emit
     return;
   }
   if (wordis("ASM")) pasm();

@@ -16,7 +16,8 @@
 #define DATASPC 4096      //Space to Allocate for Variable Data
 #define SUBMAX 4          //Maximum Number of Sub Directories
 
-
+#define LABLEN 6          //Maximum Program Label Length
+#define MAXLAB 255        //Maximum Number of Program Labels
 
 #define LBLLEN 6          //Maximum Label Length
 #define LBLFMT "L_%04d"   //Label Format

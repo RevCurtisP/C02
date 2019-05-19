@@ -9,9 +9,36 @@
 #include <errno.h>
 
 #include "common.h"
+#include "files.h"
 #include "asm.h"
 #include "parse.h"
 #include "label.h"
+#include "vars.h"
+
+/* Add New Program Label */
+void addlab(char *name) {
+  if (fndvar(name)) ERROR("Label %s conflicts with variable with same name", name, EXIT_FAILURE)
+  if (fndlab(name)) ERROR("Duplicate program label %s\n", name, EXIT_FAILURE)
+  DEBUG("Adding Program Label %s ", name) DEBUG("at index %d\n", labcnt)
+  strcpy(labnam[labcnt++], name);
+}
+
+int fndlab(char *name) {
+  DEBUG("Looking for Program Label %s\n", name)
+  for (labidx=0; labidx<labcnt; labidx++)
+    if (strcmp(labnam[labidx], name) == 0) return TRUE;
+  DEBUG("Label %s Not Found\n", name)
+  return FALSE;
+}
+
+/* Print Program Label Table to Log File */
+void loglab(void) {
+  int i;
+  fprintf(logfil, "\n%-10s\n", "Label");
+  for (i=0; i<labcnt; i++) {
+    fprintf(logfil, "%-10s\n", labnam[i]);
+  }
+}
 
 const char lblflg[] = {LFNONE, LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND, LFNONE, LFNONE}; //Label Type Flags
 //        enum ltypes {LTNONE, LTIF, LTELSE, LTLOOP, LTEND, LTDO, LTDWHL, LTSLCT, LTCASE, LTFUNC}; //Label Types
@@ -48,12 +75,12 @@ void setlbl(char *lblset) {
   strcpy(lblasm, lblset);
 }
 
-/* parse label in code */
-void prslbl(void) {
+/* Parse Program Label */
+void prslab(void) {
   DEBUG("Parsing Label '%s''\n", word)
+  addlab(word);
   CCMNT(nxtchr);
   skpchr(); //skip ':'
-  setlbl(word);
 }
 
 /* generate new label */

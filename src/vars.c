@@ -109,17 +109,25 @@ void prsmbr(char* name) {
   strcat(name, word); //Add Offset to Struct  
 }
 
+/* Parse word as variable or function name *
+ * Args: alwreg - Allow Register Names          *
+ * Sets: value - Identifier Name                *
+ *       valtyp - Identifier Type               */
+void prsvrw(int alwreg, int alwcon) {
+  valtyp = gettyp(); //Determine Variable Type
+  if (valtyp != FUNCTION) chksym(alwreg, alwcon, word);
+  strcpy(value, word);
+  DEBUG("Parsed variable '%s'\n", value)
+  if (valtyp == STRUCTURE) prsmbr(value);
+}
+
 /* Parse next word as variable or function name *
  * Args: alwreg - Allow Register Names          *
  * Sets: value - Identifier Name                *
  *       valtyp - Identifier Type               */
 void prsvar(int alwreg, int alwcon) {
   getwrd(); //Get Variable Name
-  valtyp = gettyp(); //Determine Variable Type
-  if (valtyp != FUNCTION) chksym(alwreg, alwcon, word);
-  strcpy(value, word);
-  DEBUG("Parsed variable '%s'\n", value)
-  if (valtyp == STRUCTURE) prsmbr(value);
+  prsvrw(alwreg, alwcon); //Parse Variable name in word
 }
 
 /* Require and Parse Variable Name                         *
@@ -258,6 +266,7 @@ void setvar(int m, int t) {
  * Uses: word - variable name             */
 void addvar(int m, int t) {
   strcpy(vrname, word); //Save Variable Name
+  if (fndlab(vrname)) ERROR("Variable %s conflicts with label of same name\n", vrname, EXIT_FAILURE)
   if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m & MTZP) {

@@ -147,7 +147,11 @@ void prcadr(int adract, char* symbol) {
 void prsadr(int adract) {
   DEBUG("Parsing address\n", 0)
   if (isnpre()) prsnum(0xFFFF);
-  else prsvar(FALSE, TRUE);
+  else {
+    getwrd();
+    if (fndlab(word)) strcpy(value, word);
+    else prsvrw(FALSE, TRUE);
+  }
   if (adract) prcadr(adract, value);  //Compile Address Reference
   else strcpy(word, value); //Save for Calling Routine
 }

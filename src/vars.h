@@ -80,12 +80,14 @@ char wrtofs[6];				    //Write Address Offset
 void addvar(int m, int t);           //Parse and Compile Variable Declaration
 void addstc();                       //Parse and Compile Structure Declaration
 void defstc();                       //Parse Structure Definition
-void chksym(int alwreg, int alwcon, char *name); //Error if Variable not defined
+int fndvar(char *name);              //Find Variable in Variable Table
+void chksym(int alwreg, int alwcon, char *name); //Check for Variable
 void prsdts();                       //Parse Data String
 void setdat();                       //Set Variable Data
 void setvar(int m, int t);           //Set Variable Name and Size
 void prsdts();                       //Parse Data String
-void prsvar(int alwreg, int alwcon); //Parse Variable
+void prsvar(int alwreg, int alwcon); //Parse Next Word as Variable
+void prsvrw(int alwreg, int alwcon); //Parse word as Variable
 void prsmbr(char* name);             //Parse Struct Member
 int  psizof(void);                   //Parse SizeOf Operator
 int  pidxof(void);                   //Parse IndexOf Operator
