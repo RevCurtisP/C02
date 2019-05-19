@@ -16,10 +16,12 @@
 #define DATASPC 4096      //Space to Allocate for Variable Data
 #define SUBMAX 4          //Maximum Number of Sub Directories
 
-#define LABLEN 6          //Maximum Label Length
-#define LABFMT "L_%04d"   //Label Format
+
+
+#define LBLLEN 6          //Maximum Label Length
+#define LBLFMT "L_%04d"   //Label Format
 #define LABSFX ":"        //Label Suffix
-#define MAXLAB 15         //Maximum Number of Labels (Nesting Depth)
+#define MAXLBL 15         //Maximum Number of Labels (Nesting Depth)
 #define LOCPFX "."        //Local Variable Prefix
 
 #define CPUOP  "PROCESSOR"  //Target CPU Pseudo-Operator 

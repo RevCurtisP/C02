@@ -44,7 +44,7 @@ void setlbl(char *lblset) {
     DEBUG("Emitting Label '%s'\n'", lblasm);
     asmlin("",""); //Emit Block End Label on it's own line
   }
-  if (strlen(lblset) > LABLEN) ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE)
+  if (strlen(lblset) > LBLLEN) ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE)
   strcpy(lblasm, lblset);
 }
 
@@ -58,7 +58,7 @@ void prslbl(void) {
 
 /* generate new label */
 void newlbl(char* lbname) {
-  sprintf(lbname, LABFMT, lblnxt++);
+  sprintf(lbname, LBLFMT, lblnxt++);
   DEBUG("Generated new label '%s'\n", lbname)
 }
 

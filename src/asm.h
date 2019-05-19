@@ -2,7 +2,7 @@
  * C02 Assembly Language    Routines *
  *************************************/
 
-char lblasm[LABLEN+2];  //Label to emit on next asm line
+char lblasm[LBLLEN+2];  //Label to emit on next asm line
 
 void asmlin(char *opcode, char *oprnd); //Output a line of assembly code
 void cmtlin();          //Output a comment lines
