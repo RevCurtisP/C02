@@ -348,8 +348,8 @@ void prsxpi(char trmntr, int asmxpr) {
     DEBUG("Parsing Integer Literal\n", 0) 
       int number = prsnum(0xFFFF); //Parse Number into value
       if (asmxpr) {
-        sprintf(value, "%d", number & 0xFF); asmlin("LDX", value);
-        sprintf(value, "%d", number >> 8); asmlin("LDY", value);
+        sprintf(value, "#%d", number & 0xFF); asmlin("LDX", value);
+        sprintf(value, "#%d", number >> 8); asmlin("LDY", value);
       }
     } else if (isalph()) {
       prsvar(FALSE, TRUE);
