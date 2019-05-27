@@ -63,3 +63,37 @@ GETSRC: LDX SRCLO
         LDY SRCHI
         RTS
 
+;Add Accumulator to Destination Address
+ADDDSA: TAX             ;Move Accumulator to Argument LSB
+        LDY #0          ;Clear Argument MSB
+
+;Add to Destination Address
+;Args: Y,X = MSB,LSB of Integer to Add
+;Affects: A,Y,X
+ADDDST: LDA #DSTLO      ;Set Index to Destination Pointer
+        BNE ADDZPW      ;and Execute ADDZPW
+
+;Add Accumulator to Source Address
+ADDSRA: TAX             ;Move Accumulator to Argument LSB
+        LDY #0          ;Clear Argument MSB
+
+;Add to Source Address
+;Args: Y,X = MSB,LSB of Integer to Add
+;Affects: A,Y,X
+ADDSRC: LDA #SRCLO       ;Set Index and Drop into ADDZPW
+
+;Add to Zero Page Word
+;Args: A = Address of Zero Page Word
+;      Y,X = MSB,LSB of Integer to Add
+;Affects: A
+ADDZPW: STA TEMP3       ;Save Zero Page Address
+        TXA             ;Move Argument LSB to Accumulator
+        LDX TEMP3       ;Set Index to Zero Page Address
+        CLC             ;Clear Carry
+        ADC 0,X         ;Add Argument LSB to Target LSB
+        STA 0,X         ;and Save Result
+        TYA             ;Move Argument MSB to Accumulator
+        ADC 1,X         ;Add Argument MSB to Target MSB
+        STA 1,X         ;and Save Result
+        RTS
+

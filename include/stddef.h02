@@ -6,6 +6,19 @@
 #define TRUE  $FF
 #define FALSE $00 
 
+/* Add to Destination Pointer *
+ * Args: &n - amount to add   */
+void adddst();
+
+/* Add to Source Pointer    *
+ * Args: &n - amount to add */
+void addsrc();
+
+/* Add to Zero Page Word       *
+ * Args: z - Zero page address * 
+ *       &n - amount to add    */
+void addzpw();
+
 /* Get Destination Pointer          *
  * Returns: Y,X=Destination address */
 int getdst();
@@ -61,3 +74,4 @@ void setsrc();
 
 /* Set Source Pointer to Destination Pointer */
 void setsrd();  
+

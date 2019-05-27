@@ -38,7 +38,7 @@ PUTBIL: LDA #0
         ASL TEMP0       ;Shift Top Bit Out
         ADC #$30        ;Convert to '0' or '1'
         JSR PUTCHR      ;Print Digit
-        DEX             ;Decremebt Index
+        DEX             ;Decrement Index
         BNE PUTBIL      ;Loop if Not Done
         RTS
 
@@ -80,19 +80,32 @@ PUTDES: JSR PUTDEH
 PUTDEC: JSR CUBCD       ;Convert Accumulator to Unpacked BCD
         LDA TEMP2       ;Get High Byte
         BEQ PUTDE1      ;If Not Zero
-        JSR PUTDEP      ;  Convert Low Nybble
+        JSR PUTDGT      ;  Print Digit
 PUTDE1: LDA TEMP1       ;Get Low Byte
         BNE PUTDE2      ;If Not Zero
         CMP TEMP2       ;  and Hundreds 
         BEQ PUTDE3      ;  not Zero   
-PUTDE2: JSR PUTDEP      ;  Convert It
+PUTDE2: JSR PUTDGT      ;  Print Digit
 PUTDE3: LDA TEMP0       ;Get Low Byte
-PUTDEP: ORA #$30        ;Convert to ASCII digit
-        JSR PUTCHR      ;And Print
-        RTS
+PUTDGT: ORA #$30        ;Convert to ASCII digit
+        JMP PUTCHR      ;And Print
 
 ;puthex(&word) - PUT HEXadecimal
 PUTHEX  EQU PRBYTE      ;Print Byte as Hexadecimal
+
+;putint(&word) - PUT INTeger
+PUTINT: JSR CVIBCD      ;Convert Integer to Packed BCD
+        LDY #4          ;Set Initial Digit Number
+        JSR UPBCDI      ;Unpack Digit X
+PUTINZ: BNE PUTINS      ;If Zero
+        DEY             ; Decrement Digit Number
+        BNE PUTINZ      ; If Not Zero Loop
+        BEQ PUTDGT      ; Else Print Digit and Return
+PUTINL: JSR UPBCDI      ;Unpack Digit X
+PUTINS: JSR PUTDGT      ;Print Digit
+        DEY             ;Decrement Digit Number
+        BPL PUTINL      ;Loop if >= Zero
+        RTS
 
 ;putwrd(&word) - PUT WoRD
 ;Args: Y = Word MSB
@@ -174,11 +187,20 @@ PRINTS: CMP #'S         ;'Else If "s" or "S"
         LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;
 PRINTW: CMP #'W         ;'Else If "w" or "W" 
-        BNE PRINTZ
+        BNE PRINTI
         STY TEMP0       ;  Save Index
         JSR SAVDST      ;  Save Destination Address
         JSR PUTWRA      ;  Print MSB and LSB as Hex
         LDY TEMP0       ;  Restore Index
+        JMP PRINTY      ;
+PRINTI: CMP #'I         ;'Else If "i" or "I" 
+        BNE PRINTZ
+        TYA             ;  Save Index
+        PHA
+        JSR GETDST      ;  Get Integer in DSTLO, DSTHI
+        JSR PUTINT      ;  Print Integer as Decimal
+        PLA             ;  Restore Index
+        TAY
         JMP PRINTY      ;
 PRINTZ: LDA TEMP3       ;Else
         JMP PRINTC      ;  Print Raw Byte and Continue

@@ -151,13 +151,14 @@ ATOCX:  LDA TEMP0       ;Load Result
 
 ;ctoa(n) - Character TO ASCII string
 ;Args: Y,X = Address of String to Populate
-;Sets: SRCLO, SRCHI = Address of String
+;Sets: DSTLO, DSTHI = Address of String
 ;      TEMP0 = Ones Digit
 ;      TEMP1 = Tens Digit
 ;      TEMP2 = Hundreds Digit
 ;Affects: C,N.Z
 ;Returns: A,Y = Length of String
-CTOA:   JSR SETSRC     ;Initialize Source String
+CTOA:   JSR SETDST     ;Initialize Source String
+        LDY #0         ;Initialize Index into String
         JSR CUBCD      ;Convert Accumulator to Unpacked BCD
         LDA TEMP2      ;Get MSB
         BEQ CTOA1      ;If Not Zero
@@ -172,7 +173,7 @@ CTOA3:  LDA TEMP0      ;Get Low Byte
         LDA #$00
         BEQ CTOAX      ;Terminate String
 CTOAN:  ORA #$30       ;Convert to ASCII digit
-CTOAX:  STA (SRCLO),Y  ;Store in StringCTOAS:  STA (SRCLO),Y  ;Store in String
+CTOAX:  STA (DSTLO),Y  ;Store in String
         INY            ;and Increment Offset
         TYA            ;Copy String Length to Accumulator
         RTS
@@ -214,7 +215,7 @@ CVBCDT: LDA #0     ;Clear BCD Bytes
         PHP        ;Save Status Register
         SEI        ;Disable Interupts
         SED        ;Set Decimal Mode
-CVBCDL: ASL TEMP0  ;Shift High Bit Into Carry
+CVBCDL: ASL TEMP0  ;Shift High Bit into Carry
         LDA TEMP1  ;Add BCD Low Byte to Itself 
         ADC TEMP1  ;  Plus Bit Shifted out of Binary
         STA TEMP1  ;  Effectively Multiplying It by 2

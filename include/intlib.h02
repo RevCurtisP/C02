@@ -1,0 +1,70 @@
+/*********************************************************
+ * intlib - Standard Library Routines for Integer Values *
+ *********************************************************/
+
+/* Absolute Value                          *
+ * Args: w - Word to get absolute value of *
+ * Returns: (int) Absolute value of w      */
+char iabs();
+
+/* Add Integers                 *
+ * Requires: setsrc(g) - Augend *
+ * Args: d - Addend             *
+ * Returns: (int) Sum           */
+char iadd();
+ 
+/* Convert ASCII String to Unsigned Integer *
+ * Args: &s - String to Convert             *
+ * Returns: (char) Number of digits parsed  *
+ *          (int) Numeric value of string   */
+char atoi();
+
+/* Convert Unsigned Integer to ASCII String *
+ * Requires: setdst(s) - Destination String *
+ * Args: w  - Unsigned Byte to Convert      *
+ * Returns: Length of string                */
+void itoa();
+
+/* Divide Unsigned Integers        *
+ * Requires: setsrc(n) - Numerator *
+ * Args: d - Denominator           *
+ * Returns: (int) Quotient         */
+char idiv();
+ 
+/* Maximum of Two Integers             *
+ * Requires: setsrc(i) - First Integer *
+ * Args: j - Second Integer            *
+ * Returns: (int) Greater of the Two   */
+char max();
+
+/* Minimum of Two Integers       *
+ * Requires: setsrc(i) - First Integer *
+ * Args: j - Second Integer            *
+ * Returns: (int) Lesser of the Two */
+char min();
+
+/* Multiply Unsigned Integers           *
+ * Requires: setsrc(m) - Muliplicand    *
+ * Args: r - Multiplier                 *
+ * Returns: (char) Product (Bits 16-23) *
+ *          (int) Product (Bits 0-15)   */
+char mult();
+
+/* Shift Integer Left                *
+ * Args: n - Number of Bits to Shift *
+ *       w - Integer Value to Shift  *  
+ * Returns: Shifted Integer          */
+char ishftl();
+
+/* Shift Byte Right                  *
+ * Args: n - Number of Bits to Shift *
+ *       w - Integer Value to Shift  *  
+ * Returns: Shifted Integer          */
+char ishftr();
+
+/* Subtract Integers              *
+ * Requires: setsrc(m) - Minuend  *
+ * Args: s - Subtrahend           *
+ * Returns: (int) Difference      */
+char isub();
+ 

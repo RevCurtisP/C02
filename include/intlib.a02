@@ -1,0 +1,244 @@
+; C02 library stdlib.h02 assembly language subroutines
+; Requires 
+; external zero page locations SRCLO and SRCHI
+; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
+
+;iabs(n) - Get Integer ABSolute Value
+;Args: Y,X = Integer to get Absolute Value Of
+;Sets: TEMP1, TEMP2
+;Affects: C, N, Z
+;Returns: A = Absolute Value of Argument
+IABS:   CPY #$80        ;If Negative (High Bit Set)
+        BCC IABSX       ;  Carry will Already be Set
+        JSR SAVRXY      ;  Copy LSB, MSB to TEMP1. TEMP2
+        LDA #0          ;  Subtract LSB
+        SBC TEMP1       ;    from 0
+        TAX             ;    and Copy to X Register
+        LDA #0          ;  Subtract MSB
+        SBC TEMP2       ;    from 0
+        TAY             ;    and Copy to Y Register
+IABSX:  RTS
+
+;imax(m,n) - Get MAXimum of Two Integers
+;Args: A,Y = Numbers to Compare
+;Affects: N,Z,C
+;Returns: A = Larger of the Two Arguments
+IMAX:   CPY SRCHI       ;If Y < SRCHI
+        BCC IMAXC       ;  Return SRCLO, SRCHI
+        CPX SRCLO       ;IF X >= SRCLO
+        BCS IMINX       ;  Return Argument
+IMAXC:  JMP GETSRC      ;Return Integer in SRCLO, SRCHI
+
+;imin(m,n) - Get MINimum Get MAXimum of Two Numbers
+;Args: A,Y = Numbers to Compare
+;Sets: TEMP0 = Second Argument
+;Affects: N,Z,C
+;Returns: A = Smaller of the Two Arguments
+IMIN:   CPY SRCHI       ;If Y < SRCHI
+        BCS IMINX       ;  Return Argument
+        BNE IMAXC       ;If Y > SRCHI Return SRCHI,SRCLO
+        CPX SRCLO       ;If X < SRCLO
+        BCS IMINX       ;  Return Argument
+        BNE IMAXC       ;If X > SRCLO Return SRCHI,SRCLO 
+IMINX:  RTS             ;Return Argument
+
+;iadd(d) - ADD Integer d to from Integer g
+;Args: Y,X = Addend
+;Requires: setsrc(g) - Augend
+;Sets: TEMP1,TEMP2 = Addend
+;Affects: Z,C
+;Returns: A = Sum (Bits 16-23)
+;         Y,X = Sum (Bits 0-15)
+;         N = Sign of Result
+IADD:   CLC         ;Clear Carry for Addition
+        TXA         ;Add Addend LSB
+        ADC SRCLO   ;to Augend LSB
+        TAX         ;and Copy to X
+        TYA         ;Add Addend MSB
+        ADC SRCHI   ;to Augebd MSB
+        TAY         ;and Copy to Y
+        LDA #0      ;Set Overflow to 0
+        ROL         ;  Rotate Carry (Same as Adding it)
+        RTS         ;  and Return
+
+;isub(s) - SUBtract Integer s from Integer m 
+;Args: Y,X = Subtrahend
+;Requires: setsrc(m) - Minuend
+;Sets: TEMP1,TEMP2 = Subtrahend
+;Affects: Z,C
+;Returns: A = Differencee (Bits 16-23)
+;         Y,X = Difference (Bits 0-15)
+;         N = Sign of Result
+ISUB:   JSR SAVRXY  ;Store Subtrahend in TEMP1,TEMP2
+        SEC         ;Set Carry for Subtraction
+        LDA SRCLO   ;Load Minuend LSB 
+        SBC TEMP1   ;Subtract Subtrahend LSB
+        TAX         ;Copy Difference LSB to X
+        LDA SRCHI   ;Load Minuend MSB 
+        SBC TEMP2   ;Subtract Subtrahend MSB
+        TAY         ;Copy Difference MSB to Y
+        LDA #0      ;Set Overflow Byte to 0
+        SBC #0      ;  Subtract Carry
+        RTS         ;  and Return
+
+;imult(m) - MULTiply Two Integers
+IMULT:  RTS
+
+;idiv(d) - MULTiply Two Numbers
+IDIV:   RTS
+
+
+;ishftl(n,i) - Shift Integer i to the Left n Bits
+;Sets: TEMP1, TEMP2 = LSB, MSB of Result
+;Affects: A,Y,N,Z,C
+;Returns: Y,X = Shifted Integer
+ISHFTL: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
+        TYA             ;Set Counter to Number of Bits
+        ASL TEMP1       ;Shift LSB to Left
+        ROL TEMP2       ;Rotate MSB to Left
+        DEY             ;Decrement Counter
+        BNE ISHFTL      ;  and Loop if Not 0
+        BEQ ISHFTX      ;Return Shifted Integer
+
+;ishftr(n,i) - Shift Integer i to the Right n Bits
+;Sets: TEMP1, TEMP2 = LSB, MSB of Result
+;Affects: A,Y,N,Z,C
+;Returns: Y,X = Shifted Integer
+ISHFTR: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
+        TYA             ;Copy 
+        LSR TEMP1       ;Shift LSB to Right
+        ROR TEMP2       ;Rotate MSB to Right
+        DEY             ;Decrement Counter
+        BNE ISHFTR      ;  and Loop if Not 0
+ISHFTX: JMP RESRXY      ;Load Shifted Integer and Return
+
+;atoi(&s) - ASCII string TO Integer
+;Args: Y,X = Address of String to Convert
+;Sets: TEMP1, TEMP2 = Integer Value
+;Affects: TEMP0 
+;Returns: A = Number of Digits 
+;         Y,X = Integer Value
+ATOI:   JSR SETSRC      ;Initialize Source String
+        STY TEMP1       ;Initialize Result
+        STY TEMP2
+ATOIL:  LDA (SRCLO),Y   ;Get Next Character
+        CMP #$30        ;If Less Than '0'
+        BCC ATOIX       ;  Exit
+        CMP #$3A        ;If Greater Than '9'
+        BCS ATOIX       ;  Exit
+        AND #$0F        ;Convert to Binary Nybble
+        STA TEMP0       ;  and Save It
+        LDA TEMP1       ;Load Result
+        LDX TEMP2
+        ASL TEMP1       ;Multiply by 5 by
+        ROL TEMP2
+        ASL TEMP1       ;  Multiplying by 4
+        ROL TEMP2
+        CLC             ;  And Adding Itself
+        ADC TEMP1
+        STA TEMP1
+        TXA
+        ADC TEMP2
+        STA TEMP2
+        ASL TEMP1       ;Multiply that by 2
+        ROL TEMP2
+        LDA TEMP0       ;Get Saved Nybble
+        CLC             ;and Add to Result
+        ADC TEMP1       ;Add Saved Nybble
+        STA TEMP1       ;  and Store Result
+        LDA #0
+        ADC TEMP2
+        STA TEMP2
+        INY             ;Increment Index
+        BPL ATOIL       ;  and Loop
+ATOIX:  TYA             ;Return Number of Digits
+        JMP RESRXY      ;and Integer Value
+
+;itoa(n) - Integer TO ASCII string
+;Args: Y,X = Integer Value to Convert
+;Uses: DSTHI,DSTLO = Destination String
+;Returns: A,Y = Length of String
+ITOA:   JSR CVIBCD      ;Convert Integer to Packed BCD
+        LDY #0          ;Initialize Index into String
+        STY TEMP3
+ITOAA:  LDY #4          ;Set Initial Digit Number
+        JSR UPBCDI      ;Unpack Digit Y
+ITOAZ:  BNE ITOAS       ;If Zero
+        DEX             ;  Decrement Digit Number
+        BNE ITOAZ       ;  If Not Zero Loop
+        BEQ ITOAS       ;  Else Skip Unpack 
+ITOAL:  JSR UPBCDI      ;Unpack Digit #Y
+ITOAS:  TAX             ;Save Digit in X
+        TYA             ;Push Digit Number into Stack
+        PHA
+        TXA             ;and Restore Digit
+        LDY TEMP3       ;Get Index into String
+        ORA #$30        ;Convert Digit to ASCII
+        STA (DSTLO),Y   ;and Store in String
+        INC TEMP3       ;Increment Index into String
+        PLA             ;Pull Digit Number off Stack
+        TAY
+        DEY             ;Decrement Digit Number
+        BPL ITOAL       ;Loop if >= Zero
+        LDA #0          ;Terminate String
+        STA (DSTLO),Y
+        TYA             ;Return String Length
+        RTS
+
+;upbcdi() - UnPack digits from BCD Integer
+;  Assumes that TEMP0, TEMP1, and TEMP2
+;  are in consecutive memory locations
+;Args: Y = Digit Number to Unpack (0-5)
+;Uses: TEMP0 = Low Byte
+;      TEMP1 = Middle Byte
+;      TEMP2 = High Nybble
+;Affects: X,C,N,Z
+;Returns: A = Unpacked Digit
+UPBCDI: TYA         ;Divide Digit Number by 2,
+        LSR         ;  Setting Carry 
+        TAX         ;  if Digit Number is Odd
+        LDA TEMP0,X ;Load BCD Byte
+        BCC UPBCDS  ;If Digit Number is Odd
+        LSR         ;Shift High Nybble to Low Nybble
+        LSR
+        LSR
+        LSR
+UPBCDS: AND #$0F    ;Strip Off High Nybble
+        RTS
+
+;cvibcd(int) - ConVert Integer to packed Binary Coded Decimal
+;Args: Y,X - Integer to Convert
+;Sets: TEMP0 = Tens and Ones Digit
+;      TEMP1 = Hundreds Digit
+;      TEMP2 = Thousands Digit
+;Affects: A,X,Y
+CVIBCD: LDA #0      ;Clear BCD Bytes
+        STA TEMP0
+        STA TEMP1
+        STA TEMP2
+        PHP         ;Save Status Register
+        SEI         ;Disable Interrupts
+        SED         ;Set Decimal Mode
+        TYA         ;Push MSB onto Stack
+        PHA
+        TXA         ;Push LSB onto Stack
+        PHA
+        TSX         ;Copy Stack Pointer to X
+        LDY #16     ;Process 16 bits of Binary
+CVIBCL:	ASL $101,X  ;Shift High Bit Into Carry
+        ROL $102,X
+        LDA TEMP0   ;Add 6 Digit BCD Number Itself 
+        ADC TEMP0   ;  Effectively Multiplying It by 2
+        STA TEMP0   ;  and Adding in the Shifted Out Bit
+        LDA TEMP1
+        ADC TEMP1
+        STA TEMP1
+        LDA TEMP2
+        ADC TEMP2
+        STA TEMP2
+        DEY         ;Decrement Counter and
+        BNE CVIBCL  ;  Process Next Bit
+        PLA         ;Restore Stack
+        PLA
+        PLP         ;Restore Status Register
+        RTS 

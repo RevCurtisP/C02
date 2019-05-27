@@ -43,3 +43,18 @@ void puthex();
 /* Print a Space Character */
 void putspc(); 
 
+/* Print /* Print Byte as Hexadecimal Number *
+ * Args: b - Number to print        */
+void puthex(); 
+
+/* Print Byte as Hexadecimal Number *
+ * Args: b - Number to print        */
+void puthex(); 
+
+/* Print Byte as Hexadecimal Number *
+ * Args: b - Number to print        */
+void puthex(); 
+
+/* Print Word as Hexadecimal Number *
+ * Args: int w - Number to print    */
+void putwrd(); 
