@@ -1,0 +1,176 @@
+/*****************************************************
+ * HELLO - Test/Demo program for C02 Standard Header *
+ *        Prints "HELLO WORLD" and exits             *
+ *****************************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <nybble.h02>
+#include "include/vera.h02"
+
+char hscale,vscale;     //Video Scaling
+char index;             //Color Palette Index
+char mode,mono,field;   //Video Output Mode, Monochrome Flag, Current Field
+char red,green,blue;    //Color Components
+char i,j,k,l;
+
+int  c,d,s;
+int hstart,hstop;       //Horizontal Start and Stop
+int vstart,vstop;       //Vertical Start and Stop
+int irqlin;             //IRQ Line#
+char aa,xx,yy;
+
+void passed() {
+  putln("  PASSED");
+  newlin();
+}
+
+void prtayx(aa,yy,xx) {prhex(aa); prhex(yy); prhex(xx); putspc(); putspc();}
+
+void prthvs() {
+  setdst(hstart);printf("HSTART=%w, ");
+  setdst(hstop);printf("HSTOP=%w, "); 
+  setdst(vstart);printf("VSTART=%w, ");
+  setdst(vstop);printf("VSTOP=%w%n"); 
+}
+
+void prttmp() {
+  printf(temp0, "TEMP0=$%h%n");
+  printf(temp1, "TEMP1=$%h%n");
+  printf(temp2, "TEMP2=$%h%n");
+  printf(temp3, "TEMP3=$%h%n");
+}
+
+void prtscl() {
+  printf(hscale, "HSCALE=%h, ");
+  printf(vscale, "VSCALE=%h%n");  
+}
+
+void prtvid() {
+  select (mode) {
+      case 0: puts("DISABLED");
+      case 1: puts("VGA");
+      case 2: puts("NTSC");
+      case 3: puts("RGB");
+      default: puts("UNDEFINED");
+  }
+  if (mono) puts(" MONOCHROME"); else puts(" COLOR");
+  puts(", ");
+  if (field) puts("ODD"); else puts("EVEN");
+  putln(" FIELD");
+}
+
+void xerror() {
+  putln("ERROR ENCOUNTERED");
+  goto exit;
+}
+
+main:
+  newlin();
+
+  putln("TESTING GETVID() AND SETVID()");
+  for (i=0;i<4;i++) {
+    for (j=1;j:+;j--) {
+      //inline $ff;
+      setvid(i,j);
+      mode,mono,field = getvid();
+      //prtvid();
+      if (mode<>i or mono&j<>j) xerror();
+    }
+  }
+  passed();
+ 
+  putln("TESTING GETBDR() AND SETBDR()");
+  i = 0;
+  do {
+    setbdr(i);
+    index = getbdr();
+    if (index<>i) xerror();
+    //printf(index, "BORDER=%h%n");
+    i++;
+  } while(i);
+  passed();
+
+  putln("TESTING GETSCL() AND SETSCL()");
+  i=1;
+  do {
+    j=1;
+    do {
+      setscl(i,j);
+      hscale,vscale = getscl();
+      //prtscl();
+      if (hscale<>i or vscale<>j) xerror("ERROR IN GETSCL()/SETSCL()");
+      j<<;
+    } while (j);
+    i<<;
+  } while (i);
+  passed();
+
+  putln("TESTING GETHST(), GETHSP()");
+      hstart = gethsr();
+      hstop = gethsp();
+      vstart = getvsr();
+      vstop = getvsp();
+      prthvs();
+  newlin();
+
+  putln("TESTING GETIRL() AND SETIRL()");
+  for (i=0;i<2;i++) {
+    j=0;
+    do {
+      setiql(0,i,j);
+      irqlin = getiql();
+      //setdst(); printf("IRQ LINE=%w%n");
+      if (>irqlin<>i or <irqlin<>j) xerror();
+      j++;
+    } while (j);
+  }
+  passed();
+  
+  putln("TESTING RGBCLR() AND CLRRGB()");
+  for (red=0;red<16;red++) {
+    for (green=0;green<16;green++) {
+      for (blue=0;blue<16;blue++) {
+        //prtayx(red,green,blue);
+        c = rgbclr(red,green,blue);
+        //putwrd(c); putspc();
+        i,j,k = clrrgb();
+        //prtayx(i,j,k);
+        if (i<>red or j<>green or blue<>k) xerror();
+      }
+    }
+    //if (anykey()==#ESCKEY) goto exit;
+  }
+  passed();
+
+  putln("TESTING GETCLR()");
+  for (i=16; i<32; i++) {
+    //puthex(i); putspc();
+    c = getclr(i);
+    //putwrd(c); putspc();
+    if (i&15<>>c or nybdup(i)<><c) xerror();
+    //if (i&7==7) newlin();
+  }
+  passed();
+  
+  putln("TESTING SETCLR()");
+  for (i=128; i<144; i++) {
+    //puthex(i); putspc();
+    red = i+8&15;
+    green = 144-i;
+    blue = i&15;
+    //prhex(red); prhex(green); prhex(blue); putspc(); putspc();
+    c = rgbclr(red,green,blue);
+    setclr(i,c);
+    d = getclr(i);
+    //putwrd(d); putspc();
+    if (<d<><c or >d<>>c) xerror();
+    //if (i&7==7) newlin();
+  }
+  passed();
+
+  goto exit;

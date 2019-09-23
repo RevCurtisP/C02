@@ -1,0 +1,311 @@
+; C02 module vera.h02 assembly language subroutines
+; Requires External Functions NYBCAT, NYBCUT
+; and Variables TEMP0
+
+;getvid() - Get Video Output Mode
+;Returns: A = Video Mode
+;         Y = Chroma Disabled
+;         X = Current Field
+GETVID: LDA #$00    ;Set Register Offset to Video Output
+        JSR GETDCR      ;Read from Display Composer
+        LDY #$00        ;Set Chroma Disabled to FALSE
+        LDX #$00        ;Set Video Field to EVEN
+        BIT GETVIM      ;Test Chroma Disabled Bit
+        BEQ GETVIE      ;If Bit 3 is Set
+        DEY             ;  Set Chroma Disabled to TRUE
+        BIT GETVIM      ;Test Chroma Disabled Bit
+GETVIE: BCC GETVIF      ;If Bit 7 is Set
+        DEX             ;  Set Video Field to ODD
+GETVIF: AND #$03        ;Isolate Bits 0-2 (Video Output Mode)
+        RTS 
+GETVIM: .DC $04         ;Chroma Disable Bit Mask
+
+;getbdr() - Get Get Border Color
+;Returns: A = Border Color Palette Index
+GETBDR: LDA #$03    ;Set Register Offset to Border Color
+
+;getdcr() - Get Display Composer Register
+;Args: A = Register Offset
+;Affects: Y
+;Returns: A = Contents of Register
+;         X = Current Data Port
+GETDCR: LDY #$00    ;Set MSB to Display Composer Page
+        TAX         ;Set LSB to Register Offset
+                    ;and Execute GETREG
+;getreg(addr);
+;Args: Y,X = Address
+;Returns: A = Mode
+;         X = Current Data Port
+GETREG: LDA #$0F    ;Set Bank to Registers
+GETBYT: JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        RTS
+
+;getvsp() - Get Vertical Stop
+;Destroys: TEMP0
+;Affects: A
+;Returns: Y,X = Vertical Stop
+GETVSP: LDA #3          ;Set Lookup Index to Vertical Stop
+        .DC $2C         ;Skip to GETHVS (BIT Absolute)
+
+;getvsr() - Get Vertical Start
+;Destroys: TEMP0
+;Affects: A
+;Returns: Y,X = Vertical Start
+GETVSR: LDA #2          ;Set Lookup Index to Vertical Start
+        .DC $2C         ;Skip to GETHVS (BIT Absolute)
+
+;gethsp() - Get Horizontal Stop
+;Destroys: TEMP0
+;Affects: A
+;Returns: Y,X = Horizontal Start
+GETHSP: LDA #1          ;Set Lookup Index to Horizontal Start
+        .DC $2C         ;Skip to GETHVS (BIT Absolute)
+        
+;gethsr() - Get Horizontal Start
+;Destroys: TEMP0
+;Affects: A
+;Returns: Y,X = Horizontal Start
+GETHSR: LDA #0          ;Set Lookup Index to Horizontal Start
+
+GETHVS: LDY GETHVM,X    ;Get High Bits Mask
+        STY TEMP0       ;and Save It
+        LDY GETHVO,X    ;Get High Bits Rotation Count
+        .DC $5A ;PHY    ;And Save it on Stack
+        ORA #4          ;Convert Index to Register Offset          
+        JSR GETDCR      ;Read LSB from Register
+        PHA             ;and Save It
+        LDA #8          ;Load Register Offset for High Bits
+        STA $9F20	    ;Set As Address LSB
+        LDA $9F23,X     ;and Read High Byte from Data Port
+        AND TEMP0       ;and Isolate High Bits
+        .DC $FA ;PLX    ;Restore LSB into X Register
+        .DC $7A ;PLY    ;Restore Rotation Count into Y
+        BEQ GETHVY      ;If Not Zero
+GETHVR: LSR             ;Shift Right One Bit
+        DEY             ;Decrement Counter
+        BNE GETHVR      ;and Loop if Not Zero
+GETHVY: TYA             ;Return MSB in Y Register
+        RTS
+GETHVM: .DC $03,$C0,$10,$20
+GETHVO: .DC 0,2,4,5
+
+;getiql() - Get Interrupt Line
+;Affects: A
+;Returns: Y,X = Interrupt Line#
+GETIQL: LDA #9      ;Set Register Offset to HSCALE,VSCALE
+        .DC $2C     ;Skip to SETDCX (BIT Absolute)
+        
+;getscl() - Get Horizontal and Vertical Scale
+;Returns: A,X = Horizontal Scale
+;      Y = Vertical Scale
+GETSCL: LDA #1      ;Set Register Offset to HSCALE,VSCALE
+        
+;getdci() - Get Display Composer Register Pair
+;Args: A = Register Offset
+;Affects: Y
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETDCI: LDY #$00    ;Set MSB to Display Composer Page
+        TAX         ;Set LSB to Register Offset
+                    ;and Execute GETREG
+
+;getrei(addr); Read Vera Register Pair
+;Args: Y,X = Address
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETREI: LDA #$0F    ;Set Bank to Registers
+
+;getint(addr); Read Integer from Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETINT: ORA #$10    ;Set Auto-Increment to 1
+        JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        LDY $9F23,X ;Read MSB Data Port
+        TAX         ;Copy LSB to X
+        RTS
+
+;setvid() - Set Video Output Mode
+;Args: A = Video Mode
+;      Y = Chroma Disabled
+;Destroys: TEMP0
+SETVID: AND #3      ;Isolate Video Mode Bits
+        CPY #0      ;Set Chroma Mask to
+        BEQ SETVIF  ;  0 if Y is Zero or
+        LDY #4      ;  4 if it is not
+SETVIF: STY TEMP0   ;Save Chroma Bit
+        ORA TEMP0   ;Combine with Video Mode Bits
+        LDX #0      ;Set Register Offset to Video Mode
+        BEQ SETDCX  ;Write to Register
+
+;setbdr() - Set Border Color
+;Args: A = Border Color Palette Index
+SETBDR:  LDX #3     ;Set Register Offset to Border Color
+        .DC $2C     ;Skip to SETDCX (BIT Absolute)
+
+;setdcr() - Set Display Composer Register
+;Args: A = Register Offset
+;      Y = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETDCR: TAX         ;Set LSB to Register Offset
+        TYA         ;Move Write Value to Accumulator
+SETDCX: LDY #$00    ;Set MSB to Display Composer Page
+
+;setreg(addr) - Set Register 
+;Args: A = Value to Write
+;      Y,X = Address
+;Sets: TEMP0 = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETREG: STA TEMP0   ;Save Value to Write
+SETREH: LDA #$0F    ;Set Bank, Auto-Increment
+
+;setbyt(addr) - Write Byte to Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Uses: TEMP0 = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETBYT: JSR SETADR  ;Set Vera Address
+        LDA TEMP0   ;Retrieve Value to Write
+        LDX $9F25   ;Get Current Data Port
+        STA $9F23,X ;Write Value to Data Port
+        RTS
+
+
+;setiql() - Set IRQ Line
+;Args: Y,X = IRQ Line Number`
+;Sets: TEMP1,TEMP2 = IRQ Line Number
+;Affecta: A,Y,X
+SETIQL: TXA         ;Copy LSB to Accumulator
+        LDX #9      ;Set Register Offset to HSCALE,VSCALE
+        .DC $2C     ;Skip to SETDCP (BIT Absolute)
+
+;setscl() - Set Horizontal and Vertical Scale
+;Args: A = Horizontal Scale
+;      Y = Vertical Scale
+SETSCL: LDX #1      ;Set Register Offset to HSCALE,VSCALE
+
+;setdcp() - Set Display Composer Register Pair
+;Args: A = First Register Value
+;      Y = Second Register Value
+;      X = Register Offset
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETDCP: STA TEMP1   ;Store First Value as LSB
+        STY TEMP2   ;Store Second Value as MSB
+        LDY #$00   ;Set MSB to Display Composer Page
+
+;setrei(addr); Set Vera Register to Integer
+;Args: Y,X = Address
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETREI: LDA #$0F    ;Set Bank to Registers
+
+;setint(addr); Write Integer to Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETINT: ORA #$10    ;Set Auto-Increment to 1
+        JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA TEMP1   ;Get LSB
+        STA $9F23,X ;Write to Data Port
+        LDA TEMP2   ;Get MSB
+        STA $9F23,X ;Write to Data Port
+        RTS
+
+
+;rgbclr(r,g,b) - Convert RGB Values to Palette Color
+;Args: A = Red Value (0-15)
+;      Y = Green Value (0-15)
+;      X = Blue Value (0-15)
+;Affects: A
+;Returns: Y = Color MSB (0000RRRR)
+;         X = Color LSB (GGGGBBBB)
+RGBCLR: PHA         ;Save Red Value
+        TYA         ;Copy Green Value to Left Nybble
+        .DC $DA ;PHX Copy Blue Value
+        .DC $7A ;PLY to Right Nybble
+        JSR NYBCAT  ;Concatanate Green and Blue
+        TAX         ;and Return as LSB
+        .DC $7A ;PLY Return Red as MSB
+        RTS
+        
+;clrrgb(c) - Convert Palette Color to RGB Values 
+;Args: Y = Color MSB (0000RRRR)
+;      X = Color LSB (GGGGBBBB)
+;Returns: A = Red Value (0-15)
+;         Y = Green Value (0-15)
+;         X = Blue Value (0-15)
+CLRRGB: .DC $5A ;PHY Save MSB
+        TXA         ;Copy LSB into Accumulator
+        JSR NYBCUT  ;and Split into Nybbles
+        .DC $5A ;PHY Return Blue Value
+        .DC $FA ;PLX in X Register
+        TAY         ;Green Value in Y Register
+        PLA         ;and Red Value in Accumulator
+        RTS
+
+;getclr(idx) - Get Color Entry idx from Palette
+;Args: A = Color Entry Index
+;Affects: A
+;Returns: Y = Color MSB (0000RRRR)
+;         X = Color LSB (GGGGBBBB)
+GETCLR: JSR SETIDX  ;Set Vera Address to Palette Index
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        LDY $9F23,X ;Read MSB from Data Port
+        TAX         ;Copy LSB to X Register
+        RTS
+
+;setclr(idx) - Set Color Entry idx in Palette
+;Args: A = Color Entry Index
+;      Y = Color MSB (0000RRRR)
+;      X = Color LSB (GGGGBBBB)
+;Affects: A
+;Returns: Y,X = Color Entry Address
+SETCLR: JSR SAVRXY  ;Save Color Value
+        JSR SETIDX  ;Set Vera Address to Palette Index
+        LDX $9F25   ;Get Current Data Port
+        LDA TEMP1   ;Retrieve Color Value LSB
+        STA $9F23,X ;and Write to Data Port
+        LDA TEMP2   ;Retrieve Color Value MSB
+        STA $9F23,X ;Read MSB from Data Port
+        RTS
+
+;setidx(idx) - Set Vera Address to Palette Index
+;Args: A = Index
+;Returns: A = Bank + Auto-Increment
+;         Y,X = Address
+SETIDX: ASL         ;Multiply Index by 2
+        TAX         ;and Set as LSB
+        LDA #$10    ;Get Palette Page
+        ADC #$00    ;Add Carry from Multiply
+        TAY         ;and Set as MSB
+
+
+;regadr(opts,addr) - Set Vera Address to Internal Register
+;Args: Y,X = Register Address
+;Returns: A= Bank + Auto-Increment
+REGADR: LDA #$1F    ;Set Bank and Auto-Increment
+
+;setadr(opts,addr) - Set Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+SETADR: STX $9F20   ;Store Address LSB
+        STY $9F21   ;Store Address MSB
+        STA $9F22   ;Store Bank & Auto-Increment
+        RTS
