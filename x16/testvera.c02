@@ -32,10 +32,10 @@ void passed() {
 void prtayx(aa,yy,xx) {prhex(aa); prhex(yy); prhex(xx); putspc(); putspc();}
 
 void prthvs() {
-  setdst(hstart);printf("HSTART=%w, ");
-  setdst(hstop);printf("HSTOP=%w, "); 
-  setdst(vstart);printf("VSTART=%w, ");
-  setdst(vstop);printf("VSTOP=%w%n"); 
+  setdst(hstart);printf("HSTART=%w, "); //$0000
+  setdst(hstop);printf("HSTOP=%w, ");   //$0280 (640)
+  setdst(vstart);printf("VSTART=%w, "); //$0000
+  setdst(vstop);printf("VSTOP=%w%n");   //$01E0 (480)
 }
 
 void prttmp() {
@@ -110,7 +110,7 @@ main:
   } while (i);
   passed();
 
-  putln("TESTING GETHST(), GETHSP()");
+  putln("TESTING GETHSR(), GETHSP(), GETVSR(), GETVSP()");
       hstart = gethsr();
       hstop = gethsp();
       vstart = getvsr();

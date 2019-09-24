@@ -43,53 +43,58 @@ GETBYT: JSR SETADR  ;Set Vera Address
         RTS
 
 ;getvsp() - Get Vertical Stop
-;Destroys: TEMP0
 ;Affects: A
 ;Returns: Y,X = Vertical Stop
-GETVSP: LDA #3          ;Set Lookup Index to Vertical Stop
-        .DC $2C         ;Skip to GETHVS (BIT Absolute)
+GETVSP: LDA #7          ;Set Reg Offset to Vertical Stop
+        JSR GETHVS      ;Read Registers
+        LSR             ;Shift Left One Bit
+        JMP GETVSS      ;Then Four More Bits and Mask
 
 ;getvsr() - Get Vertical Start
-;Destroys: TEMP0
 ;Affects: A
 ;Returns: Y,X = Vertical Start
-GETVSR: LDA #2          ;Set Lookup Index to Vertical Start
-        .DC $2C         ;Skip to GETHVS (BIT Absolute)
-
-;gethsp() - Get Horizontal Stop
-;Destroys: TEMP0
-;Affects: A
-;Returns: Y,X = Horizontal Start
-GETHSP: LDA #1          ;Set Lookup Index to Horizontal Start
-        .DC $2C         ;Skip to GETHVS (BIT Absolute)
+GETVSR: LDA #6          ;Set Reg Offset to Vertical Start
+        JSR GETHVS      ;Read Registers
+GETVSS: LSR             ;Shift Left Four Bit
+        LSR
+        LSR
+        LSR
+        AND #$01        ;Isolate Bit 0
+        TAY             ;and Copy MSB to Y
+        RTS
         
+;gethsp() - Get Horizontal Stop
+;Affects: A
+;Returns: Y,X = Horizontal Stop
+GETHSP: LDA #5          ;Set Lookup Index to Horizontal Start
+        JSR GETHVS      ;Read Registers
+        LSR             ;Shift Left Two Bits
+        LSR
+        JMP GETHSS      ;then Mask and Return
+
 ;gethsr() - Get Horizontal Start
-;Destroys: TEMP0
 ;Affects: A
 ;Returns: Y,X = Horizontal Start
-GETHSR: LDA #0          ;Set Lookup Index to Horizontal Start
+GETHSR: LDA #4          ;Set Lookup Index to Horizontal Start
+        JSR GETHVS      ;Read Registers
+        ;.dc $ff ;debug
+GETHSS: AND #$03        ;Isolate Bit 0
+        TAY             ;and Copy MSB to Y
+        RTS
 
-GETHVS: LDY GETHVM,X    ;Get High Bits Mask
-        STY TEMP0       ;and Save It
-        LDY GETHVO,X    ;Get High Bits Rotation Count
-        .DC $5A ;PHY    ;And Save it on Stack
-        ORA #4          ;Convert Index to Register Offset          
-        JSR GETDCR      ;Read LSB from Register
+;gethvs() - Get Start/Stop Low Byte and High Bits
+;Args: X = Low Register 
+;Affects: Y
+;Returns: A = High Bits
+;         X = Low Byte
+GETHVS: JSR GETDCR      ;Read LSB from Register
+        ;.dc $ff ;debug
         PHA             ;and Save It
         LDA #8          ;Load Register Offset for High Bits
         STA $9F20	    ;Set As Address LSB
-        LDA $9F23,X     ;and Read High Byte from Data Port
-        AND TEMP0       ;and Isolate High Bits
-        .DC $FA ;PLX    ;Restore LSB into X Register
-        .DC $7A ;PLY    ;Restore Rotation Count into Y
-        BEQ GETHVY      ;If Not Zero
-GETHVR: LSR             ;Shift Right One Bit
-        DEY             ;Decrement Counter
-        BNE GETHVR      ;and Loop if Not Zero
-GETHVY: TYA             ;Return MSB in Y Register
+        LDA $9F23,X     ;and Read High Bits into A
+        .DC $FA ;PLX    ;Restore LSB into X
         RTS
-GETHVM: .DC $03,$C0,$10,$20
-GETHVO: .DC 0,2,4,5
 
 ;getiql() - Get Interrupt Line
 ;Affects: A
@@ -128,6 +133,41 @@ GETINT: ORA #$10    ;Set Auto-Increment to 1
         LDA $9F23,X ;Read LSB from Data Port
         LDY $9F23,X ;Read MSB Data Port
         TAX         ;Copy LSB to X
+        RTS
+
+;sethsr() - Get Horizontal Start
+;Affects: A
+;Returns: Y,X = Horizontal Start
+SETHSR: TYA             ;Convert MSB to High Bits
+        AND #$03
+        ASL
+        ASL
+        STA TEMP0       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #5          ;Set Register Offset to Horizontal Start
+        JSR SETHVS      ;Write LSB and Get High Bits
+        AND #$F3        ;Mask Start Stop High
+        JMP SETHST      ;OR in High Bits and Write Back
+
+;sethsr() - Get Horizontal Start
+;Affects: A
+;Returns: Y,X = Horizontal Start
+SETHSR: TYA             ;Convert MSB to High Bits
+        AND #$03
+        STA TEMP0       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #4          ;Set Register Offset to Horizontal Start
+        JSR SETHVS      ;Write LSB and Get High Bits
+        AND #$FC        ;Mask Start Stop High
+SETHST: ORA TEMP0       ;OR in High Bits
+        STA $9F23,X     ;and Write back to Register
+        RTS
+        
+        
+SETHVS: JSR SETDCX      ;Write LSB
+        LDA #8          ;Load Register Offset for High Bits
+        STA $9F20	    ;Set As Address LSB
+        LDA $9F23,X     ;and Read High Bits into A
         RTS
 
 ;setvid() - Set Video Output Mode
