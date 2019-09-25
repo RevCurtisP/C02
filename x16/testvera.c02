@@ -9,24 +9,52 @@
 #include <intlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
+#include <memory.h02>
 #include <nybble.h02>
 #include "include/vera.h02"
 
+const char abcdef = {1,2,3,4,5,6};
+char buffer[255];       //Buffer for getmem
+
 char hscale,vscale;     //Video Scaling
+char hrzvrt[5];         //Horizontal and Vertical Register Contents
 char index;             //Color Palette Index
 char mode,mono,field;   //Video Output Mode, Monochrome Flag, Current Field
 char red,green,blue;    //Color Components
+char enabld;            //Layer Enabled
 char i,j,k,l;
 
-int  c,d,s;
+int color,colour;
 int hstart,hstop;       //Horizontal Start and Stop
 int vstart,vstop;       //Vertical Start and Stop
 int irqlin;             //IRQ Line#
+
+/* Layer 0/1 */
+
+char layer;             //Layer Number
+char layer0[9];         //Layer 0 Register Contents
+char layer1[9];         //Layer 1 Register Contents
+int mbase0,mbase1;      //Map Base, Layer 0 and 1
+int tbase0,tbase1;      //Tile Base, Layer 0 and 1
+int mbaddr,tbaddr;      //Map and Tile Base Address
+int hscrl0,hscrl1;      //Horizontal Scroll, Layer 0 and 1
+int vscrl0,vscrl1;      //Vertical Scroll, Layer 0 and 1
+
 char aa,xx,yy;
+
+void failed() {
+  putln("  FAILED");
+}
 
 void passed() {
   putln("  PASSED");
-  newlin();
+  //newlin();
+}
+
+void prtadr() {
+  aa, yy, xx = getadr();
+  puts("ADDRESS=");
+  prbyte(aa); prbyte(yy); prbyte(xx); newlin();
 }
 
 void prtayx(aa,yy,xx) {prhex(aa); prhex(yy); prhex(xx); putspc(); putspc();}
@@ -72,7 +100,13 @@ void xerror() {
 main:
   newlin();
 
-  putln("TESTING GETVID() AND SETVID()");
+  puts("TESTING GETMEM() AND SETMEM()");
+  setadr($20,&0); setmem(@abcdef,&abcdef);
+  setadr($20,&0); getmem(@abcdef,&buffer);
+  setdst(&abcdef); if (memcmp(@abcdef,&buffer)) xerror();
+  passed();
+
+  puts("TESTING GETVID() AND SETVID()");
   for (i=0;i<4;i++) {
     for (j=1;j:+;j--) {
       //inline $ff;
@@ -84,7 +118,7 @@ main:
   }
   passed();
  
-  putln("TESTING GETBDR() AND SETBDR()");
+  puts("TESTING GETBDR() AND SETBDR()");
   i = 0;
   do {
     setbdr(i);
@@ -95,7 +129,7 @@ main:
   } while(i);
   passed();
 
-  putln("TESTING GETSCL() AND SETSCL()");
+  puts("TESTING GETSCL() AND SETSCL()");
   i=1;
   do {
     j=1;
@@ -110,15 +144,35 @@ main:
   } while (i);
   passed();
 
-  putln("TESTING GETHSR(), GETHSP(), GETVSR(), GETVSP()");
-      hstart = gethsr();
-      hstop = gethsp();
-      vstart = getvsr();
-      vstop = getvsp();
-      prthvs();
-  newlin();
+  //putln("SAVING START AND STOP REGISTERS");
+  setadr($1F, &$0004); getmem(5, &hrzvrt);
+  //for (i=0;i<5;i++) printf(hrzvrt[i], "%h "); newlin();
+  
+  puts("TESTING GETHSR() AND SETHSR()");
+  sethsr(&$024C); 
+  hstart = gethsr(); 
+  //setdst(hstart);printf("HSTART=%w%n");
+  if (>hstart<>$02 or <hstart<>$4C) xerror(); else passed();
 
-  putln("TESTING GETIRL() AND SETIRL()");
+  puts("TESTING GETHSP() AND SETHSP()");
+  sethsp(&$025D); hstop = gethsp(); 
+  //setdst(hstop);printf("HSTOP=%w%n");
+  if (>hstop<>$02 or <hstop<>$5D) xerror(); else passed();
+
+  puts("TESTING GETVSR() AND SETVSR()");
+  setvsr(&$016E); vstart = getvsr(); 
+  //setdst(vstart);printf("VSTART=%w%n");
+  if (>vstart<>$01 or <vstart<>$6E) xerror(); else passed();
+
+  puts("TESTING GETVSP() AND SETVSP()");
+  setvsp(&$017F); vstop = getvsp(); 
+  //setdst(vstop);printf("VSTOP=%w%n");
+  if (>vstop<>$01 or <vstop<>$7F) xerror(); else passed();
+
+  //putln("RESTORING START AND STOP REGISTERS");
+  setadr($1F, &$0004); setmem(5, &hrzvrt);
+
+  puts("TESTING GETIRL() AND SETIRL()");
   for (i=0;i<2;i++) {
     j=0;
     do {
@@ -131,13 +185,13 @@ main:
   }
   passed();
   
-  putln("TESTING RGBCLR() AND CLRRGB()");
+  puts("TESTING RGBCLR() AND CLRRGB()");
   for (red=0;red<16;red++) {
     for (green=0;green<16;green++) {
       for (blue=0;blue<16;blue++) {
         //prtayx(red,green,blue);
-        c = rgbclr(red,green,blue);
-        //putwrd(c); putspc();
+        color = rgbclr(red,green,blue);
+        //putwrd(color); putspc();
         i,j,k = clrrgb();
         //prtayx(i,j,k);
         if (i<>red or j<>green or blue<>k) xerror();
@@ -147,30 +201,79 @@ main:
   }
   passed();
 
-  putln("TESTING GETCLR()");
+  puts("TESTING GETCLR() AND SETCLR()");
   for (i=16; i<32; i++) {
     //puthex(i); putspc();
-    c = getclr(i);
-    //putwrd(c); putspc();
-    if (i&15<>>c or nybdup(i)<><c) xerror();
+    color = getclr(i);
+    //putwrd(color); putspc();
+    if (i&15<>>color or nybdup(i)<><color) xerror();
     //if (i&7==7) newlin();
   }
-  passed();
+  //passed();
   
-  putln("TESTING SETCLR()");
+  //puts("TESTING SETCLR()");
   for (i=128; i<144; i++) {
     //puthex(i); putspc();
     red = i+8&15;
     green = 144-i;
     blue = i&15;
     //prhex(red); prhex(green); prhex(blue); putspc(); putspc();
-    c = rgbclr(red,green,blue);
-    setclr(i,c);
-    d = getclr(i);
-    //putwrd(d); putspc();
-    if (<d<><c or >d<>>c) xerror();
+    color = rgbclr(red,green,blue);
+    setclr(i,color);
+    colour = getclr(i);
+    //putwrd(colour); putspc();
+    if (<colour<><color or >colour<>>color) xerror();
     //if (i&7==7) newlin();
   }
   passed();
 
+  //putln("SAVING LAYER REGISTERS");
+  setadr($1F,&$2000); getmem(@layer0,&layer0);
+  setadr($1F,&$3000); getmem(@layer1,&layer1);
+
+  printf(layer, "TESTING GETMBS() AND SETMBS()");
+  setmbs(0,&$1234); mbase0 = getmbs(0);
+  setmbs(1,&$5678); mbase1 = getmbs(1);
+  //setdst(mbase0); printf("%nMBASE0=$%w, "); setdst(mbase1); printf("MBASE1=$%w%n");
+  if (>mbase0<>$12 or <mbase0<>$34) xerror();  
+  if (>mbase1<>$56 or <mbase1<>$78) xerror();  
+  passed();
+
+  printf(layer, "TESTING GETTBS() AND SETTBS()");
+  settbs(0,&$90AB); tbase0 = gettbs(0);
+  settbs(1,&$CDEF); tbase1 = gettbs(1);
+  //setdst(tbase0); printf("%nTBASE0=$%w, "); setdst(tbase1); printf("TBASE1=$%w%n");
+  if (>tbase0<>$90 or <tbase0<>$AB) xerror();  
+  if (>tbase1<>$CD or <tbase1<>$EF) xerror();  
+  passed();
+
+  printf(layer, "TESTING GETMBA() AND GETTBA()");
+  i,j,k = getmba(0); if (i<>$00 or j<>$48 or k<>$D0) xerror();
+  i,j,k = getmba(1); if (i<>$01 or j<>$59 or k<>$E0) xerror();
+  i,j,k = gettba(0); if (i<>$02 or j<>$42 or k<>$AC) xerror();
+  i,j,k = gettba(1); if (i<>$03 or j<>$37 or k<>$BC) xerror();
+  passed();
+    
+  printf(layer, "TESTING GETHSC() AND SETHSC()");
+  sethsc(0,&$1357); hscrl0 = gethsc(0);
+  sethsc(1,&$2468); hscrl1 = gethsc(1);
+  //setdst(hscrl0); printf("%nHSCRL0=$%w, "); setdst(hscrl1); printf("HSCRL1=$%w%n");
+  if (>hscrl0<>$13 or <hscrl0<>$57) xerror();  
+  if (>hscrl1<>$24 or <hscrl1<>$68) xerror();  
+  passed();
+
+  printf(layer, "TESTING GETVSC() AND SETVSC()");
+  setvsc(0,&$9BDF); vscrl0 = getvsc(0);
+  setvsc(1,&$0ACE); vscrl1 = getvsc(1);
+  //setdst(vscrl0); printf("%nVSCRL0=$%w, "); setdst(hscrl1); printf("VSCRL1=$%w%n");
+  if (>vscrl0<>$9B or <vscrl0<>$DF) xerror();  
+  if (>vscrl1<>$0A or <vscrl1<>$CE) xerror();  
+  passed();
+
+  //putln("RESTORING LAYER REGISTERS");
+  setadr($1F, &$2000); setmem(@layer0, &layer0);
+  setadr($1F, &$3000); setmem(@layer1, &layer1);
+
+  
   goto exit;
+

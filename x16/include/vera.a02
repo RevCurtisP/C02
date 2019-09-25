@@ -2,6 +2,14 @@
 ; Requires External Functions NYBCAT, NYBCUT
 ; and Variables TEMP0
 
+;getadr() - Get Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+GETADR: LDX $9F20   ;Store Address LSB
+        LDY $9F21   ;Store Address MSB
+        LDA $9F22   ;Store Bank & Auto-Increment
+        RTS
+
 ;getvid() - Get Video Output Mode
 ;Returns: A = Video Mode
 ;         Y = Chroma Disabled
@@ -32,7 +40,7 @@ GETBDR: LDA #$03    ;Set Register Offset to Border Color
 GETDCR: LDY #$00    ;Set MSB to Display Composer Page
         TAX         ;Set LSB to Register Offset
                     ;and Execute GETREG
-;getreg(addr);
+;getreg(&addr);
 ;Args: Y,X = Address
 ;Returns: A = Mode
 ;         X = Current Data Port
@@ -41,6 +49,194 @@ GETBYT: JSR SETADR  ;Set Vera Address
         LDX $9F25   ;Get Current Data Port
         LDA $9F23,X ;Read LSB from Data Port
         RTS
+
+;getmem(count, &addr) - Read Array From Vera Memory
+;Args: A = Number of Bytes to Read
+;      Y,X = Address of Array to Read Into
+;Requires: setadr() 
+;Sets: DSTLO,DSTHI = Address of Array
+;      TEMP0 = Number of Bytes to Read
+;Affects: A
+;Returns: Y = Number of Bytes Read
+;         X = Current Data Port
+GETMEM: JSR SETDST      ;Save Destination Address
+GETMEA: STA TEMP0       ;Save Number of Bytes
+        LDY #0          ;Initialize Counter
+        LDX $9F25       ;Get Current Data Port
+GETMEL: LDA $9F23,X     ;Read Byte from Data Port
+        STA (DSTLO),Y   ;Store in Memory
+        INY             ;Increment Counter
+        CPY TEMP0       ;If Limit Not Reached
+        BNE GETMEL      ;  Loop
+
+;getmod() - Get Layer 0/1 Mode
+;Args: A = Layer (0/1)
+;Affects: Y
+;Returns: A = Layer Mode
+;         X = Current Data Port
+GETMOD: JSR GETLRC  ;Read Register
+        LSR         ;Shift Left Five Bits
+        LSR         
+        LSR
+        LSR
+        RTS
+
+;getenb() - Get Layer 0/1 Enabled
+;Args: A = Layer (0/1)
+;Affects: Y
+;Returns: A = $FF - Layer Enabled
+;             $00 - Layer Disabled
+;         X = Current Data Port
+GETENB: JSR GETLRC  ;Read Register
+        AND #$01    ;Isolate Bit 1
+        BEQ GETENX  ;If Set 
+        LDA #$FF    ;  Return TRUE
+GETENX: RTS         ;Else Return FALSE        
+
+;getlrc() - Get Layer 0/1 Control Register
+;Args: A = Layer (0/1)
+;Affects: Y
+;Returns: A = Control Register Contents
+;         X = Current Data Port
+GETLRC: LDX #0      ;Set Offset to Control Register
+
+;getlrr() - Get Layer 0/1 Register
+;Args: A = Layer (0/1)
+;      X = Register Offset
+;Affects: Y
+;Returns: A = Contents of Register
+;         X = Current Data Port
+GETLRR: JSR GETLRP  ;Get Layer Page in Y
+        BNE GETREG  ;and Read Register Contents
+
+;getlrp() - Get Layer 0/1 Register Page
+;Args: A = Layer (0/1)
+;Returns: A,Y = Layer Register Page
+GETLRP: AND #$01    ;Isolate Bit 1
+        ASL         ;Move to Left Nybble
+        ASL
+        ASL
+        ASL
+        ORA #$20    ;And Add to 2
+        TAY         ;Return Page in Y
+        RTS
+
+;getchd(index, &array) - Read Character Data into Array
+;Args: A = Character Index
+;      Y,X = Address of Array to Read into
+;Destroys: TEMP0,TEMP1,TEMP2
+;Returns: A = Number of Bytes Read
+GETCHD: JSR SETDST      ;Store Address in Destination Pointer
+        STA TEMP1       ;Set Offset LSB to Index
+        LDA #0          ;Set Offset MSB to Zero
+        ASL TEMP1       ;Multiple Offset by 2
+        ROL             
+        STA TEMP2       ;and Store MSB
+        JSR GETLRI      ;Get Tile Base
+        TXA             ;Add Offset To Tile Base
+        CLC
+        ADC TEMP0
+        STA TEMP0
+        TYA
+        ADC TEMP1
+        STA TEMP1
+        LDA #0
+        ADC #0
+        JSR GETMBX      ;Multiply by 4
+        ORA #$10        ;Set Auto-Increment to 1
+        JSR SETADR      ;and Set Vera Address
+        LDA #8          ;Set Byte Count to 8
+        BNE GETMEA      ;and Read Bytes into Array
+
+;gettba() - Get Layer 0/1 Tile Base Address
+;Args: A = Layer (0/1)
+;Destroys: TEMP1,TEMP2
+;Returns: A = Tile Base Bank
+;         Y,X = Tile Base Address
+GETTBA: LDX #4      ;Set Register Offset
+        .DC $2C     ;Read Register Pair and Rotate
+
+;getmba() - Get Layer 0/1 Map Base Address
+;Args: A = Layer (0/1)
+;Destroys: TEMP1,TEMP2
+;Returns: A = Map Base Bank
+;         Y,X = Map Base Address
+GETMBA: LDX #2      ;Set Register Offset
+        JSR GETLRI  ;Read Register Pair as Integer
+        LDA #0      ;Initialize Page to 0
+        JSR SAVRXY  ;Save Integer in TEMP1,TEMP2
+GETMBX: LDX #2      ;Do Twice
+GETMBL: ASL TEMP1   ;  Rotate LSB
+        ROL TEMP2   ;  MSB and
+        ROL         ;  Bank Left
+        DEX
+        BNE GETMBL
+        JMP RESRXY  ;Load LSB, MSB and Return
+
+;getvsc() - Get Layer 0/1 Vertical Scroll
+;Args: A = Layer (0/1)
+;Returns: A,X = Vertical Scroll LSB
+;         Y = Vertical Scroll MSB
+GETVSC: LDX #8      ;Set Register Offset
+        .DC $2C     ;Skip to GETLRI (BIT Absolute)
+
+;gethsc() - Get Layer 0/1 Horizontal Scroll
+;Args: A = Layer (0/1)
+;Returns: A,X = Horizontal Scroll LSB
+;         Y = Horizontal Scroll MSB
+GETHSC: LDX #6      ;Set Register Offset
+        .DC $2C     ;Skip to GETLRI (BIT Absolute)
+
+;gettbs() - Get Layer 0/1 Tile Base
+;Args: A = Layer (0/1)
+;Returns: A,X = Tile Base LSB
+;         Y = Tile Base MSB
+GETTBS: LDX #4      ;Set Register Offset
+        .DC $2C     ;Skip to GETLRI (BIT Absolute)
+
+;getmbs() - Get Layer 0/1 Map Base
+;Args: A = Layer (0/1)
+;Returns: A,X = Map Base LSB
+;         Y = Map Base MSB
+GETMBS: LDX #2      ;Set Register Offset
+
+;getlri() - Get Layer 0/1 Register Pair as Integer
+;Args: A = Layer (0/1)
+;      X = Register Offset
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETLRI: JSR GETLRP  ;Get Layer Page in Y
+        BNE GETREI  ;and Read Register Contents
+
+
+;mapsiz() - Convert Map Size Specifier to Pixels
+;Args: A = Map Size Specifier
+;Affects: A
+;Returns: Y,X Map Size in Pixels
+MAPSIZ: TAX             ;Copy Map Size Specifier to X
+        LDA MAPSIH,X    ;Load Pixels MSB from Table
+        TAY             ;and Return in Y
+        LDA MAPSIL,X    ;Load Pixels LSB from Table
+        TAX             ;and Return in X
+MAPSIL: .DC $20,$40,$80,$00
+MAPSIH: .DC $00,$00,$00,$01
+        
+;tilsiz() - Convert Tile Size Specifier to Pixels
+;Args: A = Tile Size Specifier
+;Affects: A
+;Returns: A Tile Size in Pixels
+TILSIZ: TAX             ;Copy Map Size Specifier to X
+        LDA TILSIT,X    ;Load Pixels MSB from Table
+        RTS
+TILSIT: .DC $08,$10
+
+;gettsz() - Get Layer 0/1 Tile Size
+
+;getmsz() - Get Layer 0/1 Map Size
+;Args: A = Layer (0/1)
+;Affects: X
+;Returns: A = Map Width Specifier
+;         Y = Map Height Specifier
 
 ;getvsp() - Get Vertical Stop
 ;Affects: A
@@ -99,13 +295,14 @@ GETHVS: JSR GETDCR      ;Read LSB from Register
 ;getiql() - Get Interrupt Line
 ;Affects: A
 ;Returns: Y,X = Interrupt Line#
-GETIQL: LDA #9      ;Set Register Offset to HSCALE,VSCALE
+GETIQL: LDA #9      ;Set Register Offset to Interrupt Line
         .DC $2C     ;Skip to SETDCX (BIT Absolute)
         
 ;getscl() - Get Horizontal and Vertical Scale
 ;Returns: A,X = Horizontal Scale
 ;      Y = Vertical Scale
 GETSCL: LDA #1      ;Set Register Offset to HSCALE,VSCALE
+        .DC $2C     ;Skip to SETDCI (BIT Absolute)
         
 ;getdci() - Get Display Composer Register Pair
 ;Args: A = Register Offset
@@ -135,31 +332,64 @@ GETINT: ORA #$10    ;Set Auto-Increment to 1
         TAX         ;Copy LSB to X
         RTS
 
-;sethsr() - Get Horizontal Start
-;Affects: A
-;Returns: Y,X = Horizontal Start
-SETHSR: TYA             ;Convert MSB to High Bits
-        AND #$03
+;setvsp() - Set Horizontal Stop
+;Args: Y,X = Horizontal Stop
+;Affects: A,X,Y
+SETVSP: TYA             ;Convert MSB to High Bit
+        AND #$01
         ASL
         ASL
-        STA TEMP0       ;and Save
+        ASL
+        ASL
+        ASL
+        STA TEMP1       ;and Save
         TXA             ;Copy LSB to Accumlator
-        LDX #5          ;Set Register Offset to Horizontal Start
-        JSR SETHVS      ;Write LSB and Get High Bits
-        AND #$F3        ;Mask Start Stop High
+        LDX #7          ;Set Register Offset to Horizontal Start
+        LDY #$DF        ;Set High Bits Mask 
         JMP SETHST      ;OR in High Bits and Write Back
 
-;sethsr() - Get Horizontal Start
-;Affects: A
-;Returns: Y,X = Horizontal Start
+;setvsr() - Set Horizontal Start
+;Args: Y,X = Horizontal Start
+;Affects: A,X,Y
+SETVSR: TYA             ;Convert MSB to High Bit
+        AND #$01
+        ASL
+        ASL
+        ASL
+        ASL
+        STA TEMP1       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #6          ;Set Register Offset to Horizontal Start
+        LDY #$EF        ;Set High Bits Mask 
+        JMP SETHST      ;OR in High Bits and Write Back
+
+;sethsp() - Set Horizontal Stop
+;Args: Y,X = Horizontal Stop
+;Affects: A,X,Y
+SETHSP: TYA             ;Convert MSB to High Bits
+        AND #$03
+        ASL
+        ASL
+        STA TEMP1       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #5          ;Set Register Offset to Horizontal Start
+        LDY #$F3        ;Set High Bits Mask 
+        JMP SETHST      ;OR in High Bits and Write Back
+
+;sethsr() - Set Horizontal St7art
+;Args: Y,X = Horizontal Start
+;Destroys TEMP0,TEMP1,TEMP2
+;Affects: A,X,Y
 SETHSR: TYA             ;Convert MSB to High Bits
         AND #$03
-        STA TEMP0       ;and Save
+        STA TEMP1       ;and Save
         TXA             ;Copy LSB to Accumlator
         LDX #4          ;Set Register Offset to Horizontal Start
+        LDY #$FC        ;Set High Bits Mask 
+SETHST: STY TEMP2       ;Save
         JSR SETHVS      ;Write LSB and Get High Bits
-        AND #$FC        ;Mask Start Stop High
-SETHST: ORA TEMP0       ;OR in High Bits
+        AND TEMP2       ;Mask Start Stop High
+        ORA TEMP1       ;OR in High Bits
         STA $9F23,X     ;and Write back to Register
         RTS
         
@@ -221,6 +451,48 @@ SETBYT: JSR SETADR  ;Set Vera Address
         STA $9F23,X ;Write Value to Data Port
         RTS
 
+;settbs() - Set Layer 0/1 Map Base
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Map Base
+;Affecta: A,Y,X
+SETTBS: JSR SAVRXY  ;Store Map Base in TEMP1,TEMP2
+        LDX #4      ;Set Register Offset
+        BNE SETLRI  ;Write to Layer Register
+        
+;setmbs() - Set Layer 0/1 Map Base
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Map Base
+;Affecta: A,Y,X
+SETMBS: JSR SAVRXY  ;Store Map Base in TEMP1,TEMP2
+        LDX #2      ;Set Register Offset
+        BNE SETLRI  ;Write to Layer Register
+
+;setvsc() - Set Layer 0/1 Vertical Scroll
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Vertical Scroll
+;Affecta: A,Y,X
+SETVSC: JSR SAVRXY  ;Store Vertical Scroll in TEMP1,TEMP2
+        LDX #8      ;Set Register Offset
+        BNE SETLRI  ;Write to Layer Register
+
+;sethsc() - Set Layer 0/1 Horizontal Scroll
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Horizontal Scroll
+;Affecta: A,Y,X
+SETHSC: JSR SAVRXY  ;Store Horizontal Scroll in TEMP1,TEMP2
+        LDX #6      ;Set Register Offset
+
+;setlri() - Write Integer to Get Layer 0/1 Register
+;Args: A = Layer (0/1)
+;      X = Register Offset
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affecta: A,Y,X
+SETLRI: JSR GETLRP  ;Get Layer Page in Y
+        BNE SETREI  ;and Write Integer to Register
 
 ;setiql() - Set IRQ Line
 ;Args: Y,X = IRQ Line Number`
@@ -267,6 +539,25 @@ SETINT: ORA #$10    ;Set Auto-Increment to 1
         STA $9F23,X ;Write to Data Port
         RTS
 
+;setmem(count, &addr) - Write Array to Vera Memory
+;Args: A = Number of Bytes to Write
+;      Y,X = Address of Array to Write From
+;Requires: setadr() 
+;Sets: SRCLO,SRCHI = Address of Array
+;      TEMP0 = Number of Bytes to Write
+;Affects: A
+;Returns: Y = Number of Bytes Written
+;         X = Current Data Port
+SETMEM: STA TEMP0       ;Save Number of Bytes
+        JSR SETSRC      ;Save Destination Address
+        LDX $9F25       ;Get Current Data Port
+        LDY #0          ;Initialize Counter
+SETMEL: LDA (SRCLO),Y   ;Read Byte from Array
+        STA $9F23,X     ;Write Byte to Data Port
+        INY             ;Increment Counter
+        CPY TEMP0       ;If Limit Not Reached
+        BNE SETMEL      ;  Loop
+        RTS
 
 ;rgbclr(r,g,b) - Convert RGB Values to Palette Color
 ;Args: A = Red Value (0-15)
