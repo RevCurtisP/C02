@@ -1,5 +1,5 @@
 /*****************************************************
- * HELLO - Test/Demo program for C02 Standard Header *
+ * TESTVERA                                          *
  *        Prints "HELLO WORLD" and exits             *
  *****************************************************/
  
@@ -11,6 +11,7 @@
 #include <stdiox.h02>
 #include <memory.h02>
 #include <nybble.h02>
+#include "include/veramem.h02"
 #include "include/vera.h02"
 
 const char abcdef = {1,2,3,4,5,6};
@@ -58,13 +59,6 @@ void prtadr() {
 }
 
 void prtayx(aa,yy,xx) {prhex(aa); prhex(yy); prhex(xx); putspc(); putspc();}
-
-void prthvs() {
-  setdst(hstart);printf("HSTART=%w, "); //$0000
-  setdst(hstop);printf("HSTOP=%w, ");   //$0280 (640)
-  setdst(vstart);printf("VSTART=%w, "); //$0000
-  setdst(vstop);printf("VSTOP=%w%n");   //$01E0 (480)
-}
 
 void prttmp() {
   printf(temp0, "TEMP0=$%h%n");
@@ -136,7 +130,7 @@ main:
     do {
       setscl(i,j);
       hscale,vscale = getscl();
-      //prtscl();
+      //prtscl;
       if (hscale<>i or vscale<>j) xerror("ERROR IN GETSCL()/SETSCL()");
       j<<;
     } while (j);

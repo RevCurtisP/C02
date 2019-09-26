@@ -1,0 +1,54 @@
+/*********************************************
+ * veramem.h02 - Memory Access Functions for *
+ *               Commander X16 VERA Chip     *
+ *********************************************/
+
+/* Get Vera Memory Address                 *
+ * Returns: char bank - Address Bits 16-19 *
+ *           int addr - Address Bits 0-15  */
+char getadr();
+
+/* Read Byte from Vera Memory             *
+ * Args: char bank - Address Bits 16-19   *
+ *        int addr - Address Bits 0-15    *
+ * Returns: char byte - Contents of Memory */
+char getbyt();
+
+/* Read Integer from Vera Memory          *
+ * Args: char bank - Address Bits 16-19   *
+ *        int addr - Address Bits 0-15    *
+ * Returns: int byte - Contents of Memory */
+char getint();
+
+/* Read from Vera Memory into Array        *
+ * Args: char opts - Bank | Auto-Increment *
+ *        int addr - Address Bits 0-15     *
+ * Returns: char count - Bytes Written     */
+char getmem();
+
+/* Read Vera Internal Register Pair       *
+ * Args: int addr - Register Address      *
+ * Returns: char byte - Register LSB      *
+ *           int word - Register Contents */
+char getrei();
+
+/* Set Vera Memory Address                 *
+ * Args: char opts - Bank | Auto-Increment *
+ *        int addr - Address               *
+char setadr();
+
+/* Write Byte to Vera Memory       *
+ * Args: char byte - Byte to Write *
+ * Requires: setadr(bank,addr)     */
+char setbyt();
+
+/* Write Integer to Vera Memory      *
+ * Args: int word - Integer to Write *
+ * Requires: setadr(bank,addr)       */
+char setint();
+
+/* Write from Array to Vera Memory     *
+ * Args: int word - Integer to Write   *
+ * Requires: setadr(bank,addr)         *
+ * Returns: char count - Bytes Written */
+char setmem();

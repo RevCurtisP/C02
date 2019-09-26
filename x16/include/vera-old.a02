@@ -1,4 +1,14 @@
 ; C02 module vera.h02 assembly language subroutines
+; Requires External Functions NYBCAT, NYBCUT
+; and Variables TEMP0
+
+;getadr() - Get Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+GETADR: LDX $9F20   ;Store Address LSB
+        LDY $9F21   ;Store Address MSB
+        LDA $9F22   ;Store Bank & Auto-Increment
+        RTS
 
 ;getvid() - Get Video Output Mode
 ;Returns: A = Video Mode
@@ -17,7 +27,7 @@ GETVIE: BCC GETVIF      ;If Bit 7 is Set
 GETVIF: AND #$03        ;Isolate Bits 0-2 (Video Output Mode)
         RTS 
 GETVIM: .DC $04         ;Chroma Disable Bit Mask
-        
+
 ;getbdr() - Get Get Border Color
 ;Returns: A = Border Color Palette Index
 GETBDR: LDA #$03    ;Set Register Offset to Border Color
@@ -29,7 +39,35 @@ GETBDR: LDA #$03    ;Set Register Offset to Border Color
 ;         X = Current Data Port
 GETDCR: LDY #$00    ;Set MSB to Display Composer Page
         TAX         ;Set LSB to Register Offset
-        JMP GETREG  ;and Execute GETREG
+                    ;and Execute GETREG
+;getreg(&addr);
+;Args: Y,X = Address
+;Returns: A = Mode
+;         X = Current Data Port
+GETREG: LDA #$0F    ;Set Bank to Registers
+GETBYT: JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        RTS
+
+;getmem(count, &addr) - Read Array From Vera Memory
+;Args: A = Number of Bytes to Read
+;      Y,X = Address of Array to Read Into
+;Requires: setadr() 
+;Sets: DSTLO,DSTHI = Address of Array
+;      TEMP0 = Number of Bytes to Read
+;Affects: A
+;Returns: Y = Number of Bytes Read
+;         X = Current Data Port
+GETMEM: JSR SETDST      ;Save Destination Address
+GETMEA: STA TEMP0       ;Save Number of Bytes
+        LDY #0          ;Initialize Counter
+        LDX $9F25       ;Get Current Data Port
+GETMEL: LDA $9F23,X     ;Read Byte from Data Port
+        STA (DSTLO),Y   ;Store in Memory
+        INY             ;Increment Counter
+        CPY TEMP0       ;If Limit Not Reached
+        BNE GETMEL      ;  Loop
 
 ;getmod() - Get Layer 0/1 Mode
 ;Args: A = Layer (0/1)
@@ -69,7 +107,7 @@ GETLRC: LDX #0      ;Set Offset to Control Register
 ;Returns: A = Contents of Register
 ;         X = Current Data Port
 GETLRR: JSR GETLRP  ;Get Layer Page in Y
-        JMP GETREG  ;and Read Register Contents
+        BNE GETREG  ;and Read Register Contents
 
 ;getlrp() - Get Layer 0/1 Register Page
 ;Args: A = Layer (0/1)
@@ -108,7 +146,7 @@ GETCHD: JSR SETDST      ;Store Address in Destination Pointer
         ORA #$10        ;Set Auto-Increment to 1
         JSR SETADR      ;and Set Vera Address
         LDA #8          ;Set Byte Count to 8
-        JMP GETMEA      ;and Read Bytes into Array
+        BNE GETMEA      ;and Read Bytes into Array
 
 ;gettba() - Get Layer 0/1 Tile Base Address
 ;Args: A = Layer (0/1)
@@ -168,7 +206,8 @@ GETMBS: LDX #2      ;Set Register Offset
 ;Returns: A,X = Integer LSB
 ;         Y = Integer LSB
 GETLRI: JSR GETLRP  ;Get Layer Page in Y
-        JMP GETREI  ;and Read Register Contents
+        BNE GETREI  ;and Read Register Contents
+
 
 ;mapsiz() - Convert Map Size Specifier to Pixels
 ;Args: A = Map Size Specifier
@@ -261,8 +300,9 @@ GETIQL: LDA #9      ;Set Register Offset to Interrupt Line
         
 ;getscl() - Get Horizontal and Vertical Scale
 ;Returns: A,X = Horizontal Scale
-;      Y = Vertical Scale
+;         Y = Vertical Scale
 GETSCL: LDA #1      ;Set Register Offset to HSCALE,VSCALE
+        .DC $2C     ;Skip SETDCI (BIT Absolute)
         
 ;getdci() - Get Display Composer Register Pair
 ;Args: A = Register Offset
@@ -271,7 +311,26 @@ GETSCL: LDA #1      ;Set Register Offset to HSCALE,VSCALE
 ;         Y = Integer LSB
 GETDCI: LDY #$00    ;Set MSB to Display Composer Page
         TAX         ;Set LSB to Register Offset
-        JMP GETREI  ;Get Vera Register Pair
+                    ;and Execute GETREI
+
+;getrei(addr); Read Vera Register Pair
+;Args: Y,X = Address
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETREI: LDA #$0F    ;Set Bank to Registers
+
+;getint(addr); Read Integer from Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETINT: ORA #$10    ;Set Auto-Increment to 1
+        JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        LDY $9F23,X ;Read MSB Data Port
+        TAX         ;Copy LSB to X
+        RTS
 
 ;setvsp() - Set Horizontal Stop
 ;Args: Y,X = Horizontal Stop
@@ -368,7 +427,29 @@ SETBDR:  LDX #3     ;Set Register Offset to Border Color
 SETDCR: TAX         ;Set LSB to Register Offset
         TYA         ;Move Write Value to Accumulator
 SETDCX: LDY #$00    ;Set MSB to Display Composer Page
-        JMP SETREG  ;Write to Register
+
+;setreg(addr) - Set Register 
+;Args: A = Value to Write
+;      Y,X = Address
+;Sets: TEMP0 = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETREG: STA TEMP0   ;Save Value to Write
+SETREH: LDA #$0F    ;Set Bank, Auto-Increment
+
+;setbyt(addr) - Write Byte to Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Uses: TEMP0 = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETBYT: JSR SETADR  ;Set Vera Address
+        LDA TEMP0   ;Retrieve Value to Write
+        LDX $9F25   ;Get Current Data Port
+        STA $9F23,X ;Write Value to Data Port
+        RTS
 
 ;settbs() - Set Layer 0/1 Map Base
 ;Args: A = Layer (0/1)
@@ -411,7 +492,7 @@ SETHSC: JSR SAVRXY  ;Store Horizontal Scroll in TEMP1,TEMP2
 ;Uses: TEMP1,TEMP2 = Integer Value
 ;Affecta: A,Y,X
 SETLRI: JSR GETLRP  ;Get Layer Page in Y
-        JMP SETREI  ;and Write Integer to Register
+        BNE SETREI  ;and Write Integer to Register
 
 ;setiql() - Set IRQ Line
 ;Args: Y,X = IRQ Line Number`
@@ -434,9 +515,49 @@ SETSCL: LDX #1      ;Set Register Offset to HSCALE,VSCALE
 ;Returns: X = Current Data Port
 SETDCP: STA TEMP1   ;Store First Value as LSB
         STY TEMP2   ;Store Second Value as MSB
-        LDY #$00    ;Set MSB to Display Composer Page
-        JMP SETREI  ;Set Register to Integer
+        LDY #$00   ;Set MSB to Display Composer Page
 
+;setrei(addr); Set Vera Register to Integer
+;Args: Y,X = Address
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETREI: LDA #$0F    ;Set Bank to Registers
+
+;setint(addr); Write Integer to Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETINT: ORA #$10    ;Set Auto-Increment to 1
+        JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA TEMP1   ;Get LSB
+        STA $9F23,X ;Write to Data Port
+        LDA TEMP2   ;Get MSB
+        STA $9F23,X ;Write to Data Port
+        RTS
+
+;setmem(count, &addr) - Write Array to Vera Memory
+;Args: A = Number of Bytes to Write
+;      Y,X = Address of Array to Write From
+;Requires: setadr() 
+;Sets: SRCLO,SRCHI = Address of Array
+;      TEMP0 = Number of Bytes to Write
+;Affects: A
+;Returns: Y = Number of Bytes Written
+;         X = Current Data Port
+SETMEM: STA TEMP0       ;Save Number of Bytes
+        JSR SETSRC      ;Save Destination Address
+        LDX $9F25       ;Get Current Data Port
+        LDY #0          ;Initialize Counter
+SETMEL: LDA (SRCLO),Y   ;Read Byte from Array
+        STA $9F23,X     ;Write Byte to Data Port
+        INY             ;Increment Counter
+        CPY TEMP0       ;If Limit Not Reached
+        BNE SETMEL      ;  Loop
+        RTS
 
 ;rgbclr(r,g,b) - Convert RGB Values to Palette Color
 ;Args: A = Red Value (0-15)
@@ -505,4 +626,17 @@ SETIDX: ASL         ;Multiply Index by 2
         LDA #$10    ;Get Palette Page
         ADC #$00    ;Add Carry from Multiply
         TAY         ;and Set as MSB
-        JMP REGADR  ;and Set Address to Register
+
+
+;regadr(opts,addr) - Set Vera Address to Internal Register
+;Args: Y,X = Register Address
+;Returns: A= Bank + Auto-Increment
+REGADR: LDA #$1F    ;Set Bank and Auto-Increment
+
+;setadr(opts,addr) - Set Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+SETADR: STX $9F20   ;Store Address LSB
+        STY $9F21   ;Store Address MSB
+        STA $9F22   ;Store Bank & Auto-Increment
+        RTS

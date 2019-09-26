@@ -2,6 +2,30 @@
  * vera.h02 - Commander X16 Routines for Vera chip *
  ***************************************************/
 
+/* Convert Palette Color Value *
+ * to R, G, and B Values       *
+ * Args: int c - Color Value   *
+ * Returns: Red Value (0-15)   *
+ *          Green Value (0-15) *
+ *          Blue Value (0-15)  */
+char clrrgb();
+
+/* Read Color Value from Palette *
+ * Args: char i - Palette Index  *
+ * Returns: int c - Color Value  */
+char getclr();
+
+/* Read Display Controller Register *
+ * Args: char r - Register Offset   *
+ * Returns: char v - Register Value */
+char getdcr();
+
+/* Read Video Output Mode       *
+ * Returns: m - Output Mode     *
+ *          c - Chroma Disabled *
+ *          f - Current Field   */
+char getvid();
+
 /* Convert R, G, and B Values   *
  * to Palette Color Value       *
  * Args: r - Red Value (0-15)   *
@@ -10,11 +34,9 @@
  * Returns: int c - Color Value */
 char rgbclr();
 
-/* Convert Palette Color Value *
- * to R, G, and B Values       *
- * Args: int c - Color Value   *
- * Returns: Red Value (0-15)   *
- *          Green Value (0-15) *
- *          Blue Value (0-15)  */
-char clrrgb();
+/* Write Color Value to Palette   *
+ * Args: i - Index into Palette   *
+ *       int c - Color Value      *
+ * Returns: int d = Entry Address */
+char setclr();
 

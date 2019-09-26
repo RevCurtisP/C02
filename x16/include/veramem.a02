@@ -1,0 +1,153 @@
+; Vera Memory Access Assembly Language Routines for C02
+; Requires External Routines RESRXY, SETDST, and SETSRC
+; and External Variables TEMP0 and TEMP1
+
+;getadr() - Get Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+GETADR: LDX $9F20   ;Store Address LSB
+        LDY $9F21   ;Store Address MSB
+        LDA $9F22   ;Store Bank & Auto-Increment
+        RTS
+
+;getreg(&addr) - Read Vera Internal Register
+;Args: Y,X = Address
+;Returns: A = Mode
+;         X = Current Data Port
+GETREG: LDA #$0F    ;Set Bank to Registers
+                    ;and Execute GETBYT
+
+;getbyt(&addr);
+;Args: A = Bank
+;      Y,X = Address
+;Affects: Y
+;Returns: A = Contents of Memory
+;         X = Current Data Port
+GETBYT: JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        RTS
+
+;getmem(count, &addr) - Read Array From Vera Memory
+;Args: A = Number of Bytes to Read
+;      Y,X = Address of Array to Read Into
+;Requires: setadr() 
+;Sets: DSTLO,DSTHI = Address of Array
+;      TEMP0 = Number of Bytes to Read
+;Affects: A
+;Returns: Y = Number of Bytes Read
+;         X = Current Data Port
+GETMEM: JSR SETDST      ;Save Destination Address
+GETMEA: STA TEMP0       ;Save Number of Bytes
+        LDY #0          ;Initialize Counter
+        LDX $9F25       ;Get Current Data Port
+GETMEL: LDA $9F23,X     ;Read Byte from Data Port
+        STA (DSTLO),Y   ;Store in Memory
+        INY             ;Increment Counter
+        CPY TEMP0       ;If Limit Not Reached
+        BNE GETMEL      ;  Loop
+
+;getrei(addr); Read Vera Register Pair
+;Args: Y,X = Address
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETREI: LDA #$0F    ;Set Bank to Registers
+
+;getint(addr); Read Integer from Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETINT: AND #$0F    ;Set Auto-Increment to 1
+        ORA #$10    
+        JSR SETADR  ;Set Vera Address
+        LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        LDY $9F23,X ;Read MSB Data Port
+        TAX         ;Copy LSB to X
+        RTS
+
+;regadr(opts,addr) - Set Vera Address to Internal Register
+;Args: Y,X = Register Address
+;Returns: A= Bank + Auto-Increment
+REGADR: LDA #$1F    ;Set Bank and Auto-Increment
+
+;setadr(opts,addr) - Set Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+SETADR: STX $9F20   ;Store Address LSB
+        STY $9F21   ;Store Address MSB
+        STA $9F22   ;Store Bank & Auto-Increment
+        RTS
+
+;setreg(addr) - Set Register 
+;Args: A = Value to Write
+;      Y,X = Address
+;Sets: TEMP0 = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETREG: STA TEMP0   ;Save Value to Write
+SETREH: LDA #$0F    ;Set Bank, Auto-Increment
+
+;setbyt(addr) - Write Byte to Vera Memory
+;Args: A = Bank
+;      Y,X = Address
+;Uses: TEMP0 = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETBYT: JSR SETADR  ;Set Vera Address
+        LDA TEMP0   ;Retrieve Value to Write
+        LDX $9F25   ;Get Current Data Port
+        STA $9F23,X ;Write Value to Data Port
+        RTS
+
+;setrei(addr) - Set Vera Register to Integer
+;Args: Y,X = Address
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETREI: LDA #$0F    ;Set Bank to Registers
+
+;setina(addr) - Write Integer to Vera Address
+;Args: A = Bank
+;      Y,X = Address
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETINA: ORA #$10    ;Set Auto-Increment to 1
+        JSR SETADR  ;Set Vera Address
+        JSR RESRXY  ;Restore Integer into Y,X
+
+;setint(addr) - Write Integer to Vera Memory
+;Args: Y,X = Integer to Write
+;Requires: setadr();
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETINT: TXA         ;Copy LSB to Accumlator
+        LDX $9F25   ;Get Current Data Port
+        STA $9F23,X ;Write to Data Port
+        TYA         ;Copy MSB to Accumlator
+        STA $9F23,X ;Write to Data Port
+        RTS
+
+;setmem(count, &addr) - Write Array to Vera Memory
+;Args: A = Number of Bytes to Write
+;      Y,X = Address of Array to Write From
+;Requires: setadr() 
+;Sets: SRCLO,SRCHI = Address of Array
+;      TEMP0 = Number of Bytes to Write
+;Affects: A
+;Returns: Y = Number of Bytes Written
+;         X = Current Data Port
+SETMEM: STA TEMP0       ;Save Number of Bytes
+        JSR SETSRC      ;Save Destination Address
+        LDX $9F25       ;Get Current Data Port
+        LDY #0          ;Initialize Counter
+SETMEL: LDA (SRCLO),Y   ;Read Byte from Array
+        STA $9F23,X     ;Write Byte to Data Port
+        INY             ;Increment Counter
+        CPY TEMP0       ;If Limit Not Reached
+        BNE SETMEL      ;  Loop
+        RTS
