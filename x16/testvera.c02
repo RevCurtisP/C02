@@ -1,6 +1,5 @@
 /*****************************************************
  * TESTVERA                                          *
- *        Prints "HELLO WORLD" and exits             *
  *****************************************************/
  
 //Specify System Header using -H option
@@ -12,6 +11,8 @@
 #include <memory.h02>
 #include <nybble.h02>
 #include "include/veramem.h02"
+#include "include/veradsp.h02"
+#include "include/veraclr.h02"
 #include "include/vera.h02"
 
 const char abcdef = {1,2,3,4,5,6};

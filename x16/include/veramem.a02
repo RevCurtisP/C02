@@ -143,7 +143,7 @@ SETINT: TXA         ;Copy LSB to Accumlator
 ;         X = Current Data Port
 SETMEM: STA TEMP0       ;Save Number of Bytes
         JSR SETSRC      ;Save Destination Address
-        LDX $9F25       ;Get Current Data Port
+SETMEA: LDX $9F25       ;Get Current Data Port
         LDY #0          ;Initialize Counter
 SETMEL: LDA (SRCLO),Y   ;Read Byte from Array
         STA $9F23,X     ;Write Byte to Data Port

@@ -21,16 +21,11 @@ char getbyt();
 char getint();
 
 /* Read from Vera Memory into Array        *
- * Args: char opts - Bank | Auto-Increment *
- *        int addr - Address Bits 0-15     *
- * Returns: char count - Bytes Written     */
+ * Args: char n - Number of Bytes      *
+ *        int d - Address of Array     *
+ * Requires: setadr(bank,addr)         *
+ * Returns: char count - Bytes Written */
 char getmem();
-
-/* Read Vera Internal Register Pair       *
- * Args: int addr - Register Address      *
- * Returns: char byte - Register LSB      *
- *           int word - Register Contents */
-char getrei();
 
 /* Set Vera Memory Address                 *
  * Args: char opts - Bank | Auto-Increment *
@@ -48,7 +43,8 @@ char setbyt();
 char setint();
 
 /* Write from Array to Vera Memory     *
- * Args: int word - Integer to Write   *
+ * Args: char n - Number of Bytes      *
+ *        int d - Address of Array     *
  * Requires: setadr(bank,addr)         *
  * Returns: char count - Bytes Written */
 char setmem();

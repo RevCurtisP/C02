@@ -15,6 +15,12 @@ char clrrgb();
  * Returns: int c - Color Value  */
 char getclr();
 
+/* Read Color Entries from Palette *
+ * Args: i - Index into Palette    *
+ *       n - Number of Entries     *
+ * Requires: setdst(&array)        */
+char getplt();
+
 /* Convert R, G, and B Values   *
  * to Palette Color Value       *
  * Args: r - Red Value (0-15)   *
@@ -28,4 +34,17 @@ char rgbclr();
  *       int c - Color Value      *
  * Returns: int d = Entry Address */
 char setclr();
+
+/* Set Vera Address to Palette Index *
+ * Args: i - Index into Palette      *
+ *       int c - Color Value         *
+ * Returns: char b = Bank |Auto-Incr *
+ *           int d = Entry Address   */
+char setidx();
+
+/* Write Color Entries to Palette  *
+ * Args: i - Index into Palette    *
+ *       n - Number of Entries     *
+ * Requires: setsrc(&entries)      */
+char setplt();
 

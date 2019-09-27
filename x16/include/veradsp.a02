@@ -1,0 +1,234 @@
+; Vera Display Composer Assembly Language Routines for C02
+; Requires External Routines GETDCR and SETDCX
+; and External Variables TEMP0, TEMP1, and TEMP2
+
+;getbdr() - Get Get Border Color
+;Returns: A = Border Color Palette Index
+GETBDR: LDA #$03    ;Set Register Offset to Border Color
+
+;getdcr() - Get Display Composer Register
+;Args: A = Register Offset
+;Affects: Y
+;Returns: A = Contents of Register
+;         X = Current Data Port
+GETDCR: LDY #$00    ;Set MSB to Display Composer Page
+        TAX         ;Set LSB to Register Offset
+        JMP GETREG  ;and Execute GETREG
+
+;getiql() - Get Interrupt Line
+;Affects: A
+;Returns: Y,X = Interrupt Line#
+GETIQL: LDA #9      ;Set Register Offset to Interrupt Line
+        .DC $2C     ;Skip to SETDCX (BIT Absolute)
+        
+;getscl() - Get Horizontal and Vertical Scale
+;Returns: A,X = Horizontal Scale
+;      Y = Vertical Scale
+GETSCL: LDA #1      ;Set Register Offset to HSCALE,VSCALE
+        
+;getdci() - Get Display Composer Register Pair
+;Args: A = Register Offset
+;Affects: Y
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETDCI: LDY #$00    ;Set MSB to Display Composer Page
+        TAX         ;Set LSB to Register Offset
+        JMP GETREI  ;Get Vera Register Pair
+
+;getvid() - Get Video Output Mode
+;Returns: A = Video Mode
+;         Y = Chroma Disabled
+;         X = Current Field
+GETVID: LDA #$00    ;Set Register Offset to Video Output
+        JSR GETDCR      ;Read from Display Composer
+        LDY #$00        ;Set Chroma Disabled to FALSE
+        LDX #$00        ;Set Video Field to EVEN
+        BIT GETVIM      ;Test Chroma Disabled Bit
+        BEQ GETVIE      ;If Bit 3 is Set
+        DEY             ;  Set Chroma Disabled to TRUE
+        BIT GETVIM      ;Test Chroma Disabled Bit
+GETVIE: BCC GETVIF      ;If Bit 7 is Set
+        DEX             ;  Set Video Field to ODD
+GETVIF: AND #$03        ;Isolate Bits 0-2 (Video Output Mode)
+        RTS 
+GETVIM: .DC $04         ;Chroma Disable Bit Mask
+        
+;getvsp() - Get Vertical Stop
+;Affects: A
+;Returns: Y,X = Vertical Stop
+GETVSP: LDA #7          ;Set Reg Offset to Vertical Stop
+        JSR GETHVS      ;Read Registers
+        LSR             ;Shift Left One Bit
+        JMP GETVSS      ;Then Four More Bits and Mask
+
+;getvsr() - Get Vertical Start
+;Affects: A
+;Returns: Y,X = Vertical Start
+GETVSR: LDA #6          ;Set Reg Offset to Vertical Start
+        JSR GETHVS      ;Read Registers
+GETVSS: LSR             ;Shift Left Four Bit
+        LSR
+        LSR
+        LSR
+        AND #$01        ;Isolate Bit 0
+        TAY             ;and Copy MSB to Y
+        RTS
+        
+;gethsp() - Get Horizontal Stop
+;Affects: A
+;Returns: Y,X = Horizontal Stop
+GETHSP: LDA #5          ;Set Lookup Index to Horizontal Start
+        JSR GETHVS      ;Read Registers
+        LSR             ;Shift Left Two Bits
+        LSR
+        JMP GETHSS      ;then Mask and Return
+
+;gethsr() - Get Horizontal Start
+;Affects: A
+;Returns: Y,X = Horizontal Start
+GETHSR: LDA #4          ;Set Lookup Index to Horizontal Start
+        JSR GETHVS      ;Read Registers
+GETHSS: AND #$03        ;Isolate Bit 0
+        TAY             ;and Copy MSB to Y
+        RTS
+
+;gethvs() - Get Start/Stop Low Byte and High Bits
+;Args: X = Low Register 
+;Affects: Y
+;Returns: A = High Bits
+;         X = Low Byte
+GETHVS: JSR GETDCR      ;Read LSB from Register
+        PHA             ;and Save It
+        LDA #8          ;Load Register Offset for High Bits
+        STA $9F20	    ;Set As Address LSB
+        LDA $9F23,X     ;and Read High Bits into A
+        .DC $FA ;PLX    ;Restore LSB into X
+        RTS
+
+;setbdr() - Set Border Color
+;Args: A = Border Color Palette Index
+SETBDR:  LDX #3     ;Set Register Offset to Border Color
+        .DC $2C     ;Skip to SETDCX (BIT Absolute)
+
+;setdcr() - Set Display Composer Register
+;Args: A = Register Offset
+;      Y = Value to Write
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETDCR: TAX         ;Set LSB to Register Offset
+        TYA         ;Move Write Value to Accumulator
+SETDCX: LDY #$00    ;Set MSB to Display Composer Page
+        JMP SETREG  ;Write to Register
+
+;setvid() - Set Video Output Mode
+;Args: A = Video Mode
+;      Y = Chroma Disabled
+;Destroys: TEMP0
+SETVID: AND #3      ;Isolate Video Mode Bits
+        CPY #0      ;Set Chroma Mask to
+        BEQ SETVIF  ;  0 if Y is Zero or
+        LDY #4      ;  4 if it is not
+SETVIF: STY TEMP0   ;Save Chroma Bit
+        ORA TEMP0   ;Combine with Video Mode Bits
+        LDX #0      ;Set Register Offset to Video Mode
+        BEQ SETDCX  ;Write to Register
+
+;setiql() - Set IRQ Line
+;Args: Y,X = IRQ Line Number`
+;Sets: TEMP1,TEMP2 = IRQ Line Number
+;Affecta: A,Y,X
+SETIQL: TXA         ;Copy LSB to Accumulator
+        LDX #9      ;Set Register Offset to HSCALE,VSCALE
+        .DC $2C     ;Skip to SETDCP (BIT Absolute)
+
+;setscl() - Set Horizontal and Vertical Scale
+;Args: A = Horizontal Scale
+;      Y = Vertical Scale
+SETSCL: LDX #1      ;Set Register Offset to HSCALE,VSCALE
+
+;setdcp() - Set Display Composer Register Pair
+;Args: A = First Register Value
+;      Y = Second Register Value
+;      X = Register Offset
+;Affects: A,Y
+;Returns: X = Current Data Port
+SETDCP: STA TEMP1   ;Store First Value as LSB
+        STY TEMP2   ;Store Second Value as MSB
+        LDY #$00    ;Set MSB to Display Composer Page
+        JMP SETREI  ;Set Register to Integer
+
+;sethsp() - Set Horizontal Stop
+;Args: Y,X = Horizontal Stop
+;Destroys TEMP1,TEMP2
+;Affects: A,X,Y
+SETHSP: TYA             ;Convert MSB to High Bits
+        AND #$03
+        ASL
+        ASL
+        STA TEMP1       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #5          ;Set Register Offset to Horizontal Start
+        LDY #$F3        ;Set High Bits Mask 
+        BNE SETHVS      ;OR in High Bits and Write Back
+
+;sethsr() - Set Horizontal Start
+;Args: Y,X = Horizontal Start
+;Destroys TEMP1,TEMP2
+;Affects: A,X,Y
+SETHSR: TYA             ;Convert MSB to High Bits
+        AND #$03
+        STA TEMP1       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #4          ;Set Register Offset to Horizontal Start
+        LDY #$FC        ;Set High Bits Mask 
+
+;sethvs() - Set Horizontal/Vertial Start/Stop
+;Args: A = Start/Stop LSB
+;      Y = High Bits and Mask
+;      X = LSB Register Offset
+;Uses: TEMP1 = Start Stop High Bits
+;Destroys: TEMP2
+;Affects: A,X,Y
+SETHVS: STY TEMP2       ;Save
+        JSR SETDCX      ;Write LSB
+        LDA #8          ;Load Register Offset for High Bits
+        STA $9F20	    ;Set As Address LSB
+        LDA $9F23,X     ;and Read High Bits into A
+        AND TEMP2       ;Mask Start Stop High
+        ORA TEMP1       ;OR in High Bits
+        STA $9F23,X     ;and Write back to Register
+        RTS
+        
+;setvsp() - Set Horizontal Stop
+;Args: Y,X = Horizontal Stop
+;Destroys TEMP1,TEMP2
+;Affects: A,X,Y
+SETVSP: TYA             ;Convert MSB to High Bit
+        AND #$01
+        ASL
+        ASL
+        ASL
+        ASL
+        ASL
+        STA TEMP1       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #7          ;Set Register Offset to Horizontal Start
+        LDY #$DF        ;Set High Bits Mask 
+        BNE SETHVS      ;OR in High Bits and Write Back
+
+;setvsr() - Set Horizontal Start
+;Args: Y,X = Horizontal Start
+;Destroys TEMP1,TEMP2
+;Affects: A,X,Y
+SETVSR: TYA             ;Convert MSB to High Bit
+        AND #$01
+        ASL
+        ASL
+        ASL
+        ASL
+        STA TEMP1       ;and Save
+        TXA             ;Copy LSB to Accumlator
+        LDX #6          ;Set Register Offset to Horizontal Start
+        LDY #$EF        ;Set High Bits Mask 
+        BNE SETHVS      ;OR in High Bits and Write Back
