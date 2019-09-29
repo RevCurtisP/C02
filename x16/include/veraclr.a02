@@ -2,8 +2,6 @@
 ; Requires External Routines NYBCAT, NYBCUT, REGADR, and SAVRXY
 ; and External Variables TEMP1 and TEMP2
 
-
-
 ;rgbclr(r,g,b) - Convert RGB Values to Palette Color
 ;Args: A = Red Value (0-15)
 ;      Y = Green Value (0-15)

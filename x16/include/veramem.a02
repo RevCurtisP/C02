@@ -2,6 +2,31 @@
 ; Requires External Routines RESRXY, SETDST, and SETSRC
 ; and External Variables TEMP0 and TEMP1
 
+;Vera External Registers    
+;$9F20  Address LSB         
+;$9F21  Address MSB         
+;$9F22  Auto-Increment and Address Bank    
+;$9F23  Data Port 0         
+;$9F24  Data Port 1
+;$9F25  Control Register
+;$9F26  Interrupt Enable
+;$9F27  Interrupt Status
+
+
+;asladr() - Shift Vera Address Left`
+;Args: X = Number of Bits to Shift
+;Updates: TEMP0 = Bank
+;         TEMP1 = Address LSB
+;         TEMP3 = Address MSB
+;Returns: A = Bank
+;         Y,X = Address
+ASLADR: ASL TEMP1   ;Shift LSB Left
+        ROL TEMP2   ;Rotate Carry Left into MSB
+        ROL TEMP0   ;Rotate Carry Left into LSB
+        DEX         ;Decrement Shift Count 
+        BNE ASLADR  ;and Loop if Not Zero
+        JMP RESREG  ;Return Bank, MSB, LSB
+
 ;getadr() - Get Vera Address
 ;Args: A = Bank + Auto-Increment
 ;      Y,X = Address
@@ -10,13 +35,12 @@ GETADR: LDX $9F20   ;Store Address LSB
         LDA $9F22   ;Store Bank & Auto-Increment
         RTS
 
-;getreg(&addr) - Read Vera Internal Register
+;getvrg(&addr) - Read Vera Internal Register
 ;Args: Y,X = Address
 ;Returns: A = Mode
 ;         X = Current Data Port
-GETREG: LDA #$0F    ;Set Bank to Registers
+GETVRG: LDA #$0F    ;Set Bank to Registers
                     ;and Execute GETBYT
-
 ;getbyt(&addr);
 ;Args: A = Bank
 ;      Y,X = Address
@@ -47,11 +71,11 @@ GETMEL: LDA $9F23,X     ;Read Byte from Data Port
         CPY TEMP0       ;If Limit Not Reached
         BNE GETMEL      ;  Loop
 
-;getrei(addr); Read Vera Register Pair
+;getvri(addr); Read Vera Register Pair
 ;Args: Y,X = Address
 ;Returns: A,X = Integer LSB
 ;         Y = Integer LSB
-GETREI: LDA #$0F    ;Set Bank to Registers
+GETVRI: LDA #$0F    ;Set Bank to Registers
 
 ;getint(addr); Read Integer from Vera Memory
 ;Args: A = Bank
@@ -84,7 +108,6 @@ SETADR: STX $9F20   ;Store Address LSB
 ;Args: A = Value to Write
 ;      Y,X = Address
 ;Sets: TEMP0 = Value to Write
-;Affects: Y
 ;Returns: A = Value Written
 ;         X = Current Data Port
 SETREG: STA TEMP0   ;Save Value to Write
@@ -94,7 +117,6 @@ SETREH: LDA #$0F    ;Set Bank, Auto-Increment
 ;Args: A = Bank
 ;      Y,X = Address
 ;Uses: TEMP0 = Value to Write
-;Affects: Y
 ;Returns: A = Value Written
 ;         X = Current Data Port
 SETBYT: JSR SETADR  ;Set Vera Address

@@ -1,26 +1,29 @@
 /*********************************************
  * veradsp.h02 - Display Composer Functions  *
  *               Commander X16 VERA Chip     *
+ * Requires: x16.h02                         *
+ *           stddef.h02                      *
+ *           veramem.h02                     *
  *********************************************/
 
 /* Get Border Color             *
- * Returns: char i = Color Index */
+ * Returns: char i - Color Index */
 char getbdr();
 
 /* Get Horizontal Stop              *
- * Returns: int i = Horizontal Stop */
+ * Returns: int i - Horizontal Stop */
 char gethsp();
 
 /* Get Horizontal Start              *
- * Returns: int i = Horizontal Start */
+ * Returns: int i - Horizontal Start */
 char gethsr();
 
 /* Get IRQ Line               *
- * Returns: int i = IRQ Line  */
+ * Returns: int i - IRQ Line  */
 char getiql();
 
 /* Get Horizontal and Vertical Scale  *
- * Returns: char h = Horizontal Scale *
+ * Returns: char h - Horizontal Scale *
  *          char v - Vertical Scale   */
 char getscl();
 
@@ -31,32 +34,32 @@ char getscl();
 char getvid();
 
 /* Get Vertical Stop              *
- * Returns: int i = Vertical Stop */
+ * Returns: int i - Vertical Stop */
 char getvsp();
 
 /* Get Vertical Start              *
- * Returns: int i = Vertical Start */
+ * Returns: int i - Vertical Start */
 char getvsr();
 
 /* Set Border Color           *
- * Args: char i = Color Index */
+ * Args: char i - Color Index */
 char setbdr();
 
 /* Set Horizontal Stop           *
- * Args: int i = Horizontal Stop */
+ * Args: int i - Horizontal Stop */
 char sethsp();
 
 /* Set Horizontal Start           *
- * Args: int i = Horizontal Start */
+ * Args: int i - Horizontal Start */
 char sethsr();
 
 /* set IRQ Line            *
- * Args: int i = IRQ Line  */
+ * Args: int i - IRQ Line  */
 char setiql();
 
 /* Set Horizontal and Vertical Scale *
- * Args: char h = Horizontal Scale   *
- *          char v - Vertical Scale  */
+ * Args: char h - Horizontal Scale   *
+ *       char v - Vertical Scale     */
 char setscl();
 
 /* Set Video Output Mode          *
@@ -65,9 +68,9 @@ char setscl();
 char setvid();
 
 /* Set Vertical Stop           *
- * Args: int i = Vertical Stop */
+ * Args: int i - Vertical Stop */
 char setvsp();
 
 /* Set Vertical Start           *
- * Args: int i = Vertical Start */
+ * Args: int i - Vertical Start */
 char setvsr();

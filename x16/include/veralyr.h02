@@ -1,0 +1,108 @@
+/*********************************************
+ * veralyr.h02 - Layer control functions for *
+ *               Commander X16 VERA Chip     *
+ * Requires: x16.h02                         *
+ *           stddef.h02                      *
+ *           veramem.h02                     *
+ *********************************************/
+
+/* Get Layer Enabled             *
+ * Args: char l - Layer (0/1)    *
+ * Returns: $FF = Layer Enabled  *
+ *          $00 = Disabled       */
+char getenb();
+
+/* Get Horizontal Scroll Offset       *
+ * Args: char l - Layer (0/1)         *
+ * Returns: int d - Horizontal Scroll */
+char gethsc();
+
+/* Get Layer Mode                *
+ * Args: char l - Layer (0/1)    *
+ * Returns: char m - Layer Mode  */
+char getmod();
+
+/* Get Map Base Address          *
+ * Args: char l - Layer (0/1)    *
+ * Returns: char b - Bank        *
+ *           int d - Address     */
+char getmba();
+
+/* Get Map Base Register      *
+ * Args: char l - Layer (0/1) *
+ * Returns: int d - Map Base  */
+char getmbs();
+
+//Not Implemented
+/* Get Map Size Specifier       *
+ * Args: char l - Layer (0/1)   *
+ * Returns: char w - Map Width  * 
+ *          char h - Map Height */
+char getmsz();
+
+/* Get Tile Base Address         *
+ * Args: char l - Layer (0/1)    *
+ * Returns: char b - Bank        *
+ *           int d - Address     */
+char gettba();
+
+/* Get Tile Base Register     *
+ * Args: char l - Layer (0/1) *
+ * Returns: int d - Tile Base */
+char gettbs();
+
+//Not Implemented
+/* Get Tile Size Specifier     *
+ * Args: char l - Layer (0/1) *
+ * Returns: char s - Tile Size */
+char gettsz();
+
+/* Get Vertical Scroll Offset       *
+ * Args: char l - Layer (0/1)       *
+ * Returns: int d - Vertical Scroll */
+char getvsc();
+
+/* Convert Map Size to Pixels        *
+ * Args: char s - Map Size Specifier *
+ * Returns: int p - Size in Pixels   */
+char mapsiz();
+
+/* Set Layer Enabled          *
+ * Args: char l - Layer (0/1) *
+ *       char e - Enabled     */
+char setenb();
+
+/* Set Horizontal Scroll Offset     *
+ * Args: char l - Layer (0/1)       *
+ *        int d - Horizontal Scroll */
+char sethsc();
+
+/* Set Layer Mode                *
+ * Args: char l - Layer (0/1)    *
+ * Returns: char m - Layer Mode  */
+char setmod();
+
+/* Set Map Base Register      *
+ * Args: char l - Layer (0/1) *
+ *        int d - Map Base    */
+char setmbs();
+
+/* Set Map Size Specifier     *
+ * Args: char l - Layer (0/1) *
+ *       char s - Map Size    */
+char setmsz();
+
+/* Set Tile Base Register     *
+ * Args: char l - Layer (0/1) *
+ *       int d - Tile Base    */
+char settbs();
+
+/* Set Tile Size Specifier    *
+ * Args: char l - Layer (0/1) *
+ *       char s - Tile Size   */
+char settsz();
+
+/* Convert Tile Size to Pixels        *
+ * Args: char s - Tile Size Specifier *
+ * Returns: int p - Size in Pixels    */
+char tilsiz();

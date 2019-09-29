@@ -1,19 +1,46 @@
 ; Vera Display Composer Assembly Language Routines for C02
-; Requires External Routines GETDCR and SETDCX
+; Requires External Routines GETVRG and SETDCX, SETDST
 ; and External Variables TEMP0, TEMP1, and TEMP2
 
-;getbdr() - Get Get Border Color
+;Display Composer Registers
+;$F0000  Video Control
+;$F0001  Horizontal Scale
+;$F0002  Vertical Scale
+;$F0003  Border Color
+;$F0004  Horizontal Start LSB
+;$F0005  Horizontal Stop LSB
+;$F0006  Vertical Start LSB
+;$F0007  Vertical Stop LSB
+;$F0008  Start/Stop High Bits
+;$F0009  IRQ Line LSB
+;$F000A  IRQ Line MSB
+
+;getbdr() - Get Border Color
 ;Returns: A = Border Color Palette Index
 GETBDR: LDA #$03    ;Set Register Offset to Border Color
 
-;getdcr() - Get Display Composer Register
+;getdcb(reg) - Read Single Display Composer Register
 ;Args: A = Register Offset
 ;Affects: Y
 ;Returns: A = Contents of Register
 ;         X = Current Data Port
-GETDCR: LDY #$00    ;Set MSB to Display Composer Page
+GETDCB: LDY #$00    ;Set MSB to Display Composer Page
         TAX         ;Set LSB to Register Offset
-        JMP GETREG  ;and Execute GETREG
+        JMP GETVRG  ;and Execute Vera Register
+
+;getdcr(&array) - Read All Display Composer Registers
+;Args: Y,X = Address of Array
+;Affects: Y
+;Returns: A = Contents of Register
+;         X = Current Data Port
+GETDCR: JSR SETDST  ;Set Destination Pointer to Array
+        JSR SETDCA  ;Set Address to Display Composer
+        LDA #11     ;Set Number of Registers to 11
+        JMP GETMEA  ;and Read Registers
+
+SETDCA: LDY #00     ;Set Page to Display Composer
+        LDX #0      ;Set Register to 0
+        JMP REGADR  ;Set Vera Address to Register
 
 ;getiql() - Get Interrupt Line
 ;Affects: A
@@ -33,14 +60,14 @@ GETSCL: LDA #1      ;Set Register Offset to HSCALE,VSCALE
 ;         Y = Integer LSB
 GETDCI: LDY #$00    ;Set MSB to Display Composer Page
         TAX         ;Set LSB to Register Offset
-        JMP GETREI  ;Get Vera Register Pair
+        JMP GETVRI  ;Get Vera Register Pair
 
 ;getvid() - Get Video Output Mode
 ;Returns: A = Video Mode
 ;         Y = Chroma Disabled
 ;         X = Current Field
 GETVID: LDA #$00    ;Set Register Offset to Video Output
-        JSR GETDCR      ;Read from Display Composer
+        JSR GETDCB      ;Read from Display Composer
         LDY #$00        ;Set Chroma Disabled to FALSE
         LDX #$00        ;Set Video Field to EVEN
         BIT GETVIM      ;Test Chroma Disabled Bit
@@ -97,7 +124,7 @@ GETHSS: AND #$03        ;Isolate Bit 0
 ;Affects: Y
 ;Returns: A = High Bits
 ;         X = Low Byte
-GETHVS: JSR GETDCR      ;Read LSB from Register
+GETHVS: JSR GETDCB      ;Read LSB from Register
         PHA             ;and Save It
         LDA #8          ;Load Register Offset for High Bits
         STA $9F20	    ;Set As Address LSB
@@ -183,7 +210,7 @@ SETHSR: TYA             ;Convert MSB to High Bits
         LDX #4          ;Set Register Offset to Horizontal Start
         LDY #$FC        ;Set High Bits Mask 
 
-;sethvs() - Set Horizontal/Vertial Start/Stop
+;sethvs() - Set Horizontal/Vertical Start/Stop
 ;Args: A = Start/Stop LSB
 ;      Y = High Bits and Mask
 ;      X = LSB Register Offset

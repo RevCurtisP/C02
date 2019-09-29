@@ -1,6 +1,6 @@
-/*****************************************************
- * TESTVERA                                          *
- *****************************************************/
+/************************************
+ * TESTVERA - Test All Vera Modules *
+ ************************************/
  
 //Specify System Header using -H option
 #include <stddef.h02>
@@ -10,9 +10,10 @@
 #include <stdiox.h02>
 #include <memory.h02>
 #include <nybble.h02>
-#include "include/veramem.h02"
-#include "include/veradsp.h02"
-#include "include/veraclr.h02"
+#include "include/veramem.h02"  //Vera Memory Access
+#include "include/veradsp.h02"  //Vera Display Controller
+#include "include/veraclr.h02"  //Vera Color Palette
+#include "include/veralyr.h02"  //Vera Layer Control
 #include "include/vera.h02"
 
 const char abcdef = {1,2,3,4,5,6};
@@ -33,9 +34,16 @@ int irqlin;             //IRQ Line#
 
 /* Layer 0/1 */
 
+const char msizel = {32,64,128,0};
+const char msizeh = { 0, 0,  0,1};
+const char tsizel = {8,16};
+
 char layer;             //Layer Number
 char layer0[9];         //Layer 0 Register Contents
 char layer1[9];         //Layer 1 Register Contents
+char height,width;      //Map/Tile Height, Width Specifiers
+char tsize;             //Tile Size in Pixels
+int msize;              //Map Size in Pixeks
 int mbase0,mbase1;      //Map Base, Layer 0 and 1
 int tbase0,tbase1;      //Tile Base, Layer 0 and 1
 int mbaddr,tbaddr;      //Map and Tile Base Address
@@ -88,7 +96,7 @@ void prtvid() {
 }
 
 void xerror() {
-  putln("ERROR ENCOUNTERED");
+  putln("  ERROR ENCOUNTERED");
   goto exit;
 }
 
@@ -125,13 +133,11 @@ main:
   passed();
 
   puts("TESTING GETSCL() AND SETSCL()");
-  i=1;
+  i=1; 
   do {
     j=1;
     do {
-      setscl(i,j);
-      hscale,vscale = getscl();
-      //prtscl;
+      setscl(i,j); hscale,vscale = getscl();
       if (hscale<>i or vscale<>j) xerror("ERROR IN GETSCL()/SETSCL()");
       j<<;
     } while (j);
@@ -180,6 +186,8 @@ main:
   }
   passed();
   
+  /*************************************************************************/
+
   puts("TESTING RGBCLR() AND CLRRGB()");
   for (red=0;red<16;red++) {
     for (green=0;green<16;green++) {
@@ -222,11 +230,57 @@ main:
   }
   passed();
 
+  /*************************************************************************/
+
   //putln("SAVING LAYER REGISTERS");
   setadr($1F,&$2000); getmem(@layer0,&layer0);
   setadr($1F,&$3000); getmem(@layer1,&layer1);
 
-  printf(layer, "TESTING GETMBS() AND SETMBS()");
+  printf("TESTING GETENB() AND SETENB()");
+  setenb(0,$00); if (getenb(0)<>$00) xerror(); 
+  setenb(0,$FF); if (getenb(0)<>$FF) xerror(); 
+  setenb(1,$00); if (getenb(1)<>$00) xerror(); 
+  setenb(1,$FF); if (getenb(1)<>$FF) xerror(); 
+  passed();
+
+  printf("TESTING GETMOD() AND SETMOD()");
+  for (i=0;i<2;i++) {for (j=0;j<8;j++) {
+      setmod(i,j); if (getmod(i)<>j) goto reslyr; //xerror();
+  } }
+  passed();
+
+  printf("TESTING GETMSZ() AND SETMSZ()");
+  for (i=0;i<2;i++) {for (j=0;j<4;j++) {for (k=0;k<4;k++) {
+    //printf(j,"%nJ=%h, "); printf(k,"K=%h");
+    setmsz(i,j,k); width, height = getmsz(i);
+    //printf(width," WIDTH=%h, "); printf(height,"HEIGHT=%h");
+    if (width<>j or height<>k) xerror();
+  }}}
+  passed();
+
+  printf("TESTING GETTSZ() AND SETTSZ()");
+  for (i=0;i<2;i++) {for (j=0;j<2;j++) {for (k=0;k<2;k++) {
+    //printf(j,"%nJ=%h, "); printf(k,"K=%h");
+    settsz(i,j,k); width, height = gettsz(i);
+    //printf(width," WIDTH=%h, "); printf(height,"HEIGHT=%h");
+    if (width<>j or height<>k) xerror();
+  }}}
+  passed();
+
+  printf("TESTING MAPSIZ() AND TILSIZ()");
+  for (i=0; i<@msizel; i++) {
+    msize = mapsiz(i); 
+    //printf(i,"%nMAP SIZE %h = "); setdst(msize); printf("$%w PIXELS");
+    if (<msize<>msizel[i] or >msize<>msizeh[i]) xerror();
+  }
+  for (i=0; i<@tsizel; i++) {
+    tsize = tilsiz(i);
+    //printf(i,"%nTILE SIZE %h = "); printf(tsize, "$%h PIXELS");
+    if (tsize<>tsizel[i]) xerror();
+  }
+  passed();
+
+  printf("TESTING GETMBS() AND SETMBS()");
   setmbs(0,&$1234); mbase0 = getmbs(0);
   setmbs(1,&$5678); mbase1 = getmbs(1);
   //setdst(mbase0); printf("%nMBASE0=$%w, "); setdst(mbase1); printf("MBASE1=$%w%n");
@@ -234,7 +288,7 @@ main:
   if (>mbase1<>$56 or <mbase1<>$78) xerror();  
   passed();
 
-  printf(layer, "TESTING GETTBS() AND SETTBS()");
+  printf("TESTING GETTBS() AND SETTBS()");
   settbs(0,&$90AB); tbase0 = gettbs(0);
   settbs(1,&$CDEF); tbase1 = gettbs(1);
   //setdst(tbase0); printf("%nTBASE0=$%w, "); setdst(tbase1); printf("TBASE1=$%w%n");
@@ -242,14 +296,14 @@ main:
   if (>tbase1<>$CD or <tbase1<>$EF) xerror();  
   passed();
 
-  printf(layer, "TESTING GETMBA() AND GETTBA()");
+  printf("TESTING GETMBA() AND GETTBA()");
   i,j,k = getmba(0); if (i<>$00 or j<>$48 or k<>$D0) xerror();
   i,j,k = getmba(1); if (i<>$01 or j<>$59 or k<>$E0) xerror();
   i,j,k = gettba(0); if (i<>$02 or j<>$42 or k<>$AC) xerror();
   i,j,k = gettba(1); if (i<>$03 or j<>$37 or k<>$BC) xerror();
   passed();
     
-  printf(layer, "TESTING GETHSC() AND SETHSC()");
+  printf("TESTING GETHSC() AND SETHSC()");
   sethsc(0,&$1357); hscrl0 = gethsc(0);
   sethsc(1,&$2468); hscrl1 = gethsc(1);
   //setdst(hscrl0); printf("%nHSCRL0=$%w, "); setdst(hscrl1); printf("HSCRL1=$%w%n");
@@ -257,7 +311,7 @@ main:
   if (>hscrl1<>$24 or <hscrl1<>$68) xerror();  
   passed();
 
-  printf(layer, "TESTING GETVSC() AND SETVSC()");
+  printf("TESTING GETVSC() AND SETVSC()");
   setvsc(0,&$9BDF); vscrl0 = getvsc(0);
   setvsc(1,&$0ACE); vscrl1 = getvsc(1);
   //setdst(vscrl0); printf("%nVSCRL0=$%w, "); setdst(hscrl1); printf("VSCRL1=$%w%n");
@@ -265,7 +319,15 @@ main:
   if (>vscrl1<>$0A or <vscrl1<>$CE) xerror();  
   passed();
 
-  //putln("RESTORING LAYER REGISTERS");
+  printf("TESTING GETBPO() AND SETBPO()");
+  i = 0; do {
+    setbpo(0,i); if (getbpo(0)<>i) xerror();
+    setbpo(1,i); if (getbpo(1)<>i) xerror();
+    i = i + 16;
+  } while (i);
+  passed();
+
+  reslyr:
   setadr($1F, &$2000); setmem(@layer0, &layer0);
   setadr($1F, &$3000); setmem(@layer1, &layer1);
 

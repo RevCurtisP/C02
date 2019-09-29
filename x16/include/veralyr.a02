@@ -1,0 +1,385 @@
+; Vera Layer Control Assembly Language Routines for C02
+; Requires External Routines GETVRG, GETVRI, RESRXY, SAVREG, SAVRXY
+; and External Variables TEMP0, TEMP1, TEMP2, TEMP3
+
+;Layer 0/1 Registers
+;$F2000/$F3000	Layer Control (Mode and Enabled)
+;$F2001/$F3001	Tile and Map Height and Width
+;$F2002/$F3002	Map Base Bits 9-2
+;$F2003/$F3003	Map Base Bits 17-10
+;$F2004/$F3004	Tile Base Bits 9-2
+;$F2005/$F3005	Tile Base Bits 17-10
+;$F2006/$F3006	Horizontal Scroll LSB
+;$F2007/$F3007	Horizontal Scroll MSB or Bitmap Palette Offset
+;$F2008/$F3008	Vertical Scroll LSB
+;$F2009/$F3009	Vertical Scroll MSB
+
+;getbpo(lyr) - Get Bitmap Palette Offset
+;Args: A = Layer (0/1)
+;Affects: Y
+;Sets: TEMP3 = Register Offset
+;Returns: A = Control Register Contents
+;         X = Current Data Port
+GETBPO: LDX #7      ;Set Offset to Bitmap Palette Offset
+        JSR GETLRR  ;Read Register
+        ASL         ;and Multiply by 16
+        ASL
+        ASL
+        ASL
+        RTS
+
+;getlrs(lyr) - Get Layer 0/1 Size Register
+;Args: A = Layer (0/1)
+;Affects: Y
+;Sets: TEMP3 = Register Offset
+;Returns: A = Size Register Contents
+;         X = Current Data Port
+GETLRS: LDX #1      ;Set Offset to Size Register
+        .DC $2C     ;Skip to GETLRR (BIT Absolute)
+
+;getlrc(lyr) - Get Layer 0/1 Control Register
+;Args: A = Layer (0/1)
+;Affects: Y
+;Sets: TEMP3 = Register Offset
+;Returns: A = Control Register Contents
+;         X = Current Data Port
+GETLRC: LDX #0      ;Set Offset to Control Register
+        
+
+;getlrr() - Get Layer 0/1 Register
+;Args: A = Layer (0/1)
+;      X = Register Offset
+;Sets: TEMP3 = Register Offset
+;Affects: Y
+;Returns: A = Contents of Register
+;         X = Current Data Port
+GETLRR: STX TEMP3   ;Save Register Offset
+        JSR GETLRP  ;Get Layer Page in Y
+        JMP GETVRG  ;and Read Vera Register
+
+;getlrp(lyr) - Get Layer 0/1 Register Page
+;Args: A = Layer (0/1)
+;Returns: A,Y = Layer Register Page
+GETLRP: AND #$01    ;Isolate Bit 1
+        ASL         ;Move to Left Nybble
+        ASL
+        ASL
+        ASL
+        ORA #$20    ;And Add to 2
+        TAY         ;Return Page in Y
+        RTS
+
+;getenb(lyr) - Get Layer 0/1 Enabled
+;Args: A = Layer (0/1)
+;Affects: Y
+;Returns: A = $FF - Layer Enabled
+;             $00 - Layer Disabled
+;         X = Current Data Port
+GETENB: JSR GETLRC  ;Read Register
+        AND #$01    ;Isolate Bit 1
+        BEQ GETENX  ;If Set 
+        LDA #$FF    ;  Return TRUE
+GETENX: RTS         ;Else Return FALSE        
+
+;getmod(lyr) - Get Layer 0/1 Mode
+;Args: A = Layer (0/1)
+;Affects: Y
+;Returns: A = Layer Mode
+;         X = Current Data Port
+GETMOD: JSR GETLRC  ;Read Register
+        LSR         ;Shift Left Five Bits
+        LSR         
+        LSR
+        LSR
+        LSR
+        RTS
+
+;getmsz(lyr) - Get Layer 0/1 Map Size
+;Args: A = Layer (0/1)
+;Affects: X
+;Returns: A = Width Specifier
+;         Y = Height Specifier
+GETMSZ: JSR GETLRS  ;Read Size Register
+        TAX         ;Save Contents
+        LSR         ;Shift Right 2 Bits
+        LSR
+        AND #$03    ;Isolate Bits 0 and 1
+        TAY         ;and Return in Y
+        TXA         ;Restore Register Contents
+        AND #$03    ;Return Bits 0 and 1 in A
+        RTS
+
+;gettsz(lyr) - Get Layer 0/1 Map Size
+;Args: A = Layer (0/1)
+;Affects: X
+;Returns: A = Width Specifier
+;         Y = Height Specifier
+GETTSZ: JSR GETLRS  ;Read Size Register
+        LSR         ;Shift Right 4 Bits
+        LSR
+        LSR
+        LSR
+        TAX         ;Save Intermediate Value
+        LSR         ;Shift Right 1 More Bit
+        AND #$01    ;Isolate Bit 0
+        TAY         ;and Return in Y
+        TXA         ;Restore Intermediate Value
+        AND #$01    ;and Return Bit 0 in A
+        RTS
+
+;getvsc() - Get Layer 0/1 Vertical Scroll
+;Args: A = Layer (0/1)
+;Returns: A,X = Vertical Scroll LSB
+;         Y = Vertical Scroll MSB
+GETVSC: LDX #8      ;Set Register Offset
+        .DC $2C     ;Skip to GETLRI (BIT Absolute)
+
+;gethsc() - Get Layer 0/1 Horizontal Scroll
+;Args: A = Layer (0/1)
+;Returns: A,X = Horizontal Scroll LSB
+;         Y = Horizontal Scroll MSB
+GETHSC: LDX #6      ;Set Register Offset
+        .DC $2C     ;Skip to GETLRI (BIT Absolute)
+
+;gettbs() - Get Layer 0/1 Tile Base
+;Args: A = Layer (0/1)
+;Returns: A,X = Tile Base LSB
+;         Y = Tile Base MSB
+GETTBS: LDX #4      ;Set Register Offset
+        .DC $2C     ;Skip to GETLRI (BIT Absolute)
+
+;getmbs() - Get Layer 0/1 Map Base
+;Args: A = Layer (0/1)
+;Returns: A,X = Map Base LSB
+;         Y = Map Base MSB
+GETMBS: LDX #2      ;Set Register Offset
+
+;getlri() - Get Layer 0/1 Register Pair as Integer
+;Args: A = Layer (0/1)
+;      X = Register Offset
+;Returns: A,X = Integer LSB
+;         Y = Integer LSB
+GETLRI: JSR GETLRP  ;Get Layer Page in Y
+        JMP GETVRI  ;and Read Register Contents
+
+;gettba() - Get Layer 0/1 Tile Base Address
+;Args: A = Layer (0/1)
+;Destroys: TEMP1,TEMP2
+;Returns: A = Tile Base Bank
+;         Y,X = Tile Base Address
+GETTBA: LDX #4      ;Set Register Offset
+        .DC $2C     ;Read Register Pair and Rotate
+
+;getmba() - Get Layer 0/1 Map Base Address
+;Args: A = Layer (0/1)
+;Sets: TEMP0 = Bank
+;      TEMP1 = Address LSB
+;      TEMP2 = Address MSB
+;Returns: A = Map Base Bank
+;         Y,X = Map Base Address
+GETMBA: LDX #2      ;Set Register Offset
+        JSR GETLRI  ;Read Register Pair as Integer
+        LDA #0      ;Initialize Page to 0
+        JSR SAVREG  ;Save Integer in TEMP1,TEMP2
+        LDX #2      ;Set Count to 2
+        JMP ASLADR  ;and Shift Address Left
+        
+;mapsiz() - Convert Map Size Specifier to Pixels
+;Args: A = Map Size Specifier
+;Affects: A
+;Returns: A = Shift Count
+;         Y,X Map Size in Pixels
+MAPSIZ: TAX             ;Copy Size Specifier to X
+        LDA MAPSIC,X    ;Load Shift Count from Table
+        PHA             ;and Save it
+        LDA MAPSIH,X    ;Load Pixels MSB from Table
+        TAY             ;and Return in Y
+        LDA MAPSIL,X    ;Load Pixels LSB from Table
+        TAX             ;and Return in X
+        PLA             ;Return Shift Count in A
+        RTS
+MAPSIC: .DC $05,$06,$07,$08
+MAPSIL: .DC $20,$40,$80,$00
+MAPSIH: .DC $00,$00,$00,$01
+        
+;tilsiz() - Convert Tile Size Specifier to Pixels
+;Args: A = Tile Size Specifier
+;Returns: A = Tile Size in Pixels
+;         Y = Shift Count
+TILSIZ: TAX             ;Copy Map Size Specifier to X
+        LDA TILSIT,X    ;Return Pixels in A
+        LDY TILSIC,X    ;and Shift Count in Y
+        RTS
+TILSIC: .DC $03,$04
+TILSIT: .DC $08,$10
+
+;setbpo(lyr) - Set Bitmap Palette Offset
+;Args: A = Layer (0/1)
+;      Y = Bitmap Palette Offset
+;Affects: Y
+;Sets: TEMP3 = Register Offset
+;Returns: A = Control Register Contents
+;         X = Current Data Port
+SETBPO: PHA         ;Save Layer Number
+        TYA         ;Copy Offset to Accumulator
+        LSR         ;Divide by 16
+        LSR
+        LSR
+        LSR
+        TAY         ;Copy Back to Y
+        PLA         ;Restore Layer Number
+        LDX #7      ;Set Register Offset
+        BNE SETLRR  ;and Write to Register
+
+;setenb(lyr,flg) - Get Layer 0/1 Enabled
+;Args: A = Layer (0/1)
+;      Y = Layer Enabled Flags
+;Destroys: TEMP0
+;Affects: A,X,Y
+SETENB: CPY #0      ;Test Enabled Argument`
+        BEQ SETENZ  ;If Not Zero
+        LDY #$01    ;  Set to 1        
+SETENZ: LDX #$FE    ;Set Control Register Mask
+
+;setlrc(lyr,val,msk) - Set Layer 0/1 Control Register
+;Args: A = Layer (0/1)
+;      Y = Value to Write
+;      X = Register Mask 
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETLRC: JSR SAVREG  ;Save Layer, Value, and Mask
+        JSR GETLRC  ;Get Layer Control Register
+SETLRM: AND TEMP1   ;Apply Mask
+        ORA TEMP2   ;OR in Value 
+        TAY         ;and Move to Y Register
+        LDA TEMP0   ;Restore Layer Number
+        LDX TEMP3   ;Get Register Offset
+
+;setlrr() - Set Layer 0/1 Register
+;Args: A = Layer (0/1)
+;      Y = Value to Write
+;      X = Register Offset
+;Affects: Y
+;Returns: A = Contents of Register
+;         X = Current Data Port
+SETLRR: ;.dc $ff
+        .DC $5A ;PHY Save Value to Write
+        JSR GETLRP  ;Get Layer Page in Y
+        PLA         ;Restore Value to Write
+        JMP SETREG  ;and Write to Register
+
+;setlrs(lyr,val,msk) - Set Layer 0/1 Size Register
+;Args: A = Layer (0/1)
+/;      Y = Value to Write
+;      X = Register Mask 
+;Affects: Y
+;Returns: A = Value Written
+;         X = Current Data Port
+SETLRS: ;.dc $ff
+        JSR SAVREG  ;Save Layer, Value, and Mask
+        JSR GETLRS  ;Get Layer Size Register
+        JMP SETLRM  ;Mask in Value and Write Back
+
+;setmod() - Set Layer 0/1 Mode
+;Args: A = Layer (0/1)
+;      Y = Layer Mode
+;Destroys: TEMP0
+;Affects: A,X,Y
+SETMOD: TAX         ;Save Layer Number
+        TYA         ;Copy Mode to Accumulator
+        ASL         ;Shift to Bits 5-7
+        ASL
+        ASL
+        ASL
+        ASL
+        TAY         ;Copy Write Value to Y
+        TXA         ;Restore Layer Number
+        LDX #$1F    ;Set Control Register Mask
+        BNE SETLRC  ;and Update Control Register
+
+;setmsz(lyr) - Set Layer 0/1 Map Size
+;Args: A = Layer (0/1)
+;      Y = Width Specifier
+;      X = Height Specifier
+;Destroys: TEMP0
+;Affects: A,X,Y
+SETMSZ: PHA         ;Save Layer Number
+        TXA         ;Get Height Specifier
+        AND #$03    ;Strip High Bits
+        ASL         ;Rotate Left 2 Bits
+        ASL         
+        STA TEMP0   ;and Save It
+        TYA         ;Get Width Specifier
+        AND #$03    ;Strip High Bits
+        ORA TEMP0   ;OR in Height Specifier
+        TAY         ;Copy Write Value to Y
+        PLA         ;Restore Layer Number
+        LDX #$F0    ;Set Size Register Mask
+        BNE SETLRS  ;and Update Size Register
+
+;settsz(lyr) - Set Layer 0/1 Tile Size
+;Args: A = Layer (0/1)
+;      Y = Width Specifier
+;      X = Height Specifier
+;Destroys: TEMP0
+;Affects: A,X,Y
+SETTSZ: PHA         ;Save Layer Number
+        TXA         ;Get Height Specifier
+        AND #$01    ;Strip High Bits
+        ASL         ;Rotate Left 1 Bits
+        STA TEMP0   ;and Save It
+        TYA         ;Get Width Specifier
+        AND #$01    ;Strip High Bits
+        ORA TEMP0   ;OR in Height Specifier
+        ASL         ;Shift Left 4 More Bits
+        ASL         
+        ASL
+        ASL         
+        TAY         ;Copy Write Value to Y
+        PLA         ;Restore Layer Number
+        LDX #$CF    ;Set Size Register Mask
+        BNE SETLRS  ;and Update Size Register
+
+;sethsc() - Set Layer 0/1 Horizontal Scroll
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Horizontal Scroll
+;Affects: A,Y,X
+SETHSC: JSR SAVRXY  ;Store Horizontal Scroll in TEMP1,TEMP2
+        LDX #6      ;Set Register Offset
+
+;setlri() - Write Integer to Get Layer 0/1 Register
+;Args: A = Layer (0/1)
+;      X = Register Offset
+;Uses: TEMP1,TEMP2 = Integer Value
+;Affects: A,Y,X
+SETLRI: JSR GETLRP  ;Get Layer Page in Y
+        JMP SETREI  ;and Write Integer to Register
+
+;setmbs() - Set Layer 0/1 Map Base
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Map Base
+;Affects: A,Y,X
+SETMBS: JSR SAVRXY  ;Store Map Base in TEMP1,TEMP2
+        LDX #2      ;Set Register Offset
+        BNE SETLRI  ;Write to Layer Register
+
+;settbs() - Set Layer 0/1 Map Base
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Map Base
+;Affects: A,Y,X
+SETTBS: JSR SAVRXY  ;Store Map Base in TEMP1,TEMP2
+        LDX #4      ;Set Register Offset
+        BNE SETLRI  ;Write to Layer Register
+
+;setvsc() - Set Layer 0/1 Vertical Scroll
+;Args: A = Layer (0/1)
+;      Y,X = Map Base
+;Sets: TEMP1,TEMP2 = Vertical Scroll
+;Affects: A,Y,X
+SETVSC: JSR SAVRXY  ;Store Vertical Scroll in TEMP1,TEMP2
+        LDX #8      ;Set Register Offset
+        BNE SETLRI  ;Write to Layer Register

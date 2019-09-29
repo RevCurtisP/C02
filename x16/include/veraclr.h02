@@ -1,6 +1,7 @@
-/***************************************************
- * vera.h02 - Commander X16 Routines for Vera chip *
- ***************************************************/
+/*********************************************
+ * veraclr.h02 - Color Palette functions for *
+ *               Commander X16 VERA Chip     *
+ *********************************************/
 
 /* Convert Palette Color Value *
  * to R, G, and B Values       *

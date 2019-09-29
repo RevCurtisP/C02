@@ -1,6 +1,9 @@
 /*********************************************
  * veramem.h02 - Memory Access Functions for *
  *               Commander X16 VERA Chip     *
+ *                                           *
+ * Requires: x16.h02                         *
+ *           stddef.h02                      *
  *********************************************/
 
 /* Get Vera Memory Address                 *
