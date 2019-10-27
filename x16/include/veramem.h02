@@ -6,6 +6,24 @@
  *           stddef.h02                      *
  *********************************************/
 
+
+/* Check Vera Memory Address               *
+ * Args: char opts - Bank | Auto-Increment *
+ *        int addr - Address               *
+ * Returns: char valid - #TRUE or #FALSE   */
+char chkadr();
+
+/* Clear Vera Memory              *
+ * Args: char n - Number of Bytes *
+ * Requires: setadr(bank,addr)    */
+char clrmem();
+
+/* Fill Vera Memory               *
+ * Args: char b - Byte to Write   *
+ *       char n - Number of Bytes *
+ * Requires: setadr(bank,addr)    */
+char filmem();
+
 /* Get Vera Memory Address                 *
  * Returns: char bank - Address Bits 16-19 *
  *           int addr - Address Bits 0-15  */
@@ -29,6 +47,15 @@ char getint();
  * Requires: setadr(bank,addr)         *
  * Returns: char count - Bytes Written */
 char getmem();
+
+/* Set Address to Internal Register  *
+ * Args: int addr - Register Address *
+char regadr();
+
+/* Set Vera Address with Auto-Increment *
+ * Args: char opts - Bank               *
+ *        int addr - Address            *
+char setadi();
 
 /* Set Vera Memory Address                 *
  * Args: char opts - Bank | Auto-Increment *

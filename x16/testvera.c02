@@ -14,10 +14,17 @@
 #include "include/veradsp.h02"  //Vera Display Controller
 #include "include/veraclr.h02"  //Vera Color Palette
 #include "include/veralyr.h02"  //Vera Layer Control
+#include "include/veraspr.h02"  //Vera Sprites
 #include "include/vera.h02"
 
 const char abcdef = {1,2,3,4,5,6};
 char buffer[255];       //Buffer for getmem
+
+char d,e,f,i,j,k;       //Index Variables
+char b,h,l,m,n,p,w;     //Temporary Variables
+char bank,msb,lsb;      //Vera Memory Address
+int  addr,bytes,size;   //16-bit Address and Sizes
+int  height,width;      //16-bit Height and Width Value
 
 char hscale,vscale;     //Video Scaling
 char hrzvrt[5];         //Horizontal and Vertical Register Contents
@@ -25,12 +32,18 @@ char index;             //Color Palette Index
 char mode,mono,field;   //Video Output Mode, Monochrome Flag, Current Field
 char red,green,blue;    //Color Components
 char enabld;            //Layer Enabled
-char i,j,k,l;
 
 int color,colour;
 int hstart,hstop;       //Horizontal Start and Stop
 int vstart,vstop;       //Vertical Start and Stop
 int irqlin;             //IRQ Line#
+
+char spenbl;            //Sprite Enabled
+char spmode;            //Sprite Mode (Bits Per Pixel)
+int  spaddr;            //Sprite Attributes Address
+int  spsize;            //Sprite Data Size
+struct sprite spattr;   //Sprite Attributes (Read)
+struct sprite spattw;   //Sprite Attributes (Write)
 
 /* Layer 0/1 */
 
@@ -41,7 +54,6 @@ const char tsizel = {8,16};
 char layer;             //Layer Number
 char layer0[9];         //Layer 0 Register Contents
 char layer1[9];         //Layer 1 Register Contents
-char height,width;      //Map/Tile Height, Width Specifiers
 char tsize;             //Tile Size in Pixels
 int msize;              //Map Size in Pixeks
 int mbase0,mbase1;      //Map Base, Layer 0 and 1
@@ -50,7 +62,8 @@ int mbaddr,tbaddr;      //Map and Tile Base Address
 int hscrl0,hscrl1;      //Horizontal Scroll, Layer 0 and 1
 int vscrl0,vscrl1;      //Vertical Scroll, Layer 0 and 1
 
-char aa,xx,yy;
+
+char aa,xx,yy;          //Functions Parameters/Variables
 
 void failed() {
   putln("  FAILED");
@@ -61,24 +74,49 @@ void passed() {
   //newlin();
 }
 
-void prtadr() {
-  aa, yy, xx = getadr();
-  puts("ADDRESS=");
-  prbyte(aa); prbyte(yy); prbyte(xx); newlin();
+void padint(aa,yy,xx) {
+  if (xx&96) putc(aa); 
+  if (yy < 4) putc(aa);
 }
 
-void prtayx(aa,yy,xx) {prhex(aa); prhex(yy); prhex(xx); putspc(); putspc();}
+void prtadr(aa,yy,xx) {
+  putc('$'); prhex(aa); prbyte(yy); prbyte(xx);
+}
+
+void prtflg(aa,yy,xx) {
+  if (aa) setdst("TRUE"); else setdst("FALSE");
+  printf(aa,yy,xx);
+}
+
+void prtreg(aa,yy,xx) {
+  printf(aa,"(%d,"); printf(yy,"%d,"); printf(xx,"%d) ");
+}
+
+void prtrgb(aa,yy,xx) {
+  prbyte(aa); putchr(',');
+  prbyte(yy); putchr(',');
+  prbyte(xx); putspc();
+}
+
+void prtscl() {
+  printf(hscale, "HSCALE=%h, ");
+  printf(vscale, "VSCALE=%h%n");  
+}
+
+/*Print Sprite Attributes */
+void prtspr() {
+  printf(setdst(spattr.addr),"ADR=$%w, ");
+  printf(setdst(spattr.horz),"HRZ=%i, ");
+  printf(setdst(spattr.vert),"VRT=%i, ");
+  printf(spattr.ctrl,"CTL=$%h, ");
+  printf(spattr.size,"SIZ=$%h%n");
+}
 
 void prttmp() {
   printf(temp0, "TEMP0=$%h%n");
   printf(temp1, "TEMP1=$%h%n");
   printf(temp2, "TEMP2=$%h%n");
   printf(temp3, "TEMP3=$%h%n");
-}
-
-void prtscl() {
-  printf(hscale, "HSCALE=%h, ");
-  printf(vscale, "VSCALE=%h%n");  
 }
 
 void prtvid() {
@@ -95,6 +133,8 @@ void prtvid() {
   putln(" FIELD");
 }
 
+int toint(.,yy,xx) {}
+
 void xerror() {
   putln("  ERROR ENCOUNTERED");
   goto exit;
@@ -102,6 +142,8 @@ void xerror() {
 
 main:
   newlin();
+
+
 
   puts("TESTING GETMEM() AND SETMEM()");
   setadr($20,&0); setmem(@abcdef,&abcdef);
@@ -122,8 +164,7 @@ main:
   passed();
  
   puts("TESTING GETBDR() AND SETBDR()");
-  i = 0;
-  do {
+  i=0; do {
     setbdr(i);
     index = getbdr();
     if (index<>i) xerror();
@@ -133,8 +174,7 @@ main:
   passed();
 
   puts("TESTING GETSCL() AND SETSCL()");
-  i=1; 
-  do {
+  i=1; do {
     j=1;
     do {
       setscl(i,j); hscale,vscale = getscl();
@@ -186,21 +226,24 @@ main:
   }
   passed();
   
+  newlin();
+  
   /*************************************************************************/
 
   puts("TESTING RGBCLR() AND CLRRGB()");
-  for (red=0;red<16;red++) {
-    for (green=0;green<16;green++) {
-      for (blue=0;blue<16;blue++) {
-        //prtayx(red,green,blue);
+  for (red=7;red<255;red=red+8) {
+    for (green=7;green<255;green=green+8) {
+      for (blue=7;blue<255;blue=blue+8) {
         color = rgbclr(red,green,blue);
-        //putwrd(color); putspc();
-        i,j,k = clrrgb();
-        //prtayx(i,j,k);
-        if (i<>red or j<>green or blue<>k) xerror();
+        i,j,k = clrrgb(color);
+        if (red&$f0<>i or green&$f0<>j or blue&$f0<>k) {
+          prtrgb(red,green,blue); 
+          putwrd(color); putspc();
+          prtrgb(i,j,k); newlin();
+          xerror();
+        }
       }
     }
-    //if (anykey()==#ESCKEY) goto exit;
   }
   passed();
 
@@ -215,11 +258,9 @@ main:
   //passed();
   
   //puts("TESTING SETCLR()");
-  for (i=128; i<144; i++) {
+  for (i=128; i<160; i++) {
     //puthex(i); putspc();
-    red = i+8&15;
-    green = 144-i;
-    blue = i&15;
+    red = i; green = i + 32; blue = i + 64;
     //prhex(red); prhex(green); prhex(blue); putspc(); putspc();
     color = rgbclr(red,green,blue);
     setclr(i,color);
@@ -229,6 +270,23 @@ main:
     //if (i&7==7) newlin();
   }
   passed();
+
+  puts("TESTING GETRGB() AND SETRGB()");
+  for (l=128; l<160; l++) {
+    red = l; green = l + 32; blue = l + 64;
+    setidx(i); setrgb(red,green,blue);
+    setidx(l); i,j,k = getrgb();
+    if (red&$f0<>i or green&$f0<>j or blue&$f0<>k) {
+      puthex(l); putspc();
+      prtrgb(red,green,blue); 
+      putwrd(color); putspc();
+      prtrgb(i,j,k); newlin();
+      xerror();
+    }
+  }
+  passed();
+  
+  newlin();
 
   /*************************************************************************/
 
@@ -252,18 +310,18 @@ main:
   printf("TESTING GETMSZ() AND SETMSZ()");
   for (i=0;i<2;i++) {for (j=0;j<4;j++) {for (k=0;k<4;k++) {
     //printf(j,"%nJ=%h, "); printf(k,"K=%h");
-    setmsz(i,j,k); width, height = getmsz(i);
-    //printf(width," WIDTH=%h, "); printf(height,"HEIGHT=%h");
-    if (width<>j or height<>k) xerror();
+    setmsz(i,j,k); w, h = getmsz(i);
+    //printf(w," WIDTH=%h, "); printf(h,"HEIGHT=%h");
+    if (w<>j or h<>k) xerror();
   }}}
   passed();
 
   printf("TESTING GETTSZ() AND SETTSZ()");
   for (i=0;i<2;i++) {for (j=0;j<2;j++) {for (k=0;k<2;k++) {
     //printf(j,"%nJ=%h, "); printf(k,"K=%h");
-    settsz(i,j,k); width, height = gettsz(i);
-    //printf(width," WIDTH=%h, "); printf(height,"HEIGHT=%h");
-    if (width<>j or height<>k) xerror();
+    settsz(i,j,k); w, h = gettsz(i);
+    //printf(w," WIDTH=%h, "); printf(h,"HEIGHT=%h");
+    if (w<>j or h<>k) xerror();
   }}}
   passed();
 
@@ -331,6 +389,292 @@ main:
   setadr($1F, &$2000); setmem(@layer0, &layer0);
   setadr($1F, &$3000); setmem(@layer1, &layer1);
 
+  newlin();
   
+  /*************************************************************************/
+
+  printf("TESTING GETSPE() AND SETSPE()");
+  setspe(#FALSE); if (getspe()) xerror();
+  setspe(#TRUE); if (!getspe()) xerror();
+  passed();
+
+  printf("TESTING GETSPO() AND SETSPO()");
+  addr = &$5000;
+  for (i=0; i<#MAXSPR;i++) { 
+    for (j=0;j<8;j++) {
+      spaddr = getspo(i,j);
+      //printf(i,"%nSPRITE %r "); printf(j,"OFFSET %d ADDRESS=$"); putwrd(spaddr);
+      if (<spaddr <> <addr or >spaddr <> >addr) xerror(); 
+      if (setspo(i,j)<>8) xerror(); //Returns number of attribute bytes per sprite
+      b,m,l = getadr();
+      //puts(", $"); putexh(b,m,l);
+      if (b <> $1F or l <> <addr or m <> >addr) xerror();       
+      addr++;
+    }
+  }
+  passed();
+
+  printf("TESTING GETSPR() AND SETSPR()");
+  bank=$1f;msb=$50; lsb=$00;
+  for (i=0; i<#MAXSPR;i++) { 
+    lsb=lsb+8; if (!lsb) msb++;
+    /* Set Sprite Attributes */
+    spattw[0]=i^$FF; spattw[1]=i|$80; //Sprite Address & Mode
+    spattw[2]=i|$80; spattw[3]=0; spattw.horz<<; spattw.horz<<;
+    spattw[4]=i^$FF; spattw[5]=0; spattw.vert<<; spattw.vert<<;
+    spattw[6]=(i&1) ? $80|i : i;//Sprite Control
+    spattw[7]=(i&1) ? i : $80|i; //Sprite Size
+    l = setspr(i,&spattw); if (l<>8) xerror(); 
+    b,m,l = getadr(); if (b<>bank or m<>msb or l<>lsb) xerror();
+    /* Get Sprite Attributes */
+    l = getspr(i,&spattr); if (l<>8) xerror(); 
+    b,m,l = getadr(); if (b<>bank or m<>msb or l<>lsb) xerror();
+    //printf(i, "SPRITE %r ATTRS: "); prtspr();
+    for (j=0; j<@spattr; j++) {if (spattr[j]<>spattw[j]) xerror();}
+    /* Clear Sprite Attributes */
+    clrspr(i); b,m,l = getadr(); if (b<>bank or m<>msb or l<>lsb) xerror();
+    getspr(i, &spattr); b,m,l = getadr(); if (b<>bank or m<>msb or l<>lsb) xerror();
+    for (j=0; j<@spattr; j++) {if (spattr[j]) xerror();}
+  }
+  passed();
+
+  printf("TESTING GETSPD() AND SETSPD()");
+  spaddr=&$800; //Sprite Address Register Value
+  bank=1; msb=0; lsb=0; //Sprite Data Address (spaddr<<5)
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i,"%nSPRITE %r ");
+    setspg(i,1,$80); //Set Bit 7 of Register 1 (Mode)
+    setspd(i,spaddr); 
+    //printf(getspg(i,1),"REG=$%h"); printf(getspg(i,0),"%h "); 
+    if (!getspg(i,1)&$80) xerror(); //Check Bit 7 of Register 1
+    addr = getspd(i);
+    //printf(setdst(addr),"ADDRESS=$%w");
+    if (<addr <> <spaddr or >addr <> >spaddr) xerror();
+    b,m,l = getspa(i);
+    //printf(setdst(b,m,l)," ($%g%w)");
+    if (b<>bank or m<>msb or l<>lsb) xerror();
+    spaddr++;
+    lsb = lsb + $20; if (!lsb) msb++;
+  }
+  passed();
+
+  printf("TESTING SETSPB() AND GETSPB()");
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r ");
+    k=127-i; setspg(i,1,k); //Set Bits 0-6 of Register
+    for (j=1; j:+; j--) {
+      setspb(i,j); 
+      spmode = getspb(i);
+      //printf(spmode,"MODE=%d ");
+      //printf(getspg(i,1),"REG=$%h ");
+      if (spmode<>j) xerror();
+    }
+    if (getspg(i,1)<>k) xerror(); //Check Bits 0-6 of Register
+  }
+  passed();
+
+  printf("TESTING GETSPX() AND SETSPX()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r ");
+    lsb = i&3; msb = i+64;
+    setspx(i, msb, lsb); l = getspg(i,2); m = getspg(i,3);
+    //printf(setdst(.,m,l),"REG=$%w ");
+   if (l<>lsb or m<>msb) xerror();
+    n,m,l = getspx(i);
+    //printf(setdst(.,m,l),"X=%i ");
+    if (m<>msb or l<>lsb) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPY() AND SETSPY()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r ");
+    lsb = i&3^3; msb = 192-i;
+    setspy(i, msb, lsb); l = getspg(i,4); m = getspg(i,5);
+    //printf(setdst(.,m,l),"REG=$%w ");
+    if (l<>lsb or m<>msb) xerror();
+    n,m,l = getspy(i);
+    //printf(setdst(.,m,l),"Y=%i ");
+    if (m<>msb or l<>lsb) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPF() AND SETSPF()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r ");
+    setspn(i,$ff); //Set All Bits in Control Register
+    for (j=1; j:+; j--) { //1 to 0
+      k = j-1; //#FALSE then #TRUE 
+      setspf(i,k); 
+      //printf(getspn(i),"REG=$%h ");
+      n = getspf(i);
+      //prtflg(n,"HFLIP=$%h (%s) ");
+      if (n<>k) xerror();
+    }
+    if (getspn(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPV() AND SETSPV()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r ");
+    setspn(i,$ff); //Set All Bits in Control Register
+    for (j=1; j:+; j--) { //1 to 0
+      k = j-1; //#FALSE then #TRUE 
+      setspv(i,k); 
+      //printf(getspn(i),"REG=$%h ");
+      n = getspv(i);
+      //prtflg(n,"HFLIP=$%h (%s) ");
+      if (n<>k) xerror();
+    }
+    if (getspn(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPZ() AND SETSPZ()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r ");
+    setspn(i,$ff); //Set All Bits in Control Register
+    for (j=0; j<4; j++) {
+      setspz(i,j); 
+      //printf(getspn(i),"REG=$%h ");
+      n = getspz(i);
+      //printf(n,"ZDEPTH=%d ");
+      if (n<>j) xerror();
+    }
+    if (getspn(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPM() AND SETSPM()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%n%r ");
+    setspn(i,$ff); //Set All Bits in Control Register
+    for (j=0; j<16; j++) {
+      setspm(i,j); 
+      //printf(getspn(i),"%h:");
+      n = getspm(i);
+      //printf(n,"%g ");
+      if (n<>j) xerror();
+    }
+    if (getspn(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPP() AND SETSPP()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%n%r ");
+    setsps(i,$ff); //Set All Bits in Control Register
+    for (j=0; j<16; j++) {
+      setspp(i,j); 
+      //printf(getsps(i),"%h:");
+      n = getspp(i);
+      //printf(n,"%g ");
+      if (n<>j) xerror();
+    }
+    if (getsps(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPH() AND SETSPH()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r HEIGHT ");
+    setsps(i,$ff); //Set All Bits in Control Register
+    for (j=0; j<4; j++) {
+      setsph(i,j); 
+      //printf(getsps(i),"[$%h] ");
+      n = getsph(i);
+      //printf(n,"%d ");
+      if (n<>j) xerror();
+    }
+    if (getsps(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPW() AND SETSPW()");  
+  for (i=0; i<#MAXSPR; i++) {
+    //printf(i, "%nSPRITE %r WIDTH ");
+    setsps(i,$ff); //Set All Bits in Control Register
+    for (j=0; j<4; j++) {
+      setspw(i,j); 
+      //printf(getsps(i),"[$%h] ");
+      n = getspw(i);
+      //printf(n,"%d ");
+      if (n<>j) xerror();
+    }
+    if (getsps(i)<>$ff) xerror();
+  }
+  passed();
+
+  printf("TESTING GETSPJ() AND GETSPK()"); 
+  l = 8; m = 3; //Size in Pixels, Shift Counter  
+  for (i=0; i<4; i++) {
+    //printf(i,"%nSIZE %r =");
+    j,k = getspj(i);
+    //printf(j,"%r PIXELS, ");
+    //printf(k,"SHIFT COUNT %d");
+    if (j<>l or k<>m) xerror();
+    l<<; m++; //Multiply Size by Two, Increment Shift Counter
+  }
+  h = 8; height = &8; //Sprite Height in Pixels
+  for (i=0; i<4; i++) {
+    w = 8; //Sprite Width in Pixels
+    size = height; size<<; size<<; //Set Size to Height*4
+    for (j=0; j<4; j++) {
+      p = 4; //Bits Per Pixeg
+      bytes = size;
+      //printf(h,"%nSPRITE HEIGHT=%l"); printf(w,"WIDTH=%l");
+      for (k=0; k<2; k++) {
+        //printf(p,"%d BPP ");
+        spsize = getspk(j,i,k); //Calculate Sprite Data Size
+        //printf(setdst(spsize),"SIZE=%i "); padint(' ',spsize);
+        //printf(setdst(bytes),"[%i] "); padint(' ',bytes);
+        if (<spsize <> <bytes or >spsize <> >bytes) xerror();
+        p<<; bytes<<; //Multiply BPP, Size by 2
+      }
+      w<<; size<<;  //Multiply Width, Size by 2
+    }
+    h<<; height<<; //Multiply Height by 2
+  }
+  passed();
+
+  printf("TESTING GETSPL() AND GETSPU()");
+  n = 0; //Sprite Index
+  h = 8; height = &8; //Sprite Height in Pixels
+  for (i=0; i<4; i++) {
+    setsph(n,i); //Set Sprite Height Specifier
+    w = 8; //Sprite Width in Pixels
+    size = height; size<<; size<<; //Set Size to Height*4
+    for (j=0; j<4; j++) {
+      setspw(n,j); //Set Sprite Width Specifier
+      p = 4; //Bits Per Pixeg
+      bytes = size;
+      //printf(h,"%nHEIGHT=%d "); if (!i) putspc();
+      //printf(w,"WIDTH=%d "); if (!j) putspc();
+      for (k=0; k<2; k++) {
+        setspp(n,k);
+        d,e,f = getspu(n); 
+        //printf(p,"%dBPP "); prtreg();
+        if (d<>j or e<>i or f<>k) xerror();
+        spsize = getspl(n); //Get Sprite Data Size
+        //printf(setdst(spsize),"SIZE=%i "); padint(' ',spsize);
+        //printf(setdst(bytes),"[%i] "); padint(' ',bytes);
+        if (<spsize <> <bytes or >spsize <> >bytes) xerror();
+        p<<; bytes<<; //Multiply BPP, Size by 2
+      }
+      w<<; size<<;  //Multiply Width, Size by 2
+    }
+    h<<; height<<; //Multiply Height by 2
+    n++; //Increment Sprite Index
+  }
+  passed();
+
+  newlin();
+
+  /*************************************************************************/
+
+
+  newlin();
+
   goto exit;
 

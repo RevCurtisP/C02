@@ -1,0 +1,535 @@
+;Vera Sprite Manipulation Assembly Language Routines for C02
+;Requires External Routines GETMEA, GETVRB, GETVRG, SETMET, SETSRD, SETVRB
+;and External Variables DSTHI, DSTLO, SRCHI, SRCLO, TEMP0, TEMP0, TEMP2
+
+;Sprite Control Registers
+;$F4000 SPR_CTRL        Bit 0 - Enabled
+;$F4001 SPR_COLLISION   Bits 0-3 Collision Mask
+
+;Sprite attributes
+;$F5000 - 128 Entries of the Following Format:
+
+;    Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
+;+0 ---------------------Address (12:5)---------------------------
+;+1 Mode	                         -------Address (16:13)-------
+;+2 ------------------------X (7:0)-------------------------------
+;+3                                                  ---X (9:8)---
+;+4 ------------------------Y (7:0)-------------------------------
+;+5                                                  ---Y (9:8)---
+;+6  --------Collision mask--------	---Z-depth---   V-flip H-flip
+;+7 Sprite height    Sprite width   --------Palette offset--------
+
+MAXSPR  EQU 128     ;Maximum Sprite Index
+
+;addspd(index,number) - Add to Sprite Address Register
+;Args: A = Sprite Index
+;      Y,X = Number to Add
+;Affects: A,X,Y
+ADDSPD: JSR SAVREG  ;Save Sprite Index, Addend
+        JSR GETSPD  ;Read Sprite Address Register
+        JSR ADDTXY  ;Add Number to Address
+        JMP SETSTD  ;Write Sprite (TEMP0) Address Register
+
+;subspd(index,number) - Decrement Sprite Address Register
+;Args: A = Sprite Index
+;      Y,X = Number to Add
+;Affects: A,X,Y
+SUBSPD: JSR SAVREG  ;Save Sprite Index, Addend
+        JSR GETSPD  ;Read Sprite Address Register
+        JSR ADDTXY  ;Add Number to Address
+        JMP SETSTD  ;Write Sprite (TEMP0) Address Register
+
+;clrspr(index) - Set Sprite Attributes
+;Args: A = Sprite Index
+;Destroys: TEMP0
+;Returns: A,Y = 0
+;         X = Current Data Port
+CLRSPR: JSR SETSP0  ;Set Sprite Attributes Address
+        JMP CLRMEM  ;and Read from Vera
+
+;getspc() - Read Sprites Collision Status
+;Affects: Y
+;Returns: A = Sprite Collision Status
+;         X = Current Data Port
+GETSPC: LDX #$02    ;Set Offset to Sprite Control
+        LDY #$40    ;Set Page to Sprite Registers
+        JSR GETVRG  ;Read Vera Register
+        AND #$0F    ;Return Bits 0-3
+        RTS
+
+;getspd(index) - Get Sprite Address Register
+;Args: A = Index
+;Affects: A
+;Returns: Y,X = Address Register Contents
+GETSPD: JSR GETSP0  ;Get Sprite Attribute Address
+        JSR GETVRI  ;Read Vera Register Pair
+        TYA
+        AND #$0F
+        TAY
+        RTS
+
+;getspe() - Read Sprites Enabled Flag
+;Affects: Y
+;Returns: A = $FF - Sprites Enabled
+;             $00 - Sprites Disabled
+;         X = Current Data Port
+GETSPE: LDA #$01    ;Set Mask to %0000001
+        LDX #$00    ;Set Offset to Sprite Control
+GETSP4: LDY #$40    ;Set Page to Sprite Registers
+        JMP GETVRB  ;Get Register Bit Sratus
+
+;getspt(mask) - Test Sprite Collision Status
+;Args: A = Collision Bit Mask
+;Affects: Y
+;Returns: A = Sprite Collision Bits
+;         X = Current Data Port
+GETSPT: LDX #$01    ;Set Offset to Sprite Collisions
+        BNE GETSP4  ;Get Register Bit Status
+
+;getspa(index) - Get Sprite Data Address
+;Args: A = Index
+;Returns: A = Bank
+;         Y,X = Address
+GETSPA: JSR GETSPD  ;Get Address Register Contents
+
+;getsca(index) - Get Vera Address from Sprite Address
+;Args: Y,X = Sprite Address
+;Returns: A = Bank
+;         Y,X = Address
+GETSCA: LDA #0      ;Set Bank to 0
+        JSR SAVREG  ;Save Address
+        LDX #5      ;Set Shift Count
+        JMP ASLADR  ;and Shift Address Left
+
+;getspb(index) - Get Sprite Bits Per Pixel
+;Args: A = Index
+;Returns: A = Mode (0=4bpp, 1=8bpp)
+GETSPB: JSR GETSP1  ;Read Sprite Register #1
+        ASL         ;Move High Bit to Carry
+        LDA #0      ;Clear Accumulator
+        ROL         ;Move Carry into Low Bit
+        RTS
+
+;getspv(index) - Get Sprite Vertical Flip
+;Args: A = Sprite Index
+;Returns: A = Vertical Flip Flag
+GETSPV: LDY #$02    ;Set Bit Mask to Bit 1
+        .DC $2C     ;Skip Next Instruction (Bit Absolute)
+
+;getspf(index) - Get Sprite Horizontal Flip
+;Args: A = Sprite Index
+;Returns: A = Horizontal Flip Flag
+GETSPF: LDY #$01    ;Set Bit Mask to Bit 0
+        STY TEMP0   ;and Store It
+        JSR GETSPN  ;Get Sprite Control Register
+        AND TEMP0   ;Mask Bit(s)
+        BEQ GETSXF  ;If Clear, Return FALSE
+        LDA #$FF    ;Else Return TRUE
+GETSXF: RTS
+
+;getspw(index) - Get Sprite Width Specifier
+;Args: A = Sprite Index
+;Returns: A = Palette Offset
+GETSPW: JSR GETSPS  ;Get Sprite Size Register
+        ASL         ;Shift Left 2 Bits
+        ASL
+        JMP GETSP6  ;Then Right 6 Bits
+
+;getsph(index) - Get Sprite Height Specifier
+;Args: A = Sprite Index
+;Returns: A = Sprite Height Specifier
+GETSPH: JSR GETSPS  ;Get Sprite Size Register
+GETSP6: LSR         ;Shift Right 6 Bits
+        LSR
+        LSR
+        LSR
+        LSR
+        LSR
+        RTS
+
+;getspm(index) - Get Sprite Collision Mask
+;Args: A = Sprite Index
+;Returns: A = Collision Mask
+GETSPM: JSR GETSPN  ;Get Sprite Control Register
+        LSR         ;Shift High Nybble to Low Nybble
+        LSR
+        LSR
+        LSR         
+        RTS
+
+;getspp(index) - Get Sprite Palette Offset
+;Args: A = Sprite Index
+;Returns: A = Palette Offset
+GETSPP: JSR GETSPS  ;Get Sprite Size Register
+        AND #$0F    ;Return Low Nybble
+        RTS
+
+;getspq(mode) - Calculate Bits Per Pixel
+;Args: A = Mode
+;Returns: A = Bits per Pixel
+;         Y = Divisor Shift Count
+GETSPQ: AND #$01        ;Strip High Bits
+        TAX             ;Copy Mode to X
+        LDA GETSTQ,X    ;Read BPP from Table
+        LDY GETSYQ,X    ;Read Shift Count from Table
+        RTS
+GETSTQ: .DC 4,8         ;Table: Bits Per Pixel
+GETSYQ: .DC 1,0         ;Table: Divisor SHift Count
+
+;getsp1(index) - Get Sprite Register 1 (Mode, Addr MSB)
+;Args: A = Sprite Index
+GETSP1: LDY #1      ;Set Offset to Sprite Address MSB
+        .DC $2C     ;Skip to GETSPG (Bit Absolute)
+
+;getsps(index) - Get Sprite Size Register
+;Args: A = Sprite Index
+GETSPS: LDY #7      ;Set Offset to Sprite Size Register
+        .DC $2C     ;Skip to GETSPG (Bit Absolute)
+
+;getspn(index) - Get Sprite Control Register
+;Args: A = Sprite Index
+;Returns: Sprite Control Register Contents
+GETSPN: LDY #6      ;Set Offset to Sprite Address MSB
+
+;getspg(index) - Get Sprite Register
+;Args: A = Sprite Index
+;      Y = Register Offset
+;Returns: A = Mode (0=4bpp, 1=8bpp)
+GETSPG: JSR GETSPO  ;Get Sprite Attribute Address
+        JMP GETVRG  ;Read Vera Register
+
+;getspx(index) - Get Sprite X-Coordinate
+;Args: A = Index
+;Returns: Y,X = X-Coordinate
+GETSPX: LDY #2      ;Set Offset to X-Coordinate
+        .DC $2C     ;Skip to GETSPI (Bit Absolute)
+
+;getspy(index) - Get Sprite Y-Coordinate
+;Args: A = Index
+;Returns: Y,X = X-Coordinate
+GETSPY: LDY #4      ;Set Offset to Y-Coordinate
+GETSPI: JSR GETSPO  ;Get Sprite Attribute Address
+        JMP GETVRI  ;Read Vera Register Pair
+
+;getspz(index) - Get Sprite Z-Depth
+;Args: A = Sprite Index
+;Returns: A = Z-Depth (0-3)
+GETSPZ: JSR GETSPN  ;Get Sprite Control Register
+        AND #$0F    ;Clear High Nybble
+        LSR         ;Shift Right Two Bits
+        LSR
+        RTS
+
+;getspk(&spregs) - Get Sprite Control Registers`
+;Args: A = Sprite Index
+;      Y,X = Address of Destination Array
+GETSPK: JSR SETDST  ;Set Destination Address
+        JSR SETSCR  ;Set Vera 
+        JMP GETMEA  ;and Read from Vera
+
+;setscr() - Set Vera Address to Sprite Control Registers
+SETSCR: LDY #$40    ;Set Page to Sprite Control Registers
+        LDX #$00    ;Set Offset to 0
+        JSR REGADR  ;Set Vera Address to Register
+        LDA #2      ;Set Size to 2 Bytes
+        RTS
+
+;setspk(&spregs) - Get Sprite Control Registers`
+;Args: A = Sprite Index
+;      Y,X = Address of Destination Array
+SETSPK: JSR SETSRC  ;Set Destination Address
+        JSR SETSCR  ;Set Vera 
+        JMP SETMET  ;and Write to Vera
+
+;getspr(index,&sprite) - Get Sprite Attributes
+;Args: A = Sprite Index
+;      Y,X = Address of Destination Array
+GETSPR: JSR SETDST  ;Set Destination Address
+        JSR SETSP0  ;Set Sprite Attributes Address
+        JMP GETMEA  ;and Read from Vera
+
+;getspo(index,offset) - Get Sprite Attribute Address
+;Args: A = Sprite Index
+;      Y = Attribute Offset
+;Destroys: TEMP3
+;Returns: A,X = Address LSB
+;         Y = Address MSB
+GETSP0: LDY #0      ;Set Attribute Offset to 0
+GETSPO: STA TEMP3   ;Set LSB to Index
+        TYA         ;Copy Offset to Accumulator
+        AND #$07    ;Modulo 8
+        PHA         ;and Save It
+        LDA #0      ;Set MSB to 0
+        ASL TEMP3   ;Multiply by 8
+        ROL
+        ASL TEMP3
+        ROL
+        ASL TEMP3
+        ROL
+        ORA #$50    ;Add to Register Page
+        TAY         ;Return MSB in Y
+        PLA         ;Restore Offset
+        ORA TEMP3   ;Add to LSB
+        TAX         ;and Return in X
+        RTS
+
+;setspa(index) - Set Vera Address to Sprite Address
+;Args: Y,X = Sprite Address
+;Affects: A,X,Y
+SETSPA: JSR GETSCA  ;Convert Sprite Address to Vera Address
+        JMP SETADI  ;Set Vera Address with Auto-Increment
+
+;setspb() - Set Sprite Bits Per Pixel
+;Args: A = Sprite Index
+;      Y = Bits Per Pixel
+;Affects: A,X,Y
+SETSPB: STY TEMP0   ;Save Bits Per Pixel
+        JSR GETSP1  ;Read Sprite Register #1
+        ASL         ;Shift Out Bit 7
+        LSR TEMP0   ;Shift BPP to Carry
+        ROR         ;then into Bit 7
+        JMP SETBYN  ;and Write to Register
+
+;setspd(index,addr) - Set Sprite Address Register
+;Args: A = Index
+;      Y,X = Address Register Value
+SETSPD: STA TEMP0   ;Save Sprite Index
+SETSTD: TYA         ;Copy MSB to Accumulator
+        AND #$0F    ;Strip High Nybble
+        TAY         ;and Copy Back to Y
+        JSR SAVRXY  ;Copy Value to TEMP1,TEMP2
+        LDA TEMP0   ;Restore Sprite Index
+        JSR GETSP1  ;Read MSB Register 
+        AND #$F0    ;Strip Low Nybble
+        ORA TEMP2   ;Combine with MSB
+        STA TEMP2   ;and Save for Write
+        LDA TEMP0   ;Restore Sprite Index
+        JSR GETSP0  ;Get Sprite Attribute Address
+        JMP SETREI  ;Write TEMP1,TEMP2 to Attribute
+
+;setspm(index) - Set Sprite Collision Mask
+;Args: A = Sprite Index
+;      Y = Collision Mask
+SETSPM: PHA         ;Save Sprite Depth
+        LDX #$0F    ;Set Bit Mask
+        TYA         ;Copy Mask to Accumulator
+        ASL         ;Shift Left Two Byte
+        ASL
+        JMP SETSP2  ;Then Two More and Write
+        
+;setspz(index,depth) - Set Sprite Z-Depth
+;Args: A = Sprite Index
+;      Y = Z-Depth (0-3)
+SETSPZ: PHA         ;Save Sprite Depth
+        LDX #$F3    ;Set Bit Mask
+        TYA         ;Copy Z-Depth to Accumulator
+        AND #$03    ;Isolate Bits 0 and 1
+SETSP2: ASL         ;Move to Bits 2 and 3
+        ASL         
+        STX TEMP1   ;Save Bit Mask
+        JMP SETSP6  ;Set Bits in Control Register
+
+;getspu(index) - Get Sprite Width, Height, and Mode
+;Args: A = Sprite Index
+;Sets: TEMP0 = Sprite Index
+;Returns: A = Width Specifier
+;         Y = Height Specifier
+;         X = Mode
+GETSPU: STA TEMP0   ;Save Sprite Index
+        JSR GETSPW  ;Get Sprite Width Specifier
+        PHA         ;and Save It
+        LDA TEMP0   ;Retrieve Sprite Indes
+        JSR GETSPH  ;Get Sprite Height Specifier
+        PHA         ;and Save It
+        LDA TEMP0   ;Retrieve Sprite Index
+        JSR GETSPP  ;Get Mode
+        TAX         ;Return Mode in X
+        .DC $7A ;PLY Height in Y
+        PLA         ;and Width in A
+        RTS
+
+;getspl(index) - Get Sprite Data Size
+;Args: A = Sprite Index
+;Sets: TEMP0 = Sprite Index
+;      TEMP1,TEMP2 = Data Size LSB,MSB
+;Affects: A
+;Returns: Y,X = Data Size in Bytes
+GETSPL: JSR GETSPU  ;Get Width, Height, Mode and Execute GETSCL
+
+;getscl(width,height,mode) - Calculate Sprite Data Size
+;Args: A = Width Specifier
+;      Y = Height Specifier
+;      X = Mode (Bits Per Pixel)
+;Sets: TEMP1,TEMP2 = Data Size LSB,MSB
+;Affects: A
+;Returns: Y,X = Data Size in Bytes
+GETSCL: ;.DC $FF ;Debug
+        .DC $DA ;PHX Save Mode
+        PHA         ;Save Width
+        TYA         ;Copy Height to Accumulator
+        JSR GETSCS  ;Calculate Height in Pixles
+        STA TEMP1   ;Save as LSB
+        PLA         ;Retrieve Width
+        JSR GETSCS  ;Get Width Shift Counter in Y
+        LDA #0      ;Set MSB to 0
+GETSLK: ASL TEMP1   ;Multiply LSB    
+        ROL         ;and MSB by 2
+        DEY         ;Decrement Counter
+        BNE GETSLK  ;and Loop if Not Zero
+        .DC $FA ;PLX Retrieve Mode
+        BNE GETSSK  ;If 0 (4 Bits Per Pixel)
+        LSR         ;  Divide MSB
+        ROR TEMP1   ;  snd LSB by 2
+GETSSK: STA TEMP2   ;Save MSB in TEMP2
+        JMP RESRXY  ;Return LSB snd MSB in X and Y       
+
+;getscs(size) - Calculate Sprite Size in Pixels
+;Args: A = Height/Width Specifier
+;Returns: A = Size in Pixels
+;         Y = Width Multiplier Shift Count
+;         X = Height/Width Specifier
+GETSCS: AND #$03        ;Strip High Bits
+        TAX             ;Copy Specifier to X
+        LDA GETSCT,X    ;Load Size in Pixels from Table
+        LDY GETSCY,X    ;Load Shift Count from Table
+        RTS
+GETSCT: .DC 8,16,32,64  ;Table: Size in Pixels
+GETSCY: .DC 3, 4, 5, 6  ;Table: Shift Multiplier
+
+;setspv(index) - Set Sprite Vertical Flip
+;Args: A = Sprite Index
+;      Y = Vertical Flip Flag
+SETSPV: LDX #$02    ;Set Bit Pattern for Register
+        .DC $2C     ;Skip Next Instruction (Bit Absolute)
+
+;setspf(index) - Set Sprite Horizontal Flip
+;Args: A = Sprite Index
+;      Y = Horizontal Flip Flag
+SETSPF: LDX #$01    ;Set Bit Pattern for Register
+        PHA         ;Save Sprite Index
+        TXA         ;Copy Bit Pattern to Accumulator
+        EOR #$FF    ;Convert to Bit Mask
+        STA TEMP1   ;and Save It
+        TYA         ;Copy Flag to Accumulator
+        BEQ SETSP6  ;If Not Zero
+        TXA         ;Change to %00000001
+SETSP6: STA TEMP0   ;and Store It
+        PLA         ;Retrieve Sprite Index
+        JSR GETSPN  ;Get Sprite Control Register
+SETSP8: AND TEMP1   ;Apply Mask
+        ORA TEMP0   ;Set Bit(s)
+        JMP SETBYN  ;and Write Back to Register
+
+;setspn(index,value) - Set Sprite Attribute Control Register
+;Args: A = Sprite Index
+;      Y = Value to Write
+;Returns: A = Mode (0=4bpp, 1=8bpp)
+SETSPN: STY TEMP0   ;Save Value to Write
+        LDY #6      ;Set Offset to Control Register
+        BNE SETSTG  ;and Write Value to Register
+
+;setspg(index,offset,value) - Set Sprite Attribute Register
+;Args: A = Sprite Index
+;      Y = Register Offset
+;      X = Value to Write
+;Returns: A = Mode (0=4bpp, 1=8bpp)
+SETSPG: STX TEMP0   ;Save Value to Write
+SETSTG: JSR GETSPO  ;Get Attribute Address for Sprite A Register Y
+        JMP SETREH  ;Write TEMP0 to Register
+
+;setspw(index) - Set Sprite Width Specifier
+;Args: A = Sprite Index
+;      Y = Sprite Width Specifier
+SETSPW: PHA         ;Save Sprite Index
+        LDX #$CF    ;Set Bit Mask
+        TYA         ;Copy Specifier to Accumulator
+        AND #$03    ;Isolate Bits 0 and 1
+        JMP SETSP4  ;Shift Left Four Bits and Write Masked
+
+;setsph(index) - Set Sprite Height Specifier
+;Args: A = Sprite Index
+;      Y = Sprite Height Specifier
+SETSPH: PHA         ;Save Sprite Index
+        LDX #$3F    ;Set Bit Mask
+        TYA         ;Copy Specifier to Accumulator
+        ASL         ;Shift Left Six Bits
+        ASL
+SETSP4: ASL
+        ASL
+        ASL
+        ASL
+        JMP SETSP7  ;Write Masked to Size Register
+
+;setspp(index) - Set Sprite Palette Offset
+;Args: A = Sprite Index
+;      Y = Palette Offset
+SETSPP: PHA         ;Save Sprite Index
+        LDX #$F0    ;Set Bit Mask
+        TYA         ;Copy Offset to Accumulator
+        AND #$0F    ;Isolate Low Nybble        
+SETSP7: STA TEMP0   ;Save Value
+        STX TEMP1   ;Save Bit Mask
+        PLA         ;Retrieve Sprite Index
+        JSR GETSPS  ;Get Sprite Size Register
+        JMP SETSP8  ;Apply Mask, Set Bits, and Write
+
+;setsps(index,value) - Set Sprite Attribute Size Register
+;Args: A = Sprite Index
+;      Y = Value to Write
+;Returns: A = Mode (0=4bpp, 1=8bpp)
+SETSPS: STY TEMP0   ;Save Value to Write
+        LDY #7      ;Set Offset to Size Register
+        BNE SETSTG  ;and Write Value to Register
+
+;setspe() - Enable/Disable Sprites
+;Args: A = Sprites Enabled Flag 
+;          0 for Disabled, Any Other Value for Enabled
+;Affects: A,X,Y
+SETSPE: ORA #0      ;If Accumulator
+        BEQ SETSKE  ;is Not Zero
+        LDA ##01    ;Set to %00000001
+SETSKE: LDY #$FE    ;Set Mask to %11111110
+        STY TEMP0
+        LDX #$00    ;Set Offset to Sprite Control
+        LDY #$40    ;Set Page to Sprite Registers
+        JMP SETVRB  ;Get Register Bit
+
+;setspo(index,offset) - Set Sprite Attributes Address
+;Args: A = Sprite Index
+;      Y = Attribute Offset
+SETSP0: LDY #0      ;Set Offset to 0
+SETSPO: JSR GETSPO  ;Get Sprite Attributes Address
+        JSR REGADR  ;Set as Vera Register Address
+        LDA #8      ;Set Size to 8 Bytes
+        RTS
+
+;setspr(index,&sprite) - Set Sprite Attributes
+;Args: A = Sprite Index
+;      Y,X = Address of Source Structure
+;Destroys: TEMP0
+;Returns: A,Y = Number of Bytes Written
+;         X = Current Data Port
+SETSPR: JSR SETSRC  ;Set Destination Address
+        JSR SETSP0  ;Set Sprite Attributes Address
+        JMP SETMET  ;and Write from Vera
+
+;setspy(index,coord) - Set Sprite Y-Coordinate
+;Args: A = Sprite Index
+;      Y,X = Y-Coordinate
+SETSPY: JSR SAVRXY  ;Store Value in TEMP1,TEMP2
+        LDY #4      ;Set Register Offset to Y-Coordinate
+        BNE SETSPI  ;Write TEMP1,TEMP2 to Registers 
+
+;setspx(index,coord) - Set Sprite X-Coordinate
+;Args: A = Sprite Index
+;      Y,X = X-Coordinate
+SETSPX: JSR SAVRXY  ;Store Value in TEMP1,TEMP2
+        LDY #2      ;Set Register Offset to X-Coordinate
+
+;setspi(index) - Write to Sprite Attribute Register Pair
+;Args: A = Sprite Index
+;      Y = Attribute Offset
+;Uses: TEMP1.TEMP2 = Integer to Write
+SETSPI: JSR GETSPO  ;Get Sprite Attribute Address
+        JMP SETREI  ;Write TEMP1,TEMP2 to Attribute
+

@@ -1,0 +1,16 @@
+/*****************************************
+ * veratxt.h02 - Text Mode Functions for *
+ *               Commander X16 VERA Chip *
+ * Requires: x16.h02                     *
+ *           stddef.h02                  *
+ *           veramem.h02                 *
+ *           veralyr.h02                 *
+ *****************************************/
+
+;getvcd(lyr) - Get Vera Character Data
+;Args: A = Layer (0/1)
+;      Y = Bitmap Palette Offset
+;Affects: Y
+;Sets: TEMP3 = Register Offset
+;Returns: A = Control Register Contents
+;         X = Current Data Port

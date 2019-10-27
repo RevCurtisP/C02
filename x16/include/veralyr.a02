@@ -45,7 +45,6 @@ GETLRS: LDX #1      ;Set Offset to Size Register
 ;         X = Current Data Port
 GETLRC: LDX #0      ;Set Offset to Control Register
         
-
 ;getlrr() - Get Layer 0/1 Register
 ;Args: A = Layer (0/1)
 ;      X = Register Offset
@@ -53,7 +52,7 @@ GETLRC: LDX #0      ;Set Offset to Control Register
 ;Affects: Y
 ;Returns: A = Contents of Register
 ;         X = Current Data Port
-GETLRR: STX TEMP3   ;Save Register Offset
+GETLRR: STX TEMP3   ;Save Register Offset - Obselete?
         JSR GETLRP  ;Get Layer Page in Y
         JMP GETVRG  ;and Read Vera Register
 

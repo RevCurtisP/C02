@@ -1,0 +1,23 @@
+; Vera Tile Manipulation Assembly Language Routines for C02
+; Requires External Routines 
+; and External Variables TEMP1
+
+;gettda() - Get Tile Data Address
+;Args: A = Layer (0/1)
+;
+;Destroys: TEMP1,TEMP2
+;Returns: A = Tile Base Bank
+;         Y,X = Tile Base Address
+GETTBA: JSR SET
+
+;gettdo() - Get Tile Data Offset
+;Args: A = Layer (0/1)
+;      Y = Tile Offset
+;Destroys: TEMP1,TEMP2
+;Returns: A = Tile Base Bank
+;         Y,X = Tile Base Address
+GETTBA: STA TEMP0   ;Save Layer Number
+        STY TEMP1   ;Set LSB to Offset
+        JSR GETTSZ  ;Get Tile Size
+        
+

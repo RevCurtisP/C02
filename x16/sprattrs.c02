@@ -1,0 +1,75 @@
+/************************************
+ * TESTVERA - Test All Vera Modules *
+ ************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <memory.h02>
+#include <nybble.h02>
+#include "include/veramem.h02"  //Vera Memory Access
+#include "include/veraspr.h02"  //Vera Sprites
+
+char i;                 //Index Variable
+
+char aa,xx,yy;          //Functions Parameters/Variables
+char ii,oo,ss[128];
+int  yx;
+
+void prthdr() {
+  putln("SPR ADDRESS MODE XPOS YPOS MASK Z VFLIP HFLIP HGHT WDTH POF"); 
+}
+
+void prtpos(yx) {
+  setdst(&ss); aa = itoa(yx);
+  for (ii=strlen(&ss); ii<4; ii++) putspc();
+  puts(&ss); putspc();
+}
+
+void prtflg(aa) {
+  if (aa) puts("TRUE  ");
+  else puts("FALSE ");
+}
+
+void prtsiz() {
+  select(A) {
+    case 0: puts(" 8");
+    case 1: puts("16");
+    case 2: puts("32");
+    case 3: puts("64");
+    default: puts("??");
+  }
+  puts("PX ");
+}
+
+void prtofs(aa) {
+  if (aa) {aa<<;aa<<;aa<<;aa<<;}
+  printf(aa,"%r ");
+}
+
+main:
+  newlin();
+  for (i=0; i<#MAXSPR; i++) {
+    if (!i&31) prthdr();
+    printf(i,"%r ");
+    printf(setdst(getspa(i))," $%g%w ");
+    if (getspb(i)) puts("8BPP "); else puts("4BPP ");
+    prtpos(getspx(i));
+    prtpos(getspy(i));
+    putmsk(getspm(i),$0F); putspc();
+    putdec(getspz(i)); putspc();
+    prtflg(getspf(i));
+    prtflg(getspv(i));
+    prtsiz(getsph(i));
+    prtsiz(getspw(i));
+    prtofs(getspp(i));
+    newlin();
+    if (i&31==31 and anykey() == #ESCKEY) goto exit; 
+  }
+  newlin();
+  goto exit;
+

@@ -15,11 +15,11 @@
 #include "include/veradsp.h02"  //Vera Display Controller
 #include "include/veraclr.h02"  //Vera Color Palette
 #include "include/veralyr.h02"  //Vera Layer Control
-#include "include/vera.h02"
-
+//#include "include/veraspr.h02"  //Vera Sprites
 /* Globals */
 char i,j,k;             //Loop Indexes
 char aa,yy,xx;          //Function Paramaters
+char zz;                //Function Variable
 int  yx;                //Function Paramater
 
 /* Display Composer */
@@ -39,6 +39,16 @@ char height,width;      //Map/Tile Height and Width
 //Print Vera Address
 void prtadr(aa,yx) {
   puts("ADDRESS: $"); putnyb(aa); putwrd(yx);
+}
+
+//Print Masked Bits (byte, mask)
+void prtmsk(aa,yy) {
+  xx = $80;
+  do {
+    zz = (aa&xx) ? '1' : '0';
+    if (yy&xx) putchr(zz);
+    xx>>;
+  } while(xx);
 }
 
 //Print Three Values Enclosed in Parentheses
@@ -69,10 +79,10 @@ main:
   prtprn(clrrgb(bcolor)); newlin();
   
   hscale,vscale = getscl(); hstart = gethsr(); hstop = gethsp(); vstart = getvsr(); vstop = getvsp(); 
-  printf(hscale, "  HORIZONTAL SCALE: $%h, "); setdst(hstart); printf("START: $%w, "); setdst(hstop); printf("STOP: $%q%n");
-  printf(vscale, "  VERTICAL SCALE: $%h, "); setdst(vstart); printf("START: $%q, "); setdst(vstop); printf("STOP: $%q%n");
+  printf(hscale, "  HORIZONTAL SCALE: %d, "); setdst(hstart); printf("START: %i, "); setdst(hstop); printf("STOP: %i%n");
+  printf(vscale, "  VERTICAL SCALE: %d, "); setdst(vstart); printf("START: %i, "); setdst(vstop); printf("STOP: %i%n");
   
-  setdst(getiql()); printf("  IRQ LINE: $%w%n");
+  setdst(getiql()); printf("  IRQ LINE: $%i%n");
   newlin();
     
   /*************************************************************************/
@@ -94,7 +104,7 @@ main:
 
   for (layer=0; layer<2; layer++) {
 
-    printf(layer, "LAYER %h%n");
+    printf(layer, "LAYER %d%n");
     
     puts("  MODE: "); lmode = getmod(layer);
     select(getmod(layer)) { 
@@ -111,12 +121,12 @@ main:
     if (getenb(layer)) putln(", ENABLED"); else putln(", DISABLED");
 
     width, height = getmsz(layer); 
-    setdst(mapsiz(width)); printf(width,"  MAP WIDTH: $%h ($%w PIXELS)");
-    setdst(mapsiz(height)); printf(height,", HEIGHT: $%h ($%w PIXELS)%n");
+    setdst(mapsiz(width)); printf(width,"  MAP WIDTH: %d (%i PIXELS)");
+    setdst(mapsiz(height)); printf(height,", HEIGHT: %d (%i PIXELS)%n");
     
     width, height = gettsz(layer); 
-    printf(width,"  TILE WIDTH: $%h"); printf(tilsiz(width)," ($%w PIXELS)");
-    printf(height,", HEIGHT: $%h "); printf(tilsiz(height)," ($%h PIXELS)%n");
+    printf(width,"  TILE WIDTH: %d"); printf(tilsiz(width)," (%d PIXELS)");
+    printf(height,", HEIGHT: %d"); printf(tilsiz(height)," (%d PIXELS)%n");
     
     setdst(getmbs(layer)); printf("  MAP BASE: $%w, "); 
     prtadr(getmba(layer)); newlin();
@@ -124,8 +134,8 @@ main:
     setdst(gettbs(layer)); printf("  TILE BASE: $%w, "); 
     prtadr(gettba(layer)); newlin();
     
-    setdst(gethsc(layer)); printf("  HORIZONTAL SCROLL: $%q");
-    setdst(getvsc(layer)); printf(",  VERTICAL SCROLL: $%q%n");
+    setdst(gethsc(layer)); printf("  HORIZONTAL SCROLL: $%i");
+    setdst(getvsc(layer)); printf(",  VERTICAL SCROLL: $%i%n");
 
     printf(getbpo(layer)); printf("  BITMAP PALETTE OFFSET: $%h%n");
     
@@ -134,5 +144,10 @@ main:
 
   /*************************************************************************/
 
+  //puts("SPRITES "); if (getspe()) puts("ENABLED"); else puts("DISABLED");
+  //puts(", COLLISION STATUS: %"); putmsk(getsps(),$0f); newlin();
+
+
+    
   goto exit;
   

@@ -1,0 +1,272 @@
+/**********************************************
+ * veraspr.h02 - Sprite Manipulation Routines *
+ *               for Commander X16 VERA Chip  *
+ * Requires: x16.h02                          *
+ *           stddef.h02                       *
+ *           veramem.h02                      *
+ **********************************************/
+
+#define MAXSPR 128 //Maximum Sprite Index;
+
+/* Sprite Attributes */
+struct sprite {
+  int  addr;    //Data Address
+  int  horz;    //Horizontal Coordinate
+  int  vert;    //Vertical Coordinate
+  char ctrl;    //Control Register
+  char size;    //Size Register
+};
+
+/* Sprite Control Registers */
+struct spregs {
+  char ctrl;    //Control Register
+  char clsn;    //Collision Mask
+};
+
+/* Add to Sprite Address Register  *
+ * Args: char n - Sprite Index     *
+ *        int w - Integer to Add   */
+char addspd();
+
+/* Clear Sprite Attributes      *
+ * Args: char n - Sprite Index  */
+char clrspr();
+
+/* Get Vera Address from Sprite Address    *
+ * Args: int d - Sprite Address            *
+ * Returns: char bank - Address Bits 16-19 *
+ *           int addr - Address Bits 0-15  */
+char getsca();
+
+/* Calculate Sprite Data Size           *
+ * Args: char w - Width Specifier       *
+ *       char h - Height Specifier      *
+ *       char m - Mode (Bits per Pixel) *
+ * Returns: int s - Data Size in Bytes  */
+char getscl();
+
+/* Calculate Sprite Size in Pixels          *
+ * Args: char s - Height/Width Specifier    *
+ * Returns: char p - Height/Width in Pixels *
+ *          char m - Multiplier Shift Count */
+char getscs();
+
+/* Get Sprite Data Address                 *
+ * Args: char n - Sprite Index             *
+ * Returns: char bank - Address Bits 16-19 *
+ *           int addr - Address Bits 0-15  */
+char getspa();
+
+/* Get Sprite Bits per Pixel     *
+ * Args: char n - Sprite Index   *
+ * Returns: char m - Sprite Mode *
+ *                0=4bpp, 1=8bpp */
+char getspb();
+
+/* Read Sprite Collision Status       *
+ * Returns: char c - Collision Status */
+char getspc();
+
+/* Get Sprite Address Register                *
+ * Args: char n - Sprite Index                *
+ * Returns: int w - Address Register Contents */
+char getspd();
+
+/* Read Sprite Enabled Status             *
+ * Args: char n - Sprite Index            *
+ * Returns: char e - Enabled (TRUE/FALSE) */
+char getspe();
+
+/* Get Sprite Horizontal Flip Flag        *
+ * Args: char n - Sprite Index            *
+ * Returns: char f - Flipped (TRUE/FALSE) */
+char getspf();
+
+/* Get Sprite Register                 *
+ * Args: char n - Sprite Index         *
+ *       char o - Register Offset      *
+ * Returns: char r - Register Contents */
+char getspg();
+
+/* Get Sprite Height Specifier        *
+ * Args: char n - Sprite Index        *
+ * Returns: char h - Height Specifier */
+char getsph();
+
+/* Read Sprite Attribute Pair         *
+ * Args: char n - Sprite Index        *
+ *       char 0 - Attribute Offset    *
+ * Returns: int i - Attribute LSB,MSB */
+char getspi();
+
+/* Get Sprite Data Size                *
+ * Args: char n - Sprite Index         *
+ * Returns: int s - Data Size in Bytes */
+char getspl();
+
+/* Get Sprite Collision Mask          *
+ * Args: char n - Sprite Index        *
+ * Returns: char m - Collision Mask   */
+char getspm();
+
+/* Get Sprite Control Register         *
+ * Args: char n - Sprite Index         *
+ * Returns: char r - Register Contents */
+char getspn();
+
+/* Get Sprite Attribute Address *
+ * Args: char n - Sprite Index  *
+ * Returns: int d - Address     */
+char getspo();
+
+/* Get Sprite Palette Offset          *
+ * Args: char n - Sprite Index        *
+ * Returns: char p - Palette Offset   */
+char getspp();
+
+/* Get Sprite Attributes             *
+ * Args: char n - Sprite Index       *
+ *       int d - Struct Address      * 
+ * Returns: char b - Number of Bytes */
+char getspr();
+
+/* Get Sprite Size Register            *
+ * Args: char n - Sprite Index         *
+ * Returns: char r - Register Contents */
+char getsps();
+
+/* Test Sprite Collision Status       *
+ * Args: char b - Collision Bitmask   *
+ * Returns: char c - Collision Status */
+char getspt();
+
+/* Get Sprite Width, Height, and Mode      *
+ * Args: char n = Sprite Index             *
+ * Returns: char w - Width Specifier       *
+ *          char h - Height Specifier      *
+ *          char m - Mode (Bits per Pixel) */
+char getspu();
+
+/* Get Sprite Vertical Flip Flag          *
+ * Args: char n - Sprite Index            *
+ * Returns: char f - Flipped (TRUE/FALSE) */
+char getspv();
+
+/* Get Sprite Width Specifier        *
+ * Args: char n - Sprite Index       *
+ * Returns: char w - Width Specifier */
+char getspw();
+
+/* Get Sprite X-Coordinate       *
+ * Args: char n - Sprite Index   *
+ * Returns: int i - X-Coordinate */
+char getspx();
+
+/* Get Sprite Y-Coordinate       *
+ * Args: char n - Sprite Index   *
+ * Returns: int i - Y-Coordinate */
+char getspy();
+
+/* Get Sprite Z-Depth          *
+ * Args: char n - Sprite Index *
+ * Returns: char z - Z-Depth   */
+char getspz();
+
+/* Set Sprite Bits per Pixel     *
+ * Args: char n - Sprite Index   *
+ *       char m - Sprite Mode    *
+ *                0=4bpp, 1=8bpp */
+char setspb();
+
+/* Set Sprite Address Register  *
+ * Args: char n - Sprite Index  *
+ *        int w - Address Value */
+char setspd();
+
+/* Set Sprite Enabled Status           *
+ * Args: char e - Enabled (TRUE/FALSE) */
+char setspe();
+
+/* Set Sprite Horizontal Flip Flag     *
+ * Args: char n - Sprite Index         *
+ *       char f - Flipped (TRUE/FALSE) */
+char setspf();
+
+/* Set Sprite Register                 *
+ * Args: char n - Sprite Index         *
+ *       char o - Register Offset      *
+ *       char b - Value to Write       */
+char setspg();
+
+/* Set Sprite Height Specifier     *
+ * Args: char n - Sprite Index     *
+ *       char w - Height Specifier */
+char setsph();
+
+/* Write Sprite Attribute Pair     *
+ * Args: char n - Sprite Index     *
+ *       char 0 - Attribute Offset *
+ * Requires: setrxy(integer)       */
+char setspi();
+
+/* Set Sprite Collision Mask     *
+ * Args: char n - Sprite Index   *
+ *       char m - Collision Mask */
+char setspm();
+
+/* Set Sprite Control Register      *
+ * Args: char n - Sprite Index      *
+ *       char r - Register Contents */
+char setspn();
+
+/* Set Sprite Attribute Address   *
+ * Args: char n - Sprite Index    *
+ *       char o - Register Offset */
+char setspo();
+
+/* Set Sprite Palette Offset     *
+ * Args: char n - Sprite Index   *
+ *       char p - Palette Offset */
+char setspp();
+
+/* Set Sprite Attributes             *
+ * Args: char n - Sprite Index       *
+ *       int d - Struct Address      * 
+ * Returns: char b - Number of Bytes */
+char setspr();
+
+/* Aet Sprite Size Register         *
+ * Args: char n - Sprite Index      *
+ *       char r - Register Contents */
+char setsps();
+
+/* Set Sprite Vertical Flip Flag       *
+ * Args: char n - Sprite Index         *
+ *       char f - Flipped (TRUE/FALSE) */
+char setspv();
+
+/* Set Sprite Width Specifier     *
+ * Args: char n - Sprite Index    *
+ *       char w - Width Specifier */
+char setspw();
+
+/* Set Sprite X-Coordinate     *
+ * Args: char n - Sprite Index *
+ *        int i - X-Coordinate */
+char setspx();
+
+/* Set Sprite Y-Coordinate     *
+ * Args: char n - Sprite Index *
+ *       int i - Y-Coordinate  */
+char setspy();
+
+/* Set Sprite Z-Depth          *
+ * Args: char n - Sprite Index *
+ *       char z - Z-Depth      */
+char setspz();
+
+/* Subtract from Sprite Address Register *
+ * Args: char n - Sprite Index           *
+ *        int w - Integer to Subtract    */
+char subspd();
+

@@ -12,7 +12,6 @@
 ;$9F26  Interrupt Enable
 ;$9F27  Interrupt Status
 
-
 ;asladr() - Shift Vera Address Left`
 ;Args: X = Number of Bits to Shift
 ;Updates: TEMP0 = Bank
@@ -27,13 +26,56 @@ ASLADR: ASL TEMP1   ;Shift LSB Left
         BNE ASLADR  ;and Loop if Not Zero
         JMP RESREG  ;Return Bank, MSB, LSB
 
+;chkadr(opts,addr) - Check Vera Address
+;Args: A = Bank + Auto-Increment
+;      Y,X = Address
+;Returns: A = $00 - Address is Invalid
+;             $FF - Address is Valid 
+CHKADR: AND #$0F    ;Isolate Bank
+        CMP #$0F    ;If Registers
+        BEQ GETVRT  ;  Return True
+        CMP #$02    ;Else If <2
+        BCS GETVRT  ;  Return True
+        LDA #$0     ;Else Return False
+        RTS
+
+;clrmem(count) - Write Array to Vera Memory
+;Args: A = Number of Bytes to Clear
+;Returns: A,Y = 0
+;         X = Current Data Port
+CLRMEM: TAY             ;Copy Number of Bytes to Y
+        LDA #0          ;Set Write Value to Zero 
+
+;filmem(byte, count) - Fill Vera Memory with Byte
+;Args: A = Byte to Fill Memory With
+;      Y = Number of Bytes to Fill
+;Returns: Y = 0
+;         X = Current Data Port
+FILMEM  LDX $9F25       ;Get Current Data Port
+FILMEL: STA $9F23,X     ;Write Byte to Data Port
+        DEY             ;Decrement Counter
+        BNE FILMEL      ;If Not Zero Loop
+        RTS
+
 ;getadr() - Get Vera Address
 ;Args: A = Bank + Auto-Increment
 ;      Y,X = Address
-GETADR: LDX $9F20   ;Store Address LSB
-        LDY $9F21   ;Store Address MSB
-        LDA $9F22   ;Store Bank & Auto-Increment
+GETADR: LDX $9F20   ;Read Address LSB
+        LDY $9F21   ;Read Address MSB
+        LDA $9F22   ;Read Bank & Auto-Increment
         RTS
+
+;getvrb(&addr) - Get Vera Register Bit Status
+;Args: A = Bit Mask
+;      Y,X = Address
+;Returns: A = Mode
+;         X = Current Data Port
+GETVRB: STA TEMP0   ;Save Bit Mask
+        JSR GETVRG  ;Read Register
+        AND TEMP0   ;Mask Register Bit
+        BEQ GETVRX  ;If Set 
+GETVRT: LDA #$FF    ;  Return TRUE
+GETVRX: RTS         ;Else Return FALSE        
 
 ;getvrg(&addr) - Read Vera Internal Register
 ;Args: Y,X = Address
@@ -70,6 +112,8 @@ GETMEL: LDA $9F23,X     ;Read Byte from Data Port
         INY             ;Increment Counter
         CPY TEMP0       ;If Limit Not Reached
         BNE GETMEL      ;  Loop
+        TYA             ;Return Count
+        RTS
 
 ;getvri(addr); Read Vera Register Pair
 ;Args: Y,X = Address
@@ -91,10 +135,15 @@ GETINT: AND #$0F    ;Set Auto-Increment to 1
         TAX         ;Copy LSB to X
         RTS
 
-;regadr(opts,addr) - Set Vera Address to Internal Register
+;regadr(addr) - Set Vera Address to Internal Register
 ;Args: Y,X = Register Address
-;Returns: A= Bank + Auto-Increment
-REGADR: LDA #$1F    ;Set Bank and Auto-Increment
+;Returns: A = Bank | Auto-Increment
+REGADR: LDA #$0F    ;Set Bank and Auto-Increment
+
+;setadi(bank,addr) - Set Vera Address with Auto-Increment
+;Args: A = Bank
+;      Y,X = Address
+SETADI: ORA #$10    ;Set Auto-Increment to 1
 
 ;setadr(opts,addr) - Set Vera Address
 ;Args: A = Bank + Auto-Increment
@@ -103,6 +152,18 @@ SETADR: STX $9F20   ;Store Address LSB
         STY $9F21   ;Store Address MSB
         STA $9F22   ;Store Bank & Auto-Increment
         RTS
+
+;setvrb(bits, &addr) - Set Vera Register Bits
+;Args: A = Bit Pattern
+;      Y,X = Address
+;Uses: TEMP0 = Bit Mask
+;Sets: TEMP1 = Bit Pattern
+;Affects: A,Y,X
+SETVRB: STA TEMP1   ;Save Bit Pattern
+        JSR GETVRG  ;Read Register
+        AND TEMP0   ;Mask Result
+        ORA TEMP1   ;Set Bits
+        JMP SETBYN  ;Write Back to Register 
 
 ;setreg(addr) - Set Register 
 ;Args: A = Value to Write
@@ -121,7 +182,7 @@ SETREH: LDA #$0F    ;Set Bank, Auto-Increment
 ;         X = Current Data Port
 SETBYT: JSR SETADR  ;Set Vera Address
         LDA TEMP0   ;Retrieve Value to Write
-        LDX $9F25   ;Get Current Data Port
+SETBYN: LDX $9F25   ;Get Current Data Port
         STA $9F23,X ;Write Value to Data Port
         RTS
 
@@ -160,11 +221,10 @@ SETINT: TXA         ;Copy LSB to Accumlator
 ;Requires: setadr() 
 ;Sets: SRCLO,SRCHI = Address of Array
 ;      TEMP0 = Number of Bytes to Write
-;Affects: A
-;Returns: Y = Number of Bytes Written
+;Returns: A,Y = Number of Bytes Written
 ;         X = Current Data Port
-SETMEM: STA TEMP0       ;Save Number of Bytes
-        JSR SETSRC      ;Save Destination Address
+SETMEM: JSR SETSRC      ;Save Source Address
+SETMET: STA TEMP0       ;Save Number of Bytes
 SETMEA: LDX $9F25       ;Get Current Data Port
         LDY #0          ;Initialize Counter
 SETMEL: LDA (SRCLO),Y   ;Read Byte from Array
@@ -172,4 +232,5 @@ SETMEL: LDA (SRCLO),Y   ;Read Byte from Array
         INY             ;Increment Counter
         CPY TEMP0       ;If Limit Not Reached
         BNE SETMEL      ;  Loop
+        TYA             ;Return Count
         RTS

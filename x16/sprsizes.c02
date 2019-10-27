@@ -1,0 +1,42 @@
+/*********************************
+ * SPRSIZES - Print Sprite Sizes *
+ *********************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memory.h02>
+#include <nybble.h02>
+#include "include/veramem.h02"  //Vera Memory Access
+#include "include/veraspr.h02"  //Vera Sprites
+
+char aa,yy,xx;
+char height, width, mode;
+int size;
+
+void padint(aa,yy,xx) {
+  if (xx&96) putc(aa); 
+  if (yy < 4) putc(aa);
+}
+
+main:
+  newlin();
+
+  for (mode=0; mode<2; mode++) {
+    printf(getspq(mode),"%n\18%dBPP");
+    for (width=0;width<4; width++) printf(getspj(width),"  %r");
+    for (height=0; height<4; height++) {
+      printf(getspj(height),"%n\$12 %r\$92"); putchr(146); putspc();
+      for (width=0; width<4; width++) {
+        size = getspk(width, height, mode);
+        padint(' ',size); putint(size); putspc();
+      }
+    }
+    newlin();
+  }
+
+  goto exit;
+
