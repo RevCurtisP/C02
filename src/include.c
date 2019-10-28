@@ -86,7 +86,7 @@ void pdefin(void) {
 
 /* Parse ASCII Subdirective */
 void pascii(void) {
-  getwrd(); //Get Pragma Subdirective
+  getwrd(); //Get Subdirective Argument
   DEBUG("Parsing subdirective '%s'\n", word)
   if (wordis("INVERT"))
     invasc = TRUE;
