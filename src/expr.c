@@ -118,7 +118,7 @@ int prstrm(int alwint) {
   prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
-  if (valtyp == VARIABLE && prcvar(alwint)) return TRUE;
+  if (valtyp == VARIABLE && prcivr(alwint)) return TRUE;
   DEBUG("Parsed term %s\n", term)
   chkidx();  //Check for Array Index
   skpspc();
@@ -204,21 +204,42 @@ void prsbop(void) {
 
 /* Parse Function Argument or Return Values */
 void prsfpr(char trmntr) {
+  int pusha = 0; int pushy = 0; //A and Y Arguments Pushed
   if (!chkadr(ADLDYX, TRUE) && isxpre() || match('.')) {
-    if (!look('.')) {if (prsxpf(0)) goto prsfne;}
+    if (look('.')) pusha = 255; 
+    else {if (prsxpf(0)) goto prsfne;}
     if (look(',') && !chkadr(ADLDYX, TRUE)) {
-      if (!look('.')) {
-		if (prstrm(TRUE)) goto prsfne;
-        asmlin("LDY", term); 
+      if (look('.')) {
+        pushy = -1;
 	  }
+	  else {
+	    if (look('(')) { 
+		  if (pusha==0) {pusha = 1; asmlin("PHA","");} //Save A on Stack
+          prsxpr(')'); asmlin("TAY", ""); //Evaluate Expression, and Copy to Y
+		}
+        else {
+		  if (prstrm(TRUE)) goto prsfne;
+          asmlin("LDY", term); 
+	    }
+	  } 
       if (look(',')) { 
-        prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
-        if (valtyp > VARIABLE) ERROR("Illegal Value Function Argument\n", 0, EXIT_FAILURE);
-        if (valtyp == VARIABLE && vartyp != VTCHAR) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
-        asmlin("LDX", value); }
+	    if (look('(')) {
+          if (pusha==0) {pusha = 1; asmlin("PHA","");} //Save A on Stack
+          if (pushy==0) {pushy = 1; asmlin("PHA",""); asmlin("PHY","");} //Save Y on Stack
+          prsxpr(')'); asmlin("TAX", ""); //Evaluate Expression, and Copy to X    
+	    }
+        else {
+          prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
+          if (valtyp > VARIABLE) ERROR("Illegal Value Function Argument\n", 0, EXIT_FAILURE);
+          if (valtyp == VARIABLE && vartyp != VTCHAR) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE);
+          asmlin("LDX", value); 
+        }
+	  }
     }
   }
   prsfne:
+  if (pushy==1) {asmlin("PLA",""); asmlin("TAY","");} //Pull Y Off Stack
+  if (pusha==1) asmlin("PLA",""); //Pull A Off Stack 
   expect(trmntr);
 }
 
@@ -244,8 +265,10 @@ void prcvri(void) {
   asmlin("LDY", value);
 }
 
-/* Process Variable in Term */
-int prcvar(int alwint) {
+/* Process Integer Variable in Term                      *
+ * Args: alwint = Allow Integer-Like Variable            *
+ * Returns: Integer-Like Variable Processed - TRUE/FALSE */
+int prcivr(int alwint) {
     switch (vartyp) {
       case VTINT:
         if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
@@ -268,7 +291,7 @@ int prcvar(int alwint) {
 int prcftm(int alwint) {
   DEBUG("Processing first term '%s'\n", value)
   strcpy(term, value);
-  if (valtyp == VARIABLE && prcvar(alwint)) return TRUE;
+  if (valtyp == VARIABLE && prcivr(alwint)) return TRUE;
   if (valtyp == FUNCTION) prsfnc(0); //Parse Expression Function
   else if (wordis("A"))   return FALSE;
   else if (wordis("X"))   asmlin("TXA", "");
