@@ -52,6 +52,7 @@ void init(void) {
   xsnvar[0] = 0;  //Assigned X Variable Name
   ysnvar[0] = 0;  //Assigned Y Variable Name
   subcnt = 0;     //Include Subdirectories
+  strcpy(cputyp, CPUARG);  //Set CPU Type to Default Value
   strcpy(incdir, "../include/");
 }
 
@@ -82,7 +83,7 @@ void pdrctv(void) {
 
 void prolog(void) {
   DEBUG("Writing Assembly Prolog\n", 0)
-  asmlin(CPUOP,CPUARG);
+  asmlin(CPUOP,cputyp);
   setcmt("Program ");
   addcmt(srcnam);
   cmtlin();
@@ -130,12 +131,16 @@ int popt(int arg, int argc, char *argv[]) {
   strncpy (argstr, argv[arg], 31);
   if (strlen(argstr) != 2) ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
   opt = toupper(argstr[1]);
-  if (strchr("HS", opt)) {
+  if (strchr("CHS", opt)) {
     if (++arg >= argc) ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
   DEBUG("Processing Command Line Option -%c\n", argstr[1])
   switch (opt) {
+    case 'C':
+      strcpy(cputyp, optarg);
+      DEBUG("CPU Type set to '%s'\n", cputyp)
+      break;
     case 'H':
       strcpy(hdrnam, optarg);
       DEBUG("Header Name set to '%s'\n", hdrnam)

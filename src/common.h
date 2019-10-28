@@ -65,7 +65,10 @@ int savchr; //Holds nxtchr when switching input files
 int  wrdlen;          //Length of Parsed Word
 char word[LINELEN];   //Word parsed from source file
 char uword[LINELEN];  //Word converted to uppercase
+int  pstlen;          //Length of Parsed String
+char pstrng[LINELEN]; //String parsed fron source file
 char cmtasm[LINELEN]; //Assembly Language Comment Text
+char cputyp[LINELEN]; //CPU Type
 
 char hdrnam[FNAMLEN]; //Header File Name
 char incdir[FNAMLEN]; //Include File Directory

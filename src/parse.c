@@ -81,12 +81,15 @@ void skpspc(void) {
  *         otherwise FALSE                    */
 int look(char c) {
   int found;
+  DEBUG("Looking for '%c', ", c);
   skpspc();
   found = match(c);
   if (found) {
     skpchr();
     CCMNT(c);
+	DETAIL("Found\n", 0);
   }
+  else DETAIL("Not found\n", 0);
   return found;
 } 
 
@@ -136,6 +139,8 @@ void getwrd(void) {
   while (isanum()) word[wrdlen++] = toupper(getnxt());
   word[wrdlen] = 0;
   ACMNT(word);
+  DEBUG("Read word '%s'", word)
+  DETAIL("Delimited by '%c'\n", nxtchr)
 }
 
 /* Escape Character */
@@ -154,31 +159,41 @@ char escape(char c) {
   }
 }
 
+/* Escape Numeric Literal */
+char escnum(void) {
+  DEBUG("Escaping numeric literal\n", 0);
+  char c = prsnum(0xff);
+  return c;
+}
+
 /* Get String                 *
  * Sets: word = parsed string 
  *       wrdlen = length of string (including terminator) */
 void getstr(void) {
   char strdel;
   int escnxt = FALSE;
-  wrdlen = 0;
+  pstlen = 0;
   DEBUG("Parsing string\n", 0)
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
   while(!match(strdel) || escnxt) {
+    if (isnl()) ERROR("String Not Terminated", 0, EXIT_FAILURE)
     CCMNT(nxtchr);
     if (escnxt) {
-      word[wrdlen++] = escape(getnxt());
+      if (isnpre()) pstrng[pstlen++] = escnum();
+      else pstrng[pstlen++] = escape(getnxt());
       escnxt = FALSE;    
     }
     else {
       if (match('\\')) escnxt = TRUE;
-      else word[wrdlen++] = prcchr(nxtchr);
+      else pstrng[pstlen++] = prcchr(nxtchr);
       skpchr();
     }  
   }
   skpchr(); //Skip End Delimiter
   CCMNT(strdel);
-  word[wrdlen] = 0;
+  pstrng[pstlen] = 0;
+  strcpy(word,pstrng); wrdlen=pstlen;
 }
 
 /* Read Binary number from input file                *
