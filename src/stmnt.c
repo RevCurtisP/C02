@@ -21,6 +21,7 @@
 void bgnblk(char blkchr) {
   DEBUG("Beginning program block\n", 0)
   if (blkchr) {
+    DEBUG("Expecting Block Delimiter '%c'\n", blkchr);
     expect(blkchr);
     inblck = TRUE;
   }
@@ -372,11 +373,16 @@ void ppush(void) {
 }
 
 /* parse and compile return statement */
-void pretrn(void) {
+void pretrn(int INTRPT) {
   DEBUG("Parsing RETURN statement\n", 0)
   skpspc();
-  prsfpr(';'); //Parse Function Return Valuea
-  asmlin("RTS", "");
+  if (INTRPT) {
+    expect(';');
+    asmlin("RTI", "");
+  } else {
+    prsfpr(';'); //Parse Function Return Valuea
+    asmlin("RTS", "");
+  }
   lsrtrn = TRUE;  //Set RETURN flag
 }
 
@@ -524,8 +530,10 @@ void pstmnt(void) {
     ppop();
   else if (wordis("PUSH"))
     ppush();
+  else if (wordis("RESUME"))
+    pretrn(TRUE);
   else if (wordis("RETURN"))
-    pretrn();
+    pretrn(FALSE);
   else
     prssym();
   if (lblcnt && !inblck) {
