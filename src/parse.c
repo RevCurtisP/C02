@@ -13,6 +13,8 @@
 #include "asm.h"
 #include "parse.h"
 #include "label.h"
+#include "expr.h"
+#include "stmnt.h"
 
 /* Various tests against nxtchr */
 int match(char c) {return TF(nxtchr == c);}
@@ -372,21 +374,23 @@ void poperr(char* name) {
 }
 
 /* Process Post Operator */
-void prcpst(int isint, char* name, char *index) {
+void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
   DEBUG("Processing post operation '%c'\n", oper)
+  if (ispntr) {sprintf(word,"(%s),Y", name); strcpy(name, word); }
   char name1[VARLEN+3];
   strcpy(name1, name); strcat(name1, "+1");
   if (strlen(index)) { 
-      asmlin("LDX", index);
-      strcat(name,",X");
+    if (ispntr) prcptx(index); //Process Pointer Index
+	else prcidx(indtyp, name, index); //Process Index 
   }
+  else if (ispntr) asmlin("LDY","0");  
   switch(oper) {    
     case '+': 
       if      (strcmp(name, "X")==0) asmlin("INX", "");
       else if (strcmp(name, "Y")==0) asmlin("INY", "");
       else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit INC, 6502 does not
       else {
-	    asmlin("INC", name);
+	    asmlin("INC", word);
 		if (isint) {
 		  newlbl(skplbl);
 		  asmlin("BNE", skplbl);
@@ -407,7 +411,7 @@ void prcpst(int isint, char* name, char *index) {
 		  asmlin("DEC", name1);
 		  setlbl(skplbl);
 	    }
-        asmlin("DEC", name);
+	    asmlin("DEC", name);
       }
       break;
     case '<':
@@ -434,7 +438,7 @@ void prcpst(int isint, char* name, char *index) {
 }
 
 /* Parse Post Operator */
-int prspst(char trmntr, int isint, char* name, char* index) {
+int prspst(char trmntr, int isint, char* name, char* index, char indtyp, char ispntr) {
   oper = getnxt();
   CCMNT(oper);
   DEBUG("Checking for post operation '%c'\n", oper)
@@ -442,7 +446,7 @@ int prspst(char trmntr, int isint, char* name, char* index) {
     skpchr();
     CCMNT(oper);
     expect(trmntr);
-    prcpst(isint, name, index);  //Process Post-Op
+    prcpst(isint, name, index, indtyp, ispntr);  //Process Post-Op
     return 0;
   }
   DEBUG("Not a post operation\n", 0)

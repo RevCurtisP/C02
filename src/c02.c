@@ -56,6 +56,13 @@ void init(void) {
   strcpy(incdir, "../include/");
 }
 
+/* Parse Pointer Dereference Assignment */
+void ppntr(void) {
+  lsrtrn = FALSE; //Clear RETURN flag
+  if (xstmnt[0]) ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE)
+  prcasp(';');  
+}
+
 /* Reads and parses the next Word in Source File */
 void pword(void) {
   lsrtrn = FALSE; //Clear RETURN flag
@@ -111,6 +118,7 @@ void compile(void) {
     else if (match('}')) endblk(TRUE);  //End Multi-Line Program Block
     else if (match('#')) pdrctv();      //Parse Directive
     else if (match('/')) skpcmt(TRUE);  //Skip Comment
+	else if (match('*')) ppntr();		//Parse Pointer
     else if (isalph())   pword();       //Parse Word
     else ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE)
   }    

@@ -55,7 +55,7 @@ int  prsbyt();              //Parse Numeric Byte
 void prslit();              //Parse Literal
 int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
-int  prspst(char trmntr, int isint, char* name, char* index);  //Parse Post Operator
+int  prspst(char trmntr, int isint, char* name, char* index, char indtyp, char ispntr);  //Parse Post Operator
 int  psizof(void);          //Parse SizeOf Operator
 int  pidxof(void);          //Parse SizeOf Operator
 void skpchr();              //Skip Next Character

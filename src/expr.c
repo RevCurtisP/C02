@@ -111,10 +111,43 @@ void chkidx(void) {
   }
 }
 
-/* Parse Term in Expression           *
- * Sets: term - the term (as a string) */
+/* Parse Pointer                 *
+ * Sets: term - Compiled Pointer */
+void prsptr(void) {
+  DEBUG("Parsing pointer\n", 0)
+  expect('*');  //Pointer Dereference Operator
+  prsvar(FALSE,FALSE); //Parse Variable to Dereference
+  if (varble.modifr != MTZP) ERROR("Illegal dereference of non-pointer variable %s.\n", value, EXIT_FAILURE)
+}
+
+/* Process Pointer Index         *
+ * Sets: term - Compiled Pointer */
+void prcptx(char *index) {
+  if (strcmp(index,"X")==0) ERROR("Illegal use of register X\n", 0, EXIT_FAILURE);
+  if (strcmp(index,"A")==0) asmlin("TAY", "");
+  else if (strcmp(index,"Y") != 0) asmlin("LDY", index);
+}
+
+/* Process Pointer                 *
+ * Sets: term - Compiled Pointer */
+int prcptr(void) {
+  prsptr();
+  DEBUG("Dereferencing pointer %s\n", value);
+  sprintf(term, "(%s),Y", value);
+  if (valtyp == ARRAY) {
+    prsidx(TRUE);
+	prcptx(value);
+  }
+  else asmlin("LDY","0");
+  return FALSE;  //Return Value Not an Integer
+}
+
+/* Parse Term in Expression            *
+ * Sets: term - the term (as a string) *
+ * Returns: TRUE if term is an integer */
 int prstrm(int alwint) {
   DEBUG("Parsing term\n", 0)
+  if (match('*')) return prcptr(); //Parse and Deference Pointer
   prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
@@ -303,6 +336,12 @@ int prcftm(int alwint) {
 /* Parse first term of expession            *
  * First term can include function calls    */
 int prsftm(int alwint) {
+  DEBUG("Parsing first term\n", 0)
+  if (match('*')) { 
+    prcptr(); //Parse and Deference Pointer
+    asmlin("LDA", term); 
+    return FALSE;
+  }
   prsval(TRUE, TRUE); //Parse Value, Allow Registers & Constants
   return prcftm(alwint);
 }

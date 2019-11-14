@@ -17,5 +17,7 @@ char xstmnt[LINELEN];       //Expected Statement
 
 void bgnblk(char blkchr);    //End Program Block
 void endblk(int blkflg);    //End Program Block
+void prcasp(char trmntr);	//Process Pointer Assignment
+void prcidx(int idxtyp, char *name, char *index);
 void pdowhl();              //Parse and Compile WHILE after DO
 void pstmnt();              //Parse and Compile Program Statement

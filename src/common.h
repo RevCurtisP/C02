@@ -29,7 +29,7 @@
 #define CPUARG "6502"       //Target CPU Operand
 #define ORGOP  "ORG"        //Origin Pseudo-Op
 #define EQUOP  "EQU"        //Equate Pseudo-Op
-#define BYTEOP "DC"         //Define Byte Pseudo-Op
+#define BYTEOP "BYTE"       //Define Byte Pseudo-Op
 #define STROP  "DS"         //Define String Pseudo-Op
 #define ALNOP  "ALIGN"      //Align Pseudo-Op
 #define USEGOP "SEG.U"      //Uninitalized Segment Pseudo-Op
