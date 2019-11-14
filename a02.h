@@ -41,9 +41,9 @@ struct amd amdesc[] = {
 
 struct opc {char name[5], token; int amode;};
 struct opc psolst[] = {
-  {"BYTE", 'B', 0}, {"WORD", 'W', 0}, {"EQU", '=', 0}, {"FILL", 'F', 0}, {"INCL", 'I', 0},
-  {"SUBR", 'S', 0}, {"ORG", '*', 0}, {"PROC", 'P', 0}, {"DC", 'B', 0}, {"DS", 'F', 0},
-  {"", 0, 0}
+  {"BYTE", 'B', 0}, {"HEX", 'H'}, {"WORD", 'W', 0}, {"EQU", '=', 0}, {"FILL", 'F', 0}, 
+  {"INCL", 'I', 0}, {"SUBR", 'S', 0}, {"ORG", '*', 0}, {"PROC", 'P', 0}, 
+  {"DC", 'B', 0}, {"DS", 'F', 0}, {"", 0, 0}
 };
 
 struct opc opclst[] = {
@@ -74,7 +74,7 @@ struct opc opclst[] = {
   {"STZ", 0x60, 0x006C},
   {"JMP", 0x4C, 0x0620},
   {"JSR", 0x14, 0x0020}, 
-  {"LDY", 0xA0, 0x002E},
+  {"LDY", 0xA0, 0x006E},
   {"STY", 0x80, 0x002C},
   {"", 0, 0}
 };

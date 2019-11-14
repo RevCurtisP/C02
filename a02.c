@@ -286,6 +286,12 @@ void asmbyt(void) {
   } while (cpychr(','));
 }
 
+/* Assemble HEX Pseudo-Op */
+void asmhex(void) {
+  if (DEBUG) puts("Assembling HEX Pseudo-Op");
+  do {outbyt(evlhex(0xFF)); } while (cpychr(','));
+}
+
 /* Assemble WORD Pseudo-Op */
 void asmwrd(void) {
   do {
@@ -359,6 +365,7 @@ int asmpso(void) {
   switch (token) {
     case '=': asmequ(); break;  //EQU
     case 'B': asmbyt(); break;  //BYTE
+    case 'H': asmhex(); break;  //BYTE
     case 'W': asmwrd(); break;  //WORD
     case 'F': asmfll(); break;  //FILL
     case 'S': asmsub(); break;  //SUBRoutine
