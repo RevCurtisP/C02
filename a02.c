@@ -18,9 +18,9 @@ int  orgadr;    //Origin Address
 int  curadr;    //Current Address
 int  lstadr;    //List Address
 
-struct sym {int block; char name[MAXSYM]; int bytes, value;};
+struct sym {int block; char name[MAXLBL+1]; int bytes, value;};
 struct sym symbol;          //Current Symbol
-struct sym symtbl[MAXGLB];  //Global Symbol Table
+struct sym symtbl[MAXSYM];  //Global Symbol Table
 int symcnt; //Number of Global Labels
 int blknum; //Local Label Block Number (0 = Global)
 
@@ -43,14 +43,17 @@ char *linptr;        //Pointer into Input Buffer
 int  lineno;         //Input File Line Number
 int  opridx;         //Index into Operand
 int  passno;         //Assembler Pass Number (1 or 2)
+int  savlno;         //Line Number (Saved)
 
 char prgnam[256]; //Assembler Path and Name (from Command Line)
 char inpnam[256]; //Input File Name
 char outnam[256]; //Output File Name
 char lstnam[256]; //List File Name
+char incnam[256]; //Include File Name
 FILE *inpfil;     //Input File Pointer
 FILE *outfil;     //Output File Pointer
 FILE *lstfil;     //List File Pointer
+FILE *incfil;     //Include File Pointer
 
 /* Print Error Message and Exit */
 void xerror(char* format, char *s) {
@@ -58,6 +61,14 @@ void xerror(char* format, char *s) {
   fprintf(stderr, format, s);
   exit(EXIT_FAILURE);
 }    
+
+/* Open File with Error Checking */
+FILE * opnfil(char* name, char* mode) {
+  if (DEBUG) printf("Opening file '%s' with mode '%s'\n", name, mode);
+  FILE *fp = fopen(name, mode);
+  if (!fp) xerror("Error Opening File '%s'\n", name);
+  return fp;
+}
 
 /* Skip Character in Input Line *
  * Args: c - Character to Skip  *
@@ -81,7 +92,7 @@ void skpspc(void) {
 int pword(int skip, char* word) {
   int wrdlen = 0;
   if (skip) skpspc();
-  while (isalnum(*linptr)) {
+  while (isalnum(*linptr) || *linptr == '_') {
     word[wrdlen++] = toupper(*linptr);
     linptr++;
   }
@@ -122,6 +133,7 @@ int plabel(void) {
     if (label[0] && fndsym(block, label)) xerror("Duplicate Label %s Encountered\n", label);
     if (DEBUG) printf("Initializing Symbol %s\n", label);
     symbol.block = block;
+    if (strlen(label) > MAXLBL) xerror("Label %s Too Long\n", label);
     strcpy(symbol.name, label);
     setsym(curadr, 0);
   }
@@ -135,7 +147,8 @@ int plabel(void) {
 /* Copy Character to Operand and Increment */
 int cpychr(int c) {
   if (c && toupper(*linptr) != c) return FALSE;
-  oprnd[opridx++] = toupper(*linptr++);
+  if (opridx < MAXSTR) oprnd[opridx++] = toupper(*linptr);
+  linptr++;
   return TRUE;
 }
 
@@ -189,7 +202,7 @@ struct sym *evlsym() {
   char name[MAXSTR];
   int block = (cpychr('.')) ? blknum : 0;
   pword(TRUE, name);
-  for (int i=0; name[i]; i++) oprnd[opridx++] = name[i];
+  for (int i=0; name[i]; i++) if (opridx<MAXSTR) oprnd[opridx++] = name[i];
   struct sym *result = fndsym(block, name);
   if (passno == 2 && result == NULL) xerror("Undefined Symbol %s\n", name);
   return result;
@@ -252,7 +265,7 @@ void outbyt(int b) {
   if (passno != 2) return;
   fputc(b & 0xFF, outfil);
   sprintf(bytstr, "%02X ", b);
-  strcat(mcode, bytstr);
+  if (strlen(mcode) < 9) strcat(mcode, bytstr);
 }
 
 /* Write Word to Output File */
@@ -263,6 +276,7 @@ void outwrd(int w) {
 
 /* Assemble BYTE Pseudo-Op */
 void asmbyt(void) {
+  if (DEBUG) puts("Assembling BYTE Pseudo-Op");
   do {
     if (cpychr('"')) { //String Operand
       while (!cpychr('"')) {outbyt(*linptr); cpychr(0); }
@@ -279,6 +293,14 @@ void asmwrd(void) {
   } while (cpychr(','));
 }
 
+/* Assemble FILL Pseudo-Op */
+void asmfll(void) {
+  if (DEBUG) puts("Assembling FILL Pseudo-Op");
+  int size = evlopd(0xFFFF);
+  if (DEBUG) printf("Filling %d Bytes\n", size);
+  for (int i=0; i<size; i++) outbyt(0);
+}
+
 /* Assemble EQU Pseudo-Op */
 void asmequ(void) {
   if (label[0] == 0) xerror("EQUate without Label", 0);
@@ -288,14 +310,14 @@ void asmequ(void) {
 /* Assemble ORG Pseudo-Op */
 void asmorg(void) {
   orgadr = evlopd(0xFFFF);
-  curadr = orgadr;
-  lstadr = orgadr;
   if (passno == 1 && symbol.name[0]) {
     symbol.value = orgadr;
     symbol.bytes = 2;
   }
   if (passno == 2 && objtyp == PRGFIL) 
     outwrd(orgadr);
+  curadr = orgadr;
+  lstadr = orgadr;
 }
 
 /* Assemble PROCESSOR Pseudo-Op */
@@ -312,39 +334,50 @@ void asmsub(void) {
   if (DEBUG) printf("Block Number set to %s\n", oprnd);
 }
 
-/* Assemble FILL Pseudo-Op */
-void asmfll(void) {
-  int size = evlopd(0xFFFF);
-  for (int i=0; i<size; i++) {
-    if (passno == 2) outbyt(0);
-    curadr++;    
+/* Assemble INCLUDE Pseudo-Op */
+void asminf(void) {
+  int incidx = 0;
+  if (DEBUG) puts("Assembling INCLUDE Pseudo-Op");
+  if (incfil) xerror("Nested INCLUDE not Allowed", "");
+  if (!cpychr('"')) xerror("File Name Must be Quoted", ""); 
+  printf("%d: '%c'\n", linptr, *linptr);
+  while (*linptr && !cpychr('"')) {
+    char c = *linptr; if (c == '/') c = '\\'; //Reverse Slashes for DOS/Windows
+    incnam[incidx++] = c;
+    cpychr(0);
   }
+  incnam[incidx] = 0; //Terminate Include Name
+  if (incidx == 0) xerror("INCLUDE requires file name\n", "");
+  if (DEBUG) printf("Include File Set to Name to ''\n", incnam);
 }
 
 /* Assemble Pseudo-Op */
 int asmpso(void) {
-  if (DEBUG) printf("Assembling Pseudo-Op Token '%c'\n", token);
+  if (lkpopc(psolst) == FALSE) return FALSE;
+  skpspc();
+  if (DEBUG) printf("Assembling Pseudo-Op %s, Token '%c'\n", mnmnc, token);
   switch (token) {
     case '=': asmequ(); break;  //EQU
     case 'B': asmbyt(); break;  //BYTE
     case 'W': asmwrd(); break;  //WORD
     case 'F': asmfll(); break;  //FILL
-    case 'S': asmsub(); break;  //SUBROUTINE
+    case 'S': asmsub(); break;  //SUBRoutine
+    case 'I': asminf(); break;  //INCLude
     case '*': asmorg(); break;  //ORG
-    case 'P': asmprc(); break;  //PROCESSOR
+    case 'P': asmprc(); break;  //PROCessor
     default: xerror("Undefined Pseudo-Op %s\n", mnmnc);
   }
   return TRUE;
 }
 
 /* Lookup Opcode */
-int lkpopc(struct opc opclst[]) {
-  if (DEBUG) printf("Looking for OpCode %s\n", mnmnc);
-  char mne[4]; strncpy(mne, mnmnc, 3); //Truncate Mnemonic to Three Characters
-  for (int i=0; opclst[i].name[0]; i++) {
-    if (strcmp(opclst[i].name, mne)) continue;
-    token = opclst[i].token;
-    amode = opclst[i].amode;
+int lkpopc(struct opc opl[]) {
+  if (DEBUG) printf("Looking up Mnemonic %s\n", mnmnc);
+  char mne[5]; strncpy(mne, mnmnc, 4); mne[4] = 0; //Truncate Mnemonic to Four Characters
+  for (int i=0; opl[i].name[0]; i++) {
+    if (strcmp(opl[i].name, mne)) continue;
+    token = opl[i].token;
+    amode = opl[i].amode;
     if (DEBUG) printf("Found token %02X, amode %04X\n", token, amode);
     return TRUE;
   }
@@ -353,8 +386,12 @@ int lkpopc(struct opc opclst[]) {
 
 /* Check for Valid Addressing Mode */
 int chkmod(int mode) {
+  char* s = NULL; //Pointer to Addressing Mode Description
+  for (int i=0; amdesc[i].amode; i++)
+    if (amdesc[i].amode == mode) {s = amdesc[i].desc; break;}
+  if (DEBUG) printf("Checking Addressing Mode %s, %04X against %04X\n", s, mode, amode);
   if (mode & amode) return TRUE;
-  xerror("Invalid Addressing Mode", "");
+  xerror("Invalid Addressing Mode %s", s);
 }
 
 /* Assemble Branch Opcode */
@@ -377,6 +414,7 @@ void asmbrn(void) {
 
 /* Assemble Immediate Mode Instruction */
 void asmimd(void) {
+  if (DEBUG) printf("Assembling Immediate Opcode Token 0x%02X\n", token);
   opval = evlopd(0xFF);
   zpage = TRUE;
   opmod = 0x08;  //Immediate
@@ -404,6 +442,7 @@ void asmiaz(void) {
       if (chkmod(ACMLT)) opmod = 0x08;  //Accumulator
     return;
   }
+  if (DEBUG) printf("Assembling Absolute/ZeroPage 0x%02X\n", token);
   zpage = (opval <= 0xff) ? TRUE : FALSE;
   if (zpage && chkmod(ZPAGE)) opmod =  0x04;  //ZeroPage
   else if (chkmod(ABSLT)) opmod = 0x0C; //Absolute
@@ -428,18 +467,42 @@ unsigned char fixopc(void) {
   return token + opmod;
 }
 
+/* Ouput Opcode Debug Info */
+void dbgopc(void) {
+  if (DEBUG) printf("token=$%02X, opmod=$%02X, Address Mode: ", token, opmod);
+  switch (opmod) {
+    case 0x00: if (amode == IMPLD) puts("Implied"); else puts("(Indirect,X)"); break;
+    case 0x08: if (opval < 0) puts("Accumulator"); else puts("#Immediate"); break;
+    case 0x10: puts("(Indirect),Y"); break;
+    case 0x11: puts("(Indirect)"); break;
+    case 0x04: puts("ZeroPage"); break;
+    case 0x0C: puts("Absolute"); break;
+    case 0x14: puts("ZeroPage,X"); break;
+    case 0x1C: puts("Absolute,X"); break;
+    case 0x14: puts("ZeroPage,Y"); break;
+    case 0x18: puts("Absolute,Y"); break;
+    default: puts("UNKOWN");
+  }
+  if (opval < 0) puts("No Operand");
+  else {
+    printf("Operand Value %d, ", opval);
+    if (zpage) puts("Zero Page"); else puts("Absolute");
+  }
+}
+
 /* Assemble Opcode */
 int asmopc(void) {
   opmod = 0;
+  if (asmpso()) return TRUE; //Check For/Assemble Pseudo-Op
   if (lkpopc(opclst) == FALSE) xerror("Invalid Mnemonic %s\n", mnmnc);
-  if (DEBUG) printf("Assembling Opcode Token 0x%02X\n", token);
+  if (DEBUG) printf("Assembling Opcode Token 0x%02X, ", token);
   if (DEBUG) printf("Addressing Mode Mask 0x%04X\n", amode);
   skpspc();
-  if (amode == 0) return asmpso(); //Pseudo-Op
-  else if (amode == RELTV) asmbrn(); //Branch (Relative) Instruction
+  if (amode == RELTV) asmbrn(); //Branch (Relative) Instruction
   else if (cpychr('#')) asmimd();  //Assemble Implied Instruction
   else if (cpychr('(')) asmind(); //Assemble Indirect Instruction
   else asmiaz(); //Assemble Implied/Accumulator/Absolute/ZeroPage Instruction
+  if (DEBUG) dbgopc();
   int opcode = fixopc(); 
   if (DEBUG) printf("Writing OpCode $%02X\n", opcode);
   outbyt(opcode);                         
@@ -480,6 +543,26 @@ void addsym() {
   memcpy(&symtbl[symcnt++], &symbol, sizeof(symbol));
 }
 
+
+/* Open Include File */
+void opninc(void) {
+  if (DEBUG) printf("Opening Include File %s\n", incnam);
+  if (lstfil) fputs("\n", lstfil);
+  incfil = opnfil(incnam, "r");
+  savlno = lineno;
+  lineno = 1;
+}
+
+/* Close Include File */
+void clsinc(void) {
+  if (DEBUG) printf("Closing Include File %s\n", incnam);
+  if (lstfil) fputs("\n", lstfil);
+  fclose(incfil);
+  incfil = NULL;
+  incnam[0] = 0;
+  lineno = savlno;
+}
+
 /* Assemble Input File (Two Pass)        *
  * Args: pass - Assembly Pass (1 or 2)   *
  * Requires: inpfil - Input File Pointer *
@@ -493,9 +576,10 @@ void asmfil(int pass) {
   orgadr = -1;      //Origin Address Not Set
   curadr = orgadr;  //Set Current Address to Origin
   rewind(inpfil); //Start at Beginning of Input File
-  while (!feof(inpfil)) {
-    linptr = fgets(inplin, MAXSTR, inpfil);
-    if (linptr == NULL) break;
+  while (TRUE) {
+    if (incfil) linptr = fgets(inplin, MAXSTR, incfil);
+    else linptr = fgets(inplin, MAXSTR, inpfil);
+    if (linptr == NULL) {if (incfil) {clsinc(); continue;} else break;}
     if (DEBUG) printf("%05d %04X: %s", lineno, curadr, inplin);
     lstadr = curadr;  //Set List Address
     mcode[0] = 0; //Clear Generated Macbine Code
@@ -506,8 +590,10 @@ void asmfil(int pass) {
     if (passno == 2) {
       if (lstadr < 0) hexadr[0] = 0; else sprintf(hexadr, "%04X", lstadr);
       fprintf(lstfil, "%05d %-4s %-9s%-7s %-5s %-16s %s\n", lineno, hexadr, mcode, label, mnmnc, oprnd, cmmnt );
+      fflush(lstfil); //Flush Output Buffer in case of Segmentation Fault
     }
     lineno++;
+    if (incnam[0] && incfil == NULL) opninc(); //Open Include File 
   }
 }
 
@@ -548,16 +634,9 @@ void pcargs(int argc, char *argv[]) {
   ///if (argnum<2) usage();
 }
 
-/* Open File with Error Checking */
-FILE * opnfil(char* name, char* mode) {
-  if (DEBUG) printf("Opening file '%s' with mode '%s'\n", name, mode);
-  FILE *fp = fopen(name, mode);
-  if (!fp) xerror("Error Opening File '%s'\n", name);
-  return fp;
-}
-
 int main(int argc, char *argv[]) {
   lstnam[0] = 0; lstfil = NULL;     //Default to No List File 
+  incnam[0] = 0; incfil = NULL;     //Include File Not Opened
   lineno = 0;                       //No Line Number (yet)
   objtyp = BINFIL;                  //Default Object File Type to Binary
   pcargs(argc, argv);               //Parse Command Line Arguments
@@ -568,5 +647,6 @@ int main(int argc, char *argv[]) {
   asmfil(1);                        //Assemble Input File (First Pass)
   asmfil(2);                        //Assemble Input File (First Pass)
   if (lstfil) prtsym();             //Print Symbol Table
+  exit(0);                          //Exit with No Errors
 }
 
