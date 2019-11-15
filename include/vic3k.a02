@@ -16,3 +16,4 @@ BASIC:  DC  $0C, $04        ;Pointer to Next Line
         DC  $00, $00        ;End of Basic Program
 
         INCLUDE "../include/vic.a02" ;Include VIC 20 Common Code
+        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
