@@ -43,7 +43,6 @@ but it may not be in a working state.
 #pragma origin 8192     //Set start address of object code
 #pragma zeropage $80    //Set start address of zero page variables 
 
-
 /* Constants */
 #define TRUE = $FF ; //Constants
 #define FALSE = 0
@@ -54,50 +53,63 @@ struct record {char name[8]; char index;}; //Struct Definition
 struct record rec;                         //Struct Declaration
 
 /* Variables and Array Declarations */
-char i, j;                   //Variables 
-zeropage p,q;                //Variables in zeropage
-const char nine = 9;         //Const variable set to decimal literal
-const char maxsiz = $FF;     //Const variable set to hexadecimal literal
-const char flag = %01010101; //Const variable set to binary literal
-const char debug = #TRUE;    //Const variable set to constant
-char r[7];                   //8 byte array 0 (decimal dimension)
+char b, c, d, e, f, g, h;    //8-bit Variables 
+int i, j;                    //16-bit Variables
+zeropage char p, q;          //8-bit Variables in Page 0
+zeropage int u, v;           //16-bit Variables in Page 0
+const char nine = 9;         //Const 8-bit variable set to decimal literal
+const char maxsiz = $FF;     //Const 8-bit variable set to hexadecimal literal
+const char flag = %01010101; //Const 8-bit variable set to binary literal
+const char debug = #TRUE;    //Const 8-bit variable set to constant
+const int k = $1234;         //Const 16-bit variable set to hexadecimal literal
+char r[7];                   //8 byte Array (decimal dimension)
 aligned char m[$FF];         //256 byte array aligned to page boundary
+const char n = {1,2,3};      //Const array set to literal list
 const char s = "string";     //Const array set to string literal
-const char m = {1,2,3};      //Const array set to literal list
 const char t = {"one", 1);   //Const array set to mixed list
 
 /* Functions Declarations */
 void myfunc(); //Forward declaration of function
-char myfunp(tmp1, tmp2, tmp3) {
-  //function code
-}
+char fnc(c) { /*function body */}     //One 8-bit Parameter
+char fnd(c,d) { /*function body */}   //Two 8-bit Parameters
+char fne(c,d,e) { /*function body */} //Three 8-bit Parameters
+char fni(i) { /*function body */}     //One 16-bit Parameter
+char fnj(c,i) { /*function body */}   //8-bit and 16-bit Parameters
+
+/* Returning from a Function */
+return c, d, e;    //Return up to three 8-bit values
+return c,j;        //Return an 8-bit an 16-bit value
+return i;          //Return a 16-bit value
+return;            //No explicit return values
 
 /* Assignments */
 hmove; s80vid;               //Implicit Assignments
 x = 0; y = a; a = 1;         //Register Assignments
 b = c + d - e & f | g ^ h;   //Assignment and Expression
-r[i] = s[j+1] & t[k-1];      //Array Indexing
-d[j] = r[a] + s[x] + t[y];   //Arrays Indexed by Register
-r = (i>j) ? d[i] : e[j];     //Shortcut If
-a<< ;b[i]>>; x++; y--;       //Post-Operations
+r[f] = m[g+1] & t[h-1];      //Array Indexing
+r[j] = r[a] + s[x] + t[y];   //Arrays Indexed by Register
+d = (e>f) ? d[e] : e[f];     //Shortcut If
+b<< ;c[d]>>; x++; y--;       //Post-Operations
 
 /* Function Calls */
-i = abs(n); j = min(b,c), plot(h,v,c);  //Up to Three Char Arguments
-q = div(m+n,d)) - t; n = mult(e+f, z);  //Expression in First Arg Only 
-puts("string"); fputs(fp, &line);       //Passing Strings and Arrays
-setdst(&dst); n = strcpy(&src);         //Using Multiple String Agruments
-c = getc(); setptr(*,addrhi,addrlo);    //No and Skipped Arguments
-row,col = scnpos(); i,j,k = get3d();    //Plural Assignments
-push d,r; mult(); pop p;                //Pass Arguments via Stack
-iprint(); inline "Hello World";         //Pass Inline String Argument
-irect(); inline 10,10,100,100;          //Pass Inline Char Arguments
-icpstr(); inline &dst, &src;            //Pass Inline Address Arguments
+b = abs(c); d = min(e,f), plot(b,c,d); //Up to Three Char Arguments
+b = div(c+d,e)) - f; c = mult(d+e, f); //Expression in First Arg Only 
+j = swap(i); j = ishift(b, i);         //Pass Int or Char with Int
+puts("string"); fputs(f, &s);          //Passing Strings and Arrays
+setdst(&r); b = strcpy(&s);            //Using Multiple String Arguments
+proc(@record, &record);                //Pass Length and Address of Struct
+c = getc(); setptr(?,g,h);             //No Args and Skipped Arguments
+b,c = scnpos(); d,e,f = get3d();       //Plural Assignments
+push b,c; mult(); pop p;               //Pass Arguments via Stack
+iprint(); inline "Hello World";        //Pass Inline String Argument
+irect(); inline 10,10,100,100;         //Pass Inline Char Arguments
+icpstr(); inline &r, &s;               //Pass Inline Address Arguments
 
 /* Control Structures */
 if (c = 27) goto end;
-if (n) q = div(n,d) else puts("Division by 0!");
+if (b) e = div(f,g) else puts("Division by 0!");
 if (b==0 || b>10 && b<20) fprint(n,"input %d in range"); 
-c = 'A' ; while (c <= 'Z') { putc(c); c++; } 
+c = 'A' ; while (c <= 'Z') { putc(c); c++; }
 while() { c=rdkey; if (c=0) continue; putchr(c); if (c=13) break; }
 do c = rdkey(); while (c=0);
 do {c = getchr(); putchr(c);} while (c<>13)
