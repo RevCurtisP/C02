@@ -83,7 +83,7 @@ void skpspc(void) {
  *         otherwise FALSE                    */
 int look(char c) {
   int found;
-  DEBUG("Looking for '%c', ", c);
+  DEBUG("parse.look: Looking for '%c', ", c);
   skpspc();
   found = match(c);
   if (found) {
@@ -141,8 +141,8 @@ void getwrd(void) {
   while (isanum()) word[wrdlen++] = toupper(getnxt());
   word[wrdlen] = 0;
   ACMNT(word);
-  DEBUG("Read word '%s'", word)
-  DETAIL("Delimited by '%c'\n", nxtchr)
+  DEBUG("parse.getwrd: Read word '%s' ", word)
+  DETAIL("delimited by '%c'\n", nxtchr)
 }
 
 /* Escape Character */
@@ -375,8 +375,9 @@ void poperr(char* name) {
 
 /* Process Post Operator */
 void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
-  DEBUG("Processing post operation '%c'\n", oper)
-  if (ispntr) {sprintf(word,"(%s),Y", name); strcpy(name, word); }
+  DEBUG("parse.prcpst: Processing post operation '%c'\n", oper)
+  if (ispntr) ERROR("Post Operation on dereferenced pointer %s not supported\n", name, EXIT_FAILURE)
+		//sprintf(word,"(%s),Y", name); strcpy(name, word); }
   char name1[VARLEN+3];
   strcpy(name1, name); strcat(name1, "+1");
   if (strlen(index)) { 
@@ -388,7 +389,7 @@ void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
     case '+': 
       if      (strcmp(name, "X")==0) asmlin("INX", "");
       else if (strcmp(name, "Y")==0) asmlin("INY", "");
-      else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit INC, 6502 does not
+      else if (strcmp(name, "A")==0 && !cmos) poperr(name); //65C02 supports implicit INC, 6502 does not
       else {
 	    asmlin("INC", word);
 		if (isint) {
@@ -402,7 +403,7 @@ void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
     case '-':
       if      (strcmp(name, "X")==0) asmlin("DEX", "");
       else if (strcmp(name, "Y")==0) asmlin("DEY", "");
-      else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit DEC, 6502 does not
+      else if (strcmp(name, "A")==0 && !cmos) poperr(name); //65C02 supports implicit DEC, 6502 does not
       else {
         if (isint) {
 		  newlbl(skplbl);

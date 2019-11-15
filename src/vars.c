@@ -21,7 +21,7 @@
  *                varcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
 int fndvar(char *name) {
-  DEBUG("Looking up variable '%s'\n", name)
+  DEBUG("vars,fndvar: Looking up variable '%s'\n", name)
   for (varidx=0; varidx<varcnt; varidx++) {
     if (strcmp(vartbl[varidx].name, name) == 0) {
       memcpy(&varble, &vartbl[varidx], sizeof(varble));
@@ -37,7 +37,7 @@ int fndvar(char *name) {
  *                sctcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
 int fndstc(char *name) {
-  DEBUG("Looking up struct '%s'\n", name)
+  DEBUG("vars.fndstc: Looking up struct '%s'\n", name)
   for (stcidx=0; stcidx<stccnt; stcidx++) 
     if (strcmp(strcts[stcidx].name, name) == 0) return TRUE;
   return FALSE;
@@ -48,7 +48,7 @@ int fndstc(char *name) {
  *                stmcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
 int fndmbr(int idx, char *name) {
-  DEBUG("Looking up member '%s'\n", word)
+  DEBUG("vars.fndmbr: Looking up member '%s'\n", word)
   for (mbridx=0; mbridx<mbrcnt; mbridx++) {
     if (membrs[mbridx].strcti != idx) continue;
     if (strcmp(membrs[mbridx].name, name) == 0) {
@@ -88,7 +88,7 @@ void prcmbr(char* name) {
   getwrd(); //Get Member Name
   valtyp = gettyp(); //Determine Variable Type
   if (valtyp == FUNCTION) ERROR("Illegal Function Reference\n", 0, EXIT_FAILURE)  
-  DEBUG("Checking for member %s", word) DETAIL(" with struct index %d\n", stcidx)
+  DEBUG("vars.prcmbr: Checking for member %s", word) DETAIL(" with struct index %d\n", stcidx)
   if (!fndmbr(stcidx, word)) ERROR("Struct does Not Contain Member %s\n", word, EXIT_FAILURE)
   mbrofs += membr.offset; //Get Member Offet in Struct
 }
@@ -117,7 +117,7 @@ void prsvrw(int alwreg, int alwcon) {
   valtyp = gettyp(); //Determine Variable Type
   if (valtyp != FUNCTION) chksym(alwreg, alwcon, word);
   strcpy(value, word);
-  DEBUG("Parsed variable '%s'\n", value)
+  DEBUG("vars.prsvrw: Parsed variable '%s'\n", value)
   if (valtyp == STRUCTURE) prsmbr(value);
 }
 
@@ -143,7 +143,7 @@ void reqvar(int alwary) {
  * Returns: variable size (as integer       */
 int pidxof(void) { 
   expect('?');   //Check for and Skip SizeOf Operator
-  DEBUG("Parsing IndexOf operator", 0);
+  DEBUG("vars.pidxof: Parsing IndexOf operator", 0);
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
   if (mbridx > -1) {
@@ -159,7 +159,7 @@ int pidxof(void) {
  * Returns: variable size (as integer       */
 int psizof(void) { 
   expect('@');   //Check for and Skip SizeOf Operator
-  DEBUG("Parsing SizeOf operator", 0);
+  DEBUG("vars.pdizof: Parsing SizeOf operator", 0);
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
   if (mbridx > -1) {
@@ -181,7 +181,7 @@ int psizof(void) {
 
 /* Parse Data Array */
 void prsdta(void) {
-  DEBUG("Parsing Array Data\n", 0)
+  DEBUG("vars.prsdta: Parsing Array Data\n", 0)
   int i;
   dtype = DTARRY;
   expect('{');
@@ -202,7 +202,7 @@ void prsdts(void) {
   dtype = DTSTR;
   getstr();
   strcpy(value, word);
-  DEBUG("Parsed Data String '%s'\n", value)
+  DEBUG("vars.prsdts: Parsed Data String '%s'\n", value)
 }
 
 /* Store variable data              *
@@ -212,34 +212,34 @@ void prsdts(void) {
 void setdat(void) {
   int i;
   if (dtype == DTBYTE) {
-    DEBUG("Setting variable data to '%d'\n", litval)
+    DEBUG("vars.setdat: Setting variable data to '%d'\n", litval)
     dlen = 1;
     datvar[dsize++] = litval;
   }
   else if (dtype == DTINT) {
-    DEBUG("Setting variable data to '%d'\n", litval)
+    DEBUG("vars.setdat: Setting variable data to '%d'\n", litval)
     dlen = 2;
     datvar[dsize++] = litval & 0xFF;
 	datvar[dsize++] = litval >> 8;
   }
   else if (dtype == DTARRY) {
-	DEBUG("Setting variable data to array of length %d\n", dlen)
+	DEBUG("vars.setdat: Setting variable data to array of length %d\n", dlen)
     for (i=0; i<dlen; i++)  datvar[dsize++] = dattmp[i];   
   }
   else {
-    DEBUG("Setting variable data to '%s'\n", value)
+    DEBUG("vars.setdat: Setting variable data to '%s'\n", value)
     dlen = strlen(value);
     for (i=0; i<dlen; i++) datvar[dsize++] = value[i];   
   } 
   datlen[varcnt] = dlen;
   dattyp[varcnt] = dtype;
-  DEBUG("Total data allocated: %d bytes\n", dsize)
+  DEBUG("vars.setdat: Total data allocated: %d bytes\n", dsize)
 }
 
 /* Parse and store variable data */
 void prsdat(int m, int t) {
   if ((m & MTCONST) == 0) ERROR("Initialization allowed only on variables declared CONST\n", 0, EXIT_FAILURE);
-  DEBUG("Parsing variable data\n", 0)
+  DEBUG("vars.prsdat: Parsing variable data\n", 0)
   skpspc();
   if (t == VTINT) {dtype = DTINT; litval = prsnum(0xFFFF); } //Parse Integer
   else if (islpre()) {dtype = DTBYTE; prslit(); } //Parse Data Literal
@@ -253,7 +253,7 @@ void prsdat(int m, int t) {
  * Uses: vrname - variable name   *
  *       value - variable size    */
 void setvar(int m, int t) {
-  DEBUG("Added variable '%s' ", vrname);
+  DEBUG("vars.setvar: Added variable '%s' ", vrname);
   strncpy(vartbl[varcnt].name, vrname, VARLEN);
   vartbl[varcnt].modifr = m;
   vartbl[varcnt].type = t;
@@ -294,17 +294,17 @@ void addvar(int m, int t) {
   }
   else {
     if (t == VTSTRUCT) {
-      DEBUG("Setting variable size to %d\n", strct.size)
+      DEBUG("vars.addvar: Setting variable size to %d\n", strct.size)
       sprintf(value, "%d", strct.size);
     } else if (t == VTINT) {
-      DEBUG("Setting variable size to %d\n", 2)
+      DEBUG("vars.addvar: Setting variable size to %d\n", 2)
       sprintf(value, "%d", 2);  
 	} else if (match('[')) {
 	  t = VTARRAY;	//Set Type to Array
       CCMNT('[')
       skpchr();
       if (alcvar) {
-        DEBUG("Parsing array size\n", 0)
+        DEBUG("vars.addvar: Parsing array size\n", 0)
         sprintf(value, "%d", prsnum(0xFF) + 1);
       }
       expect(']');

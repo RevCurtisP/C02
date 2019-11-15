@@ -186,6 +186,16 @@ void pargs(int argc, char *argv[]) {
   if (outnam[0]) DEBUG("outnam set to '%s'\n", outnam)
 }
 
+/* Validate CPU Type *
+ * Uses: cputype     *
+ * Sets: cmos        */
+void chkcpu(void) {
+  if (strcmp(cputyp, "6502") == 0) cmos = FALSE;
+  else if (strcmp(cputyp, "65C02") == 0) cmos = TRUE;
+  else ERROR("Invalid CPU Type %s\n", cputyp, EXIT_FAILURE)
+}
+
+
 int main(int argc, char *argv[]) {
   debug = TRUE;  //Output Debug Info
   gencmt = TRUE; //Generate Assembly Language Comments
@@ -195,7 +205,8 @@ int main(int argc, char *argv[]) {
   init(); //Initialize Global Variables
   
   pargs(argc, argv); //Parse Command Line Arguments
-  
+  chkcpu(); //Validate CPU Type
+
   opnsrc();  //Open Source File
   opnout();  //Open Output File
   opnlog();  //Open Log File

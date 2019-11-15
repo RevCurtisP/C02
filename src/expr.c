@@ -20,6 +20,8 @@ void pshtrm(void) {
   oprstk[trmidx] = oper;        //Put Current Operator on Stack
   strcpy(trmstk[trmidx], term); //Put Current Term on Stack
   trmidx++;                     //Increment Stack Pointer
+  DEBUG("expr.pshtrm: Pushed term %s ", term)
+  DETAIL("and operator '%onto stack'\n", oper)
 }
 
 /* Pop Term and Operator off Stack */
@@ -27,6 +29,8 @@ void poptrm(void) {
   trmidx--;                     //Decrement Stack Pointer
   strcpy(term, trmstk[trmidx]); //Restore Current Term from Stack
   oper = oprstk[trmidx];        //Restore Current Operator from Stack
+  DEBUG("expr.pshtrm: Popped term %s ", term)
+  DETAIL("and operator '%c' off stack\n", oper)
 }
 
 /* Parse value (literal or identifier)   *
@@ -35,13 +39,14 @@ void poptrm(void) {
  * Sets: value - the value (as a string) *
  *       valtyp - value type             */
 void prsval(int alwreg, int alwcon) {
-  DEBUG("Parsing value\n", 0)
+  DEBUG("expr.prsval: Parsing value\n", 0)
   skpspc();
   if      (islpre()) prslit();               //Parse Literal
   else if (isalph()) prsvar(alwreg, alwcon); //Parse Variable
   else if (isbtop()) prsbop();				 //Parse Byte Operator
   else               expctd("literal or variable");
-  DEBUG("Parsed value of type %d\n", valtyp)
+  DEBUG("expr.prsval: Parsed value %s ", value)
+  DETAIL("of type %d\n", valtyp)
   skpspc();
 }
 
@@ -58,7 +63,7 @@ void prcmns(void) {
 void prsidx(int clbrkt) {
   expect('[');
   prsval(TRUE, TRUE); //Parse Value, Allow Registers & Constants
-  DEBUG("Parsed array index '%s'\n", value)
+  DEBUG("expr.prsidx: Parsed array index '%s'\n", value)
   if (clbrkt) expect(']');
 }
 
@@ -69,21 +74,24 @@ void prsidx(int clbrkt) {
  *       word - array index raw string   *
  * Sets: term - modified variable name   */
 void prcsix(void) {
-    if (valtyp == LITERAL) {
-      strcat(term, "+");
-      strcat(term, word);
-    }
-    else if (strcmp(value, "Y")==0) 
-      strcat(term, ",Y");
-    else {
-      if      (strcmp(value, "A")==0) asmlin("TAX", "");
-      else if (strcmp(value, "X")!=0) asmlin("LDX", value);
-      strcat(term, ",X");    
-    }
+  DEBUG("expr.prcsix: Processing simple array index %s\n", word);
+  if (valtyp == LITERAL) {
+    strcat(term, "+");
+    strcat(term, word);
+  }
+  else if (strcmp(value, "Y")==0) 
+    strcat(term, ",Y");
+  else {
+    if      (strcmp(value, "A")==0) asmlin("TAX", "");
+    else if (strcmp(value, "X")!=0) asmlin("LDX", value);
+    strcat(term, ",X");    
+  }
+  DEBUG("expr.prcsix: Set term to %s\n", term);
 }
 
 /* Process Expression Array Index */
 void prcxix(void) {
+  DEBUG("expr.prcxix: Processing Expression Array Index", 0)
   pshtrm(); //Push Array Variable onto Term Stack
   if (trmcnt) asmlin("PHA", ""); //Save Accumulator if not first term
   prcftm(FALSE);    //Process First Term of Expression
@@ -92,6 +100,7 @@ void prcxix(void) {
   if (trmcnt) asmlin("PLA", ""); //Restore Accumator if not first term
   poptrm(); //Pop Array Variable off Term Stack
   strcat(term, ",X");
+  DEBUG("expr.prcxix: Set term to %s\n", term);
 }
 
 /* Check for, Parse, and Process Index */
@@ -117,12 +126,16 @@ void prsptr(void) {
   DEBUG("Parsing pointer\n", 0)
   expect('*');  //Pointer Dereference Operator
   prsvar(FALSE,FALSE); //Parse Variable to Dereference
+  strcpy(term, value);
   if (varble.modifr != MTZP) ERROR("Illegal dereference of non-pointer variable %s.\n", value, EXIT_FAILURE)
+  DEBUG("expr.prsptr: Set term to %s\n", term);
 }
 
 /* Process Pointer Index         *
  * Sets: term - Compiled Pointer */
 void prcptx(char *index) {
+  DEBUG("expr.prcptx: Processing Dereferenced Pointer %s ", term)
+  DETAIL("index [%s]\n", index)
   if (strcmp(index,"X")==0) ERROR("Illegal use of register X\n", 0, EXIT_FAILURE);
   if (strcmp(index,"A")==0) asmlin("TAY", "");
   else if (strcmp(index,"Y") != 0) asmlin("LDY", index);
@@ -132,13 +145,19 @@ void prcptx(char *index) {
  * Sets: term - Compiled Pointer */
 int prcptr(void) {
   prsptr();
-  DEBUG("Dereferencing pointer %s\n", value);
-  sprintf(term, "(%s),Y", value);
+  DEBUG("expr.prcptr: Dereferencing Pointer %s\n", value);
   if (valtyp == ARRAY) {
     prsidx(TRUE);
 	prcptx(value);
+    sprintf(word, "(%s),Y", term);
+  }  else if (cmos) {
+    sprintf(word, "(%s)", term);
+  } else {
+	asmlin("LDY","0");
+    sprintf(word, "(%s),Y", term);
   }
-  else asmlin("LDY","0");
+  strcpy(term, word);
+  DEBUG("expr.prcptr: Set term to %s\n", term);
   return FALSE;  //Return Value Not an Integer
 }
 
@@ -152,7 +171,7 @@ int prstrm(int alwint) {
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
   if (valtyp == VARIABLE && prcivr(alwint)) return TRUE;
-  DEBUG("Parsed term %s\n", term)
+  DEBUG("expr.prstrm: Parsed term %s\n", term)
   chkidx();  //Check for Array Index
   skpspc();
   return FALSE;
@@ -417,6 +436,7 @@ void prsxpi(char trmntr, int asmxpr) {
       prsvar(FALSE, TRUE);
       if (valtyp == FUNCTION) {
         strcpy(term, value);
+        DEBUG("expr.prsxpi: Set term to %s\n", term)
         prsfnc(0); //Parse Expression Function
       } else if (valtyp == STRUCTURE) {
         prsmbr(value);

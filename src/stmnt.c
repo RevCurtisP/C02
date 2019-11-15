@@ -78,7 +78,7 @@ void setasn(char *name, char ispntr) {
   else word[0] = 0;
   strcat(word, name);
   if (wrtofs[0]) strcat(word, wrtofs);
-  if (ispntr) strcat(word,"),Y");
+  if (ispntr) strcat(word,")");
 }
 
 void prcixy(char rgstr, char* idx, int ivt) {
@@ -133,7 +133,10 @@ void prcasn(char trmntr, char ispntr) {
     if (ispntr) prcptx(asnidx); //Process Pointer Index
 	else prcidx(asnivt, word, asnidx); //Process Index 
   }
-  else if (ispntr) asmlin("LDY","0");
+  else if (ispntr && !cmos) {
+    strcat(word, ",Y");
+    asmlin("LDY","0");
+  }
   asmlin("STA", word); //Store Return Value
 }
 
@@ -153,7 +156,7 @@ int getidx(char* idx) {
     prsidx(TRUE);  //Parse Array Index
     if (valtyp == LITERAL) strncpy(idx, word, VARLEN);
 	else strncpy(idx, value, VARLEN);
-    DEBUG("Parsed index %s\n", idx)
+    DEBUG("stmnt.getidx: Parsed index %s\n", idx)
     return valtyp;
 }
 
@@ -161,7 +164,7 @@ int getidx(char* idx) {
 int prcava(char *name, char trmntr, char ispntr) {
   strcpy(asnvar, name);
   asntyp = valtyp; //Set Assigned Variable Type
-  DEBUG("Set STA variable to %s\n", asnvar)
+  DEBUG("stmnt.prcava: Set STA variable to %s\n", asnvar)
   if (asntyp == VARIABLE && look(';')) {
     asmlin("STA", asnvar);
     return TRUE;
@@ -169,7 +172,7 @@ int prcava(char *name, char trmntr, char ispntr) {
   if (asntyp == ARRAY) asnivt = getidx(asnidx); //Get Array Index and Type
   else asnidx[0] = 0;
   if (ispntr && strcmp(asnidx, "X") == 0) ERROR("Illegal use of register X\n", 0, EXIT_FAILURE) 
-  DEBUG("Set STA index to '%s'", asnidx) DETAIL(" and type to %d\n", asnivt)
+  DEBUG("stmnt.prcava: Set STA index to '%s'", asnidx) DETAIL(" and type to %d\n", asnivt)
   if (ispopr()) {
     if (prspst(trmntr, FALSE, asnvar, asnidx, asnivt, ispntr)) expctd("post operator");
 	return TRUE;
@@ -234,7 +237,7 @@ void pasm(void) {
 /* Parse and Compile Assignment of Pointer */
 void prcasp(char trmntr) {
   prsptr(); //Parse Pointer Dereference
-  DEBUG("Processing assignment to dereferenced pointer %s\n", value)
+  DEBUG("stmnt.prcasp: Processing assignment to dereferenced pointer %s\n", value)
   if (prcava(value, trmntr, TRUE)) return; //Process Accumulator Assignment Variable
   prcasn(trmntr, TRUE);
 }

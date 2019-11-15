@@ -49,6 +49,7 @@ void prttim(); //Print elapsed time
 #define ERROR(fmt, val, err) {fprintf(stderr, fmt, val);exterr(err);}
 
 int debug;  //Print Debug Info (TRUE or FALSE)
+int cmos;   //Flag: Use 65C02 Instruction Set
 
 int  gencmt;           //Generate Assembly Language Comments
 char asmcmt[LINELEN];  //Processed Assembly Language Comment
