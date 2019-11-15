@@ -177,7 +177,7 @@ void pincdr(void) {
 void phdwrd(void) {
   getwrd();
   if (match(':')) prslab();
-  else if (!ptype(MTNONE)) 
+  else if (!pmodfr() && !ptype(MTNONE)) 
     ERROR("Unexpected word '%s' in header\n", word, EXIT_FAILURE)
 }
 

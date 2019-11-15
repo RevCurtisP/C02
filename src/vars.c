@@ -270,10 +270,12 @@ void addvar(int m, int t) {
   if (fndvar(vrname)) ERROR("Duplicate declaration of variable '%s\n", vrname, EXIT_FAILURE)
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m & MTZP) {
-    setlbl(vrname);
-    sprintf(word, "$%hhX", zpaddr++);
-	if (t == VTINT) zpaddr++; //int uses two bytes
-    asmlin(EQUOP, word);
+    if (alcvar) {
+      setlbl(vrname);
+      sprintf(word, "$%hhX", zpaddr++);
+	  if (t == VTINT) zpaddr++; //int uses two bytes
+      asmlin(EQUOP, word);
+    }
     strcpy(value, "*"); //Set Variable to Non Allocated  
   }
   else if (m & MTALS) {
