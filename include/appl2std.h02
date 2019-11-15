@@ -35,3 +35,7 @@ void newlin();  //Advance cursor to beginning of next line
 char putchr();  //Print ASCII character to Console
 void setdst();  //Set Destination Pointer
 void setsrc();  //Set Source Pointer
+
+//System Labels
+start:  //Start of Code
+exit:   //Return to Operating System
