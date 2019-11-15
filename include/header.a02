@@ -37,6 +37,10 @@ STKEHI  EQU $2B
 STKLO   EQU $2C     ;Stack Pointer
 STKHI   EQU $2D
 
+;Placeholders Labels for the Example Code Below
+POLKEY  EQU $FFFE   ;ROM Read Key Routine
+WSTART  EQU $FFFF   ;BASIC Warm Start Routine
+
         ORG $0200   ;Program Start Address
 
 START:  NOP         ;System specific initialization code
@@ -77,45 +81,5 @@ NEWLIN: RTS         ;Code to move Cursor to beginning of next line
 ;Print Character to Screen
 PUTCHR RTS         ;Code to write ASCII character to Screen
 
-;Clear the Screen
-CLRSCR: RTS         ;Code to Clear Screen
-
-;Move Cursor to Specified Coordinates
-SETPOS: RTS         ;Move Cursor to Column A, Row Y
-
-;Get Cursor Position
-GETPOS: RTS         ;Return Cursor Column in A, Row in Y
-
-;Get Screen Size
-GETSIZ: RTS         ;Return Screen Width in A, Height in Y
-
-;Note: The following two functions replicate calls available 
-;in the Apple-1 monitor and are included for test purposes
-;They will likely be removed before the final release
-
-;Print Byte as Two-Digit Hex Number to Console
-PRBYTE: PHA         ;Save Accumulater
-        LSR         ;Shift Hi Nybble to Low Nybble
-        LSR 
-        LSR 
-        LSR 
-        JSR PRHEX   ;  and Print it
-        PLA         ;Restore Accumulator 
-                    ;  and fall into PRHEX
-
-;Print Low Nybble as Hex Digit to Console
-PRHEX:  AND #$0F    ;Strip High Nybb
-        SED         ;Set Decimal Flag for 
-        CLC         ;  Addition Wizardry
-        ADC #$90    ;Convert to $90-$99,$00-$05
-        ADC #$40    ;Convert to $30-$39,$41-$46
-        CLD         ;Clear Decimal Flag
-        JMP PUTCHR  ;Print Hex Digit and Return   
-
-;Alternate Code for Systems with Interrupts that don't CLD
-PRHEX:  AND #$0F    ;Strip High Nybble
-        CMP #$0A    ;If Low Nybble >= 10
-        BCC PRHEXC  ;  
-        ADC #$06    ;  Convert ':' to 'A'...
-PRHEXC: ADC #$30    ;Convert to ASCII Character
-        JMP PUTCHR  ;Print Hex Digit and Return
+        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
+ 
