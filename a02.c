@@ -284,6 +284,21 @@ void outwrd(int w) {
   outbyt(w >> 8);  
 }
 
+/* Lookup Opcode */
+int lkpopc(struct opc opl[]) {
+  if (DEBUG) printf("Looking up Mnemonic %s\n", mnmnc);
+  token = 0xFF; //Set Token to Invalid
+  char mne[5]; strncpy(mne, mnmnc, 4); mne[4] = 0; //Truncate Mnemonic to Four Characters
+  for (int i=0; opl[i].name[0]; i++) {
+    if (strcmp(opl[i].name, mne)) continue;
+    token = opl[i].token;
+    amode = opl[i].amode;
+    if (DEBUG) printf("Found token %02X, amode %04X\n", token, amode);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 /* Assemble BYTE Pseudo-Op */
 void asmbyt(void) {
   if (DEBUG) puts("Assembling BYTE Pseudo-Op");
@@ -405,21 +420,6 @@ int asmpso(int dot) {
   return TRUE;
 }
 
-/* Lookup Opcode */
-int lkpopc(struct opc opl[]) {
-  if (DEBUG) printf("Looking up Mnemonic %s\n", mnmnc);
-  token = 0xFF; //Set Token to Invalid
-  char mne[5]; strncpy(mne, mnmnc, 4); mne[4] = 0; //Truncate Mnemonic to Four Characters
-  for (int i=0; opl[i].name[0]; i++) {
-    if (strcmp(opl[i].name, mne)) continue;
-    token = opl[i].token;
-    amode = opl[i].amode;
-    if (DEBUG) printf("Found token %02X, amode %04X\n", token, amode);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 /* Check for Valid Addressing Mode */
 int chkmod(int mode) {
   char* s = NULL; //Pointer to Addressing Mode Description
@@ -513,9 +513,9 @@ void dbgopc(void) {
     case 0x11: puts("(Indirect)"); break;
     case 0x04: puts("ZeroPage"); break;
     case 0x0C: puts("Absolute"); break;
-    case 0x14: puts("ZeroPage,X"); break;
+    case 0x14: if ((token == 0x82 || token == 0xA2)) puts("ZeroPage,Y");
+               else puts("ZeroPage,X"); break;
     case 0x1C: puts("Absolute,X"); break;
-    case 0x14: puts("ZeroPage,Y"); break;
     case 0x18: puts("Absolute,Y"); break;
     default: puts("UNKOWN");
   }

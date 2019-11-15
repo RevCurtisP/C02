@@ -4,5 +4,6 @@ mainfile=src/c02.c
 outfile=c02
 c02: ${incfiles} ${mainfile} 
 	gcc ${gccopts} ${incfiles} ${mainfile} -o ${outfile}
+	gcc ${gccopts} a02.h a02.c -o a02
 clean:
-	rm ${outfile}
+	rm ${outfile} a02
