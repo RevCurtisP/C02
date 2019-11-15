@@ -37,8 +37,8 @@ void pincnm(void) {
         sublen[subidx] = strlen(subnam[subidx]);
         subnam[subidx][sublen[subidx]++] = '/';
       }
-    dlmtr = '>';
 	}
+    dlmtr = '>';
   }
   else if (dlmtr != '"')
     ERROR("Unexpected character '%c' after include\n", dlmtr, EXIT_FAILURE)
@@ -86,7 +86,7 @@ void pdefin(void) {
 
 /* Parse ASCII Subdirective */
 void pascii(void) {
-  getwrd(); //Get Pragma Subdirective
+  getwrd(); //Get Subdirective Argument
   DEBUG("Parsing subdirective '%s'\n", word)
   if (wordis("INVERT"))
     invasc = TRUE;
@@ -146,7 +146,7 @@ void pprgma(void) {
   else if (wordis("ORIGIN"))
     porign(); //Parse Origin
   else if (wordis("PADDING"))
-    ppddng(); //Parse Origin
+    ppddng(); //Parse Padding
   else if (wordis("RAMBASE"))
     prambs(); //Parse RamBase
   else if (wordis("VARTABLE"))

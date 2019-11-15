@@ -29,7 +29,7 @@
 #define CPUARG "6502"       //Target CPU Operand
 #define ORGOP  "ORG"        //Origin Pseudo-Op
 #define EQUOP  "EQU"        //Equate Pseudo-Op
-#define BYTEOP "DC"         //Define Byte Pseudo-Op
+#define BYTEOP "BYTE"       //Define Byte Pseudo-Op
 #define STROP  "DS"         //Define String Pseudo-Op
 #define ALNOP  "ALIGN"      //Align Pseudo-Op
 #define USEGOP "SEG.U"      //Uninitalized Segment Pseudo-Op
@@ -49,6 +49,7 @@ void prttim(); //Print elapsed time
 #define ERROR(fmt, val, err) {fprintf(stderr, fmt, val);exterr(err);}
 
 int debug;  //Print Debug Info (TRUE or FALSE)
+int cmos;   //Flag: Use 65C02 Instruction Set
 
 int  gencmt;           //Generate Assembly Language Comments
 char asmcmt[LINELEN];  //Processed Assembly Language Comment
@@ -65,7 +66,10 @@ int savchr; //Holds nxtchr when switching input files
 int  wrdlen;          //Length of Parsed Word
 char word[LINELEN];   //Word parsed from source file
 char uword[LINELEN];  //Word converted to uppercase
+int  pstlen;          //Length of Parsed String
+char pstrng[LINELEN]; //String parsed fron source file
 char cmtasm[LINELEN]; //Assembly Language Comment Text
+char cputyp[LINELEN]; //CPU Type
 
 char hdrnam[FNAMLEN]; //Header File Name
 char incdir[FNAMLEN]; //Include File Directory

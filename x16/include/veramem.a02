@@ -24,7 +24,7 @@ ASLADR: ASL TEMP1   ;Shift LSB Left
         ROL TEMP0   ;Rotate Carry Left into LSB
         DEX         ;Decrement Shift Count 
         BNE ASLADR  ;and Loop if Not Zero
-        JMP RESREG  ;Return Bank, MSB, LSB
+        BRA RESREG  ;Return Bank, MSB, LSB
 
 ;chkadr(opts,addr) - Check Vera Address
 ;Args: A = Bank + Auto-Increment
@@ -163,7 +163,7 @@ SETVRB: STA TEMP1   ;Save Bit Pattern
         JSR GETVRG  ;Read Register
         AND TEMP0   ;Mask Result
         ORA TEMP1   ;Set Bits
-        JMP SETBYN  ;Write Back to Register 
+        BRA SETBYN  ;Write Back to Register 
 
 ;setreg(addr) - Set Register 
 ;Args: A = Value to Write

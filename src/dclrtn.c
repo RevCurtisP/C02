@@ -53,6 +53,7 @@ void addfnc(void) {
   infunc = TRUE;          //Set Inside Function Definition Flag
   DEBUG("Set infunc to %d\n", infunc)
   setlbl(fncnam);         //Set Function Entry Point
+  asmlin(LOCOP, "");      //Set Local Variables Boundary
   if (prmtra[0]) asmlin("STA", prmtra); //Store First Parameter
   if (prmtry[0]) asmlin("STY", prmtry); //Store Second Parameter
   if (prmtrx[0]) asmlin("STX", prmtrx); //Store Third Parameter

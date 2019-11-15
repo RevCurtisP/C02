@@ -52,7 +52,15 @@ void init(void) {
   xsnvar[0] = 0;  //Assigned X Variable Name
   ysnvar[0] = 0;  //Assigned Y Variable Name
   subcnt = 0;     //Include Subdirectories
+  strcpy(cputyp, CPUARG);  //Set CPU Type to Default Value
   strcpy(incdir, "../include/");
+}
+
+/* Parse Pointer Dereference Assignment */
+void ppntr(void) {
+  lsrtrn = FALSE; //Clear RETURN flag
+  if (xstmnt[0]) ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE)
+  prcasp(';');  
 }
 
 /* Reads and parses the next Word in Source File */
@@ -82,7 +90,7 @@ void pdrctv(void) {
 
 void prolog(void) {
   DEBUG("Writing Assembly Prolog\n", 0)
-  asmlin(CPUOP,CPUARG);
+  asmlin(CPUOP,cputyp);
   setcmt("Program ");
   addcmt(srcnam);
   cmtlin();
@@ -110,6 +118,7 @@ void compile(void) {
     else if (match('}')) endblk(TRUE);  //End Multi-Line Program Block
     else if (match('#')) pdrctv();      //Parse Directive
     else if (match('/')) skpcmt(TRUE);  //Skip Comment
+	else if (match('*')) ppntr();		//Parse Pointer
     else if (isalph())   pword();       //Parse Word
     else ERROR("Unexpected character '%c'\n", nxtchr, EXIT_FAILURE)
   }    
@@ -130,12 +139,16 @@ int popt(int arg, int argc, char *argv[]) {
   strncpy (argstr, argv[arg], 31);
   if (strlen(argstr) != 2) ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
   opt = toupper(argstr[1]);
-  if (strchr("HS", opt)) {
+  if (strchr("CHS", opt)) {
     if (++arg >= argc) ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
   DEBUG("Processing Command Line Option -%c\n", argstr[1])
   switch (opt) {
+    case 'C':
+      strcpy(cputyp, optarg);
+      DEBUG("CPU Type set to '%s'\n", cputyp)
+      break;
     case 'H':
       strcpy(hdrnam, optarg);
       DEBUG("Header Name set to '%s'\n", hdrnam)
@@ -173,6 +186,16 @@ void pargs(int argc, char *argv[]) {
   if (outnam[0]) DEBUG("outnam set to '%s'\n", outnam)
 }
 
+/* Validate CPU Type *
+ * Uses: cputype     *
+ * Sets: cmos        */
+void chkcpu(void) {
+  if (strcmp(cputyp, "6502") == 0) cmos = FALSE;
+  else if (strcmp(cputyp, "65C02") == 0) cmos = TRUE;
+  else ERROR("Invalid CPU Type %s\n", cputyp, EXIT_FAILURE)
+}
+
+
 int main(int argc, char *argv[]) {
   debug = TRUE;  //Output Debug Info
   gencmt = TRUE; //Generate Assembly Language Comments
@@ -182,7 +205,8 @@ int main(int argc, char *argv[]) {
   init(); //Initialize Global Variables
   
   pargs(argc, argv); //Parse Command Line Arguments
-  
+  chkcpu(); //Validate CPU Type
+
   opnsrc();  //Open Source File
   opnout();  //Open Output File
   opnlog();  //Open Log File

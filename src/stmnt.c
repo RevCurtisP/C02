@@ -21,6 +21,7 @@
 void bgnblk(char blkchr) {
   DEBUG("Beginning program block\n", 0)
   if (blkchr) {
+    DEBUG("Expecting Block Delimiter '%c'\n", blkchr);
     expect(blkchr);
     inblck = TRUE;
   }
@@ -72,42 +73,52 @@ void prcidx(int idxtyp, char *name, char *index)
 
 /* Set word to assignment variable *
  * adding write offset (if set)    */
-void setasn(char *name) {
-  strcpy(word, name);
+void setasn(char *name, char ispntr) {
+  if (ispntr) strcpy(word,"(");
+  else word[0] = 0;
+  strcat(word, name);
   if (wrtofs[0]) strcat(word, wrtofs);
+  if (ispntr) strcat(word,")");
+}
+
+void prcixy(char rgstr, char* idx, int ivt) {
+  DEBUG("Processing %c register indexed assignment\n", rgstr)
+  if (strlen(idx)) { //Process X variable Index
+    if (ivt != LITERAL) { 
+     asmlin("PHA", "");  //Save Accumulator
+     if (rgstr == 'X') asmlin("TXA", "");  //Transfer Return Value to Accumulator
+     else asmlin("TYA", "");
+     prcidx(ivt, word, idx); //Process Index
+     asmlin("STA", word); //Store Return Value
+     asmlin("PLA", ""); //Restore Accumulator
+   } else {
+      prcidx(ivt, word, idx); //Process Index
+      if (rgstr == 'X') asmlin("STX", word); //Store Return Value
+      else asmlin("STY", word);
+   }
+  }
 }
 
 /* Process Assignment of X and Y variables */
 void prcaxy(void) {
   DEBUG("Processing X assignment variable '%s'\n", xsnvar)
   if (xsnvar[0]) {
-    setasn(xsnvar);
-    if (strlen(xsnidx)) { //Process X variable Index
-	  if (xsnivt != LITERAL) { 
-        asmlin("PHA", "");  //Save Accumulator
-        asmlin("TXA", "");  //Transfer Return Value to Accumulator
-        prcidx(xsnivt, word, xsnidx); //Process Index
-        asmlin("STA", word); //Store Return Value
-        asmlin("PLA", ""); //Restore Accumulator
-	  } else {
-        prcidx(xsnivt, word, xsnidx); //Process Index
-        asmlin("STX", word); //Store Return Value
-	  }
-    }
+    setasn(xsnvar, FALSE);
+    if (strlen(xsnidx)) prcixy('X', xsnidx, xsnivt); //Process Index
 	else asmlin("STX", word); //Store Return Value
     xsnvar[0] = 0;
   }
   DEBUG("Processing Y assignment variable '%s'\n", ysnvar)
   if (ysnvar[0]) {
-    setasn(ysnvar);
-    if (strlen(ysnidx)) prcidx(ysnivt, word, ysnidx); //Process Index
-    asmlin("STY", word); //Store Return Value
+    setasn(ysnvar, FALSE);
+    if (strlen(ysnidx)) prcixy('Y', ysnidx, ysnivt); //Process Index
+    else asmlin("STY", word); //Store Return Value
     ysnvar[0] = 0;
   }
 }
 
 /* Process Assignment */
-void prcasn(char trmntr) {
+void prcasn(char trmntr, char ispntr) {
   expect('=');
   if (look('(')) prssif(trmntr); //Parse Shortcut If 
   else           prsxpr(trmntr); //Parse Expression
@@ -117,8 +128,15 @@ void prcasn(char trmntr) {
   else if (strcmp(asnvar, "Y")==0) asmlin("TAY", "");
   else if (strcmp(asnvar, "A")==0) return;
   DEBUG("Processing assignment variable '%s'\n", asnvar)
-  setasn(asnvar);
-  if (asnidx[0]) prcidx(asnivt, word, asnidx); //Process Index 
+  setasn(asnvar, ispntr);
+  if (asnidx[0]) { 
+    if (ispntr) prcptx(asnidx); //Process Pointer Index
+	else prcidx(asnivt, word, asnidx); //Process Index 
+  }
+  else if (ispntr && !cmos) {
+    strcat(word, ",Y");
+    asmlin("LDY","0");
+  }
   asmlin("STA", word); //Store Return Value
 }
 
@@ -138,8 +156,28 @@ int getidx(char* idx) {
     prsidx(TRUE);  //Parse Array Index
     if (valtyp == LITERAL) strncpy(idx, word, VARLEN);
 	else strncpy(idx, value, VARLEN);
-    DEBUG("Parsed index %s\n", idx)
+    DEBUG("stmnt.getidx: Parsed index %s\n", idx)
     return valtyp;
+}
+
+/* Process Accumulator Assignment Variable */
+int prcava(char *name, char trmntr, char ispntr) {
+  strcpy(asnvar, name);
+  asntyp = valtyp; //Set Assigned Variable Type
+  DEBUG("stmnt.prcava: Set STA variable to %s\n", asnvar)
+  if (asntyp == VARIABLE && look(';')) {
+    asmlin("STA", asnvar);
+    return TRUE;
+  }
+  if (asntyp == ARRAY) asnivt = getidx(asnidx); //Get Array Index and Type
+  else asnidx[0] = 0;
+  if (ispntr && strcmp(asnidx, "X") == 0) ERROR("Illegal use of register X\n", 0, EXIT_FAILURE) 
+  DEBUG("stmnt.prcava: Set STA index to '%s'", asnidx) DETAIL(" and type to %d\n", asnivt)
+  if (ispopr()) {
+    if (prspst(trmntr, FALSE, asnvar, asnidx, asnivt, ispntr)) expctd("post operator");
+	return TRUE;
+  }
+  return FALSE;
 }
 
 /* Process Assignment Variable(s) */
@@ -149,24 +187,11 @@ void prcavr(char trmntr) {
   strcpy(vrname, word);  //save variable to assign to
   if (valtyp == STRUCTURE) prsmbr(vrname); //Updates word and vartyp
   if (vartyp == VTINT) {
-    if (ispopr()) {if (prspst(trmntr, TRUE, vrname, "")) expctd("post operator");}
+    if (ispopr()) {if (prspst(trmntr, TRUE, vrname, "", 0, FALSE)) expctd("post operator");}
     else prcasi(trmntr); //Process Integer Assignment
     return;
   }
-  strcpy(asnvar, vrname);
-  asntyp = valtyp; //Set Assigned Variable Type
-  DEBUG("Set STA variable to %s\n", asnvar)
-  if (asntyp == VARIABLE && look(';')) {
-    asmlin("STA", asnvar);
-    return;
-  }
-  if (asntyp == ARRAY) asnivt = getidx(asnidx); //Get Array Index and Type
-  else asnidx[0] = 0;
-  DEBUG("Set STA index to '%s'", asnidx) DETAIL(" and type to %d\n", asnivt)
-  if (ispopr()) {
-    if (prspst(trmntr, FALSE, asnvar, asnidx)) expctd("post operator");
-	return;
-  }
+  if (prcava(vrname, trmntr, FALSE)) return;
   if (look(',')) {     
     if (asntyp == REGISTER) ERROR("Register %s not allowed in plural assignment\n", asnvar, EXIT_FAILURE)
     prsvar(FALSE, FALSE); //get variable name
@@ -184,7 +209,7 @@ void prcavr(char trmntr) {
       else xsnidx[0] = 0;
     }
   }
-  prcasn(trmntr);
+  prcasn(trmntr, FALSE);
 }
 
 /* Parse 'asm' String Parameter */
@@ -209,11 +234,22 @@ void pasm(void) {
   asmlin(opcode, word);
 }
 
+/* Parse and Compile Assignment of Pointer */
+void prcasp(char trmntr) {
+  prsptr(); //Parse Pointer Dereference
+  DEBUG("stmnt.prcasp: Processing assignment to dereferenced pointer %s\n", value)
+  if (prcava(value, trmntr, TRUE)) return; //Process Accumulator Assignment Variable
+  prcasn(trmntr, TRUE);
+}
+
 /* Parse and Compile an Assignment */
 void prsasn(char trmntr) {
-  getwrd();               //Get Variable to be Assigned
-  DEBUG("Parsing assignment of word %s\n", word)
-  prcavr(trmntr);
+  if (match('*')) prcasp(trmntr);
+  else {
+    getwrd();               //Get Variable to be Assigned
+    DEBUG("Parsing assignment of word %s\n", word)
+    prcavr(trmntr);
+  }
 }
 
 /* parse and compile 'break'/'continue' statement */
@@ -372,11 +408,16 @@ void ppush(void) {
 }
 
 /* parse and compile return statement */
-void pretrn(void) {
+void pretrn(int INTRPT) {
   DEBUG("Parsing RETURN statement\n", 0)
   skpspc();
-  prsfpr(';'); //Parse Function Return Valuea
-  asmlin("RTS", "");
+  if (INTRPT) {
+    expect(';');
+    asmlin("RTI", "");
+  } else {
+    prsfpr(';'); //Parse Function Return Valuea
+    asmlin("RTS", "");
+  }
   lsrtrn = TRUE;  //Set RETURN flag
 }
 
@@ -524,8 +565,10 @@ void pstmnt(void) {
     ppop();
   else if (wordis("PUSH"))
     ppush();
+  else if (wordis("RESUME"))
+    pretrn(TRUE);
   else if (wordis("RETURN"))
-    pretrn();
+    pretrn(FALSE);
   else
     prssym();
   if (lblcnt && !inblck) {

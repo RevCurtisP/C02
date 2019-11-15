@@ -86,7 +86,7 @@ GETVIM: .DC $04         ;Chroma Disable Bit Mask
 GETVSP: LDA #7          ;Set Reg Offset to Vertical Stop
         JSR GETHVS      ;Read Registers
         LSR             ;Shift Left One Bit
-        JMP GETVSS      ;Then Four More Bits and Mask
+        BRA GETVSS      ;Then Four More Bits and Mask
 
 ;getvsr() - Get Vertical Start
 ;Affects: A
@@ -108,7 +108,7 @@ GETHSP: LDA #5          ;Set Lookup Index to Horizontal Start
         JSR GETHVS      ;Read Registers
         LSR             ;Shift Left Two Bits
         LSR
-        JMP GETHSS      ;then Mask and Return
+        BRA GETHSS      ;then Mask and Return
 
 ;gethsr() - Get Horizontal Start
 ;Affects: A
@@ -127,9 +127,9 @@ GETHSS: AND #$03        ;Isolate Bit 0
 GETHVS: JSR GETDCB      ;Read LSB from Register
         PHA             ;and Save It
         LDA #8          ;Load Register Offset for High Bits
-        STA $9F20	    ;Set As Address LSB
+        STA $9F20	      ;Set As Address LSB
         LDA $9F23,X     ;and Read High Bits into A
-        .DC $FA ;PLX    ;Restore LSB into X
+        PLX             ;Restore LSB into X
         RTS
 
 ;setbdr() - Set Border Color

@@ -263,7 +263,7 @@ SETLRM: AND TEMP1   ;Apply Mask
 ;Returns: A = Contents of Register
 ;         X = Current Data Port
 SETLRR: ;.dc $ff
-        .DC $5A ;PHY Save Value to Write
+        PHY         ;Save Value to Write
         JSR GETLRP  ;Get Layer Page in Y
         PLA         ;Restore Value to Write
         JMP SETREG  ;and Write to Register
@@ -278,7 +278,7 @@ SETLRR: ;.dc $ff
 SETLRS: ;.dc $ff
         JSR SAVREG  ;Save Layer, Value, and Mask
         JSR GETLRS  ;Get Layer Size Register
-        JMP SETLRM  ;Mask in Value and Write Back
+        BRA SETLRM  ;Mask in Value and Write Back
 
 ;setmod() - Set Layer 0/1 Mode
 ;Args: A = Layer (0/1)

@@ -13,6 +13,8 @@
 #include "asm.h"
 #include "parse.h"
 #include "label.h"
+#include "expr.h"
+#include "stmnt.h"
 
 /* Various tests against nxtchr */
 int match(char c) {return TF(nxtchr == c);}
@@ -81,12 +83,15 @@ void skpspc(void) {
  *         otherwise FALSE                    */
 int look(char c) {
   int found;
+  DEBUG("parse.look: Looking for '%c', ", c);
   skpspc();
   found = match(c);
   if (found) {
     skpchr();
     CCMNT(c);
+	DETAIL("Found\n", 0);
   }
+  else DETAIL("Not found\n", 0);
   return found;
 } 
 
@@ -136,6 +141,8 @@ void getwrd(void) {
   while (isanum()) word[wrdlen++] = toupper(getnxt());
   word[wrdlen] = 0;
   ACMNT(word);
+  DEBUG("parse.getwrd: Read word '%s' ", word)
+  DETAIL("delimited by '%c'\n", nxtchr)
 }
 
 /* Escape Character */
@@ -154,31 +161,41 @@ char escape(char c) {
   }
 }
 
+/* Escape Numeric Literal */
+char escnum(void) {
+  DEBUG("Escaping numeric literal\n", 0);
+  char c = prsnum(0xff);
+  return c;
+}
+
 /* Get String                 *
  * Sets: word = parsed string 
  *       wrdlen = length of string (including terminator) */
 void getstr(void) {
   char strdel;
   int escnxt = FALSE;
-  wrdlen = 0;
+  pstlen = 0;
   DEBUG("Parsing string\n", 0)
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
   while(!match(strdel) || escnxt) {
+    if (isnl()) ERROR("String Not Terminated", 0, EXIT_FAILURE)
     CCMNT(nxtchr);
     if (escnxt) {
-      word[wrdlen++] = escape(getnxt());
+      if (isnpre()) pstrng[pstlen++] = escnum();
+      else pstrng[pstlen++] = escape(getnxt());
       escnxt = FALSE;    
     }
     else {
       if (match('\\')) escnxt = TRUE;
-      else word[wrdlen++] = prcchr(nxtchr);
+      else pstrng[pstlen++] = prcchr(nxtchr);
       skpchr();
     }  
   }
   skpchr(); //Skip End Delimiter
   CCMNT(strdel);
-  word[wrdlen] = 0;
+  pstrng[pstlen] = 0;
+  strcpy(word,pstrng); wrdlen=pstlen;
 }
 
 /* Read Binary number from input file                *
@@ -357,21 +374,24 @@ void poperr(char* name) {
 }
 
 /* Process Post Operator */
-void prcpst(int isint, char* name, char *index) {
-  DEBUG("Processing post operation '%c'\n", oper)
+void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
+  DEBUG("parse.prcpst: Processing post operation '%c'\n", oper)
+  if (ispntr) ERROR("Post Operation on dereferenced pointer %s not supported\n", name, EXIT_FAILURE)
+		//sprintf(word,"(%s),Y", name); strcpy(name, word); }
   char name1[VARLEN+3];
   strcpy(name1, name); strcat(name1, "+1");
   if (strlen(index)) { 
-      asmlin("LDX", index);
-      strcat(name,",X");
+    if (ispntr) prcptx(index); //Process Pointer Index
+	else prcidx(indtyp, name, index); //Process Index 
   }
+  else if (ispntr) asmlin("LDY","0");  
   switch(oper) {    
     case '+': 
       if      (strcmp(name, "X")==0) asmlin("INX", "");
       else if (strcmp(name, "Y")==0) asmlin("INY", "");
-      else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit INC, 6502 does not
+      else if (strcmp(name, "A")==0 && !cmos) poperr(name); //65C02 supports implicit INC, 6502 does not
       else {
-	    asmlin("INC", name);
+	    asmlin("INC", word);
 		if (isint) {
 		  newlbl(skplbl);
 		  asmlin("BNE", skplbl);
@@ -383,7 +403,7 @@ void prcpst(int isint, char* name, char *index) {
     case '-':
       if      (strcmp(name, "X")==0) asmlin("DEX", "");
       else if (strcmp(name, "Y")==0) asmlin("DEY", "");
-      else if (strcmp(name, "A")==0) poperr(name); //65C02 supports implicit DEC, 6502 does not
+      else if (strcmp(name, "A")==0 && !cmos) poperr(name); //65C02 supports implicit DEC, 6502 does not
       else {
         if (isint) {
 		  newlbl(skplbl);
@@ -392,7 +412,7 @@ void prcpst(int isint, char* name, char *index) {
 		  asmlin("DEC", name1);
 		  setlbl(skplbl);
 	    }
-        asmlin("DEC", name);
+	    asmlin("DEC", name);
       }
       break;
     case '<':
@@ -419,7 +439,7 @@ void prcpst(int isint, char* name, char *index) {
 }
 
 /* Parse Post Operator */
-int prspst(char trmntr, int isint, char* name, char* index) {
+int prspst(char trmntr, int isint, char* name, char* index, char indtyp, char ispntr) {
   oper = getnxt();
   CCMNT(oper);
   DEBUG("Checking for post operation '%c'\n", oper)
@@ -427,7 +447,7 @@ int prspst(char trmntr, int isint, char* name, char* index) {
     skpchr();
     CCMNT(oper);
     expect(trmntr);
-    prcpst(isint, name, index);  //Process Post-Op
+    prcpst(isint, name, index, indtyp, ispntr);  //Process Post-Op
     return 0;
   }
   DEBUG("Not a post operation\n", 0)

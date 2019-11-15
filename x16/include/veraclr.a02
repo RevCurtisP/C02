@@ -25,7 +25,7 @@ RGBCLR: LSR         ;Divide Red Value by 16
         LSR
         ORA TEMP0   ;Combine with Green
         TAX         ;and Return as LSB
-        .DC $7A ;PLY Return Red as MSB
+        PLY         ;Return Red as MSB
         RTS
 
 ;clrrgb(c) - Convert Palette Color to RGB Values 
@@ -34,7 +34,7 @@ RGBCLR: LSR         ;Divide Red Value by 16
 ;Returns: A = Red Value (0-255)
 ;         Y = Green Value (0-255)
 ;         X = Blue Value (0-255)
-CLRRGB: .DC $5A ;PHY Save MSB
+CLRRGB: PHY         ;Save MSB
         TXA         ;Copy LSB into Accumulator
         AND #$F0    ;Isolate Green Value
         TAY         ;and Return in Y
@@ -73,7 +73,7 @@ GETCLN: LDX $9F25   ;Get Current Data Port
 ;         Y = Green Value (0-255)
 ;         X = Blue Value (0-255)
 GETRGB: JSR GETCLN  ;Get Next Color Entry
-        JMP CLRRGB  ;Convert to RGB and Return
+        BRA CLRRGB  ;Convert to RGB and Return
 
 ;setclr(idx) - Set Color Entry idx in Palette
 ;Args: A = Color Entry Index
@@ -106,7 +106,7 @@ SETCLN: TXA         ;Copy LSB to Accumulator
 ;Destroys: TEMP0
 ;Affects: A,Y,X
 SETRGB: JSR RGBCLR  ;Convert RGB to Vera Color Value
-        JMP SETCLN  ;and Write to Next Palette Entry
+        BRA SETCLN  ;and Write to Next Palette Entry
 
 ;setidy(idx) - Set Palette Index and Entry Count
 ;Args: A = Palette Index

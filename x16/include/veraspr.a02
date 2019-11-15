@@ -28,7 +28,7 @@ MAXSPR  EQU 128     ;Maximum Sprite Index
 ADDSPD: JSR SAVREG  ;Save Sprite Index, Addend
         JSR GETSPD  ;Read Sprite Address Register
         JSR ADDTXY  ;Add Number to Address
-        JMP SETSTD  ;Write Sprite (TEMP0) Address Register
+        BRA SETSTD  ;Write Sprite (TEMP0) Address Register
 
 ;subspd(index,number) - Decrement Sprite Address Register
 ;Args: A = Sprite Index
@@ -37,7 +37,7 @@ ADDSPD: JSR SAVREG  ;Save Sprite Index, Addend
 SUBSPD: JSR SAVREG  ;Save Sprite Index, Addend
         JSR GETSPD  ;Read Sprite Address Register
         JSR ADDTXY  ;Add Number to Address
-        JMP SETSTD  ;Write Sprite (TEMP0) Address Register
+        BRA SETSTD  ;Write Sprite (TEMP0) Address Register
 
 ;clrspr(index) - Set Sprite Attributes
 ;Args: A = Sprite Index
@@ -133,7 +133,7 @@ GETSXF: RTS
 GETSPW: JSR GETSPS  ;Get Sprite Size Register
         ASL         ;Shift Left 2 Bits
         ASL
-        JMP GETSP6  ;Then Right 6 Bits
+        BRA GETSP6  ;Then Right 6 Bits
 
 ;getsph(index) - Get Sprite Height Specifier
 ;Args: A = Sprite Index
@@ -327,7 +327,7 @@ SETSPZ: PHA         ;Save Sprite Depth
 SETSP2: ASL         ;Move to Bits 2 and 3
         ASL         
         STX TEMP1   ;Save Bit Mask
-        JMP SETSP6  ;Set Bits in Control Register
+        BRA SETSP6  ;Set Bits in Control Register
 
 ;getspu(index) - Get Sprite Width, Height, and Mode
 ;Args: A = Sprite Index
@@ -344,7 +344,7 @@ GETSPU: STA TEMP0   ;Save Sprite Index
         LDA TEMP0   ;Retrieve Sprite Index
         JSR GETSPP  ;Get Mode
         TAX         ;Return Mode in X
-        .DC $7A ;PLY Height in Y
+        PLY         ;Height in Y
         PLA         ;and Width in A
         RTS
 
@@ -364,7 +364,7 @@ GETSPL: JSR GETSPU  ;Get Width, Height, Mode and Execute GETSCL
 ;Affects: A
 ;Returns: Y,X = Data Size in Bytes
 GETSCL: ;.DC $FF ;Debug
-        .DC $DA ;PHX Save Mode
+        PHX         ;Save Mode
         PHA         ;Save Width
         TYA         ;Copy Height to Accumulator
         JSR GETSCS  ;Calculate Height in Pixles
@@ -376,7 +376,7 @@ GETSLK: ASL TEMP1   ;Multiply LSB
         ROL         ;and MSB by 2
         DEY         ;Decrement Counter
         BNE GETSLK  ;and Loop if Not Zero
-        .DC $FA ;PLX Retrieve Mode
+        PLX         ;Retrieve Mode
         BNE GETSSK  ;If 0 (4 Bits Per Pixel)
         LSR         ;  Divide MSB
         ROR TEMP1   ;  snd LSB by 2
@@ -444,7 +444,7 @@ SETSPW: PHA         ;Save Sprite Index
         LDX #$CF    ;Set Bit Mask
         TYA         ;Copy Specifier to Accumulator
         AND #$03    ;Isolate Bits 0 and 1
-        JMP SETSP4  ;Shift Left Four Bits and Write Masked
+        BRA SETSP4  ;Shift Left Four Bits and Write Masked
 
 ;setsph(index) - Set Sprite Height Specifier
 ;Args: A = Sprite Index
@@ -458,7 +458,7 @@ SETSP4: ASL
         ASL
         ASL
         ASL
-        JMP SETSP7  ;Write Masked to Size Register
+        BRA SETSP7  ;Write Masked to Size Register
 
 ;setspp(index) - Set Sprite Palette Offset
 ;Args: A = Sprite Index
@@ -471,7 +471,7 @@ SETSP7: STA TEMP0   ;Save Value
         STX TEMP1   ;Save Bit Mask
         PLA         ;Retrieve Sprite Index
         JSR GETSPS  ;Get Sprite Size Register
-        JMP SETSP8  ;Apply Mask, Set Bits, and Write
+        BRA SETSP8  ;Apply Mask, Set Bits, and Write
 
 ;setsps(index,value) - Set Sprite Attribute Size Register
 ;Args: A = Sprite Index
