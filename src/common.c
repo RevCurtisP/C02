@@ -7,10 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
-#include <time.h>
 #include "common.h"
-
-struct timespec curtim; //Current Time
 
 /* Error - Print Input File name & position and exit */
 void exterr(int errnum) {
@@ -28,19 +25,6 @@ void expctd(char *expstr) {
 
 /* Print current position in file */
 void prtpos(void) { if (inpnam[0]) printf("(%s: %d,%d) ", inpnam, curlin, curcol); }
-
-/* Initialize elapsed time counter */
-void initim(void) {
-  timespec_get (&curtim, TIME_UTC);
-  bgntim = curtim.tv_sec;
-} 
-
-/* Print elapsed time */
-void prttim(void) {
-  timespec_get (&curtim, TIME_UTC);
-  printf("[%d", curtim.tv_sec - bgntim);
-  printf(".%06d]",curtim.tv_nsec/1000);
-}
 
 /* Set comment to string */
 void setcmt(char *s) { strcpy(cmtasm, s); }
