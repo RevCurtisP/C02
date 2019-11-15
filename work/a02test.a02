@@ -1,16 +1,6 @@
 ;A02 Assembler Test File
-TRUE:   EQU $FF
-FALSE:  EQU $00
 
-one     equ 1
-two     equ 1 + 1
-three   equ one + one + one
-four    equ three + 1
-
-
-PNTR:   EQU $80
-.local  EQU 99
-STRUCT  EQU $0FFF
+        INCLUDE "a02inc.a02"
 
 start   ORG $0400       ;Start of Code
         SUBROUTINE
@@ -99,8 +89,15 @@ exprsn  LDA #PNTR+1       ;Immediate
         LDY #>(STRUCT+2)
 
 BYTES   byte  99, %10101010,'~'   ;Bytes
-        byte  $12,$34
-HEXES   hex   01,23,45,67,AB,CD,EF,1A,2B,3C,D4,E5,F6  ;Hexadecimal 
+        .byte $12,$34
+HEXES   hex   01,23,45,67,89  ;Hexadecimal 
+        .hex  ,AB,CD,EF,1A,2B,3C,D4,E5,F6
 WORDS   word  $3456
-TABLE   word  $1357,$9BDF,$2468
+        Align 256
+TABLE   .word $1357,$9BDF,$2468
 TEXT    byte  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",0
+
+        END               ;Nothing after this will be Assembled
+        STY (STRUCT),X    ;Illegal Addressing Mode
+        DC.W              ;Unsupported Pseudo-Op
+
