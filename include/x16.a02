@@ -1,0 +1,88 @@
+; c02 Program Initialization Code for Commander X16
+
+;PETSCII Key Mappings
+DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Zero Page System Variables - Assumes Usage is Same as C64
+XMBANK  EQU $0A   ;Extended Memory Bank (Load/Verify Flag)
+XADRLO  EQU $0B   ;Ext Memory Address LSB (Text Index/Array Size)
+XADRHI  EQU $0C   ;Ext Memory Address MSB (Array Dimension Fkags)
+SRCPTR  EQU $22   ;Source Pointer [Temporary Pointers]
+SRCLO   EQU $22   ;Source Pointer LSB [Temporary Pointers]
+SRCHI   EQU $23   ;Source Pointer MSB [Temporary Pointers]
+DSTPTR  EQU $24   ;Destination Pointer [Temporary Pointers]
+DSTLO   EQU $24   ;Destination Pointer LSB [Temporary Pointers]
+DSTHI   EQU $25   ;Destination Pointer MSB [Temporary Pointers]
+BLKLO   EQU $26   ;Block Pointer LSB [Floating Point Work Area]
+BLKHI   EQU $27   ;Block Pointer MSB [Floating Point Work Area]
+STKLO   EQU $28   ;Stack Pointer LSB [Floating Point Work Area]
+STKHI   EQU $29   ;Stack Pointer MSB [Floating Point Work Area]
+BFRLO   EQU $35   ;Buffer Pointer LSB [Temporary String Pointer]
+BFRHI   EQU $36   ;Buffer Pointer MSB [Temporary String Pointer]
+RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)]
+TEMP0   EQU $FB   ;Temporary Variable [Unused Byte]
+TEMP1   EQU $FC   ;Temporary Variable [Unused Byte]
+TEMP2   EQU $FD   ;Temporary Variable [Unused Byte]
+TEMP3   EQU $FE   ;Temporary Variable [Unused Byte]
+
+;Other Variables - Top of Extended System RAM Area
+BLKSLO  EQU $07F4 ;Block Start LSB [Unused Byte]
+BLKSHI  EQU $07F5 ;Block Start MSB [Unused Byte]
+BLKELO  EQU $07F6 ;Block End LSB [Unused Byte]
+BLKEHI  EQU $07F7 ;Block End MSB [Unused Byte]
+BLKLEN  EQU $07F8 ;Block Length [Unused Byte]
+
+RANDOM  EQU $07F9 ;Random Number Storage [Unused Byte]
+STKSAV  EQU $07FA ;Machine Stack Storage [Unused Byte]
+
+STKSLO  EQU $07FC ;Stack Start LSB [Unused Byte]
+STKSHI  EQU $07FD ;Stack Start MSB [Unused Byte]
+STKELO  EQU $07FE ;Stack End LSB   [Unused Byte]
+STKEHI  EQU $07FF ;Stack End MSB   [Unused Byte]
+
+;Machine Language Basic Stub - Same as Commodore 64
+        ORG $0801              ;Start of Basic Program 
+BASIC:  DC  $0C, $08           ;Pointer to Next Line
+        DC  $00, $00           ;Line Number (0)
+        DC  $9E                ;SYS 
+        DC  $20                ;' '
+        DC  $32, $30, $36 ,$32 ;"2062" 
+        DC  $00                ;End of Line Marker
+        DC  $00, $00           ;End of Basic Program
+
+START:  TSX         ;Get Stack Pointer
+        STX STKSAV  ;and Save for Exit
+        JMP MAIN    ;Execute Program
+
+EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
+        TXS         ;and Restore It
+        RTS         ;Return to BASIC
+
+;Poll Keyboard for Character
+POLKEY  EQU $FFE4   ;Aliased to Kernal GETIN Routine
+
+;Get Character from Keyboard
+GETKEY  EQU POLKEY  ;Aliased to POLKEY Routine
+
+;Wait for Character from Keyboard
+GETCHR: JSR GETKEY  ;Poll Keyboard
+        BEQ GETCHR  ;If No Key, Loop
+        RTS
+
+;Print Character to Console
+PUTCHR  EQU $FFD2   ;Aliased to CHROUT Routine
+
+;Delete Previous Character
+DELCHR: LDA #DELKEY ;Load Delete Character
+        JMP PUTCHR  ;Print and Return
+
+;Advance Character to Next line
+NEWLIN: LDA #RTNKEY ;Load Return Character
+        JMP PUTCHR  ;Print and Return
+
+PUTSTR: TXA         ;Copy LSB to Accumulator
+        JMP $CBD2   ;Execute STROUT
+
+        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routine
