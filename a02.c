@@ -397,7 +397,7 @@ void asminf(void) {
   }
   incnam[incidx] = 0; //Terminate Include Name
   if (incidx == 0) xerror("INCLUDE requires file name\n", "");
-  if (debug) printf("Include File Set to Name to ''\n", incnam);
+  if (debug) printf("Include File Set to Name to '%s'\n", incnam);
 }
 
 /* Assemble END Pseudo-Op */
@@ -622,6 +622,7 @@ void asmfil(int pass) {
   blknum = 1;       //Initialize Local Block Number
   orgadr = -1;      //Origin Address Not Set
   curadr = orgadr;  //Set Current Address to Origin
+  if (debug) printf("Rewinding  Input File\n");
   rewind(inpfil); //Start at Beginning of Input File
   while (TRUE) {
     if (incfil) linptr = fgets(inplin, MAXSTR, incfil);
