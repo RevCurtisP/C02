@@ -61,7 +61,7 @@ FILE *incfil;     //Include File Pointer
 
 /* Print Usage Info and Exit */
 void usage(char* appnam) {
-  printf("Usage: %s [opts] asmfile objfile [lstfile]\n");
+  printf("Usage: %s [opts] asmfile objfile [lstfile]\n", appnam);
   printf(" Opts: -p - Commodore PRG format\n");
   printf("       -d - Output Debug Info\n");
   exit(EXIT_FAILURE);
@@ -390,7 +390,6 @@ void asminf(void) {
   if (debug) puts("Assembling INCLUDE Pseudo-Op");
   if (incfil) xerror("Nested INCLUDE not Allowed", "");
   if (!cpychr('"')) xerror("File Name Must be Quoted", ""); 
-  printf("%d: '%p'\n", linptr, *linptr);
   while (*linptr && !cpychr('"')) {
     char c = *linptr; if (c == '/') c = '\\'; //Reverse Slashes for DOS/Windows
     incnam[incidx++] = c;
