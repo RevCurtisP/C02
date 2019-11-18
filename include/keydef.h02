@@ -1,0 +1,37 @@
+/* Standard ASCII Key Code Definitions *
+ * Undefined Keys hae value $00        *
+   
+#define KEYBCK $08 //Backspace
+#define KEYBRK $03 //Break 
+#define KEYCLR $00 //Clear 
+#define KEYCPY $00 //Copy 
+#define KEYDEL $7F //Delete
+#define KEYDN  $00 //Cursor Down
+#define KEYESC $1B //Escape
+#define KEYFN1 $00 //1 
+#define KEYFN2 $00 //2 
+#define KEYFN3 $00 //3 
+#define KEYFN4 $00 //4 
+#define KEYFN5 $00 //5 
+#define KEYFN6 $00 //6 
+#define KEYFN7 $00 //7 
+#define KEYFN8 $00 //8 
+#define KEYFN9 $00 //9 
+#define KEYFNA $00 //10
+#define KEYFNB $00 //11
+#define KEYFNC $00 //12
+#define KEYHLP $00 //Help 
+#define KEYHOM $00 //Home 
+#define KEYINS $00 //Insert 
+#define KEYLFT $00 //Cursor Left
+#define KEYLNF $0A //Line Feed 
+#define KEYRGT $00 //Cursor Right
+#define KEYRTN $0D //Return
+#define KEYRTS $80 //Shift-Return
+#define KEYRUN $00 //Run 
+#define KEYRVF $92 //Reverse Off
+#define KEYRVS $12 //Reverse On
+#define KEYSPS $00 //Shifted Space
+#define KEYTAB $09 //Tab
+#define KEYTAS $00 //Shift-Tab 
+#define KEYUP  $00 //Cursor Up

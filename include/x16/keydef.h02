@@ -1,0 +1,36 @@
+/* PETSCII Key Code Definitions for Commander X16 */
+
+#define KEYBCK $00 //Backspace
+#define KEYBRK $03 //Break (RUN/STOP)
+#define KEYCLR $93 //Clear (Shift-CLR/HOME)
+#define KEYCPY $00 //Copy 
+#define KEYDEL $14 //Delete
+#define KEYDN  $11 //Cursor Down
+#define KEYESC $1B //Escape
+#define KEYFN1 $85 //Function Key 1 (F1/F2)
+#define KEYFN2 $89 //Function Key 2 (Shift-F1/F2)
+#define KEYFN3 $86 //Function Key 3 (F3/F4)
+#define KEYFN4 $8A //Function Key 4 (Shift-F3/F4)
+#define KEYFN5 $87 //Function Key 5 (F5/F6)
+#define KEYFN6 $8B //Function Key 6 (Shift-F5/F6)
+#define KEYFN7 $88 //Function Key 7 (F7/F8)
+#define KEYFN8 $8C //Function Key 8 (Shift-F7/F8) [HELP on C16]
+#define KEYFN9 $89 //Function Key 9 
+#define KEYFNA $15 //Function Key 10
+#define KEYFNB $16 //Function Key 11
+#define KEYFNC $17 //Function Key 12
+#define KEYHLP $84 //Help (C65)
+#define KEYHOM $13 //Home (CLR/HOME)
+#define KEYINS $94 //Insert (Shift-INS/DEL)
+#define KEYLFT $9D //Cursor Left
+#define KEYLNF $00 //Line Feed (N/A)
+#define KEYRGT $1D //Cursor Right
+#define KEYRTN $0D //Return
+#define KEYRTS $8D //Shift-Return
+#define KEYRUN $00 //Run (Shift-RUN/STOP)
+#define KEYRVF $92 //Reverse Off
+#define KEYRVS $12 //Reverse On
+#define KEYSPS $A0 //Shifted Space
+#define KEYTAB $09 //Tab
+#define KEYTAS $18 //Shift-Tab [C65]
+#define KEYUP  $91 //Cursor Up
