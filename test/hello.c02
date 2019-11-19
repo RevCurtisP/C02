@@ -1,0 +1,21 @@
+/*****************************************************
+ * HELLO - Test/Demo program for C02 Standard Header *
+ *        Prints "HELLO WORLD" and exits             *
+ *****************************************************/
+ 
+//Specify System Header using -H option
+
+char key;  //Key value
+
+const char hello = "HELLO WORLD";
+char i;
+
+main:
+  i = 0;
+  while (hello[i]) {
+    putchr(hello[i]);
+    i++;
+  }
+  newlin();
+  goto exit;
+

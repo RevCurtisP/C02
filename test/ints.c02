@@ -1,0 +1,87 @@
+/****************************************************
+ * INTS - Test Integer Variables and Function Calls */
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <test.h02>
+
+char n; //Number of Characters
+char r[255]; //Test Array
+char s[128]; //Test String
+const char istr = "9876";
+const char t = "CONST STRING.";
+
+alias int nmi = $FFFA; //NMI Vector
+alias int rst = $FFFC; //Reset Vector
+alias int brk = $FFFE; //Break Vector
+
+int addr;       //Various Addresses
+int eoj;        //End of Job 
+
+const int less = $789A;
+const int more = $BCDE;
+
+int yx, dd; //Function Arguments and Variables
+char aa, xx, yy;
+
+struct record {char name[8], index; int addr;};
+struct record rec;
+
+main:
+
+eoj = getend();
+
+setdst(&rec.name); strcpy("FRED");
+rec.index = $AB;
+rec.addr = $CDEF;
+
+newlin();
+
+/* Print Vector Contents */
+setdst(nmi); printf("NMI=$%w%n");
+setdst(rst); printf("RST=$%w%n");
+setdst(brk); printf("BRK=$%w%n%n");
+
+/* Print Contents of EOJ */
+setdst(eoj); printf("EOJ=$%w%n%n"); 
+
+anykey();
+
+/* Test Function Call Arguments */
+putln("ADDR=49152"); addr = 49152; setdst(&49152); cmpdst(addr);
+putln("ADDR=&T"); addr = &t; setdst(t); cmpdst(addr);
+putln("ADDR=&REC"); addr = &rec; setdst(&rec); cmpdst(addr);
+putln("ADDR=&REC.NAME"); addr = &rec.name; setdst(&rec.name); cmpdst(addr);
+putln("ADDR=&REC.INDEX"); addr = &rec.index; setdst(&rec.index); cmpdst(addr);
+putln("ADDR=&REC.ADDR"); addr = &rec.addr; setdst(&rec.addr); cmpdst(addr);
+
+anykey();
+
+puts("GOTO (EOJ)"); 
+goto (eoj); 
+  failln(); 
+  goto exit;
+end:
+  passln();
+  goto exit;
+
+int getend() {
+  return &end;
+}
+
+void prtwrd(., yy, xx) {
+  putchr('$'); puthex(yy); puthex(xx);
+}
+
+void cmpdst(yx) {
+  dd = getdst();
+  prtwrd(yx); putchr('='); prtwrd(dd);
+  if (>yx == >dd and <yx == <dd) passln(); else failln();
+  newlin();
+}
