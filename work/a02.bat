@@ -11,4 +11,4 @@ IF "%ASMEXT%" == "" (
   GOTO :EXIT
 ) 
 ECHO Assembling File %1.%ASMEXT%
-..\a02.exe %1.%ASMEXT% %1.bin %1.lst >%1.out
+..\a02.exe -d %1.%ASMEXT% %1.bin %1.lst >%1.out

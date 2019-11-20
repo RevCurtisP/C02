@@ -7,7 +7,7 @@ X03     BYTE $03	      ;NOP
 X04     TSB	$40		      ;04
 X05     ORA	$50		      ;05
 X06     ASL	$60		      ;06
-X07     BYTE $07	      ;RMB0
+X07     RMB 0,$70	      ;07
 X08     PHP             ;08
 X09     ORA	#$90	      ;09
 X0A     ASL			        ;0A
@@ -15,7 +15,7 @@ X0B     BYTE $0B	      ;NOP
 X0C     TSB	$CBA9	      ;0C
 X0D     ORA	$DCBA	      ;0D
 X0E     ASL	$EDCB	      ;0E
-X0F     BYTE $0F	      ;BBR0
+X0F     BBR0 $F0,X00	  ;0F
 X10     BPL X11         ;10
 X11     ORA ($11),Y     ;11
 X12     BYTE $12	      ;NOP #IMD
@@ -23,7 +23,7 @@ X13     BYTE $13	      ;NOP
 X14     TRB	$51		      ;14
 X15     ORA	$61,X	      ;15
 X16     ASL	$71,X	      ;16
-X17     BYTE $17	      ;RMB1
+X17     RMB1 $71	      ;17
 X18     CLC             ;18
 X19     ORA	$A987,Y	    ;19
 X1A     BYTE $1A	      ;1A
@@ -31,7 +31,7 @@ X1B     BYTE $1B	      ;1A
 X1C     TRB	$CBA9	      ;1C
 X1D     ORA $DCBA,X     ;1D
 X1E     ASL $EDCB,X     ;1E
-X1F     BYTE $1F        ;BBR1
+X1F     BBR 1,$F1,X11   ;1F        
 X20     JSR $0123       ;20
 X21     AND ($12,X)     ;21
 X22     BYTE $22	      ;NOP #IMD
@@ -39,7 +39,7 @@ X23     BYTE $23	      ;NOP
 X24     BIT $42         ;24
 X25     AND $52         ;25
 X26     ROL $62         ;26
-X27     BYTE $27        ;RMB2
+X27     RMB 2,$72	      ;27
 X28     PLP             ;28
 X29     AND	#$92	      ;29
 X2A     ROL			        ;2A
@@ -47,7 +47,7 @@ X2B     BYTE $2B	      ;2B
 X2C     BIT $CBDA       ;2C
 X2D     AND $DCBA       ;2D
 X2E     ROL $EDCB       ;2E
-X2F     BYTE $2F        ;BBR2
+X2F     BBR2 $F2,X22    ;2F
 X30     BMI X33         ;30
 X31     AND ($13),Y     ;31
 X32     BYTE $32	      ;NOP #IMD
@@ -55,7 +55,7 @@ X33     BYTE $33	      ;NOP
 X34     BIT $43,X       ;34
 X35     AND $53,X       ;35
 X36     ROL $63,X       ;36
-X37     BYTE $37        ;RMB3
+X37     RMB3 $73	      ;37
 X38     SEC             ;38
 X39     AND $9876,Y     ;39
 X3A     DEC             ;3A
@@ -63,7 +63,7 @@ X3B     BYTE $3B        ;NOP
 X3C     BIT $CBA9,X     ;3C
 X3D     AND $DCBA,X     ;3D
 X3E     ROL $EDCB,X     ;3E
-X3F     BYTE $3F        ;BBR3
+X3F     BBR 3,$F3,X33   ;3F
 X40     RTI             ;40
 X41     EOR ($14,X)     ;41
 X42     BYTE $42	      ;NOP #IMD
@@ -71,7 +71,7 @@ X43     BYTE $43	      ;NOP
 X44     BYTE $44	      ;NOP $ZP
 X45     EOR $54         ;45
 X46     LSR $64         ;46
-X47     BYTE $47        ;RMB4
+X47     RMB 4,$74	      ;47
 X48     PHA             ;48
 X49     EOR	#$94	      ;49
 X4A     LSR			        ;4A
@@ -79,7 +79,7 @@ X4B     BYTE $4B        ;NOP
 X4C     JMP $CBA9       ;4C
 X4D     EOR $DCBA       ;4D
 X4E     LSR $EDCB       ;4E
-X4F     BYTE $4F        ;BBR
+X4F     BBR4 $F4,X44    ;4F
 X50     BVC X55         ;50
 X51     EOR ($15),Y     ;51
 X52     EOR ($25)	      ;52
@@ -87,7 +87,7 @@ X53     BYTE $53	      ;NOP
 X54     BYTE $54	      ;NOP $ZP
 X55     EOR $55,X       ;55
 X56     LSR $65,X       ;56
-X57     BYTE $57        ;RMB5
+X57     RMB5 $75	      ;57
 X58     CLI             ;58
 X59     EOR $9876,Y     ;59
 X5A     PHY			        ;5A
@@ -95,7 +95,7 @@ X5B     BYTE $5B        ;NOP
 X5C     BYTE $5C        ;NOP $ABSL
 X5D     EOR $CBA9,X     ;5C
 X5E     LSR $DCBA,X     ;5E
-X5F     BYTE $5F        ;BBR5
+X5F     BBR 5,$F5,X55   ;5F
 X60     RTS             ;60
 X61     ADC ($16,X)     ;61
 X62     BYTE $62	      ;NOP #IMD
@@ -103,7 +103,7 @@ X63     BYTE $63	      ;NOP
 X64     STZ $46         ;64
 X65     ADC $56         ;65
 X66     ROR $66         ;66
-X67     BYTE $67        ;RMB6
+X67     RMB 6,$76	      ;67
 X68     PLA             ;68
 X69     ADC	#$96	      ;69
 X6A     ROR			        ;6A
@@ -111,7 +111,7 @@ X6B     BYTE $6B        ;NOP
 X6C     JMP	($CDBA)	    ;6C
 X6D     ADC $DCBA       ;6D
 X6E     ROR $EDCB       ;6E
-X6F     BYTE $6F        ;BBR6
+X6F     BBR6 $F6,X66    ;6F
 X70     BVS X77         ;70
 X71     ADC ($17),Y     ;71
 X72     ADC ($27)	      ;72
@@ -119,7 +119,7 @@ X73     BYTE $73	      ;NOP
 X74     STZ $47,X       ;74
 X75     ADC $57,X       ;75
 X76     ROR $67,X       ;76
-X77     BYTE $77        ;RMB7
+X77     RMB7 $77	      ;77
 X78     SEI             ;78
 X79     ADC $9875,Y     ;79
 X7A     PLY			        ;7A
@@ -127,7 +127,7 @@ X7B     BYTE $7B        ;NOP
 X7C     JMP ($C7,X)     ;7C
 X7D     ADC $DCBA,X     ;7E
 X7E     ROR $DCBA,X     ;7E
-X7F     BYTE $7F        ;BBR7
+X7F     BBR 7,$F1,X77   ;7F
 X80     BRA X88	        ;80         
 X81     STA ($18,X)     ;81
 X82     BYTE $82	      ;NOP #IMD
@@ -135,7 +135,7 @@ X83     BYTE $83	      ;NOP
 X84     STY $48         ;84
 X85     STA $58         ;85
 X86     STX $68         ;86
-X87     BYTE $87        ;SMB0
+X87     SMB0 $78	      ;87
 X88     DEY             ;88
 X89     BIT #$98		    ;89
 X8A     TXA             ;8A
@@ -143,7 +143,7 @@ X8B     BYTE $8B        ;NOP
 X8C     STY $CBA9       ;8C
 X8D     STA $DCBA       ;8D
 X8E     STX $EDCB       ;8E
-X8F     BYTE $8F        ;BBS0
+X8F     BBS 0,$F8,X88   ;8F
 X90     BCC X99         ;90
 X91     STA ($19),Y     ;91
 X92     STA ($29)	      ;92
@@ -151,7 +151,7 @@ X93     BYTE $93	      ;NOP
 X94     STY $49,X       ;94
 X95     STA $59,X       ;95
 X96     STX $69,Y       ;96
-X97     BYTE $97        ;SMB1
+X97     SMB1 $79	      ;97
 X98     TYA             ;98
 X99     STA $9876,Y     ;99
 X9A     TXS             ;9A
@@ -159,7 +159,7 @@ X9B     BYTE $9B        ;NOP
 X9C     STZ $CBA9       ;9C
 X9D     STA $DCBA,X     ;90
 X9E     STZ $EDCB,X     ;9E
-X9F     BYTE $9F        ;BBS1
+X9F     BBS1 $F9,X99    ;8F
 XA0     LDY	#$0A		    ;A0
 XA1     LDA ($1A,X)     ;A1
 XA2     LDX	#$2A		    ;A2
@@ -167,7 +167,7 @@ XA3     BYTE $A3	      ;NOP
 XA4     LDY $4A         ;A4
 XA5     LDA $5A         ;A5
 XA6     LDX $6A         ;A6
-XA7     BYTE $A7        ;SMB2
+XA7     SMB1 $7A	      ;A7
 XA8     TAY             ;A8
 XA9     LDA	#$9A		    ;A9
 XAA     TAX             ;AA
@@ -175,7 +175,7 @@ XAB     BYTE $AB        ;NOP
 XAC     LDY $CBA9       ;AC
 XAD     LDA $DCBA       ;AD
 XAE     LDX $EDCB       ;AE
-XAF     BYTE $AF        ;BBS2
+XAF     BBS 2,$FA,XAA   ;AF
 XB0     BCS XBB         ;B0
 XB1     LDA ($1B),Y     ;B1
 XB2     LDA ($2B)	      ;B2
@@ -183,7 +183,7 @@ XB3     BYTE $B3	      ;NOP
 XB4     LDY $B4,X       ;B4
 XB5     LDA $B5,X       ;BS
 XB6     LDX $B6,Y       ;B6
-XB7     BYTE $B7        ;SMB3
+XB7     SMB3 $7B	      ;B7
 XB8     CLV             ;B8
 XB9     LDA $9876,Y     ;B9
 XBA     TSX             ;BA
@@ -191,7 +191,7 @@ XBB     BYTE $BB        ;NOP
 XBC     STX $CBA9,Y     ;BC
 XBD     LDA $DCBA,X     ;BD
 XBE     LDX $EDCB,Y     ;BE
-XBF     BYTE $BF        ;BBS3
+XBF     BBS3 $FB,XBB    ;BF
 XC0     CPY	#$0C		    ;C0
 XC1     CMP ($1C,X)     ;C1
 XC2     BYTE $C2	      ;NOP #imd
@@ -199,7 +199,7 @@ XC3     BYTE $C3	      ;NOP
 XC4     CPY $4C         ;C4
 XC5     CMP $5C         ;C5
 XC6     DEC $6C         ;C6
-XC7     BYTE $C7        ;SMB4
+XC7     SMB4 $7C	      ;C7
 XC8     INY             ;C8
 XC9     CMP	#$9C		    ;C9
 XCA     DEX             ;CA
@@ -207,7 +207,7 @@ XCB     WAI             ;CB
 XCC     CPY $CBA9       ;CC
 XCD     CMP $DCBA       ;CD
 XCE     DEC $EDCB       ;CE
-XCF     BYTE $CF        ;BBS4
+XCF     BBS 4,$FC,XCC   ;8F
 XD0     BNE XDD         ;D0
 XD1     CMP ($1D),Y     ;D1
 XD2     CMP ($2D)	      ;D2
@@ -215,7 +215,7 @@ XD3     BYTE $D3	      ;NOP
 XD4     BYTE $D4	      ;NOP $ZP,X
 XD5     CMP $5D,X       ;D5
 XD6     DEC $6D,X       ;D6
-XD7     BYTE $D7        ;SMB5
+XD7     SMB5 $7D	      ;D7
 XD8     CLD             ;D8
 XD9     CMP $9876,Y     ;D9
 XDA     PHX			        ;DA
@@ -223,7 +223,7 @@ XDB     STP             ;DB
 XDC     BYTE $DC        ;NOP $ABSL
 XDD     CMP $DCBA,X     ;DD
 XDE     DEC $EDCB,X     ;DE
-XDF     BYTE $DF        ;BBS5
+XDF     BBS5 $FD,XDD    ;8F
 XE0     CPX	#$0E		    ;E0
 XE1     SBC ($1E,X)     ;E1
 XE2     BYTE $E2	      ;NOP #IMD
@@ -231,7 +231,7 @@ XE3     BYTE $E3	      ;NOP
 XE4     CPX $4E         ;E4
 XE5     SBC $5E         ;E5
 XE6     INC $6E         ;E6
-XE7     BYTE $E7        ;SMB6
+XE7     SMB6 $7E	      ;E7
 XE8     INX             ;E8
 XE9     SBC	#$9E		    ;E9
 XEA     NOP             ;EA
@@ -239,7 +239,7 @@ XEB     BYTE $EB        ;NOP
 XEC     CPX $CBA9       ;EC
 XED     SBC $DCBA       ;ED
 XEE     INC $EDCB       ;EE
-XEF     BYTE $EF        ;BBS6
+XEF     BBS 6,$FE,XEE   ;8F
 XF0     BEQ XFF         ;F0
 XF1     SBC ($1F),Y     ;F1
 XF2     SBC ($2F)	      ;F2
@@ -247,7 +247,7 @@ XF3     BYTE $F3	      ;NOP
 XF4     BYTE $F4	      ;NOP $ZP,X
 XF5     SBC $5F,X       ;F5
 XF6     INC $6F,X       ;F6
-XF7     BYTE $F7        ;SMB7
+XF7     SMB7 $7F	      ;F7
 XF8     SED             ;F8
 XF9     SBC $9876,Y     ;F9
 XFA     PLX			        ;FA
@@ -255,4 +255,4 @@ XFB     BYTE $FB        ;NOP
 XFC     BYTE $FC        ;NOP $ABSL
 XFD     SBC $DCBA,X     ;FD
 XFE     INC $EDCB,X     ;FE
-XFF     BYTE $FF        ;BBS7
+XFF     BBS7 $FF,XFF    ;8F
