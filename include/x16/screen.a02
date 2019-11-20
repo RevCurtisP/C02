@@ -1,0 +1,45 @@
+;Screen Control Assembly Lanuage Routines for VIC-20
+
+                    ;SUBROUTINE
+
+SMTEXT  EQU $00     ;Default Text Screen
+SMWIDE  EQU $02     ;Wide Text Screen (Undefined)
+
+;Set Screen Mode
+SETSCR: SEC         ;Set Carry
+        JSR $FF5F   ;Call SCRMOD
+        LDA #0      ;Set Return Value to Zero
+        BCC .RETURN ;If Carry Set
+        DEC         ;  Return 255 (Error)
+.RETURN RTS
+
+;Get Screen Mode
+GETSCR: CLC         ;Clear Carry
+        JMP $FF5F   ;Execute SCRMOD 
+        RTS
+
+;Clear the Screen
+CLRSCR  LDA #$93	    ;Load CLR/HOME Character
+        JMP PUTCHR  ;and Print to Screen
+
+;Move Cursor To Home Position
+CRSRHM  LDA #$13	    ;Load HOME Character
+        JMP PUTCHR  ;and Print to Screen
+
+;Move Cursor to Specified Coordinates
+SETPOS: .DC $5A ;PHY Copy Row
+        .DC $FA ;PLX to X Register,
+        TAY         ;Column to Y Register
+        CLC         ;Set Carry
+        JMP $FFF0   ;and Execute Plot
+
+;Get Cursor Position
+GETPOS: LDY $D6     ;Load Cursor Row
+        LDA $D3     ;Load Cursor Column
+        RTS
+
+;Get Screen Size
+GETSIZ: JSR $FFED   ;Call SCREEN Kernal Routine
+        TXA         ;Transfer Width to Accumulator
+        RTS
+
