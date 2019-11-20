@@ -1,0 +1,115 @@
+/****************************************
+ * xmemory.h02 - Extended Memory Access *
+ *               for Commander X16      *
+ ****************************************/
+
+#define XLBANK $0F  //Maximum Logical Bank
+
+/* Read Byte to Extended Memory      *
+ * Returns: char b: Byte Read        *
+ * Sets Carry if Address Rolled Over */
+char xgetc();
+
+/* Read Word to Extended Memory      *
+ * Returns: int i: Word Read         *
+ * Sets Carry if Address Rolled Over */
+int xgeti();
+
+/* Read Word, Byte to Extended Memory *
+ * Args: char b: Byte Read            *
+ *       int i: Word Read             *
+ * Sets Carry if Address Rolled Over  */
+char xgetl();
+
+/* Get Logical Extended Address           *
+    * Returns: char lbank - Logical Bank     *
+ *           int laddr - Logical Address  *
+ * Sets Carry if Physical Address Invalid */
+char xgetla();
+
+/* Get Physical Extended Address          *
+ * Returns: char pbank - Physical Bank    *
+ *          char ppage - Physical Page    *
+ *          char pbyte - Physical Byte    *
+ * Sets Carry if Physical Address Invalid */
+char xgetpa();
+
+/* Convert Physical to Logical Address    *
+ * Args: char pbank - Physical Bank       *
+ *       char ppage - Physical Page       *
+ *       char pbyte - Physical Byte       *
+ * Returns: char lbank - Logical Bank     *
+ *           int laddr - Logical Address  *
+ * Sets Carry if Physical Address Invalid */
+char xclcla();
+
+/* Increment Physical Address        *
+ * Sets Carry if Address Rolled Over */
+void xincpa();
+
+/* Convert Logical to Physical Address   *
+ * Args: char lbank - Logical Bank       *
+ *        int laddr - Logical Address    *
+ * Returns: char pbank - Physical Bank   *
+ *          char ppage - Physical Page   *
+ *          char pbyte - Physical Byte   *
+ * Sets Carry if Logical Address Invalid */
+char xclcpa();
+
+/* Write Byte to Extended Memory     *
+ * Args: char b: Byte to Write       *
+ * Sets Carry if Address Rolled Over */
+void xputc();
+
+/* Write Word to Extended Memory     *
+ * Args: int i: Word to Write        *
+ * Sets Carry if Address Rolled Over */
+void xputi();
+
+/* Write Word, Byte to Extended Memory *
+ * Args: char b: Byte to Write         *
+ *       int i: Word to Write          *
+ * Sets Carry if Address Rolled Over   */
+void xputl();
+
+/* Read Extended Memory Page          *
+ * Args: char lbank - Logical Bank    *
+ *       char lpage - Logical Page    *
+ *       char mpage - Memory Page     *
+ * Sets Carry if Logical Bank Invalid */
+void xrdpg();
+
+/* Set Logical Extended Address          *
+ * Args: char lbank - Logical Bank       *
+ *        int laddr - Logical Address    *
+ * Sets Carry if Logical Address Invalid */
+void xsetla();
+
+/* Set Physical Extended Address    *
+ *     without Error Checking       *
+ * Args: char pbank - Physical Bank *
+ *       char ppage - Physical Page *
+ *       char pbyte - Physical Byte */
+void xsetpn();
+
+/* Set Physical Extended Address          *
+ *     with Error Checking                *
+ * Args: char pbank - Physical Bank       *
+ *       char ppage - Physical Page       *
+ *       char pbyte - Physical Byte       *
+ * Sets Carry if Physical Address Invalid */
+void xsetpa();
+
+/* Validate Physical Extended Address     *
+ * Args: char pbank - Physical Bank       *
+ *       char ppage - Physical Page       *
+ *       char pbyte - Physical Byte       *
+ * Sets Carry if Physical Address Invalid */
+void xvalpa();
+
+/* Write Extended Memory Page         *
+ * Args: char lbank - Logical Bank    *
+ *       char lpage - Logical Page    *
+ *       char mpage - Memory Page     *
+ * Sets Carry if Logical Bank Invalid */
+void xwrtpg();

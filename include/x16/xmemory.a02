@@ -1,0 +1,360 @@
+; Commander X16 Extended Memory Assembly Langyage Routines for C02
+
+;Extended Memory Constants
+XLBANK  EQU $0F ;Maximum Logical Bank
+
+;Extended Memory Address - Defined in x16.a02
+;           Physical Address   Logical Address
+;XMBANK Bank        ($00-$FF)  Bits 20-13
+;XADRLO Address LSB ($00-$FF)  Bits  7- 0 
+;XADRHI Address MSB ($A0-$BF)  Bits 12- 8
+
+;VIA Registers
+XSBANK  EQU $9F61   ;RAM Bank Select
+
+;xgetla() - Get Logical Extended Memory Address
+;Destroys: TEMP0
+;Returns: A = Logical Bank ($0-$F$)
+;             $FF if Physical Address Invalid
+;         Y,X = Logical Address ($0000-$FFFF)
+;         Carry Set if Physical Address is Invalid
+XGETLA: JSR XGETPN
+
+;xclcla(bank,page,byte) - Convert Physical to Logical Address
+;Args: A = Physical Bank ($00,$FF)
+;      Y,X = Physical Address ($A000-$BFFF)
+;Destroys: TEMP0
+;Returns: A = Logical Bank ($00-$0F)
+;         Y,X = Logical Address ($0000-$000F)
+;         Carry Set if Physical Address is Invalid
+XCLCLA: STA TEMP0   ;Save Physical Bank
+        TYA         ;Get Physical MSB
+        AND #$E0    ;Isolate Bits 5-7
+        CMP #$A0    ;If Not in Banked RAM Area
+        BNE XRCSET  ;  Return Carry Set
+        TYA         ;Get Physical MSB
+        ASL         ;Rotate Bits 8-12 to 11-15
+        ASL
+        ASL
+        LSR TEMP0   ;Rotate Physical Bank
+        ROR         ;into Logical Bits 13-20
+        LSR TEMP0
+        ROR
+        LSR TEMP0
+        ROR
+        TAY         ;Copy MSB into Y
+        LDA TEMP0   ;Load Bank into A
+        CLC         ;Return Carry Clear
+        RTS
+
+XRCSET: SEC         ;Return Carry Set
+        RTS
+
+;xclcpa(bank,page,byte) - Convert Logical to Physical Address
+;Args: A = Logical Bank ($00-$0F)
+;      Y,X = Logical Address ($0000-$000F)
+;Destroys: TEMP0
+;Returns: A = Physical Bank ($00,$FF)
+;         Y,X = Physical Address ($A000-$BFFF)
+;         Carry Set if Logical Address is Invalid
+XCLCPA: CMP #$10    ;If Bank >= 16
+        BCS XLPADX  ;  Return Carry Set
+        STA TEMP0   ;Store Logical Bank,LSB,MSB in TEMP0,TEMP1,TEMP2
+        TYA         ;Get Logical Address MSB
+        ASL         ;Rotate Logical Bits 13-20 into Physical Bank
+        ROL TEMP0
+        ASL
+        ROL TEMP0
+        ASL
+        ROL TEMP0
+        LSR         ;Shift Bits 8-12 back into Position
+        LSR
+        LSR
+        ORA #$A0    ;Convert to Physical MSB
+        TAY         ;and Copy Back to Y
+        LDA TEMP0   ;Load Physical Bank into Accumulator
+XLPADX: RTS
+
+;xsetla(bank,page,byte) - Set Logical Extended Memory Address
+;Args: A = Logical Bank ($0-$F$)
+;      Y,X = Logical Address ($0000-$FFFF)
+;Destroys: TEMP0
+;Returns: A = Physical Bank ($00-$FF)
+;         Y,X = Physical Address ($A000-$BFFF)
+XSETLA: JSR XCLCPA  ;Convert Logical Address to Physical Address
+        BCC XSETPN  ;If Valid, Store and Return
+        RTS         ;Else Return Carry Set
+        
+;xsetpa(bank,page,byte) - Set Physical Extended Memory Address
+;Args: A = Physical Bank ($00-$FF)
+;      Y,X = Physical Address ($A000-$BFFF)
+;Destroys: TEMP0
+;Returns: A = Physical Bank ($FF if Address Invalid)
+;         Y,X = Physical Address
+;         Carry Set if Logical Address is Invalid
+XSETPA: JSR XVALPA  ;Validate Physical Address
+        BCS XSETPX  ;If Invalid, Return Carry Set
+
+;XSETPn(bank,page,byte) - Set Physical Address without Error Checking
+;Args: A,Y,X = Physical Extended Address
+XSETPN: STA XMBANK  ;Store Physical Bank
+        STY XADRHI  ;Store Physical MSB
+        STX XADRLO  ;Store Physical LSB
+XSETPX: RTS
+
+;XGETPA() - Get Physical Extended Memory Address
+;Returns: A = Physical Bank ($FF if Address Invalid)
+;         Y,X = Physical Address
+XGETPA: LDA XADRHI  ;Load Physical MSB
+        AND #$E0    ;Isolate Bits 5-7
+        CMP #$A0    ;If Not in Banked RAM Area
+        BNE XRCSET  ;  Return Carry Set
+
+;xgetpn() - Get Physical Address without Error Checking
+;Returns: A,Y,X = Physical Extended Address
+XGETPN: LDA XMBANK  ;Load Physical Bank
+        LDY XADRHI  ;Load Physical MSB
+        LDX XADRLO  ;Load Physical LSB
+        RTS
+
+;xvalpa(bank,page,byte) - Validate Physical Extended Address
+;Args: A = Physical Bank ($00-$FF)
+;      Y,X = Physical Address ($A000-$BFFF)
+;Returns: Carry Set if Logical Address is Invalid
+XVALPA: CPY #$A0    ;If MSB<$A0 
+        BCC XRCSET  ;  Return Carry Set
+        CPY #$C0    ;Return Carry Set if MSB>=$C0
+        RTS
+
+;xselrb() - Select Extended RAM Bank 
+;Sets: XSBANK to XMBANK
+;Returns: Y = 0
+XSELRB: LDY XMBANK  ;Get Physical Bank
+        STY XSBANK  ;and Select RAM Bank
+        LDY #0
+        RTS
+
+;xgetl() - Read Long from Extended Memory
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Returns: A,Y,X = Bytes Read
+;         Carry Set if Address Rolled Over
+XGETL:  JSR XGETI       ;Read X,Y from Extended Memory
+        BRA XGETC       ;Read A from Extended Memory
+
+;xgeti() - Read Word from Extended Memory
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A
+;Returns: Y,X = Word Read
+;         Carry Set if Address Rolled Over
+XGETI:  JSR XGETC       ;Read LSB from Extended Memory
+        TAX             ;and Return in X
+        JSR XGETC       ;Read MSB from Extended Memory
+        TAY             ;and Return in Y
+        RTS
+
+;xgetc() - Read Byte from Extended Memory
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: Y
+;Returns: A = Byte Read
+;         Carry Set if Address Rolled Over
+XGETC:  JSR XSELRB      ;Select Extended RAM Bank
+        LDA (XADRLO),Y  ;Load Character at Extended Address
+        TAY             ;Save Character
+        JSR XINCPA      ;Increment Physical Address
+        TYA             ;Restore Character
+        RTS
+
+;xload(size) - Load from Extended Memory
+;Args: Y,X = Number of Bytes to Load
+;Requires: DSTLO,DSTHI = Local Memory Start Address
+;          XMBANK,XADRHI,XADRLO = Extended Memory Address
+;Destroys: TEMP0
+;Affects: A,X,Y
+XLOAD:  STY TEMP0       ;and Store in TEMP0
+        JSR XSELRB      ;Select Extended RAM Bank
+XLOADL: JSR XREADL      ;Read Count LSB Bytes
+        LDA TEMP0       ;Load MSB
+        BEQ XLOADX      ;If Not Zero
+        DEC TEMP0       ;  Decrement MSB
+        BRA XLOADL      ;  and Read Another 256 Bytes
+XLOADX: RTS
+
+;xread(n,&dest) - Read Bytes from Extended Memory
+;Args: A = Number of Bytes to Read
+;      Y,X = Address of Array to Read Into
+;Sets: DSTLO,DSTHI
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A,X,Y
+XREAD:  JSR SETDST      ;Set Destination to String
+        TAX             ;Copy Byte Count to X
+        JSR XSELRB      ;Select Extended RAM Bank
+XREADL: LDA (XADRLO)    ;Get Character at Extended Address
+        STA (DSTLO)     ;Write to Array
+        INC DSTLO       ;Increment Destination Address
+        BNE XREADS
+        INC DSTHI
+XREADS: JSR XINCPA      ;Increment Physical Address
+        DEX             ;Increment Counter
+        BNE XREADL      ;and Loop if Not Zero
+        RTS
+
+;xsave(size) - Save from Extended Memory
+;Args: Y,X = Number of Bytes to Save
+;Requires: SRCLO,SRCHI = Local Memory Start Address
+;          XMBANK,XADRHI,XADRLO = Extended Memory Address
+;Destroys: TEMP0
+;Affects: A,X,Y
+XSAVE:  STY TEMP0       ;and Store in TEMP0
+        JSR XSELRB      ;Select Extended RAM Bank
+XSAVEL: JSR XWRITL      ;Write Count LSB Bytes
+        LDA TEMP0       ;Load MSB
+        BEQ XSAVEX      ;If Not Zero
+        DEC TEMP0       ;  Decrement MSB
+        BRA XSAVEL      ;  and Write Another 256 Bytes
+XSAVEX: RTS
+
+;xwrite(n,&source) - Write Bytes to Extended Memory
+;Args: A = Number of Bytes to Write
+;      Y,X = Address of Array to Write From
+;Sets: SRCLO,SRCHI
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A,X,Y
+XWRITE: JSR SETSRC      ;Set Destination to String
+        TAX             ;Copy Byte Count to X
+        JSR XSELRB      ;Select Extended RAM Bank
+XWRITL: LDA (SRCLO)    
+        STA (XADRLO)    ;Get Character at Extended Address
+        INC SRCLO       ;Increment Destination Address
+        BNE XWRITS
+        INC SRCHI
+XWRITS: JSR XINCPA      ;Increment Physical Address
+        DEX             ;Increment Counter
+        BNE XWRITL      ;and Loop if Not Zero
+        RTS
+
+;xswap(size) - Swap with Extended Memory
+;Args: Y,X = Number of Bytes to Swap
+;Requires: DSTLO,DSTHI = Local Memory Start Address
+;          XMBANK,XADRHI,XADRLO = Extended Memory Address
+;Destroys: TEMP0
+;Affects: A,X,Y
+XSWAP:  STY TEMP0       ;and Store in TEMP0
+        JSR XSELRB      ;Select Extended RAM Bank
+XSWAPL: JSR XCHNGL      ;Write Count LSB Bytes
+        LDA TEMP0       ;Load MSB
+        BEQ XSWAPX      ;If Not Zero
+        DEC TEMP0       ;  Decrement MSB
+        BRA XSWAPL      ;  and Write Another 256 Bytes
+XSWAPX: RTS
+
+;xchng(n,&dest) - Exhange with Bytes in Extended Memory
+;Args: A = Number of Bytes to Read
+;      Y,X = Address of Array to Read Into
+;Sets: DSTLO,DSTHI
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A,X,Y
+XCHNG:  JSR SETDST      ;Set Destination to String
+        TAX             ;Copy Byte Count to X
+        JSR XSELRB      ;Select Extended RAM Bank
+XCHNGL: LDA (XADRLO)    ;Get Character at Extended Address
+        TAY             ;and Save It
+        LDA (DSTLO)     ;Get Character from Array
+        STA (XADRLO)    ;and Store at Extended Address
+        TYA             ;Retrieve Original Character
+        STA (DSTLO)     ;and Store in Array
+        INC DSTLO       ;Increment Destination Address
+        BNE XCHNGS
+        INC DSTHI
+XCHNGS: JSR XINCPA      ;Increment Physical Address
+        DEX             ;Increment Counter
+        BNE XCHNGL      ;and Loop if Not Zero
+        RTS
+
+;xputl(nsb,msb,lsb) - Write Long to Extended Memory
+;Args: A,Y,X = Long to Write 
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: Y
+;Returns: Carry Set if Address Rolled Over
+XPUTL:  PHA             ;Save NSB
+        JSR XPUTI       ;Write LSB, MSB to Extended Memory
+        PLA             ;Retrieve NSB
+        BRA XPUTCN      ;and Write to Extended Memory
+
+;xputi(i) - Write Word to Extended Memory
+;Args: Y,X = Word to Write
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A,Y
+;Returns: Carry Set if Address Rolled Over
+XPUTI:  PHY             ;Save MSB
+        TXA             ;Get LSB
+        JSR XPUTC       ;and Write to Extended Memory
+        PLA             ;Retrieve MSB
+        BRA XPUTCN      ;and Write to Extended Memory
+
+;xputc(c) - Write Byte to Extended Memory
+;Args: A = Integer to Write
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A,Y
+;Returns: Carry Set if Address Rolled Over
+XPUTC:  JSR XSELRB      ;Select Extended RAM Bank
+XPUTCN: STA (XADRLO)    ;Store Character at Extended Address
+
+;xincpa() - Increment Physical Extended Address
+;Updates: XMBANK, XADRHI, XADRLO - Physical Address
+;Affects: A
+;Returns: Carry Set if Address Rolled Over
+XINCPA: CLC         ;Preset Carry to Clear
+        INC XADRLO  ;Increment Physical LSB
+        BNE XINCPX  ;If Zero
+        INC XADRHI  ;  Increment Physical MSB
+        LDA XADRHI  ;  Load Physical MSB
+        CMP #$C0    ;  If More than Maximum
+        BCC XINCPX
+        LDA #$A0    ;    Set MSB to Minimum
+        STA XADRHI
+        INC XMBANK  ;    Increment Bank
+        LDA XMBANK  ;    and Write to Bank Select
+        STA XSBANK
+        BNE XINCPX  ;    If Not Zero
+        CLC         ;    Return Carry Clear
+XINCPX: RTS
+
+;xrdpg(xbank, xpage, mpage) - Read Extended Memory Page
+XRDPG:  STX DSTHI       ;Set Destination MSB to Memory Page
+        LDX #0          ;Set Extended Memory LSB to 0
+        STX DSTLO       ;Set Destination LSB to 0
+        JSR XCLCPA      ;Convert Logical to Physical Address
+        BCS XRDPGX      ;If Invalid, Return Carry Set
+        JSR SETSRC      ;Set Source Address, Y to 0
+XRDPGM: STA XSBANK      ;Select Extended RAM Bank
+XRDPGL: LDA (SRCLO),Y   ;Read Byte from Extended Memory
+        STA (DSTLO),Y   ;and Write to Local Memory
+        INY             ;Increment Counter
+        BNE XRDPGL      ;and Loop if Not 0
+XRDPGX: RTS
+
+;xwrtpg(xbank, xpage, mpage) - Write Extended Memory Page
+XWRTPG: JSR XSRCPA      ;Set Source Address and Physical Address
+        BEQ XRDPGM      ;and Copy Bytes
+
+XSRCPA: STX SRCHI       ;Set Destination MSB to Memory Page
+        LDX #0          ;Set Extended Memory LSB to 0
+        STX SRCLO       ;Set Destination LSB to 0
+        JSR XCLCPA      ;Convert Logical to Physical Address
+        BCS XRDPGX      ;If Invalid, Return Carry Set
+        JSR SETDST      ;Set Destination to Extended Address
+        LDY #0          ;Set Counter to 0
+        BEQ XRDPGM      ;and Copy Bytes
+
+;xswppg(xbank, xpage, mpage) - Swap with Extended Memory Page
+XSWPPG: JSR XSRCPA      ;Set Source Address and Physical Address
+        STA XSBANK      ;Select Extended RAM Bank
+XSWPPL: LDA (DSTLO),Y   ;Read From Local Memory
+        TAX             ;and Save Contents
+        LDA (SRCLO),Y   ;Read Byte from Extended Memory
+        STA (DSTLO),Y   ;and Write to Local Memory
+        TXA             ;Retrieve Byte Read from Local Memory
+        LDA (SRCLO),Y   ;and Write to Extended Memory
+        INY             ;Increment Counter
+        BNE XSWPPL      ;and Loop if Not 0
+        RTS

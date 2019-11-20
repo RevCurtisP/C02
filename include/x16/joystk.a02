@@ -1,0 +1,33 @@
+;Joystick Constants and Functions
+;Non-Functional Skeleton for Systems with No Joystick Support
+
+JYSTKS  EQU 2       ;Number of Joysticks
+
+JYDATA  EQU $02BC   ;Joystick 0 Data
+
+GETJOY  EQU $FF06   ;Kernal GETJOY Routine
+
+;Joystick Bit Masks
+JOYUP   EQU $08     ;Up    
+JOYDN   EQU $04     ;Down  
+JOYLF   EQU $02     ;Left  
+JOYRT   EQU $01     ;Right 
+JOYB0   EQU $80     ;Button
+
+;Read Joystick
+JOYSTK: CMP #JYSTKS     ;If Invalid Joystick Number
+        BCS JOYSTE      ;  Return ERROR
+        STA TEMP0       ;Save Joystick Number
+        JSR $FF06       ;Call Kernal GETJOY Routine
+        LDA TEMP0       ;Retrieve Joystick Number
+        ASL             ;Multiply it by 3
+        ADC TEMP0       ;(Assumes Number<128)
+        TAX             ;and Copy to X-Register
+        LDA $02BE,X     ;If Controller Not Present
+        BNE JOYSTE      ;  Return ERROR
+        LDA $02BC,X     ;Read Controller Status
+        ;EOR #$FF        ;Invert Bits
+        AND #$CF        ;and Mask off Select/Start
+        RTS
+JOYSTE: LDA #255    ;Return Error Code
+        RTS
