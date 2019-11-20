@@ -99,4 +99,3 @@ PUTSTR: TXA         ;Copy LSB to Accumulator
         JMP $AB1E   ;Execute STROUT
 
         INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routine
-

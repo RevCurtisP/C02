@@ -1,5 +1,8 @@
 /* C02 System Header file for Commander X16 */
 
+/* Platform Specific Settings */
+#pragma zeropage $68  //Unused Zero Page - $68-$7F 
+
 /* Platform Specific Constants */
 #define DELKEY $14 //Delete/Backspace Key (DEL)
 #define ESCKEY $03 //Escape/Break Key (STOP)

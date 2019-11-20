@@ -1,46 +1,53 @@
 ; c02 Program Initialization Code for Commander X16
+; Compatible with x16emu Release 34
 
 ;PETSCII Key Mappings
 DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
 ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
 RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
 
-;Zero Page System Variables - Assumes Usage is Same as C64
-XMBANK  EQU $0A   ;Extended Memory Bank (Load/Verify Flag)
-XADRLO  EQU $0B   ;Ext Memory Address LSB (Text Index/Array Size)
-XADRHI  EQU $0C   ;Ext Memory Address MSB (Array Dimension Fkags)
-SRCPTR  EQU $22   ;Source Pointer [Temporary Pointers]
-SRCLO   EQU $22   ;Source Pointer LSB [Temporary Pointers]
-SRCHI   EQU $23   ;Source Pointer MSB [Temporary Pointers]
-DSTPTR  EQU $24   ;Destination Pointer [Temporary Pointers]
-DSTLO   EQU $24   ;Destination Pointer LSB [Temporary Pointers]
-DSTHI   EQU $25   ;Destination Pointer MSB [Temporary Pointers]
-BLKLO   EQU $26   ;Block Pointer LSB [Floating Point Work Area]
-BLKHI   EQU $27   ;Block Pointer MSB [Floating Point Work Area]
-STKLO   EQU $28   ;Stack Pointer LSB [Floating Point Work Area]
-STKHI   EQU $29   ;Stack Pointer MSB [Floating Point Work Area]
-BFRLO   EQU $35   ;Buffer Pointer LSB [Temporary String Pointer]
-BFRHI   EQU $36   ;Buffer Pointer MSB [Temporary String Pointer]
-RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)]
-TEMP0   EQU $FB   ;Temporary Variable [Unused Byte]
-TEMP1   EQU $FC   ;Temporary Variable [Unused Byte]
-TEMP2   EQU $FD   ;Temporary Variable [Unused Byte]
-TEMP3   EQU $FE   ;Temporary Variable [Unused Byte]
-
+;Zero Page System Variables - x16emu Release 34 Memory Map
+;UNUSED $00-$01   ;Available to User
+;       $02-$52   ;Used by Basic graphics commands
+XMBANK  EQU $53   ;Extended Memory Bank 
+XADRLO  EQU $54   ;Ext Memory Address LSB 
+XADRHI  EQU $55   ;Ext Memory Address MSB 
+SRCPTR  EQU $56   ;Source Pointer 
+SRCLO   EQU $57   ;Source Pointer LSB 
+SRCHI   EQU $58   ;Source Pointer MSB 
+DSTPTR  EQU $59   ;Destination Pointer 
+DSTLO   EQU $5A   ;Destination Pointer LSB 
+DSTHI   EQU $5B   ;Destination Pointer MSB 
+BLKLO   EQU $5C   ;Block Pointer LSB 
+BLKHI   EQU $5D   ;Block Pointer MSB 
+STKLO   EQU $5E   ;Stack Pointer LSB 
+STKHI   EQU $5F   ;Stack Pointer MSB 
+BFRLO   EQU $60   ;Buffer Pointer LSB 
+BFRHI   EQU $61   ;Buffer Pointer MSB 
+RANDOM  EQU $62   ;Random Number Storage 
+RDSEED  EQU $63   ;Random Seed 
+TEMP0   EQU $64   ;Temporary Variable 
+TEMP1   EQU $65   ;Temporary Variable 
+TEMP2   EQU $66   ;Temporary Variable 
+TEMP3   EQU $67   ;Temporary Variable 
+;       $68-7F    ;Available to User
+;       $80-$83   ;Used by Kernal and DOS
+;       $A4-$A8   ;Reserved for KERNAL/DOS/BASIC
+;       $A9-$FF   ;Used by BASIC
+  
 ;Other Variables - Top of Extended System RAM Area
-BLKSLO  EQU $07F4 ;Block Start LSB [Unused Byte]
-BLKSHI  EQU $07F5 ;Block Start MSB [Unused Byte]
-BLKELO  EQU $07F6 ;Block End LSB [Unused Byte]
-BLKEHI  EQU $07F7 ;Block End MSB [Unused Byte]
-BLKLEN  EQU $07F8 ;Block Length [Unused Byte]
+BLKSLO  EQU $07F4 ;Block Start LSB 
+BLKSHI  EQU $07F5 ;Block Start MSB 
+BLKELO  EQU $07F6 ;Block End LSB 
+BLKEHI  EQU $07F7 ;Block End MSB 
+BLKLEN  EQU $07F8 ;Block Length 
 
-RANDOM  EQU $07F9 ;Random Number Storage [Unused Byte]
-STKSAV  EQU $07FA ;Machine Stack Storage [Unused Byte]
+STKSAV  EQU $07FA ;Machine Stack Storage 
 
-STKSLO  EQU $07FC ;Stack Start LSB [Unused Byte]
-STKSHI  EQU $07FD ;Stack Start MSB [Unused Byte]
-STKELO  EQU $07FE ;Stack End LSB   [Unused Byte]
-STKEHI  EQU $07FF ;Stack End MSB   [Unused Byte]
+STKSLO  EQU $07FC ;Stack Start LSB 
+STKSHI  EQU $07FD ;Stack Start MSB 
+STKELO  EQU $07FE ;Stack End LSB   
+STKEHI  EQU $07FF ;Stack End MSB   
 
 ;Machine Language Basic Stub - Same as Commodore 64
         ORG $0801              ;Start of Basic Program 
@@ -54,6 +61,9 @@ BASIC:  DC  $0C, $08           ;Pointer to Next Line
 
 START:  TSX         ;Get Stack Pointer
         STX STKSAV  ;and Save for Exit
+        SEC         ;Set Screen Mode 
+        LDA #0      ;to 40x30 Text
+        JSR $FF5F   ;using SCRMOD
         JMP MAIN    ;Execute Program
 
 EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
@@ -82,7 +92,5 @@ DELCHR: LDA #DELKEY ;Load Delete Character
 NEWLIN: LDA #RTNKEY ;Load Return Character
         JMP PUTCHR  ;Print and Return
 
-PUTSTR: TXA         ;Copy LSB to Accumulator
-        JMP $CBD2   ;Execute STROUT
-
         INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routine
+        INCLUDE "../include/putstr.a02" ;PUTSTR routine

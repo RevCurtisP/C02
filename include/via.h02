@@ -1,0 +1,20 @@
+/* MOS 6522 VIA Registers */
+
+struct via {
+  char iorb; //Input/Output Register B
+  char iora; //Input/Output Register A
+  char ddrb; //Data Direction Register B
+  char ddra; // Data Direction Register A
+  char t1cl; //T1 Low-Order Counter
+  char t1ch; //T1 High-Order Counter
+  char t1ll; //T1L-L | T1 Low-Order Latches
+  char t1lh; //T1 High-Order Latches
+  char t2cl; //T2 Low-Order Latches
+  char t2ch; //T2 High-Order Counter
+  char sr; //Shift Register
+  char acr; //Auxiliary Control Register
+  char pcr; //Peripheral Control Register
+  char ifr; //Interrupt Flag Register
+  char ier; //Interrupt Enable Register
+  char nhra; //Input/Output Register A (No Handshake)
+}
