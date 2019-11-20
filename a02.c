@@ -439,21 +439,38 @@ int chkmod(int mode) {
 }
 
 /* Assemble Branch Opcode */
-void asmbrn(void) {
+void asmbrn(int setzp) {
   int offset = 0;
+  int ofsadj = (setzp) ? 2 : 3; //Offset Adjustment
   if (debug) printf("Assembling Branch Opcode Token 0x%02X\n", token);
-  zpage = TRUE;
+  zpage = setzp;
   if (isalpha(*linptr) || *linptr =='.') {
     struct sym *target = evlsym();
-    if (target) offset = (target->value - curadr - 2);
+    if (target) offset = (target->value - curadr - ofsadj);
   }
   else if (cpychr('+')) offset = evlopd(0xFF); 
   else if (cpychr('-')) offset = -evlopd(0xFF); 
-  else xerror("Illegal Branch Operand\n", "");
+  else {
+    opval = evlopd(0xFFFF);
+    if (opval < 0) xerror("Illegal Branch Operand\n", "");
+    offset = opval - curadr - 2;
+  }
+  if (debug) printf("Calculated Branch Offset of %d\n", offset);
   if ((offset > 127 || offset < -128) && passno == 2) 
     xerror("Branch Out of Range\n", "");
   if (debug) printf("Branch Offset %d\n", offset);
   opval = offset & 0xFF;
+}
+
+/* Assemble Zero Page, Relative Opcode */
+void asmzpr(void) {
+  int bitno = -1;
+  if (debug) printf("Assembling ZeroPage (Relative) Opcode Token 0x%02X\n", token);
+  if (strlen(mnmnc) < 4) {opmod = evlopd(7) << 4; cpychr(','); skpspc();} //Set Modifier to Bit Position
+  int zpval = evlopd(0xFF); cpychr(','); skpspc();//Get ZeroPage Operand
+  if (zpval < 0) xerror ("Instruction %s requires Multiple Operands\n", mnmnc);
+  if (amode == 0x0004) {zpage = TRUE; opval = zpval;} //RMB, SMB - Zero Page Operand
+  else {asmbrn(FALSE); opval = opval << 8 | zpval;} //BBR, BBS - Combine Operanda
 }
 
 /* Assemble Immediate Mode Instruction */
@@ -513,8 +530,10 @@ unsigned char fixopc(void) {
 
 /* Ouput Opcode debug Info */
 void dbgopc(void) {
-  if (debug) printf("token=$%02X, opmod=$%02X, Address Mode: ", token, opmod);
-  switch (opmod) {
+  printf("token=$%02X, opmod=$%02X, Address Mode: ", token, opmod);
+  if (amode == 0x1004) puts("ZeroPage, Relative");
+  else if (amode == 0x0004) puts("ZeroPage");
+  else switch (opmod) {
     case 0x00: if (amode == IMPLD) puts("Implied"); else puts("(Indirect,X)"); break;
     case 0x08: if (opval < 0) puts("Accumulator"); else puts("#Immediate"); break;
     case 0x10: puts("(Indirect),Y"); break;
@@ -542,17 +561,19 @@ int asmopc(int dot) {
   if (debug) printf("Assembling Opcode Token 0x%02X, ", token);
   if (debug) printf("Addressing Mode Mask 0x%04X\n", amode);
   skpspc();
-  if (amode == RELTV) asmbrn(); //Branch (Relative) Instruction
+  if (amode == RELTV) asmbrn(TRUE); //Branch (Relative) Instruction
+  else if (amode == 0x0004 || amode == 0x1004) asmzpr(); //Branch (Relative) Instruction
   else if (cpychr('#')) asmimd();  //Assemble Implied Instruction
   else if (cpychr('(')) asmind(); //Assemble Indirect Instruction
   else asmiaz(); //Assemble Implied/Accumulator/Absolute/ZeroPage Instruction
   if (debug) dbgopc();
-  int opcode = fixopc(); 
+  int opcode = fixopc();
   if (debug) printf("Writing OpCode $%02X\n", opcode);
   outbyt(opcode);                         
+  if (debug) printf("Writing %s Operand %d\n", zpgabs[-zpage], opval);
   if (opval >= 0) {
     if (zpage) outbyt(opval); //Byte Operand
-    else outwrd(opval);                              //Word Operand
+    else outwrd(opval);       //Word Operand
   }
   return TRUE;
 }
