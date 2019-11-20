@@ -1,0 +1,80 @@
+/**************************************
+ * SDEFTEST - Test Library stddef.h02 *
+ **************************************/
+ 
+//use -h option on command line
+#include <stddef.h02>
+
+char lo,hi;
+char aa,hh,ll,xx,yy;
+int dstadr,srcadr;
+
+void clrdst() {dstlo=0; dsthi=0;}
+void clrreg() {return 0,0,0;}
+void clrtmp() {temp0=0; temp1=0; temp2=0; temp3=0;}
+void clrsrc() {srclo=0; srchi=0;}
+void prskey() {putstr("    PRESS ANY KEY"); newlin(); getchr(); newlin();}
+void prtcma(aa) {putchr(','); prbyte(aa);}
+void prtdhl() {ll=dstlo; hh=dsthi; putstr(" DSTHI,LO="); prbyte(hh); prtcma(ll); newlin();}
+void prtdst() {prbyte(dsthi);prbyte(dstlo); newlin();}
+void prtlin() {putstr(); newlin();}
+void prtreg(aa,yy,xx) {putstr(" A,X,Y="); prbyte(aa); prtcma(yy); prtcma(xx); newlin();}
+void prtsav() {putstr(" TEMP1,2="); prtcma(temp1); prtcma(temp2); newlin();}
+void prtshl() {ll=srclo; hh=srchi; putstr(" SRCHI,LO="); prbyte(hh); prtcma(ll); newlin();}
+void prtsrc() {prbyte(srchi);prbyte(srclo); newlin();}
+void prttmp() {putstr(" TEMP0,1,2="); prbyte(temp0); prtcma(temp1); prtcma(temp2); newlin();}
+void prtwrd(.,yy,xx) {prbyte(yy); prbyte(xx); newlin();}
+void setreg(aa,yy,xx) {}
+
+main:
+  newlin();
+
+  putstr("#TRUE="); prbyte(#TRUE);
+  putstr(", #FALSE="); prbyte(#FALSE); newlin(); 
+  newlin();
+
+  prtlin("SAVREG($A,$B,$C)"); clrtmp(); savreg($A,$B,$C); prttmp();
+  prtlin("RESREG()"); clrreg(); prtreg(resreg());
+  prtlin("SAVRXY($D,$E,$F)"); clrtmp(); savrxy($D,$E,$F); prttmp();
+  prtlin("RESRXY()"); clrreg(); prtreg(resrxy());
+  newlin(); 
+
+  prtlin("SAVRXY(&$1234)"); putstr(" ADDTXY(&$5678)=$");
+  savrxy(&$1234); prtwrd(addtxy(&$5678)); 
+  prtlin("SAVRXY(&$1234)"); putstr(" SUBTXY(&$68AC)=$"); 
+  savrxy(&$1234); prtwrd(subtxy(&$68AC));
+  newlin();
+  
+  putstr("DECRXY(&$0000)=$"); prtwrd(decrxy(&$0000));
+  putstr("INCRXY(&$FFFF)=$"); prtwrd(incrxy(&$FFFF));
+  newlin();
+  
+  prskey();
+  
+  prtlin("SETSRC(&$1234)"); clrsrc(); setsrc(&$1234); savsrc(); 
+  prtshl(); prtlin("SAVSRC()"); prtsav(); 
+  prtlin("RESSRC()"); clrsrc(); ressrc(); srcadr=getsrc(); 
+  prtshl(); putstr("GETSRC()="); prtwrd(srcadr);
+  prtlin("SETDSS()"); clrdst(); ressrc(); setdss(); prtdhl();
+  newlin();
+
+  prtlin("SETDST(&$5678)"); clrdst(); setdst(&$5678);savdst(); 
+  prtdhl(); prtlin("SAVDST()"); prtsav();
+  prtlin("RESDST()"); clrdst(); resdst(); dstadr=getdst(); 
+  prtdhl(); putstr("GETSRC()="); prtwrd(dstadr);
+  prtlin("SETSRD()"); clrsrc(); resdst(); setsrd(); prtshl();
+  newlin();
+
+  prskey();
+  
+  prtlin("SETSRC(&$0FFF)"); putstr(" ADDSRA($FF)=$");
+  setsrc(&$0FFF); addsra($FF); prtsrc();
+  prtlin("SETSRC(&$1234)"); putstr(" ADDSRC(&$CDEF)=$");
+  setsrc(&$1234); addsrc(&$CDEF); prtsrc();
+  prtlin("SETDST(&$0FFF)"); putstr(" ADDDSA($FF)=$");
+  setdst(&$0FFF); adddsa($FF); prtdst();
+  prtlin("SETDST(&$1234)"); putstr(" ADDDST(&$CDEF)=$");
+  setdst(&$1234); adddst(&$CDEF); prtdst();
+  newlin();
+
+  goto exit;
