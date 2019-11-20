@@ -25,3 +25,6 @@ output
 #Deprecated Files
 */oldclude
 */*.zip
+
+#Private Directories
+notes
