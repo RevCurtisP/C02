@@ -1,0 +1,103 @@
+;A02 Assembler Test File
+
+        INCLUDE "a02inc.a02"
+
+start   ORG $0400       ;Start of Code
+        SUBROUTINE
+flags:  CLC
+        SEC
+        CLI
+        SEI
+        CLV
+        CLD
+.local  SED
+        SUBROUTINE
+rgstr:  DEX
+        DEY
+        INX
+        INY
+        TAX
+        TAY
+        TSX
+        TXA
+        TXS
+        TYA
+        SUBROUTINE
+retrn:  RTI
+        RTS
+        SUBROUTINE
+stack:  PHA
+        PHP
+        PHX
+        PHY
+        PLA
+        PLP
+        PLX
+        PLY
+        SUBROUTINE
+other:  NOP
+        BRK
+        SUBROUTINE
+branch: BCC rgstr
+        BCS flags
+.loop   BEQ retrn
+        BNE jump
+        BMI .next
+        BPL .loop
+        BRA branch
+.next   BVC +127
+        BVS -128
+        SUBROUTINE
+jump    JMP .next
+        JMP (words )
+        JMP (pntr,x)
+.next   JSR retrn
+        SUBROUTINE
+memory: ADC #$98      ;Immediate
+        AND TABLE,Y   ;Absolute,Y
+        CMP PNTR,Y    ;Absolute,Y (Zero Page Address)
+        EOR (PNTR,X)  ;(Indirect,X)
+        LDA (PNTR),Y  ;(Indirect),Y
+        ORA (PNTR)    ;(Indirect)
+        ASL            ;Accumulator
+        DEC PNTR      ;ZeroPage
+        INC PNTR,X    ;ZeroPage,X
+        LSR BYTES     ;Absolute
+        ROL BYTES,X   ;Absolute,X
+        ROR $ABCD,X   ;Absolute,X
+        CPX #$76      ;Immediate
+        CPY PNTR      ;ZeroPage
+        STY PNTR,X    ;ZeroPage,X
+        STZ $CDEF     ;Absolute
+        LDY $CDEF,X   ;Absolute,X
+        TRB PNTR      ;ZeroPage
+        TSB $1234     ;Absolute
+        SUBROUTINE
+exprsn  LDA #PNTR+1       ;Immediate
+        LDA PNTR+1        ;ZeroPage
+        LDA (PNTR+2)      ;Indirect
+        LDA (PNTR+4,X)    ;(Indirect,X)
+        LDA (PNTR+6),Y    ;(Indirect),Y
+        LDA STRUCT        ;Absolute
+        LDX #<STRUCT      ;LSB Immediate
+        LDY #>STRUCT      ;MSB Immediate
+        LDA STRUCT+1     
+        LDX #<STRUCT+1
+        LDY #>STRUCT+1
+        LDA STRUCT+2
+        LDX #<(STRUCT+2)
+        LDY #>(STRUCT+2)
+
+BYTES   byte  99, %10101010,'~'   ;Bytes
+        .byte $12,$34
+HEXES   hex   01,23,45,67,89  ;Hexadecimal 
+        .hex  ,AB,CD,EF,1A,2B,3C,D4,E5,F6
+WORDS   word  $3456
+        Align 256
+TABLE   .word $1357,$9BDF,$2468
+TEXT    byte  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",0
+
+        END               ;Nothing after this will be Assembled
+        STY (STRUCT),X    ;Illegal Addressing Mode
+        DC.W              ;Unsupported Pseudo-Op
+

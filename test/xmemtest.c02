@@ -1,0 +1,272 @@
+/**************************************
+ * TESTXMEM - Test Library xmemory.h02 *
+ **************************************/
+ 
+//use -h option on command line
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <xmemory.h02>
+
+char aa;                    //Function Arguments
+
+alias char banked = $A000;  //Beginning of Banked Memory
+int icount;
+
+char i;                     //Index Variable
+char chrctr;                //Get/Put Character
+int  intger;                //Get/Put Integer
+char r[255],w[255];         //Read/Write Arrays
+
+char ibank, ipage, ibyte;   //Index Bank, Page, and Byte
+char lbank, lpage, lbyte;   //Logical Bank, Page, and Byte
+char mbank, mpage, mbyte;   //Memory Bank, Page, and Byte
+char pbank, ppage, pbyte;   //Physical Bank, Page, and Byte
+char sbank, spage, sbyte;   //Starting Bank, Page, and Byte
+char ebank, epage, ebyte;   //Starting Bank, Page, and Byte
+
+void passed() { putln("PASSED");}
+
+void paddrs(aa) {
+  if (aa) newlin(); else puts(", ");
+  printf(setdst(xgetpa()),"PA=$%h%w, ");
+  printf(setdst(xgetla()),"LA=$%h%w  ");
+}
+
+void perror() {
+  printf(); //Implied Arguments
+  paddrs(#FALSE);
+  newlin();
+  goto exit;
+}
+
+/* Test xclcpa() and xclcla() */
+void tstlpl(sbank,spage,sbank) {
+  ibank=sbank; ipage=spage; ibyte=sbyte;
+  while (ibank<=#XLBANK) {
+    putc('.');
+    while() {
+      while() {
+        //printf(setdst(ibank,ipage,ibyte),"%n ORIGINAL: $%h%w");
+        pbank,ppage,pbyte = xclcpa(ibank,ipage,ibyte);
+        //printf(setdst()," PHYSICAL: $%h%w");
+        lbank,lpage,lbyte = xclcla(pbank,ppage,pbyte);
+        //printf(setdst(),", LOGICAL: $%h%w");
+        if (lbank<>ibank or lpage<>ipage or ibyte<>lbyte)
+          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%h ADDRESS $%w");
+        if (getkey()==#ESCKEY) goto exit;
+        ibyte=ibyte+$10; if (!ibyte) break;
+      } ipage++; if (!ipage) break;
+    } ibank++; if (!ibank) break;
+  } 
+}
+
+/* Test xgetla() and xsetla() */
+void tstgsl(ibank,ipage,ibank) {
+  while (ibank<=#XLBANK) {
+    putc('.');
+    while() {
+      while() {
+        //printf(setdst(ibank,ipage,ibyte),"%n SET: $%h%w");
+        xsetla(ibank,ipage,ibyte);
+        lbank,lpage,lbyte = xgetla();
+        //printf(setdst(),", GOT: $%h%w");
+        if (lbank<>ibank or lpage<>ipage or ibyte<>lbyte)
+          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%h ADDRESS $%w");
+        if (getkey()==#ESCKEY) goto exit;
+        ibyte=ibyte+$10; if (!ibyte) break;
+      } ipage++; if (!ipage) break;
+    } ibank++; if (!ibank) break;
+  } 
+}
+
+/* Test xincpa() */
+void tstipa(ibank,ipage,ibank) {
+  xsetla(ibank,ipage,ibyte); //Set Logical Address to 0
+  while (ibank<=#XLBANK) {
+    putc('.');
+    while() {
+      //clrscr();
+      while() {
+        pbank,ppage,pbyte = xgetpa(ibank,ipage,ibyte);
+        //printf(setdst(),"$%h%w:");
+        lbank,lpage,lbyte = xgetla(); //Get Logical Address
+        //printf(setdst(),"$%h%w ");
+        if (lbank<>ibank or lpage<>ipage or ibyte<>lbyte)
+          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%h ADDRESS $%w");
+        xincpa(); //Increment Physical Address
+        ibyte++; if (!ibyte) break;
+      } ipage++; if (!ipage) break;
+      if (getkey()==#ESCKEY) goto exit;
+    } ibank++; if (!ibank) break;
+  } 
+}
+
+/* Test xgetc() and xputc() */
+void tstgpc(sbank,spage,sbyte) {
+  while() {
+    //printf(setdst(),"$%h%w");
+    putc('.');
+    ibank=sbank; ipage=spage; ibyte=sbyte;
+    xsetla(ibank,ipage,ibyte);
+    i=0; do { xputc(i); i++; } while (i);
+    xsetla(ibank,ipage,ibyte);
+    i=0; do {
+      if (xgetc()<>i) perror(setdst(xgetpa()),"%nERROR IN BANK $%h ADDRESS $%w");
+      i++;
+    } while (i);
+    sbank++;spage++;sbyte++;
+    if (!sbank or sbank>#XLBANK) break;
+  }
+}
+
+/* Test xgeti() and xputi() */
+void tstgpi(sbank,spage,sbyte) {
+  while() {
+    //*printf(setdst(),"$%h%w");
+    putc('.');
+    ibank=sbank; ipage=spage; ibyte=sbyte;
+    //Write 256 Integers
+    xsetla(ibank,ipage,ibyte);
+    i=0; do { 
+      mpage=i;mbyte=i^$FF;
+      xputi(.,mpage,mbyte); 
+      i++;
+    } while (i);
+    //Read 256 Integers
+    xsetla(ibank,ipage,ibyte);
+    i=0; do {
+      mpage=i;mbyte=i^$FF;
+      intger = xgeti();
+      if (<intger<>mbyte or >intger<>mpage) 
+        perror(setdst(xgetpa()),"%nERROR IN BANK $%h ADDRESS $%w");
+      i++;
+    } while (i);
+    //Set Next Start Address
+    sbank++;spage++;sbyte++;
+    if (!sbank or sbank>#XLBANK) break;
+  }
+}
+
+/* Test xgetl() and xputl() */
+void tstgpl(sbank,spage,sbyte) {
+  while() {
+    //*printf(setdst(),"$%h%w");
+    putc('.');
+    ibank=sbank; ipage=spage; ibyte=sbyte;
+    //Write 256 Integers
+    xsetla(ibank,ipage,ibyte);
+    i=0; do { 
+      mbyte=i; mpage=i^$FF; mbank = -i; 
+      xputi(mbank,mpage,mbyte); 
+      i++;
+    } while (i);
+    //Read 256 Integers
+    xsetla(ibank,ipage,ibyte);
+    i=0; do {
+      mbyte=i; mpage=i^$FF; mbank = -i; 
+      intger = xgeti();
+      if (<intger<>mbyte or >intger<>mpage) 
+        perror(setdst(xgetpa()),"%nERROR IN BANK $%h ADDRESS $%w");
+      i++;
+    } while (i);
+    //Set Next Start Address
+    sbank++;spage++;sbyte++;
+    if (!sbank or sbank>#XLBANK) break;
+  }
+}
+
+/* Test xread() and xwrite() */
+void tstxrw(sbank,spage,epage) {
+  i=0; do {w[i]=i;i++;} while (i); //Fill Write Array
+  ibank=sbank;
+  while (ibank<=#XLBANK) {
+    putc('.');
+    //Write 256,1-255 bytes of Array 
+    ipage=spage; xsetla(ibank,0,ipage);
+    do {
+      //paddrs(#TRUE);
+      //inline $ff;
+      xwrite(ipage,&w);
+      //if (banked=61) perror("MEMORY OVERWRITE ERROR!");
+      ipage++;
+    } while (ipage<>epage);
+    //paddrs(#TRUE);
+    //Read 256,1-255 bytes of Array 
+    ipage=spage; xsetla(ibank,0,ipage);
+    do {
+      //printf(ipage,"%n%h:");
+      //inline $ff;
+      //paddrs(#TRUE);
+      xread(ipage,&r);
+      i=0; do {
+        //printf(r[i],"%h."); printf(w[i],"%h,");
+        if (r[i]<>w[i]) perror(i,"ERROR IN INDEX %d");
+        i++;
+      } while(i<>ipage);        
+      ipage++;
+    } while (ipage<>epage);
+    ibank++; if (!ibank) break;
+  }
+}       
+
+/* Test xload() and xsave() */
+void tstxls(sbank,spage,sbyte) {
+  setsrc(&$F000); //Most Systems have ROM from $F000 to $FFFF
+  xsetla(sbank,spage,sbyte); 
+  xsave(&$1000); //Save through $FFFF
+  setdst(&$8000); //There's usually free RAM here
+  xsetla(sbank,spage,sbyte); 
+  xload(&$1000); //Load bytes saved from $F000 to $FFFF
+  srcptr = &$F000; dstptr = &$8000; icount = &$1000;
+  while (<icount or >icount) {
+    //putwrd(srcptr); putchr(':'); puthex(*srcptr); putspc();
+    //putwrd(dstptr); putchr(':'); puthex(*dstptr); putspc();
+    if (*srcptr <> *dstptr) perror("ERROR IN XLOAD() AND/OR XSAVE()\n");
+    if (!<icount) putc('.'); 
+    srcptr++; dstptr++; icount--;
+  }
+}
+
+main:
+
+  if (!#XLBANK) perror("Extended Memory Not Supported");
+
+/*
+  puts("TESTING XCLCPA() AND XCLCLA()");
+  tstlpl($00,$00,$00); 
+  passed();
+
+  //XGETPA() AND XSETPA() NOT DIRECTLY TESTED
+  //VALID VALUES ARE SYSTEM DEPENDENT
+
+  puts("TESTING XGETLA() AND XSETLA()");
+  tstgsl($00,$00,$00); 
+  passed();
+
+  puts("TESTING XINCPA().............");
+  tstipa($00,$00,$00); 
+  passed();
+
+  puts("TESTING XPUTC() AND XGETC()..");
+  tstgpc($00,$00,$00);
+  passed();
+
+  puts("TESTING XPUTI() AND XGETI()..");
+  tstgpi($00,$00,$00);
+  passed();
+
+  puts("TESTING XREAD() AND XWRITE().");
+  tstxrw($00,$00,$7F);
+  passed();
+*/
+
+  puts("TESTING XLOAD() AND XSAVE().");
+  tstxls($00,$00,$00);
+  passed();
+
+  goto exit;
+

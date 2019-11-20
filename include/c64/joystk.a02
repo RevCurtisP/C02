@@ -1,6 +1,6 @@
 ;Joystick Assembly Language Module for C64
 
-JYSTKS  EQU $04     ;Number of Joysticks
+JYSTKS  EQU $02     ;Number of Joysticks
 
 ;Joystick Bit Masks
 JOYUP   EQU $01     ;Bit 0 - Up    
@@ -12,14 +12,11 @@ JOYB0   EQU $10     ;Bit 4 - Button
 ;Read Joystick
 JOYSTK: CMP #JYSTKS ;If Invalid Joystick#
         BCS JOYSTZ  ;  Return Error
+        EOR #1      ;Invert Joystick #
         TAX         ;Copy Joystick # to X
-        LDA $0284,X ;Read Trigger Control Register
-        ROR         ;Move Bit 0 into Carry
         LDA $DC00,X ;Read Joystick Shadow Register
         EOR #$FF    ;Invert and
-        AND #$0F    ;Mask Bits
-        BCS JOYSTX  ;If Trigger Pressed
-        ORA #$10    ;  Set Bit 4
-HOYSTX: RTS
+        AND #$1F    ;Mask Bits
+JOYSTX: RTS
 JOYSTZ: LDA #$FF    ;Return Error
         RTS

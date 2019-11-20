@@ -100,4 +100,6 @@ NEWLIN: LDX #0      ;Store 0
         STX $D3     ;in Cursor Column and
         JMP $E8C3   ;Execute NXTLINE Routine
 
-        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
+;Print Zero-Terminated String
+PUTSTR: TXA         ;Copy LSB to Accumulator
+        JMP $CB1E   ;Execute STROUT Routine

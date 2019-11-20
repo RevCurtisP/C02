@@ -1,7 +1,25 @@
 ;Screen Control Assembly Lanuage Routines for Apple 1
 
+        SUBROUTINE _SCREEN
+
+SMTEXT  EQU $00     ;Default Text Screen
+SMWIDE  EQU $FF     ;Wide Text Screen (Undefined)
+
+;Set Screen Mode
+SETSCR: CMP SMTEXT  ;If Default Text Screen
+        BEQ GETSCR  ;Return Return 0
+        LDA #$FF    ;Else Return ERROR
+        RTS
+                    ;Else Return 0
+;Get Screen Mode
+GETSCR: LDA #0      ;Return 0 (Default Text Mode)
+        RTS
+
 ;Clear the Screen
 CLRSCR: RTS         ;Do Nothing (Drop to RTS)
+
+;Move Cursor Home
+CRSRHM  EQU CLRSCR  ;No Action
 
 ;Move Cursor to Specified Coordinates
 SETPOS  EQU CLRSCR  ;No Action

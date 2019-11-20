@@ -11,6 +11,8 @@
 char key;  //Key value
 
 main:
+  putstr("TYPE KEYS TO ECHO"); newlin();
+  putstr("ESCAPE/STOP TO END"); newlin();
   while() {
     key = getchr();
     select (key) {

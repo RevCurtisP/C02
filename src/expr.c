@@ -197,7 +197,7 @@ void prcadr(int adract, char* symbol) {
 /* Parse and Compile Address of Operator *
  * Args: adract = Address Action         */
 void prsadr(int adract) {
-  DEBUG("Parsing address\n", 0)
+  DEBUG("expr.prsadr: Parsing address\n", 0)
   if (isnpre()) prsnum(0xFFFF);
   else {
     getwrd();
@@ -228,7 +228,7 @@ void prsstr(int adract, int alwstr) {
  * Args: adract = Address Action           *
  *       alwstr = Allow String             */
 int chkadr(int adract, int alwstr) {
-  DEBUG("Checking for Address or String\n", 0)
+  DEBUG("expr.chkadr: Checking for Address or String\n", 0)
   int result = TRUE;
   if (look('&')) prsadr(adract);
   else if (match('"')) prsstr(adract, alwstr);
@@ -257,7 +257,9 @@ void prsbop(void) {
 /* Parse Function Argument or Return Values */
 void prsfpr(char trmntr) {
   int pusha = 0; int pushy = 0; //A and Y Arguments Pushed
+  DEBUG("expr.prsfpr: Parsing Function Argument or Return Values\n", 0)
   if (!chkadr(ADLDYX, TRUE) && isxpre() || match('.')) {
+    DEBUG("expr.prsfpr: Parsing Accumulator Expression\n", 0);
     if (look('.')) pusha = 255; 
     else {if (prsxpf(0)) goto prsfne;}
     if (look(',') && !chkadr(ADLDYX, TRUE)) {
@@ -412,6 +414,7 @@ void prsxpr(char trmntr) {
 /* Parse and compile function parameter expression *
  * Returns: TRUE if Integer Expression */
 int prsxpf(char trmntr) {
+  DEBUG("expr.prsxpf: Parsing Function Expression\n", 0)
   return prsxpp(trmntr, TRUE);
 }
 

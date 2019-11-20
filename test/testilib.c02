@@ -1,0 +1,105 @@
+/****************************************************
+ * INTS - Test Integer Variables and Function Calls */
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <test.h02>
+
+char size;
+char s[128]; //Test String
+
+int ivar,ival;      //Integer Variables
+int icmp,itot,ires; //Function Variables
+int less, more;     //Test Values for imin() and imax()
+
+int yx, dd; //Function Arguments and Variables
+
+void cpival(icmp) {
+  if (>ival <> >icmp or <ival <> <icmp) {
+    putwrd(ival); puts("<>"); putwrd(icmp);
+    failln();
+    goto exit;
+  }
+}
+
+/* Test imin() and imax() */
+void minmax() {
+  newlin();
+  puts("LESS=$"); putwrd(less); puts(",MORE=$"); putwrd(more); newlin();
+  puts(" IMIN()=$"); setsrc(less); 
+  ival = imin(more); putwrd(ival); newlin();
+  cpival(less);
+  puts(" IMAX()=$"); setsrc(less); 
+  ival = imax(more); putwrd(ival); newlin();
+  cpival(more);
+}
+
+/* Test cvibcd() and upbcdi() */
+void intbcd(ival) {
+  newlin(); puts("CVIBCD($"); putwrd(ival); puts(")=$"); 
+  cvibcd(ival); puthex(temp2); puthex(temp1); puthex(temp0);
+}
+
+/* Test itoa() and atoi() */
+void itaati(ivar) {
+  newlin();
+  puts("ITOA($"); putwrd(ivar); puts(")=\"");
+  setdst(s); size = itoa(ivar); puts(s); putln("\"");
+  puts("ATOI(\""); puts(s); puts("\")=$");
+  ival = atoi(s); putwrd(ival); newlin();
+  //cpival(ivar);
+}
+
+/* Test iadd() and isub() */
+void addsub(ivar) {
+  newlin();
+  putint(ival); putchr('+'); putint(ivar); putchr('=');
+  setsrc(ival); itot = iadd(ivar); putint(itot); newlin();
+  putint(itot); putchr('-'); putint(ivar); putchr('=');
+  setsrc(itot); ires = isub(ivar); putint(ires); newlin();
+  cpival(ires);
+}
+
+/* Test imult() and idiv() */
+void mltdiv(ivar) {
+  newlin();
+  putint(ival); putchr('X'); putint(ivar); putchr('=');
+  setsrc(ival); itot = imult(ivar); putint(itot); newlin();
+  putint(itot); putchr('/'); putint(ivar); putchr('=');
+  setsrc(itot); ires = idiv(ivar); putint(ires); newlin();
+  cpival(ires);
+}
+
+main:
+
+less = $009A; more = $00DE; minmax();
+less = $789A; more = $78DE; minmax();
+less = $7800; more = $BC00; minmax();
+less = $789A; more = $BCDE; minmax();
+anykey();
+
+itaati(&0);
+itaati(&234);
+itaati(&256);
+itaati(&456);
+itaati(&23456);
+itaati(&$FFFF);
+anykey();
+
+ival = &23; addsub(&34);
+ival = &1234; addsub(&5678); 
+ival = &23456; addsub(&34567); 
+ival = &$7700; addsub(&$6600); 
+ival = &$7FFF; addsub(&$8000); 
+anykey();
+
+//ival = &123; mltdiv(&234);
+
+
+goto exit;

@@ -8,7 +8,7 @@ POC_PROJECT_TYPE = 13#
 POC_PROJECT_OUTPUTDIR = output#
 POC_PROJECT_RESULTDIR = .#
 POC_PROJECT_ARGUMENTS = #
-POC_PROJECT_WORKPATH = .#
+POC_PROJECT_WORKPATH = src#
 POC_PROJECT_EXECUTOR = #
 POC_PROJECT_ZIPEXTRA = #
 CC = pocc.exe#
@@ -153,8 +153,10 @@ output\label.obj: \
 	src\label.c \
 	src\asm.h \
 	src\common.h \
+	src\files.h \
 	src\label.h \
-	src\parse.h
+	src\parse.h \
+	src\vars.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 
@@ -164,9 +166,11 @@ output\parse.obj: \
 	src\parse.c \
 	src\asm.h \
 	src\common.h \
+	src\expr.h \
 	src\files.h \
 	src\label.h \
-	src\parse.h
+	src\parse.h \
+	src\stmnt.h
 	$(CC) $(CCFLAGS) "$!" -Fo"$@"
 
 # 

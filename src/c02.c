@@ -27,7 +27,6 @@
 
 /* Initilize Compiler Variables */
 void init(void) {
-  initim();       //Initialize Elapsed Time
   DEBUG("Initializing Compiler Variables\n",0)
   concnt = 0;     //Number of Constants Defined
   varcnt = 0;     //Number of Variables in Table
@@ -145,7 +144,11 @@ int popt(int arg, int argc, char *argv[]) {
   }
   DEBUG("Processing Command Line Option -%c\n", argstr[1])
   switch (opt) {
-    case 'C':
+    case 'D':
+      debug = TRUE;
+      DEBUG("Debug output enable\n", 0)
+      break;   
+	case 'C':
       strcpy(cputyp, optarg);
       DEBUG("CPU Type set to '%s'\n", cputyp)
       break;
@@ -197,7 +200,7 @@ void chkcpu(void) {
 
 
 int main(int argc, char *argv[]) {
-  debug = TRUE;  //Output Debug Info
+  debug = FALSE;  //Do Not Output Debug Info by Default
   gencmt = TRUE; //Generate Assembly Language Comments
   
   printf("C02 Compiler (C) 2012 Curtis F Kaylor\n" );
@@ -223,5 +226,3 @@ int main(int argc, char *argv[]) {
   clsout();  //Close Output File
   clslog();  //Close Log File
 }
-
-

@@ -23,7 +23,7 @@ char temp0, temp1, temp2, temp3; //Temporary Storage
 
 //Memory Mapped I/O
 char putcon;  //Write Character to Console
-char getcomn; //Read Character from Console
+char getcon;  //Read Character from Console
 
 //System Subroutines
 char polkey(); //Poll Console for character

@@ -10,7 +10,7 @@ ECHO Compiling File %1.c02
 IF ERRORLEVEL 1 EXIT /B
 
 ECHO Assembling File %1.asm
-dasm %1.asm -f1 -o%1.obj -l%1.lst -s%1.sym
+..\a02 -p %1.asm %1.obj %1.lst
 IF ERRORLEVEL 1 EXIT /B
 
 ECHO Converting Object File

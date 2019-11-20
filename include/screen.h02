@@ -1,6 +1,11 @@
-/********************************************
- * screen - Screen Control Routines for C02 *
- ********************************************/
+/***********************************
+ * Screen Control Routines for C02 *
+ ***********************************/
+
+/* Screen Modes for getscr() and setscr() *
+ * Invalid Modes have value $FF           */
+#define SMTEXT $00 //System Default Text Mode 
+#define SMWIDE $FF //Wide Screen Text Mode (Usuallu 80 Columns)
 
 /* Clear the Screen */
 void clrscn();
@@ -18,7 +23,17 @@ char getpos();
  *          height in rows   */
 char getsiz();
 
-/* Move Cursor to Specified Position       *
- * Args: column - screen column (0 = left) *
- *       row -    screen line (0 = top)    */
+/* Get Screen Mode                          *
+ * Returns: char mode - Current Screen Mode */
+char getscr();
+
+/* Move Cursor to Specified Position         *
+ * Args: char col - screen column (0 = left) *
+ *       char row - screen line (0 = top)    */
 void setpos();
+
+/* Set Screen Mode                    *
+ * Args: char mode - screen mode      *
+ *              0 = default text mode *
+ * Returns: $FF if Mode Invalid       */
+char setscr();

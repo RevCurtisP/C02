@@ -1,0 +1,37 @@
+;PETSCII Key Code Definitions 
+;Common to All PET/CBM Computers
+
+KEYBCK  EQU $00   ;Backspace [N/A]         
+KEYBRK  EQU $03   ;Break (RUN/STOP)
+KEYCLR  EQU $93   ;Clear (Shift-CLR/HOME)  
+KEYCPY  EQU $00   ;Copy [N/A]
+KEYDEL  EQU $14   ;Delete                  
+KEYDN   EQU $11   ;Cursor Down             
+KEYESC  EQU $00   ;Escape [C128/C65]     
+KEYFN1  EQU $85   ;F1 [VIC20/C64/C16/C128/C65]        
+KEYFN2  EQU $89   ;F2 [VIC20/C64/C16/C128/C65]        
+KEYFN3  EQU $86   ;F3 [VIC20/C64/C16/C128/C65]        
+KEYFN4  EQU $8A   ;F4 [VIC20/C64/C16/C128/C65]        
+KEYFN5  EQU $87   ;F5 [VIC20/C64/C16/C128/C65]        
+KEYFN6  EQU $8B   ;F6 [VIC20/C64/C16/C128/C65]        
+KEYFN7  EQU $88   ;F7 [VIC20/C64/C16/C128/C65]        
+KEYFN8  EQU $8C   ;F8 [VIC20/C64/C128/C65] [HELP on C16]        
+KEYFN9  EQU $00   ;F9  [C65]               
+KEYFNA  EQU $00   ;F10 [C65]               
+KEYFNB  EQU $00   ;F11 [C65]               
+KEYFNC  EQU $00   ;F12 [C65]               
+KEYHLP  EQU $84   ;Help [C128/xC65]              
+KEYHOM  EQU $13   ;Home (CLR/HOME)         
+KEYINS  EQU $94   ;Insert (Shift-INS/DEL)
+KEYLFT  EQU $9D   ;Cursor Left             
+KEYLNF  EQU $00   ;Line Feed [C128]
+KEYRGT  EQU $1D   ;Cursor Right            
+KEYRTN  EQU $0D   ;Return                  
+KEYRTS  EQU $8D   ;Shift-Return            
+KEYRUN  EQU $00   ;Run (Shift-RUN/STOP)    
+KEYRVF  EQU $92   ;Reverse Off             
+KEYRVS  EQU $12   ;Reverse On              
+KEYSPS  EQU $A0   ;Shifted Space           
+KEYTAB  EQU $09   ;Tab                     
+KEYTAS  EQU $00   ;Shift-Tab [C128/C65]
+KEYUP   EQU $91   ;Cursor Up               

@@ -1,0 +1,12 @@
+/*****************************************************
+ * HELLO - Test/Demo program for C02 Standard Header *
+ *        Prints "HELLO WORLD" and exits             *
+ *****************************************************/
+ 
+//Specify System Header using -H option
+
+main:
+  putstr("HELLO WORLD");
+  newlin();
+  goto exit;
+

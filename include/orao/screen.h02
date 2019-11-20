@@ -1,0 +1,38 @@
+/*********************************************
+ * Screen Control Routines for Orao Computer *
+ *********************************************/
+
+/* Screen Modes for getscr() and setscr() */
+#define SMTEXT $00 //System Default Text Mode 
+#define SMWIDE $FF //Wide Screen Text Mode (Unsupported)
+
+/* Clear the Screen */
+void clrscn();
+
+/* Move Cursor to Top Left of Screen */
+void crsrhm();
+
+/* Get Current Cursor Position *
+ * Returns: cursor column      *
+ *          cursor row         */
+char getpos();
+
+/* Get Screen Mode                          *
+ * Returns: char mode - Current Screen Mode */
+char getscr();
+
+/* Get Screen Size           *
+ * Returns: width in columns *
+ *          height in rows   */
+char getsiz();
+
+/* Move Cursor to Specified Position       *
+ * Args: column - screen column (0 = left) *
+ *       row -    screen line (0 = top)    */
+void setpos();
+
+/* Set Screen Mode                    *
+ * Args: char mode - screen mode      *
+ *              0 = default text mode *
+ * Returns: $FF if Mode Invalid       */
+char setscr();

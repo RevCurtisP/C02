@@ -1,0 +1,37 @@
+/* PETSCII Key Code Definitions    * 
+ * Common to All PET/CBM Computers */
+
+#define KEYBCK $00 //Backspace
+#define KEYBRK $03 //Break (RUN/STOP)
+#define KEYCLR $93 //Clear (Shift-CLR/HOME)
+#define KEYCPY $00 //Copy 
+#define KEYDEL $20 //Delete
+#define KEYDN  $11 //Cursor Down
+#define KEYESC $00 //Escape (N/A)
+#define KEYFN1 $00 //F1  (N/A)
+#define KEYFN2 $00 //F2 (N/A)
+#define KEYFN3 $00 //F3  (N/A)
+#define KEYFN4 $00 //F4  (N/A)
+#define KEYFN5 $00 //F5  (N/A)
+#define KEYFN6 $00 //F6  (N/A)
+#define KEYFN7 $00 //F7  (N/A)
+#define KEYFN8 $00 //F8  (N/A)
+#define KEYFN9 $00 //F9  (N/A)
+#define KEYFNA $00 //F10 (N/A)
+#define KEYFNB $00 //F11 (N/A)
+#define KEYFNC $00 //F12 (N/A)
+#define KEYHLP $00 //Help (N/A)
+#define KEYHOM $13 //Home (CLR/HOME)
+#define KEYINS $94 //Insert (Shift-INS/DEL)
+#define KEYLFT $9C //Cursor Left
+#define KEYLNF $00 //Line Feed (N/A)
+#define KEYRGT $1D //Cursor Right
+#define KEYRTN $0D //Return
+#define KEYRTS $8D //Shift-Return
+#define KEYRUN $83 //Run (Shift-RUN/STOP)
+#define KEYRVF $92 //Reverse Off
+#define KEYRVS $12 //Reverse On
+#define KEYSPS $A0 //Shifted Space
+#define KEYTAB $09 //Tab
+#define KEYTAS $00 //Shift-Tab (N/A)
+#define KEYUP  $91 //Cursor Up

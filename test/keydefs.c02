@@ -1,0 +1,55 @@
+/**********************************************
+ * KEYDEFS - Test/Demo for keydefs.h02 module *
+ **********************************************/
+ 
+//Specify System Header using -H option
+#include <keydef.h02>
+
+char key;  //Key value
+
+main:
+  putstr("PRESS KEYS TO SEE DEFINITIONS"); newlin();
+  while() {
+    key = getchr();
+    if (!key) continue;
+    select (key) {
+      case #KEYBCK: putstr("BACKSPACE");
+      case #KEYBRK: putstr("BREAK");
+      case #KEYCLR: putstr("CLEAR");
+      case #KEYCPY: putstr("COPY");
+      case #KEYDEL: putstr("DELETE");
+      case #KEYDN : putstr("DOWN");
+      case #KEYESC: putstr("ESCAPE");
+      case #KEYFN1: putstr("F1");
+      case #KEYFN2: putstr("F2");
+      case #KEYFN3: putstr("F3");
+      case #KEYFN4: putstr("F4");
+      case #KEYFN5: putstr("F5");
+      case #KEYFN6: putstr("F6");
+      case #KEYFN7: putstr("F7");
+      case #KEYFN8: putstr("F8");
+      case #KEYFN9: putstr("F9");
+      case #KEYFNA: putstr("F10");
+      case #KEYFNB: putstr("F11");
+      case #KEYFNC: putstr("F12");
+      case #KEYHLP: putstr("HELP");
+      case #KEYHOM: putstr("HOME");
+      case #KEYINS: putstr("INSERT");
+      case #KEYLFT: putstr("LEFT");
+      case #KEYRGT: putstr("RIGHT");
+      case #KEYRTN: putstr("RETURN");
+      case #KEYRTS: putstr("SHIFT-RETURN");
+      case #KEYRUN: putstr("RUN");
+      case #KEYRVF: putstr("RVS-OFF");
+      case #KEYRVS: putstr("RVS-ON");
+      case #KEYSPS: putstr("SHIFT-SPACE");
+      case #KEYTAB: putstr("TAB");
+      case #KEYTAS: putstr("SHIFT-TAB");
+      case #KEYUP : putstr("UP");
+      case ' ': putstr("SPACE");
+      default: if (key > ' ' and key <> #DELKEY) putchr(key);
+    }
+    putstr(" ["); prbyte(key); putstr("] ");    
+    if (key == #ESCKEY) break;
+  }
+  goto exit;

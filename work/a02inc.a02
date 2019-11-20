@@ -1,0 +1,18 @@
+;A02 Assembler Test Include File
+
+TRUE:   EQU $FF
+FALSE:  .EQU $00
+
+one     equ 1
+two     .equ 1 + 1
+three   equ one + one + one
+four    .equ three + 1
+
+
+PNTR:   EQU $80
+.local  EQU 99
+STRUCT  EQU $0FFF
+
+        .END              ;Return to Main File
+        
+IGNORE  EQU $9999         ;This will Not be Assembled        
