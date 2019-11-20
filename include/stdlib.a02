@@ -3,15 +3,17 @@
 ; external zero page locations SRCLO and SRCHI
 ; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
 
+        SUBROUTINE  STDLIB
+
 ;abs(n) - Get ABSolute Value
 ;Args: A = Number to get Absolute Value Of
 ;Affects: C, N, Z
 ;Returns: A = Absolute Value of Argument
 ABS:    CMP #$80        ;If Negative (High Bit Set)
-        BCC ABSX        ;  Carry will Already be Set
+        BCC .ABSX       ;  Carry will Already be Set
         EOR #$FF        ;  One's Complement
         ADC #$00        ;  and Increment (Carry set by CMP)
-ABSX:   RTS
+.ABSX   RTS
 
 ;max(m,n) - Get MAXimum of Two Numbers
 ;Args: A,Y = Numbers to Compare
@@ -20,9 +22,9 @@ ABSX:   RTS
 ;Returns: A = Larger of the Two Arguments
 MAX:    STY TEMP0       ;Save Second Parameter
         CMP TEMP0       ;If First Parameter
-        BCC MAXX        ;  Greater than Second Parameter
+        BCC .MAXX       ;  Greater than Second Parameter
         TYA             ;Copy Second Parameter into Accumulator  
-MAXX:   RTS
+.MAXX   RTS
 
 ;min(m,n) - Get MINimum Get MAXimum of Two Numbers
 ;Args: A,Y = Numbers to Compare
@@ -31,9 +33,9 @@ MAXX:   RTS
 ;Returns: A = Smaller of the Two Arguments
 MIN:    STY TEMP0       ;Save Second Parameter
         CMP TEMP0       ;If First Parameter
-        BCS MINX        ;  Less than Second Parameter
+        BCS .MINX       ;  Less than Second Parameter
         TYA             ;Copy Second Parameter into Accumulator  
-MINX:   RTS
+.MINX   RTS
 
 ;mult(m,n) - MULTiply Two Numbers
 ;Args: A = Multiplicand
@@ -48,13 +50,13 @@ MULT:   STA TEMP0       ;Store Multiplicand
         STY TEMP1       ;Store Multiplier
 ;Multiply TEMP0 times TEMP1
 MULTT:  LDA #$00        ;Initialize Accumulator
-        BEQ MULTE       ;Enter Loop
-MULTA:  CLC
+        BEQ .MULTE      ;Enter Loop
+.MULTA  CLC
         ADC TEMP0       ;Add Multiplicand
-MULTL:  ASL TEMP0       ;Shift Multiplicand Left
-MULTE:  LSR TEMP1       ;Shift Multiplier Right
-        BCS MULTA       ;If Bit Shifted Out, Add Multiplicand
-        BNE MULTL       ;Loop if Any 1 Bits Left
+.MULTL  ASL TEMP0       ;Shift Multiplicand Left
+.MULTE  LSR TEMP1       ;Shift Multiplier Right
+        BCS .MULTA      ;If Bit Shifted Out, Add Multiplicand
+        BNE .MULTL      ;Loop if Any 1 Bits Left
         LDY TEMP2       ;Load Y with MSB
         TAX             ;and Copy LSB to X
         RTS
@@ -73,13 +75,13 @@ DIV:    STA TEMP0       ;Store Dividend
 DIVT:   LDA #$00        ;Clear Accumulator
         LDX #$07        ;Load Loop Counter
         CLC
-DIVL:   ROL TEMP0       ;Shift Bit Out of Dividend
+.DIVL   ROL TEMP0       ;Shift Bit Out of Dividend
         ROL             ;  into Accumulator
         CMP TEMP1       ;If Accumulator 
-        BCC DIVS        ;  >= Divisor
+        BCC .DIVS       ;  >= Divisor
         SBC TEMP1       ;Subtract Divisor
-DIVS:   DEX             ;Decrement Counter
-        BPL DIVL        ;  and Loop
+.DIVS   DEX             ;Decrement Counter
+        BPL .DIVL       ;  and Loop
         ROL TEMP0       ;Shift Result into Dividend
         TAY             ;Copy Remainder to Y Register
         LDA TEMP0       ;Load Result into Accumulator
@@ -90,9 +92,9 @@ DIVS:   DEX             ;Decrement Counter
 ;Affects A,N,Z,C
 RAND:   LDA RANDOM      ;Load Last Result
         ASL             ;Shift the Seed
-        BCC RANDX       ;If a one was shifted out
+        BCC .RANDX      ;If a one was shifted out
         EOR #$1D        ;  Twiddle the bite
-RANDX:  STA RANDOM      ;Save the Seed
+.RANDX  STA RANDOM      ;Save the Seed
         RTS
 
 ;Seed Pseudo-Random Number Generator
@@ -100,25 +102,71 @@ RANDX:  STA RANDOM      ;Save the Seed
 ;Affects A,N,Z,C
 ;Sets RANDOM
 RANDS:  ORA #$00        ;If Passed Value not 0
-        BNE RANDX       ;  Store in Seed and Return
+        BNE .RANDX      ;  Store in Seed and Return
         LDA RDSEED      ;Load System Generated Seed
-        BNE RANDX       ;If Not 0, Store and Return
+        BNE .RANDX      ;If Not 0, Store and Return
         ADC #$01        ;Else Add 1 or 2 
-        BNE RANDX       ;  then Store and Return
+        BNE .RANDX      ;  then Store and Return
 
-;Return A Shifted Y Bytes to the Left
-;Affects A,Y,N,Z,C
-;Affects A,Y,N,Z,C
-SHIFTL: ASL             ;Shift Byte to Left
-        DEY             ;Decrement Counter
-        BNE SHIFTL      ;  and Loop if Not 0
+;swap(byte) - Swap Low and High Nybbles in Byte
+;Args: A = Byte to Swap
+;Affects Y,N,Z,C
+;Returns: A = Swapped Byte
+SWAP:   LDY #4          ;Set Count to 4 and Rotate Left
+
+;rotatl(byte,count) - Rotate byte by count Bits to the Left
+;Args = Byte to Rotate
+;Y = Number of Bits to Rotate
+;Affects X,Y,N,Z,C
+;Returns: A = Rotated Byte
+ROTATL: INY             ;Pre-Increment Counter
+.ROTALL DEY             ;Decrement Counter
+        BEQ .ROTATX     ;If Not Zero
+        ASL             ;  Shift Left One Bit
+        ADC #0          ;  Copy Carry into Bit 0
+        BNE .ROTALL     ;  If Not Zero, Loop
+.ROTATX RTS
+
+;rotatr(byte,count) - Shift byte by count Bits to the Right
+;Args = Byte to Rotate
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Rotated Byte
+ROTATR: INY             ;Pre-Increment Counter
+.ROTALR DEY             ;Decrement Counter
+        BEQ .ROTATX     ;If Not Zero
+        LSR             ;  Shift Right One Bit
+        BCC .ROTATS     ;  If Carry Set
+        ORA #$80        ;  Copy Carry into Bit 7
+.ROTATS BNE .ROTALR     ;  If Not Zero, Loop
         RTS
 
-;Return A Shifted Y Bytes to the Right
-;Affects A,Y,N,Z,C
-SHIFTR: LSR             ;Shift Byte to Right
-        DEY             ;Decrement Counter
-        BNE SHIFTR      ;  and Loop if Not 0
+SHFTL4: LDY #4;         ;Set Count to 4 and Shift Left
+
+;shiftl(byte,count) - Shift byte by Count bits to the Left
+;Args = Byte to Shift
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Shifted Byte
+SHIFTL: INY             ;Pre-Increment Counter
+.SHIFLL DEY             ;Decrement Counter
+        BEQ .SHIFTX     ;If Not Zero
+        ASL             ;  Shift Byte to Left
+        BNE .SHIFLL     ;  and Loop if Not 0
+.SHIFTX RTS
+
+SHFTR4: LDY #4;         ;Set Count to 4 and Shift Right
+
+;shiftr(byte,count) - Shift byte by Count bits to the Right
+;Args = Byte to Shift
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Shifted Byte
+SHIFTR: INY             ;Pre-Increment Counter
+.SHIFLR DEY             ;Decrement Counter
+        BEQ .SHIFTX     ;If Not Zero
+        LSR             ;  Shift Byte to Right
+        BNE .SHIFLR     ;  and Loop if Not 0
         RTS
 
 ;atoc(&s) - ASCII string TO Character
@@ -130,11 +178,11 @@ SHIFTR: LSR             ;Shift Byte to Right
 ;         Y = Number of Digits 
 ATOC:   JSR SETSRC      ;Initialize Source String
         STY TEMP0       ;Initialize Result
-ATOCL:  LDA (SRCLO),Y   ;Get Next Character
+.ATOCL  LDA (SRCLO),Y   ;Get Next Character
         CMP #$30        ;If Less Than '0'
-        BCC ATOCX       ;  Exit
+        BCC .ATOCX      ;  Exit
         CMP #$3A        ;If Greater Than '9'
-        BCS ATOCX       ;  Exit
+        BCS .ATOCX      ;  Exit
         AND #$0F        ;Convert to Binary Nybble
         STA TEMP1       ;  and Save It
         LDA TEMP0       ;Load Result
@@ -145,8 +193,8 @@ ATOCL:  LDA (SRCLO),Y   ;Get Next Character
         ADC TEMP1       ;Add Saved Nybble
         STA TEMP0       ;  and Store Result
         INY             ;Increment Index
-        BPL ATOCL       ;  and Loop
-ATOCX:  LDA TEMP0       ;Load Result
+        BPL .ATOCL      ;  and Loop
+.ATOCX  LDA TEMP0       ;Load Result
         RTS             ;And Return
 
 ;ctoa(n) - Character TO ASCII string
@@ -161,19 +209,19 @@ CTOA:   JSR SETDST     ;Initialize Source String
         LDY #0         ;Initialize Index into String
         JSR CUBCD      ;Convert Accumulator to Unpacked BCD
         LDA TEMP2      ;Get MSB
-        BEQ CTOA1      ;If Not Zero
-        JSR CTOAN       ;  Convert Low Nybble
-CTOA1:  LDA TEMP1      ;Get Low Byte
-        BNE CTOA2      ;If Not Zero
+        BEQ .CTOA1     ;If Not Zero
+        JSR .CTOAN     ;  Convert Low Nybble
+.CTOA1  LDA TEMP1      ;Get Low Byte
+        BNE .CTOA2     ;If Not Zero
         CMP TEMP2      ;  and Hundreds 
-        BEQ CTOA3      ;  not Zero   
-CTOA2:  JSR CTOAN      ;  Convert It
-CTOA3:  LDA TEMP0      ;Get Low Byte
-        JSR CTOAN      ;and Convert Low Nybble
+        BEQ .CTOA3     ;  not Zero   
+.CTOA2  JSR .CTOAN     ;  Convert It
+.CTOA3  LDA TEMP0      ;Get Low Byte
+        JSR .CTOAN     ;and Convert Low Nybble
         LDA #$00
-        BEQ CTOAX      ;Terminate String
-CTOAN:  ORA #$30       ;Convert to ASCII digit
-CTOAX:  STA (DSTLO),Y  ;Store in String
+        BEQ .CTOAX     ;Terminate String
+.CTOAN  ORA #$30       ;Convert to ASCII digit
+.CTOAX  STA (DSTLO),Y  ;Store in String
         INY            ;and Increment Offset
         TYA            ;Copy String Length to Accumulator
         RTS
@@ -207,23 +255,22 @@ UPBCD:  LDA TEMP1      ;Get Low Byte
 ;      TEMP2 = Hundreds Digit
 ;Returns: A = Hundreds Digit
 ;         X = 0
-CVBCD:  STA TEMP0  ;Save Binary Value
-CVBCDT: LDA #0     ;Clear BCD Bytes
-        STA TEMP1
-        STA TEMP2
-        LDX #8     ;Process 8 bits of Binary
-        PHP        ;Save Status Register
-        SEI        ;Disable Interupts
-        SED        ;Set Decimal Mode
-CVBCDL: ASL TEMP0  ;Shift High Bit into Carry
-        LDA TEMP1  ;Add BCD Low Byte to Itself 
-        ADC TEMP1  ;  Plus Bit Shifted out of Binary
-        STA TEMP1  ;  Effectively Multiplying It by 2
-        LDA TEMP2  ;Add BCD MSB to Itself
-        ADC TEMP2  ;  Plus Bit Shifted out of Low Byte
-        STA TEMP2  ;  Effectively Multiplying It by 2
-        DEX        ;Decrement Counter and
-        BNE CVBCDL ;  Process Next Bit
-        PLP        ;Restore Status Register
+CVBCD:  STA TEMP0   ;Save Binary Value
+CVBCDT: LDA #0      ;Clear BCD Bytes
+        STA TEMP1 
+        STA TEMP2 
+        LDX #8      ;Process 8 bits of Binary
+        PHP         ;Save Status Register
+        SEI         ;Disable Interupts
+        SED         ;Set Decimal Mode
+.CVBCDL ASL TEMP0   ;Shift High Bit into Carry
+        LDA TEMP1   ;Add BCD Low Byte to Itself 
+        ADC TEMP1   ;  Plus Bit Shifted out of Binary
+        STA TEMP1   ;  Effectively Multiplying It by 2
+        LDA TEMP2   ;Add BCD MSB to Itself
+        ADC TEMP2   ;  Plus Bit Shifted out of Low Byte
+        STA TEMP2   ;  Effectively Multiplying It by 2
+        DEX         ;Decrement Counter and
+        BNE .CVBCDL ;  Process Next Bit
+        PLP         ;Restore Status Register
         RTS
-
