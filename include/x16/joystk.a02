@@ -1,11 +1,11 @@
 ;Joystick Constants and Functions
-;Non-Functional Skeleton for Systems with No Joystick Support
+;for Commander X16 Computer
 
 JYSTKS  EQU 2       ;Number of Joysticks
 
-JYDATA  EQU $02BC   ;Joystick 0 Data
+.JYDATA  EQU $02BC   ;Joystick 0 Data
 
-GETJOY  EQU $FF06   ;Kernal GETJOY Routine
+.GETJOY  EQU $FF06   ;Kernal GETJOY Routine
 
 ;Joystick Bit Masks
 JOYUP   EQU $08     ;Up    
@@ -29,5 +29,5 @@ JOYSTK: CMP #JYSTKS     ;If Invalid Joystick Number
         ;EOR #$FF        ;Invert Bits
         AND #$CF        ;and Mask off Select/Start
         RTS
-JOYSTE: LDA #255    ;Return Error Code
+JOYSTE: LDA #255        ;Return Error Code
         RTS
