@@ -1,6 +1,10 @@
-/********************************************
- * screen - Screen Control Routines for C02 *
- ********************************************/
+/*****************************************
+ * Screen Control Functions for Apple II *
+ ****************************************/
+
+/* Screen Modes for getscr() and setscr() */
+#define SMTEXT $00 //System Default Text Mode 
+#define SMWIDE $FF //Wide Screen Text Mode (Unsupported)
 
 /* Clear the Screen */
 void clrscn();
@@ -18,7 +22,17 @@ char getpos();
  *          height in rows   */
 char getsiz();
 
+/* Get Screen Mode                          *
+ * Returns: char mode - Current Screen Mode */
+char getscr();
+
 /* Move Cursor to Specified Position       *
  * Args: column - screen column (0 = left) *
  *       row -    screen line (0 = top)    */
 void setpos();
+
+/* Set Screen Mode                    *
+ * Args: char mode - screen mode      *
+ *              0 = default text mode *
+ * Returns: $FF if Mode Invalid       */
+char setscr();

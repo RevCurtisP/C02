@@ -25,7 +25,6 @@ main:
   for (modex=0; modex<@modes; modex++) {
   
     mode = modes[modex];
-    putstr("MODE $"); prbyte(mode); newlin();
     if (mode == $FF) continue; //Unsupported Mode
  
     if (setscr(mode)=$FF) putlin("ERROR IN SETSCR()");

@@ -1,0 +1,39 @@
+;Screen Control Assembly Lanuage Routines for C02
+;Skeleton Code for Systems with no Screen Control
+
+        SUBROUTINE _SCREEN
+
+SMTEXT  EQU $00     ;Default Text Screen
+SMWIDE  EQU $FF     ;Wide Text Screen (Undefined)
+
+;Set Screen Mode
+SETSCR: CMP SMTEXT  ;If Default Text Screen
+        BEQ GETSCR  ;Return Return 0
+        LDA #$FF    ;Else Return ERROR
+        RTS
+                    ;Else Return 0
+;Get Screen Mode
+GETSCR: LDA #0      ;Return 0 (Default Text Mode)
+        RTS
+
+;Clear the Screen
+CLRSCR: LDA #$0C    ;Print Form Feed
+        JMP PUTCHR  ;and Return
+
+;Move Cursor Home
+CRSRHM  EQU $E395   ;Aliad to HOME Routine
+
+;Move Cursor to Specified Coordinates
+SETPOS: STA $E9     ;Set CURCOL
+        STY $E8     ;Set CURROW
+        JMP $E39D   ;Set Pointers and Return
+
+;Get Cursor Position
+GETPOS: LDA $E9     ;Load Column Position
+        LDY $E8     ;Load Row Position
+        RTS         ;Return Cursor Column in A, Row in Y
+
+;Get Screen Size
+GETSIZ: LDA #32     ;Return 32 Columns
+        TAY         ;and 32 Rows
+        RTS

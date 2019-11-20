@@ -1,6 +1,19 @@
 ;Screen Control Assembly Lanuage Routines for C02
 ;Skeleton Code for Systems with no Screen Control
 
+        SUBROUTINE _SCREEN
+
+SMTEXT  EQU $00     ;Default Text Screen
+SMWIDE  EQU $FF     ;Wide Text Screen (Undefined)
+
+;Set Screen Mode
+SETSCR: CMP SMTEXT  ;If Not Default Text
+        BEQ GETPOS  ;Return Error
+                    ;Else Return 0
+;Get Screen Mode
+GETSCR: LDA #0      ;Return 0 (Default Text Mode)
+        RTS
+
 ;Clear the Screen
 CLRSCR: RTS         ;No Action
 
@@ -17,3 +30,4 @@ GETPOS: LDA #$FF    ;Return Error
 
 ;Get Screen Size
 GETSIZ  EQU GETPOS  ;Return Error
+

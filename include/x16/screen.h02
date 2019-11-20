@@ -3,8 +3,8 @@
  *****************************************************/
 
 /* Screen Modes for getscr() and setscr() */
-#define SMTEXT $00 //System Default Text Mode 
-#define SMWIDE $FF //Wide Screen Text Mode (Unsupported)
+#define SMTEXT $00 //Default Text Mode (40x30)
+#define SMWIDE $02 //Wide Screen Text Mode (80x60)
 
 /* Clear the Screen */
 void clrscn();
