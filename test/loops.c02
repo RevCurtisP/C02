@@ -6,118 +6,115 @@
 #include <stddef.h02>
 #include <stdio.h02>
 
-char i, b;
-const char failed = " Test Failed!";
+char aa,ii; //Function Variables
+char b;  //Comparison Variable
+char i;  //Loop Counter
+
+void putlin() {putstr(); newlin();}
+void failed() {putlin(" FAILED");}
+void passed() {putlin(" PASSED");}
 
 main:
+  putlin("TESTING LOOPS");
 
-/* Test If/Goto Loop */  
-puts("IF    ");
-i = 0;
-ifloop:
-  prbyte(i);
-  putc(' ');
-  i++;
-  if (i < 10) goto ifloop; 
-newlin();
+  /* Test If/Goto Loop */  
+  putstr("IF    ");
+  i = 0;
+  ifloop:
+    putchr('0'+i);
+    i++;
+    if (i < 8) goto ifloop; 
+  if (i=8) passed(); else failed(); 
   
-/* Test While Loop */
-puts("WHILE ");
-i = 0;
-while (i < 10) {
-  prbyte(i);
-  putc(' ');
-  i++;
-}
-newlin();
+  /* Test Block If */
+  putstr("BLOCK    ");
+  b = 1;
+  if (b>0) {
+    prhex(b);
+    putstr(" > ");
+    prhex(0);
+    passed();
+  }
+  else failed();
 
-/* Test Do Loop */
-puts("DO    ");
-i = 0;
-do {
-  prbyte(i);
-  putc(' ');
-  i++;
-} while (i<10);
-newlin();
+  putstr(" IF      ");
+  b = 0;
+  if (b>0) failed(); 
+  else {
+    putchr('0'+i);
+    putstr(" = ");
+    prhex(0);
+    passed();
+  }
 
-/* Test For Loop */
-puts("FOR   ");
-i = 0;
-for (i=0;i<10;i++) {
-  prbyte(i); 
-  putc(' ');
-}
-newlin();
+  /* Test While Loop */
+  putstr("WHILE ");
+  i = 0;
+  while (i < 8) {
+    putchr('0'+i);
+    i++;
+  }
+  if (i=8) passed(); else failed(); 
 
-/* While with Break */
-puts("BREAK ");
-i = 0;
-while ($FF) {
-  if (i = 10) break;
-  prbyte(i);
-  putc(' ');
-  i++;
-}
-newlin();
+  /* Test Do Loop */
+  putstr("DO    ");
+  i = 0;
+  do {
+    putchr('0'+i);
+    i++;
+  } while (i<8);
+  if (i=8) passed(); else failed(); 
 
-/* For with Continue */
-puts("CONT  ");
-for (i=0;i<10;i++) {
-  if (i & 1) continue;
-  prbyte(i);
-  putc(' ');
-}
-newlin();
+  /* Test For Loop */
+  putstr("FOR   ");
+  i = 0;
+  for (i=0;i<8;i++) {
+    putchr('0'+i);
+  }
+  if (i=8) passed(); else failed(); 
+
+  /* While with Break */
+  putstr("BREAK ");
+  i = 0;
+  while ($FF) {
+    if (i = 8) break;
+    putchr('0'+i);
+    i++;
+  }
+  if (i=8) passed(); else failed(); 
+
+  /* For with Continue */
+  putstr("CONT  ");
+  for (i=0;i<16;i++) {
+    if (i & 1) { continue; i=$FF;}
+    putchr('A'+i);
+  }
+  if (i=16) passed(); else failed(); 
 
 /* Test Do with Break and Continue*/
-i = 0;
-puts("DO BC ");
-do {
-  i++;
-  if (!i&1) continue;
-  if (i>15) break;
-  prbyte(i);
-  putc(' ');
-} while ($FF);
-newlin();
+  i = 0;
+  putstr("DO BC ");
+  do {
+    i++;
+    if (!i&1) {continue; i=$FF;}
+    if (i>16) break;
+    putchr('A'+i);
+  } while ($FF);
+  if (i=17) passed(); else failed(); 
 
-
-newlin();
-
-/* Test Block If */
-putln("BLOCK IF");
-b = 1;
-if (b>0) {
-  prbyte(b);
-  puts(" is greater than ");
-  prbyte(0);
-  newlin();
-}
-else 
-  putln(&failed);
-b = 0;
-if (b>0) {
-  putln(&failed); 
-}
-else {
-  prbyte(b);
-  puts(" is equal to ");
-  prbyte(0);
-  newlin();
-}
-newlin();
-
-/* Test If/Else in For Loop */ 
-putln("FOR/IF/ELSE");
-for(i = 0;i<4;i++) {
-  prbyte(i);
-  if (i & 1)
-    putln(" is odd");
-  else
-    putln(" is even");
-}
-newlin();
-
-
-goto exit;
+  /* Test If/Else, Select in For Loop */ 
+  for(i = 0;i<4;i++) {
+    select (i) {
+      case 0:  putstr("FOR     "); b=0;
+      case 1:  putstr(" IF     "); b=1;
+      case 2:  putstr(" ELSE   "); b=2;
+      case 3:  putstr(" SELECT "); b=3;
+      default: putstr(" ERROR! "); b=$FF;
+    }
+    putchr('0'+i);
+    if (i & 1) putstr("-ODD "); else putstr("-EVEN");
+    if (i=b) passed(); else failed();
+  }
+ 
+  putlin("ALL TESTS COMPLETE");
+  goto exit;

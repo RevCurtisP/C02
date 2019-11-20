@@ -5,17 +5,8 @@
  
 //Specify System Header using -H option
 
-char key;  //Key value
-
-const char hello = "HELLO WORLD";
-char i;
-
 main:
-  i = 0;
-  while (hello[i]) {
-    putchr(hello[i]);
-    i++;
-  }
+  putstr("HELLO WORLD");
   newlin();
   goto exit;
 

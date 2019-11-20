@@ -1,6 +1,7 @@
 /*******************************************************
  * ECHOHEX - Test/Demo program for C02 Standard Header *
  *        Displays ASCII Code of Typed Keys to Screen  *
+ *        RETURN/ENTER moves to new line               *
  *        ESCAPE/STOP key Ends Program                 *
  *******************************************************/
  
@@ -9,9 +10,12 @@
 char key;  //Key value
 
 main:
+  putstr("PRESS KEYS TO DISPLAY"); newlin();
+  putstr("ESCAPE/STOP TO END"); newlin();
   while() {
     key = getchr();
     prbyte(key);
     putchr(' ');
+    if (key==#RTNKEY) newlin();
     if (key==#ESCKEY) goto exit;
   }
