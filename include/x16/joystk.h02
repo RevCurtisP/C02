@@ -1,0 +1,24 @@
+/* Joystick Functions for  *
+ * Commander X-16 Computer */
+
+#define JYSTKS 2 //Number of Joysticks
+
+#define JOYUP $08 //Up    
+#define JOYDN $04 //Down  
+#define JOYLF $02 //Left  
+#define JOYRT $01 //Right 
+#define JOYB0 $80 //Button
+
+char jydata[]; //Joystick Data
+
+/* Poll Joysticks`       *
+ * Sets: j = Joystick Number *
+ * Returns: $FF = Error      *
+ *              No Joysticks */
+void getjoy(); 
+
+/* Read Joystick State       *
+ * Args: j = Joystick Number *
+ * Returns: $FF = Error      *
+ *              No Joysticks */
+char joystk(); 

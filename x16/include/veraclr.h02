@@ -1,0 +1,72 @@
+/*********************************************
+ * veraclr.h02 - Color Palette functions for *
+ *               Commander X16 VERA Chip     *
+ *********************************************/
+
+/* Convert Palette Color Value  *
+ * to R, G, and B Values        *
+ * Args: int c - Color Value    *
+ * Returns: Red Value (0-255)   *
+ *          Green Value (0-255) *
+ *          Blue Value (0-255)  */
+char clrrgb();
+
+/* Read Next Entry from Palette *
+ * Returns: int c - Color Value */
+char getcln();
+
+/* Read Color Value from Palette *
+ * Args: char i - Palette Index  *
+ * Returns: int c - Color Value  */
+char getclr();
+
+/* Read Color Entries from Palette *
+ * Args: i - Index into Palette    *
+ *       n - Number of Entries     *
+ * Requires: setdst(&array)        */
+char getplt();
+
+/* Read RGB Color from Palette    *
+ * Requires: setidx()             *
+ * Returns: Red Value (0-255)     *
+ *          Green Value (0-255)   *
+ *          Blue Value (0-255)    */
+char getrgb();
+
+/* Convert R, G, and B Values    *
+ * to Palette Color Value        *
+ * Args: r - Red Value (0-255)   *
+ *       g - Green Value (0-255) *
+ *       b - Blue Value (0-255)  *
+ * Returns: int c - Color Value  */
+char rgbclr();
+
+/* Set Next Palette Entry to Color *
+ * Requires: setidx()              *
+ * Args: int c - Color Value       */
+char setcln();
+
+/* Write Color Value to Palette   *
+ * Args: i - Index into Palette   *
+ *       int c - Color Value      */
+char setclr();
+
+/* Set Vera Address to Palette Index *
+ * Args: i - Index into Palette      *
+ *       int c - Color Value         *
+ * Returns: char b = Bank |Auto-Incr *
+ *           int d = Entry Address   */
+char setidx();
+
+/* Write Color Entries to Palette  *
+ * Args: i - Index into Palette    *
+ *       n - Number of Entries     *
+ * Requires: setsrc(&entries)      */
+char setplt();
+
+/* Set Next Palette Entry to RGB *
+ * Requires: setidx()            *
+ * Args: r - Red Value (0-255)   *
+ *       g - Green Value (0-255) *
+ *       b - Blue Value (0-255)  */
+char setrgb();

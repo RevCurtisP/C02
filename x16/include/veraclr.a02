@@ -1,0 +1,144 @@
+; Vera Display Composer Assembly Language Routines for C02
+; Requires External Routines NYBCAT, NYBCUT, REGADR, and SAVRXY
+; and External Variables TEMP1 and TEMP2
+
+;rgbclr(r,g,b) - Convert RGB Values to Palette Color
+;Args: A = Red Value (0-255)
+;      Y = Green Value (0-255)
+;      X = Blue Value (0-255)
+;Destroys: TEMP0
+;Affects: A
+;Returns: Y = Color MSB (0000RRRR)
+;         X = Color LSB (GGGGBBBB)
+RGBCLR: LSR         ;Divide Red Value by 16
+        LSR
+        LSR
+        LSR
+        PHA         ;and Save It
+        TYA         ;Copy Green Value to Accumulator
+        AND #$F0    ;Strip Low Nybble
+        STA TEMP0   ;and Store It
+        TXA         ;Copy Blue Value to Accumulator
+        LSR         ;Divide by 16
+        LSR
+        LSR
+        LSR
+        ORA TEMP0   ;Combine with Green
+        TAX         ;and Return as LSB
+        PLY         ;Return Red as MSB
+        RTS
+
+;clrrgb(c) - Convert Palette Color to RGB Values 
+;Args: Y = Color MSB (0000RRRR)
+;      X = Color LSB (GGGGBBBB)
+;Returns: A = Red Value (0-255)
+;         Y = Green Value (0-255)
+;         X = Blue Value (0-255)
+CLRRGB: PHY         ;Save MSB
+        TXA         ;Copy LSB into Accumulator
+        AND #$F0    ;Isolate Green Value
+        TAY         ;and Return in Y
+        TXA         ;Copy LSB into Accumulator
+        ASL         ;Shift Low Nybble Left
+        ASL
+        ASL
+        ASL
+        TAX         ;and Return in X
+        PLA         ;Retrieve MSB (Red)
+        ASL         ;Shift Low Nybble Left
+        ASL
+        ASL
+        ASL         ;and Return in A
+        RTS
+
+;getclr(idx) - Get Color Entry idx from Palette
+;Args: A = Color Entry Index
+;Affects: A
+;Returns: Y = Color MSB (0000RRRR)
+;         X = Color LSB (GGGGBBBB)
+GETCLR: JSR SETIDX  ;Set Vera Address to Palette Index
+
+;getcln() - Get Next Color Entry from Palette
+;Affects: A
+;Returns: Y = Color MSB (0000RRRR)
+;         X = Color LSB (GGGGBBBB)
+GETCLN: LDX $9F25   ;Get Current Data Port
+        LDA $9F23,X ;Read LSB from Data Port
+        LDY $9F23,X ;Read MSB from Data Port
+        TAX         ;Copy LSB to X Register
+        RTS
+
+;getrgb() - Get Next Palette Entry as RGB
+;Returns: A = Red Value (0-255)
+;         Y = Green Value (0-255)
+;         X = Blue Value (0-255)
+GETRGB: JSR GETCLN  ;Get Next Color Entry
+        BRA CLRRGB  ;Convert to RGB and Return
+
+;setclr(idx) - Set Color Entry idx in Palette
+;Args: A = Color Entry Index
+;      Y = Color MSB (0000RRRR)
+;      X = Color LSB (GGGGBBBB)
+;Affects: A
+;Returns: Y,X = Color Entry Address
+SETCLR: JSR SAVRXY  ;Save Color Value
+        JSR SETIDX  ;Set Vera Address to Palette Index
+        JSR RESRXY  ;Restore Color Value
+
+
+;setcln() - Set Next Color Entry in Palette
+;Args: Y = Color MSB (0000RRRR)
+;      X = Color LSB (GGGGBBBB)
+;Affects: A,X
+SETCLN: TXA         ;Copy LSB to Accumulator
+        LDX $9F25   ;Get Current Data Port
+        STA $9F23,X ;and Write to Data Port
+        TYA         ;Copy MSB to Accumulator
+        STA $9F23,X ;and Write to Data Port
+        RTS
+
+ 
+;setrgb() - Set Next Palette Entry to RGB Color
+;Args: A = Red Value (0-255)
+;      Y = Green Value (0-255)
+;      X = Blue Value (0-255)
+;Destroys: TEMP0
+;Destroys: TEMP0
+;Affects: A,Y,X
+SETRGB: JSR RGBCLR  ;Convert RGB to Vera Color Value
+        BRA SETCLN  ;and Write to Next Palette Entry
+
+;setidy(idx) - Set Palette Index and Entry Count
+;Args: A = Palette Index
+;      Y = Number of Entries
+;Returns: A = Bank + Auto-Increment
+;         Y,X = Address
+SETIDY: STY TEMP0   ;Store Number of Colors
+        ASL TEMP0   ;and Multiply by 2
+         
+;setidx(idx) - Set Vera Address to Palette Index
+;Args: A = Index
+;Returns: A = Bank + Auto-Increment
+;         Y,X = Address
+SETIDX: ASL         ;Multiply Index by 2
+        TAX         ;and Set as LSB
+        LDA #$10    ;Get Palette Page
+        ADC #$00    ;Add Carry from Multiply
+        TAY         ;and Set as MSB
+        JMP REGADR  ;and Set Address to Register
+
+;getplt(idx,num) - Set Palette Colors
+;Args: A = Starting Index
+;      Y = Number of Entries (1-128)
+;Uses: DSTLO,DSTHI = Address of Destination Array
+;Affects: A,X,Y
+GETPLT: JSR SETIDY  ;Set Vera Address and Entry Count
+        JMP GETMEA  ;Read Color Entries from Vera Memory
+
+;setplt(idx,num) - Set Palette Colors
+;Args: A = Starting Index
+;      Y = Number of Entries (1-128)
+;Uses: SRCLO,SRCHI = Address of Color Entries
+;Affects: A,X,Y
+SETPLT: JSR SETIDY  ;Set Vera Address and Entry Count
+        JMP SETMEA  ;Write Color Entries to Vera Memory

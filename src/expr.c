@@ -258,7 +258,7 @@ void prsbop(void) {
 void prsfpr(char trmntr) {
   int pusha = 0; int pushy = 0; //A and Y Arguments Pushed
   DEBUG("expr.prsfpr: Parsing Function Argument or Return Values\n", 0)
-  if (!chkadr(ADLDYX, TRUE) && !match(')')) {
+  if (!chkadr(ADLDYX, TRUE) && isxpre() || match('.')) {
     DEBUG("expr.prsfpr: Parsing Accumulator Expression\n", 0);
     if (look('.')) pusha = 255; 
     else {if (prsxpf(0)) goto prsfne;}

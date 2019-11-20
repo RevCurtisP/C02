@@ -1,0 +1,77 @@
+/*********************************
+ * SPRDEMO - Vera Sprite Demo    *
+ *********************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memory.h02>
+#include <nybble.h02>
+#include "include/veramem.h02"  //Vera Memory Access
+#include "include/veraspr.h02"  //Vera Sprites
+
+char spindx;            //Sprite Index
+int  spaddr;            //Sprite Address
+char spxlo,spxhi;       //Sprite X-Coordinate
+char spylo,spyhi;       //Sprite Y-Coordinate
+
+struct spregs spctrl;   //Sprite Control Registers
+struct sprite spattr;   //Sprite Attributes
+
+const char happy = 
+  {0,0,7,7,7,7,0,0,
+   0,7,7,7,7,7,7,0,
+   7,7,0,7,7,0,7,7,
+   7,7,7,7,7,7,7,7,
+   7,7,7,7,7,7,7,7,
+   7,0,7,7,7,7,0,7,
+   0,7,0,0,0,0,7,7,
+   0,0,7,7,7,7,0,0};
+
+
+/*Print Sprite Control Registers*/
+void prtspk() {
+  printf(spctrl.ctrl, "CTRL=%b, ");
+  printf(spctrl.clsn, "CLSN=%b%n");  
+}
+
+/*Print Sprite Attributes */
+void prtspr() {
+  printf(setdst(spattr.addr),"ADR=$%w, ");
+  printf(setdst(spattr.horz),"HRZ=%i, ");
+  printf(setdst(spattr.vert),"VRT=%i, ");
+  printf(spattr.ctrl,"CTL=$%h, ");
+  printf(spattr.size,"SIZ=$%h%n");
+}
+
+main:
+  
+  spxlo=0; spxhi=0; spylo=0; spyhi=0;
+  for (spindx=0; spindx<#MAXSPR; spindx++) {
+   spaddr=&$800;
+   setspa(spaddr);              //Set Vera Address to Sprite Address
+   setmem(@happy,&happy);       //Write Sprite Data to Vera
+   setspd(spindx,spaddr);       //Set Sprite Address
+   setspb(spindx,1);            //Set Mode to 8 Bits per Pixel
+   setspx(spindx,spxhi,spxlo);  //Set Sprite X-Coordinate
+   setspy(spindx,spyhi,spylo);  //Set Sprite Y-Coordinate
+   setspz(spindx,3);            //Display in Front of Layer 1
+   setspe(#TRUE);            //Enable Sprites
+  
+   spxlo=spxlo+16; if (!spxlo) spylo=spylo+16;
+   
+  }
+  
+  getspk(&spctrl);          //Read Sprite Control Registers
+  puts("SPRITES: ");
+  prtspk();                 //Print Sprite Control Registers
+  
+  getspr(spindx,&spattr);   //Read Sprite Attributes
+  printf(spindx,"SPRITE %d ");
+  prtspr();                 //Print Sprite Attributes
+
+  goto exit;
+

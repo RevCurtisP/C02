@@ -1,0 +1,117 @@
+/************************************
+ * TESTVERA - Test All Vera Modules *
+ ************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memory.h02>
+#include <nybble.h02>
+#include "include/veramem.h02"  //Vera Memory Access
+#include "include/veraspr.h02"  //Vera Sprites
+
+const char abcdef = {1,2,3,4,5,6};
+char buffer[255];       //Buffer for getmem
+
+char d,e,f,i,j,k;       //Index Variables
+char b,h,l,m,n,p,w;     //Temporary Variables
+char bank,msb,lsb;      //Vera Memory Address
+int  addr;              //16-bit Address
+int  bytes,size;        //Integer Size Values
+int  height,width;      //Integer Height and Width Value
+
+char spenbl;            //Sprite Enabled
+char spmode;            //Sprite Mode (Bits Per Pixel)
+int  spaddr;            //Sprite Attributes/Data Address
+int  spsize;            //Sprite Data Size
+struct sprite spattr;   //Sprite Attributes (Read)
+struct sprite spattw;   //Sprite Attributes (Write)
+
+char aa,xx,yy;          //Functions Parameters/Variables
+
+void failed() {
+  putln("  FAILED");
+}
+
+void passed() {
+  putln("  PASSED");
+  //newlin();
+}
+
+void padint(aa,yy,xx) {
+  if (xx&96) putc(aa); 
+  if (yy < 4) putc(aa);
+}
+
+void prtadr(aa,yy,xx) {
+  putc('$'); prhex(aa); prbyte(yy); prbyte(xx);
+}
+
+void prtflg(aa,yy,xx) {
+  if (aa) setdst("TRUE"); else setdst("FALSE");
+  printf(aa,yy,xx);
+}
+
+void prtreg(aa,yy,xx) {
+  printf(aa,"(%d,"); printf(yy,"%d,"); printf(xx,"%d) ");
+}
+
+/*Print Sprite Attributes */
+void prtspr() {
+  printf(setdst(spattr.addr),"ADR=$%w, ");
+  printf(setdst(spattr.horz),"HRZ=%i, ");
+  printf(setdst(spattr.vert),"VRT=%i, ");
+  printf(spattr.ctrl,"CTL=$%h, ");
+  printf(spattr.size,"SIZ=$%h%n");
+}
+
+void xerror() {
+  putln("  ERROR ENCOUNTERED");
+  goto exit;
+}
+
+main:
+  newlin();
+
+  /*************************************************************************/
+
+  printf("TESTING GETSPL() AND GETSPU()");
+  n = 0; //Sprite Index
+  h = 8; height = &8; //Sprite Height in Pixels
+  for (i=0; i<4; i++) {
+    setsph(n,i); //Set Sprite Height Specifier
+    w = 8; //Sprite Width in Pixels
+    size = height; size<<; size<<; //Set Size to Height*4
+    for (j=0; j<4; j++) {
+      setspw(n,j); //Set Sprite Width Specifier
+      p = 4; //Bits Per Pixeg
+      bytes = size;
+      printf(h,"%nHEIGHT=%d "); if (!i) putspc();
+      printf(w,"WIDTH=%d "); if (!j) putspc();
+      for (k=0; k<2; k++) {
+        setspp(n,k);
+        printf(p,"%dBPP ");
+        d,e,f = getspu(n); prtreg();
+        if (d<>j or e<>i or f<>k) xerror();
+        spsize = getspl(n); //Get Sprite Data Size
+        setdst(spsize); printf("SIZE=%i "); padint(' ',spsize);
+        setdst(bytes); printf("[%i] "); padint(' ',bytes);
+        if (<spsize <> <bytes or >spsize <> >bytes) xerror();
+        p<<; bytes<<; //Multiply BPP, Size by 2
+      }
+      w<<; size<<;  //Multiply Width, Size by 2
+    }
+    h<<; height<<; //Multiply Height by 2
+    n++; //Increment Sprite Index
+    newlin();
+  }
+  passed();
+
+  
+  newlin();
+
+  goto exit;
+

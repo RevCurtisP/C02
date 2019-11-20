@@ -1,0 +1,80 @@
+/*********************************************
+ * veramem.h02 - Memory Access Functions for *
+ *               Commander X16 VERA Chip     *
+ *                                           *
+ * Requires: x16.h02                         *
+ *           stddef.h02                      *
+ *********************************************/
+
+
+/* Check Vera Memory Address               *
+ * Args: char opts - Bank | Auto-Increment *
+ *        int addr - Address               *
+ * Returns: char valid - #TRUE or #FALSE   */
+char chkadr();
+
+/* Clear Vera Memory              *
+ * Args: char n - Number of Bytes *
+ * Requires: setadr(bank,addr)    */
+char clrmem();
+
+/* Fill Vera Memory               *
+ * Args: char b - Byte to Write   *
+ *       char n - Number of Bytes *
+ * Requires: setadr(bank,addr)    */
+char filmem();
+
+/* Get Vera Memory Address                 *
+ * Returns: char bank - Address Bits 16-19 *
+ *           int addr - Address Bits 0-15  */
+char getadr();
+
+/* Read Byte from Vera Memory             *
+ * Args: char bank - Address Bits 16-19   *
+ *        int addr - Address Bits 0-15    *
+ * Returns: char byte - Contents of Memory */
+char getbyt();
+
+/* Read Integer from Vera Memory          *
+ * Args: char bank - Address Bits 16-19   *
+ *        int addr - Address Bits 0-15    *
+ * Returns: int byte - Contents of Memory */
+char getint();
+
+/* Read from Vera Memory into Array        *
+ * Args: char n - Number of Bytes      *
+ *        int d - Address of Array     *
+ * Requires: setadr(bank,addr)         *
+ * Returns: char count - Bytes Written */
+char getmem();
+
+/* Set Address to Internal Register  *
+ * Args: int addr - Register Address *
+char regadr();
+
+/* Set Vera Address with Auto-Increment *
+ * Args: char opts - Bank               *
+ *        int addr - Address            *
+char setadi();
+
+/* Set Vera Memory Address                 *
+ * Args: char opts - Bank | Auto-Increment *
+ *        int addr - Address               *
+char setadr();
+
+/* Write Byte to Vera Memory       *
+ * Args: char byte - Byte to Write *
+ * Requires: setadr(bank,addr)     */
+char setbyt();
+
+/* Write Integer to Vera Memory      *
+ * Args: int word - Integer to Write *
+ * Requires: setadr(bank,addr)       */
+char setint();
+
+/* Write from Array to Vera Memory     *
+ * Args: char n - Number of Bytes      *
+ *        int d - Address of Array     *
+ * Requires: setadr(bank,addr)         *
+ * Returns: char count - Bytes Written */
+char setmem();

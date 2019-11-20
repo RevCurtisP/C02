@@ -226,5 +226,3 @@ int main(int argc, char *argv[]) {
   clsout();  //Close Output File
   clslog();  //Close Log File
 }
-
-

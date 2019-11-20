@@ -1,0 +1,67 @@
+; Vera Layer Control Assembly Language Routines for C02
+; Requires External Routines GETMEA, GETMBX, GETTBS,
+; and External Variables TEMP0,TEMP1,TEMP2
+
+;getvca(layer, index) - Get Vera Character Address
+;Args: A = Layer (0/1)
+;      Y = Character Index
+;Sets: TEMP0 = Bank
+;      TEMP1 = Address LSB
+;      TEMP2 = Address MSB
+;Returns: A = Bank
+;         Y = Address LSB
+;         X = Address MSB
+GETVCA: PHA             ;Save Layer Number
+        STY TEMP1       ;Set Offset LSB to Index
+        LDA #0          ;Set Offset MSB to Zero
+        ASL TEMP1       ;Multiple Offset by 2
+        ROL             
+        STA TEMP2       ;and Store MSB
+        PLA             ;Restore Layer Number
+        JSR GETTBS      ;Get Tile Base
+        TXA             ;Add Tile Base LSB
+        CLC
+        ADC TEMP1       ;to Offset LSB 
+        STA TEMP1
+        TYA             ;Add Tile Base MSB
+        ADC TEMP2       ;to Offset MSB
+        STA TEMP2
+        LDA #0          ;Set Bank
+        ADC #0          ;to Carry
+        STA TEMP0
+        LDX #2          ;Set Count to 2
+        JMP ASLADR      ;and Shift Address Left
+        
+;getvcd(layer, index) - Read Vera Character Data to Array
+;Args: A = Layer (0/1)
+;      Y = Character Index
+;Uses: DSTLO,DSTHI = Address of Array
+;Destroys: TEMP0,TEMP1,TEMP2
+;Returns: A = Number of Bytes Read
+GETVCD: JSR SETVAC      ;Set Vera Address to Character Address
+        LDA #8          ;Set Byte Count to 8
+        JMP GETMEA      ;and Read Bytes into Array
+
+;setvac(layer, index) - Set Vera Address to Character Address
+;Args: A = Layer (0/1)
+;      Y = Character Index
+;Sets: TEMP0 = Bank
+;      TEMP1 = Address LSB
+;      TEMP2 = Address MSB
+;Returns: A = Bank + Auto-Increment
+;         Y = Address LSB
+;         X = Address MSB
+SETVAC: JSR GETVCA
+        ORA #$10        ;Set Auto-Increment to 1
+        JMP SETADR      ;and Set Vera Address
+        
+;setvcd(layer, index) - Write Vera Character Data from Array
+;Args: A = Layer (0/1)
+;      Y = Character Index
+;Uses: SRCLO,SRCHI = Address of Array
+;Destroys: TEMP0,TEMP1,TEMP2
+;Returns: A = Number of Bytes Read
+GETVCD: JSR SETVAC      ;Set Vera Address to Character Address
+        LDA #8          ;Set Byte Count to 8
+        JMP SETMEA      ;and Read Bytes into Array
+

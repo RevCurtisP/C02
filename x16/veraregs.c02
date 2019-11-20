@@ -1,0 +1,153 @@
+/*************************************************
+ * VERAREGS - Display Contents of Vera Registers *
+ *************************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memory.h02>
+#include <nybble.h02>
+#include <screen.h02>
+#include "include/veramem.h02"  //Vera Memory Access
+#include "include/veradsp.h02"  //Vera Display Controller
+#include "include/veraclr.h02"  //Vera Color Palette
+#include "include/veralyr.h02"  //Vera Layer Control
+//#include "include/veraspr.h02"  //Vera Sprites
+/* Globals */
+char i,j,k;             //Loop Indexes
+char aa,yy,xx;          //Function Paramaters
+char zz;                //Function Variable
+int  yx;                //Function Paramater
+
+/* Display Composer */
+char vmode,mono,field;  //Video Output Mode, Monochrome Flag, Current Field
+char hscale,vscale;     //Video Scaling
+char bcpidx;            //Border Color Palette Index
+int  bcolor;            //Border Color Value
+int  hstart,hstop;      //Horizontal Start and Stop
+int  vstart,vstop;      //Vertical Start and Stop
+
+/* Layer 0/1 */
+char layer;             //Layer Number
+char lmode;             //Layer Mode
+char height,width;      //Map/Tile Height and Width
+
+
+//Print Vera Address
+void prtadr(aa,yx) {
+  puts("ADDRESS: $"); putnyb(aa); putwrd(yx);
+}
+
+//Print Masked Bits (byte, mask)
+void prtmsk(aa,yy) {
+  xx = $80;
+  do {
+    zz = (aa&xx) ? '1' : '0';
+    if (yy&xx) putchr(zz);
+    xx>>;
+  } while(xx);
+}
+
+//Print Three Values Enclosed in Parentheses
+void prtprn(aa,yy,xx) {
+  printf(aa,"($%h"); printf(yy,",$%h"); printf(xx,",$%h)");
+}
+
+main:
+
+  clrscr(); //Clear Screen
+
+  putln("DISPLAY COMPOSER");
+  
+  puts("  VIDEO MODE: ");
+  vmode,mono,field = getvid();
+  select (vmode) {
+    case 0: puts("DISABLED");
+    case 1: puts("VGA");
+    case 2: puts("NTSC");
+    case 3: puts("RGB");
+    default: puts("UNDEFINED");
+  }
+  if (mono) puts(" MONOCHROME"); else puts(" COLOR");
+  if (field) puts(", ODD"); else puts(", EVEN"); putln(" FIELD");
+  
+  bcpidx = getbdr(); printf(bcpidx, "  BORDER PALETTE INDEX: $%h");
+  bcolor = getclr(bcpidx); puts(setdst(bcolor)); printf(", COLOR=$%w "); 
+  prtprn(clrrgb(bcolor)); newlin();
+  
+  hscale,vscale = getscl(); hstart = gethsr(); hstop = gethsp(); vstart = getvsr(); vstop = getvsp(); 
+  printf(hscale, "  HORIZONTAL SCALE: %d, "); setdst(hstart); printf("START: %i, "); setdst(hstop); printf("STOP: %i%n");
+  printf(vscale, "  VERTICAL SCALE: %d, "); setdst(vstart); printf("START: %i, "); setdst(vstop); printf("STOP: %i%n");
+  
+  setdst(getiql()); printf("  IRQ LINE: $%i%n");
+  newlin();
+    
+  /*************************************************************************/
+
+  putln("PALETTE COLORS");
+
+  putrps(5); i=0 ;do {printf(i," %h "); i=i+16; } while(i) ; newlin();
+  for (i=0;i<16;i++) {
+    printf(i,"  %h ");
+    j=0; do {
+      k = i + j; setdst(getclr(k)); printf(k,"%q ");
+      j = j + 16;
+    } while (j);
+    newlin(); 
+  }  
+  newlin();
+    
+  /*************************************************************************/
+
+  for (layer=0; layer<2; layer++) {
+
+    printf(layer, "LAYER %d%n");
+    
+    puts("  MODE: "); lmode = getmod(layer);
+    select(getmod(layer)) { 
+      case 0: puts("16 COLOR TEXT");
+      case 1: puts("256 COLOR TEXT");
+      case 2: puts("TILE 2BPP");
+      case 3: puts("TILE 4BPP");
+      case 4: puts("TILE 8BPP");
+      case 5: puts("BITMAP 2BPP");
+      case 6: puts("BITMAP 4BPP");
+      case 7: puts("BITMAP 8BPP");
+      default: puts("UNDEFINED");
+    }
+    if (getenb(layer)) putln(", ENABLED"); else putln(", DISABLED");
+
+    width, height = getmsz(layer); 
+    setdst(mapsiz(width)); printf(width,"  MAP WIDTH: %d (%i PIXELS)");
+    setdst(mapsiz(height)); printf(height,", HEIGHT: %d (%i PIXELS)%n");
+    
+    width, height = gettsz(layer); 
+    printf(width,"  TILE WIDTH: %d"); printf(tilsiz(width)," (%d PIXELS)");
+    printf(height,", HEIGHT: %d"); printf(tilsiz(height)," (%d PIXELS)%n");
+    
+    setdst(getmbs(layer)); printf("  MAP BASE: $%w, "); 
+    prtadr(getmba(layer)); newlin();
+    
+    setdst(gettbs(layer)); printf("  TILE BASE: $%w, "); 
+    prtadr(gettba(layer)); newlin();
+    
+    setdst(gethsc(layer)); printf("  HORIZONTAL SCROLL: $%i");
+    setdst(getvsc(layer)); printf(",  VERTICAL SCROLL: $%i%n");
+
+    printf(getbpo(layer)); printf("  BITMAP PALETTE OFFSET: $%h%n");
+    
+    newlin();
+  }
+
+  /*************************************************************************/
+
+  //puts("SPRITES "); if (getspe()) puts("ENABLED"); else puts("DISABLED");
+  //puts(", COLLISION STATUS: %"); putmsk(getsps(),$0f); newlin();
+
+
+    
+  goto exit;
+  

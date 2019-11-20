@@ -1,0 +1,17 @@
+/**********************************************
+ * veraspi.h02 - SPI Controller Routines      *
+ *               for Commander X16 VERA Chip  *
+ * Requires: x16.h02                          *
+ *           stddef.h02                       *
+ *           veramem.h02                      *
+ **********************************************/
+
+/* Read Bytes From SD Card            *
+ * Args: char n = Number of Bytes     * 
+ *        int d = Destination Address */
+sread();
+
+/* Write Bytes to SD Card         *
+ * Args: char n = Number of Bytes * 
+ *        int d = Source Address  */
+swrite();

@@ -1,0 +1,14 @@
+; C02 module vera.h02 assembly language subroutines
+
+;Vera Internal Address Space
+;$00000-$1FFFF   Video RAM
+;$F0000-$F001F   Display composer Registers
+;$F1000-$F11FF   Palette
+;$F2000-$F200F   Layer 0 Registers
+;$F3000-$F300F   Layer 1 Registers
+;$F4000-$F400F   Sprite Registers
+;$F5000-$F53FF   Sprite Attributes
+;$F6000-         Audio
+;$F7000-$F7001   SPI
+;$F8000-$F8003   UART
+
