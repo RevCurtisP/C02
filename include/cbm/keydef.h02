@@ -1,37 +1,43 @@
 /* PETSCII Key Code Definitions    * 
  * Common to All PET/CBM Computers */
 
-#define KEYBCK $00 //Backspace
-#define KEYBRK $03 //Break (RUN/STOP)
-#define KEYCLR $93 //Clear (Shift-CLR/HOME)
-#define KEYCPY $00 //Copy 
-#define KEYDEL $20 //Delete
-#define KEYDN  $11 //Cursor Down
-#define KEYESC $00 //Escape (N/A)
-#define KEYFN1 $00 //F1  (N/A)
-#define KEYFN2 $00 //F2 (N/A)
-#define KEYFN3 $00 //F3  (N/A)
-#define KEYFN4 $00 //F4  (N/A)
-#define KEYFN5 $00 //F5  (N/A)
-#define KEYFN6 $00 //F6  (N/A)
-#define KEYFN7 $00 //F7  (N/A)
-#define KEYFN8 $00 //F8  (N/A)
-#define KEYFN9 $00 //F9  (N/A)
-#define KEYFNA $00 //F10 (N/A)
-#define KEYFNB $00 //F11 (N/A)
-#define KEYFNC $00 //F12 (N/A)
-#define KEYHLP $00 //Help (N/A)
-#define KEYHOM $13 //Home (CLR/HOME)
-#define KEYINS $94 //Insert (Shift-INS/DEL)
-#define KEYLFT $9C //Cursor Left
-#define KEYLNF $00 //Line Feed (N/A)
-#define KEYRGT $1D //Cursor Right
-#define KEYRTN $0D //Return
-#define KEYRTS $8D //Shift-Return
-#define KEYRUN $83 //Run (Shift-RUN/STOP)
-#define KEYRVF $92 //Reverse Off
-#define KEYRVS $12 //Reverse On
-#define KEYSPS $A0 //Shifted Space
-#define KEYTAB $09 //Tab
-#define KEYTAS $00 //Shift-Tab (N/A)
-#define KEYUP  $91 //Cursor Up
+/* Structure for Key Definitions */
+struct keydef {
+  char bckspc;  $00 //Backspace
+  char break;   $03 //Break (RUN/STOP)
+  char clear;   $93 //Clear (Shift-CLR/HOME)
+  char copy;    $00 //Copy 
+  char delete;  $20 //Delete
+  char down;    $11 //Cursor Down
+  char escape;  $00 //Escape (N/A)
+  char fn1;     $00 //F1  (N/A)
+  char fn2;     $00 //F2 (N/A)
+  char fn3;     $00 //F3  (N/A)
+  char fn4;     $00 //F4  (N/A)
+  char fn5;     $00 //F5  (N/A)
+  char fn6;     $00 //F6  (N/A)
+  char fn7;     $00 //F7  (N/A)
+  char fn8;     $00 //F8  (N/A)
+  char fn9;     $00 //F9  (N/A)
+  char fn10;    $00 //F10 (N/A)
+  char fn11;    $00 //F11 (N/A)
+  char fn12;    $00 //F12 (N/A)
+  char help;    $00 //Help (N/A)
+  char home;    $13 //Home (CLR/HOME)
+  char insert;  $94 //Insert (Shift-INS/DEL)
+  char left;    $9C //Cursor Left
+  char lnfd;    $00 //Line Feed (N/A)
+  char right;   $1D //Cursor Right
+  char return;  $0D //Return
+  char shfrtn;  $8D //Shift-Return
+  char run;     $83 //Run (Shift-RUN/STOP)
+  char rvsoff;  $92 //Reverse Off
+  char rvson;   $12 //Reverse On
+  char shfspc;  $A0 //Shifted Space
+  char tab;     $09 //Tab
+  char shftab;  $00 //Shift-Tab (N/A)
+  char up;      $91 //Cursor Up
+};
+
+/* Actual Key Definitions */
+const struct keydef keys;

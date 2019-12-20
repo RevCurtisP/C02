@@ -1,37 +1,39 @@
 ;Standard ASCII Key Code Definitions
 ;Undefined Keys hae value $00
 
-KEYBCK  EQU $08   ;Backspace
-KEYBRK  EQU $03   ;Break
-KEYCLR  EQU $00   ;Clear
-KEYCPY  EQU $00   ;Copy [Acorn Atom]
-KEYDEL  EQU $7F   ;Delete
-KEYDN   EQU $00   ;Cursor Down
-KEYESC  EQU $1B   ;Escape
-KEYFN1  EQU $00   ;F1
-KEYFN2  EQU $00   ;F2
-KEYFN3  EQU $00   ;F3
-KEYFN4  EQU $00   ;F4
-KEYFN5  EQU $00   ;F5
-KEYFN6  EQU $00   ;F6
-KEYFN7  EQU $00   ;F7
-KEYFN8  EQU $00   ;F8
-KEYFN9  EQU $00   ;F9
-KEYFNA  EQU $00   ;F10
-KEYFNB  EQU $00   ;F11
-KEYFNC  EQU $00   ;F12
-KEYHLP  EQU $00   ;Help [C128/C65]
-KEYHOM  EQU $00   ;Home
-KEYINS  EQU $00   ;Insert
-KEYLFT  EQU $00   ;Cursor Left 
-KEYLNF  EQU $0A   ;;Line Feed [C128]
-KEYRGT  EQU $00   ;Cursor Right
-KEYRTN  EQU $0D   ;Return
-KEYRTS  EQU $80   ;Shift-Return
-KEYRUN  EQU $00   ;Run [PET/CBM]
-KEYRVF  EQU $92   ;Reverse OffCtrl-0
-KEYRVS  EQU $12   ;Reverse On Ctrl-9
-KEYSPS  EQU $00   ;Shifted Space
-KEYTAB  EQU $09   ;Tab
-KEYTAS  EQU $00   ;Shift-Tab
-KEYUP   EQU $00   ;Cursor Up 
+KEYS:   ;Key Definitions (Struct Key Codes)
+;NAME         Chr  Description
+.BCKSPC  BYTE $08 ;Backspace
+.BREAK   BYTE $03 ;Break
+.CLEAR   BYTE $00 ;Clear
+.COPY    BYTE $00 ;Copy [Acorn Atom]
+.DELETE  BYTE $7F ;Delete
+.DOWN    BYTE $00 ;Cursor Down
+.ESCAPE  BYTE $1B ;Escape
+.FN1     BYTE $00 ;F1
+.FN2     BYTE $00 ;F2
+.FN3     BYTE $00 ;F3
+.FN4     BYTE $00 ;F4
+.FN5     BYTE $00 ;F5
+.FN6     BYTE $00 ;F6
+.FN7     BYTE $00 ;F7
+.FN8     BYTE $00 ;F8
+.FN9     BYTE $00 ;F9
+.FN10    BYTE $00 ;F10
+.FN11    BYTE $00 ;F11
+.FN12    BYTE $00 ;F12
+.HELP    BYTE $00 ;Help [C128/C65]
+.HOME    BYTE $00 ;Home
+.INSERT  BYTE $00 ;Insert
+.LEFT    BYTE $00 ;Cursor Left 
+.LNFD    BYTE $0A ;;Line Feed [C128]
+.RIGHT   BYTE $00 ;Cursor Right
+.RETURN  BYTE $0D ;Return
+.SHFRTN  BYTE $80 ;Shift-Return
+.RUN     BYTE $00 ;Run [PET/CBM]
+.RVSOFF  BYTE $92 ;Reverse OffCtrl-0
+.RVSON   BYTE $12 ;Reverse On Ctrl-9
+.SHFSPC  BYTE $00 ;Shifted Space
+.TAB     BYTE $09 ;Tab
+.SHFTAB  BYTE $00 ;Shift-Tab
+.UP      BYTE $00 ;Cursor Up 
