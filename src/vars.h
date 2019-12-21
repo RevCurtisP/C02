@@ -48,13 +48,13 @@ int mbrsiz;                      //Member Size
 
 enum vtypes {VTVOID, VTREG, VTCHAR, VTINT, VTARRAY, VTSTRUCT}; //Variable Types
 
-char datvar[DATASPC+1];        //Variable Data Storage
-int  datlen[MAXVAR+1];         //Variable Data Length
-char dattyp[MAXVAR+1];         //Variable Data Type
-char dattmp[DATASPC+1];        //Variable Temporary Data
-int  dtype;                    //Data Type
-int  dlen;                     //Length of Variable Data
-int  dsize;                    //Total Data Length
+unsigned char datvar[DATASPC+1]; //Variable Data Storage
+int  datlen[MAXVAR+1];           //Variable Data Length
+char dattyp[MAXVAR+1];           //Variable Data Type
+char dattmp[DATASPC+1];          //Variable Temporary Data
+int  dtype;                      //Data Type
+int  dlen;                       //Length of Variable Data
+int  dsize;                      //Total Data Length
 
 enum dtypes {DTBYTE, DTINT, DTSTR, DTARRY};  //Variable Data Types
 
