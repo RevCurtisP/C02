@@ -1,0 +1,78 @@
+;Commander X16 ABI Registers Assembly Language Routines
+
+;Zero Page System Variables - x16emu Release 34 Memory Map
+ABIPTR  EQU $00   ;Pointer for ABI Functions
+R0      EQU $02   ;ABI Register 0
+R0L     EQU $02   ;ABI Register 0 LSB
+R0H     EQU $03   ;ABI Register 0 MSB
+R1      EQU $04   ;ABI Register 1
+R1L     EQU $04   ;ABI Register 1 LSB
+R1H     EQU $05   ;ABI Register 1 MSB
+R2      EQU $06   ;ABI Register 2
+R2L     EQU $06   ;ABI Register 2 LSB
+R2H     EQU $07   ;ABI Register 2 MSB
+R3      EQU $08   ;ABI Register 3
+R3L     EQU $08   ;ABI Register 3 LSB
+R3H     EQU $09   ;ABI Register 3 MSB
+R4      EQU $0A   ;ABI Register 4
+R4L     EQU $0A   ;ABI Register 4 LSB
+R4H     EQU $0B   ;ABI Register 4 MSB
+R5      EQU $0C   ;ABI Register 5
+R5L     EQU $0C   ;ABI Register 5 LSB
+R5H     EQU $0D   ;ABI Register 5 MSB
+R6      EQU $0E   ;ABI Register 6
+R6L     EQU $0E   ;ABI Register 6 LSB
+R6H     EQU $0F   ;ABI Register 6 MSB
+R7      EQU $10   ;ABI Register 7
+R7L     EQU $10   ;ABI Register 7 LSB
+R7H     EQU $11   ;ABI Register 7 MSB
+R8      EQU $12   ;ABI Register 8
+R8L     EQU $12   ;ABI Register 8 LSB
+R8H     EQU $13   ;ABI Register 8 MSB
+R9      EQU $14   ;ABI Register 9
+R9L     EQU $14   ;ABI Register 9 LSB
+R9H     EQU $15   ;ABI Register 9 MSB
+R10     EQU $16   ;ABI Register 10
+R10L    EQU $16   ;ABI Register 10 LSB
+R10H    EQU $17   ;ABI Register 10 MSB
+R11     EQU $18   ;ABI Register 11
+R11L    EQU $18   ;ABI Register 11 LSB
+R11H    EQU $19   ;ABI Register 11 MSB
+R12     EQU $1A   ;ABI Register 12
+R12L    EQU $1A   ;ABI Register 12 LSB
+R12H    EQU $1B   ;ABI Register 12 MSB
+R13     EQU $1C   ;ABI Register 13
+R13L    EQU $1C   ;ABI Register 13 LSB
+R13H    EQU $1D   ;ABI Register 13 MSB
+R14     EQU $1E   ;ABI Register 14
+R14L    EQU $1E   ;ABI Register 14 LSB
+R14H    EQU $1F   ;ABI Register 14 MSB
+R15     EQU $20   ;ABI Register 15
+R15L    EQU $20   ;ABI Register 15 LSB
+R15H    EQU $21   ;ABI Register 15 MSB
+
+;Read ABI Registers into Array or Struct
+GETABI: STX ABIPTR      ;Store Array Address
+        STY ABIPTR+1    
+        TAY             ;Copy Array Size into Y Register
+GETABY: DEY             ;Decrement Counter
+        BMI .GETABX     ;If Not Negative
+        LDA R0,Y        ;Get Byte from ABI Register
+        STA (ABIPTR),Y  ;And write to ABI Register
+        BRA GETABY      ;and Loop
+.GETABX RTS
+
+;Return ABI Register Contents
+GETABR: TAX             ;Copy Register 
+
+
+;Write Array or Struct to ABI Registers 
+SETABI: STX ABIPTR      ;Store Array Address
+        STY ABIPTR+1    
+        TAY             ;Copy Array Size into Y Register
+SETABY: DEY             ;Decrement Counter
+        BMI .SETABX     ;If Not Negative
+        LDA (ABIPTR),Y  ;Get Byte from Array or Struct
+        STA R0,Y        ;Store in ABI Register
+        BRA SETABY      ;and Loop
+.SETABX RTS

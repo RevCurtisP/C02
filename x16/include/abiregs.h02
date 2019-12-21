@@ -1,0 +1,11 @@
+/* Commander X16 ABI Registers  *
+ * Definitions and Routines     */
+
+//X16 ABI Registers
+char  r0l,r1l,r2l,r3l,r4l,r5l,r6l,r7l,r8l,r9l,r10l,r11l,r12l,r13l,r14l,r15l;
+char  r0h,r1h,r2h,r3h,r4h,r5h,r6h,r7h,r8h,r9h,r10h,r11h,r12h,r13h,r14h,r15h;
+int   r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15;
+
+//X16 ABI Functions
+void getabi();  //Read ABI Registers
+void setabi();  //Get ABI Registers

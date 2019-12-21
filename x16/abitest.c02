@@ -1,0 +1,53 @@
+/*********************************************
+ * ABIRREGS - Check ABI register definitions *
+ * for Commander X16 Kernal                  *
+ *********************************************/
+
+//use -h option on command line
+#include "include/abiregs.h02"
+
+char aa,xx,yy;  //Function Arguments
+char i;         //Loop Index
+
+const char rvals = {$0F,$F0, $1E,$E1, $2D,$D2, $3C,$C3, $4B,$B4, $5A,$A5, $69,$96, $78,$87,
+                    $80,$08, $91,$19, $A2,$2A, $B3,$B3, $C4,$4C, $D5,$5D, $E6,$6E, $F7,$7F};
+char rcomp[32];
+
+void prtadr(aa,yy,xx) {
+  putchr('$');
+  if (yy) prbyte(yy);
+  prbyte(xx);
+}
+
+main:
+
+  //Print Register Addresses
+  putstr("R0  "); prtadr(&R0);  putstr("  R0L  "); prtadr(&R0L);  putstr("  R0H  "); prtadr(&R0H);  newlin();
+  putstr("R1  "); prtadr(&R1);  putstr("  R1L  "); prtadr(&R1L);  putstr("  R1H  "); prtadr(&R1H);  newlin();
+  putstr("R2  "); prtadr(&R2);  putstr("  R2L  "); prtadr(&R2L);  putstr("  R2H  "); prtadr(&R2H);  newlin();
+  putstr("R3  "); prtadr(&R3);  putstr("  R3L  "); prtadr(&R3L);  putstr("  R3H  "); prtadr(&R3H);  newlin();
+  putstr("R4  "); prtadr(&R4);  putstr("  R4L  "); prtadr(&R4L);  putstr("  R4H  "); prtadr(&R4H);  newlin();
+  putstr("R5  "); prtadr(&R5);  putstr("  R5L  "); prtadr(&R5L);  putstr("  R5H  "); prtadr(&R5H);  newlin();
+  putstr("R6  "); prtadr(&R6);  putstr("  R6L  "); prtadr(&R6L);  putstr("  R6H  "); prtadr(&R6H);  newlin();
+  putstr("R7  "); prtadr(&R7);  putstr("  R7L  "); prtadr(&R7L);  putstr("  R7H  "); prtadr(&R7H);  newlin();
+  putstr("R8  "); prtadr(&R8);  putstr("  R8L  "); prtadr(&R8L);  putstr("  R8H  "); prtadr(&R8H);  newlin();
+  putstr("R9  "); prtadr(&R9);  putstr("  R9L  "); prtadr(&R9L);  putstr("  R9H  "); prtadr(&R9H);  newlin();
+  putstr("R10 "); prtadr(&R10); putstr("  R10L "); prtadr(&R10L); putstr("  R10H "); prtadr(&R10H); newlin();
+  putstr("R11 "); prtadr(&R11); putstr("  R11L "); prtadr(&R11L); putstr("  R11H "); prtadr(&R11H); newlin();
+  putstr("R12 "); prtadr(&R12); putstr("  R12L "); prtadr(&R12L); putstr("  R12H "); prtadr(&R12H); newlin();
+  putstr("R13 "); prtadr(&R13); putstr("  R13L "); prtadr(&R13L); putstr("  R13H "); prtadr(&R13H); newlin();
+  putstr("R14 "); prtadr(&R14); putstr("  R14L "); prtadr(&R14L); putstr("  R14H "); prtadr(&R14H); newlin();
+  putstr("R15 "); prtadr(&R15); putstr("  R15L "); prtadr(&R15L); putstr("  R15H "); prtadr(&R15H); newlin();
+
+  //Test setabi() and getabi()
+  for (i=0; i<=@rvals; i++) r0l[i] = 0; //Clear ABI Registers
+  //inline $ff;
+  setabi(@rvals, rvals);        //Write to ABI Registers
+  for (i=0; i<@rvals; i++) {
+    if (!i&7) newlin();
+    if (!i&1) putstr(" $");
+    prbyte(R0l[i]);
+    if (R0l[i] <> rvals[i]) {putstr("ERROR!"); goto exit;}
+  }
+
+goto exit;
