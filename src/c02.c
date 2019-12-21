@@ -27,7 +27,7 @@
 
 /* Initilize Compiler Variables */
 void init(void) {
-  DEBUG("Initializing Compiler Variables\n",0)
+  DEBUG("c02.init: Initializing Compiler Variables\n",0)
   concnt = 0;     //Number of Constants Defined
   varcnt = 0;     //Number of Variables in Table
   lblcnt = 0;     //Number of Labels in stack
@@ -66,7 +66,7 @@ void ppntr(void) {
 void pword(void) {
   lsrtrn = FALSE; //Clear RETURN flag
   getwrd();
-  DEBUG("Parsing Word '%s'\n", word)
+  DEBUG("c02.pword: Parsing Word '%s'\n", word)
   if (xstmnt[0]) {
     if (wordis(xstmnt)) xstmnt[0] = 0;  //Clear xstmnt
     else ERROR("Expected '%s' statement\n", xstmnt, EXIT_FAILURE)
@@ -79,7 +79,7 @@ void pdrctv(void) {
   skpchr();            //skip '#'
   CCMNT('#');
   getwrd();           //read directive into word
-  DEBUG("Processing directive '%s'\n", word)
+  DEBUG("c02.pdrctv: Processing directive '%s'\n", word)
   if      (wordis("DEFINE"))  pdefin();  //Parse Define
   else if (wordis("INCLUDE")) pincfl();  //Parse Include File
   else if (wordis("ERROR"))   ERROR("Error \n", 0, EXIT_FAILURE)
@@ -88,7 +88,7 @@ void pdrctv(void) {
 }
 
 void prolog(void) {
-  DEBUG("Writing Assembly Prolog\n", 0)
+  DEBUG("c02.prolog: Writing Assembly Prolog\n", 0)
   asmlin(CPUOP,cputyp);
   setcmt("Program ");
   addcmt(srcnam);
@@ -106,11 +106,11 @@ void epilog(void) {
 
 /* Compile Source Code*/
 void compile(void) {
-  DEBUG("Starting Compilation\n", 0)
+  DEBUG("c02.compile: Starting Compilation\n", 0)
   prolog();
   phdrfl(); //Process Header File specified on Command Line
   skpchr();
-  DEBUG("Parsing Code\n", 0)
+  DEBUG("c02.compile: Parsing Code\n", 0)
   while (TRUE) {
     skpspc();
     if      (match(EOF)) break;         //Stop Parsing (End of File)
@@ -142,24 +142,24 @@ int popt(int arg, int argc, char *argv[]) {
     if (++arg >= argc) ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
-  DEBUG("Processing Command Line Option -%c\n", argstr[1])
+  DEBUG("c02.popt: Processing Command Line Option -%c\n", argstr[1])
   switch (opt) {
     case 'D':
       debug = TRUE;
-      DEBUG("Debug output enable\n", 0)
+      DEBUG("c02.popt: Debug output enable\n", 0)
       break;   
 	case 'C':
       strcpy(cputyp, optarg);
-      DEBUG("CPU Type set to '%s'\n", cputyp)
+      DEBUG("c02.popt: CPU Type set to '%s'\n", cputyp)
       break;
     case 'H':
       strcpy(hdrnam, optarg);
-      DEBUG("Header Name set to '%s'\n", hdrnam)
+      DEBUG("c02.popt: Header Name set to '%s'\n", hdrnam)
       break;
     case 'S':
       strcpy(subdir[subcnt], optarg);
-	  DEBUG("subdir[%d] ", subcnt)
-      DEBUG("set to '%s'\n", subdir[subcnt])
+	  DEBUG("c02.popt: subdir[%d] ", subcnt)
+      DETAIL("set to '%s'\n", subdir[subcnt])
       subcnt++;
       break;
     default:
@@ -175,18 +175,18 @@ void pargs(int argc, char *argv[]) {
   int arg;
   srcnam[0] = 0;
   outnam[0] = 0;
-  DEBUG("Parsing %d arguments\n", argc)
+  DEBUG("c02.pargs: Parsing %d arguments\n", argc)
   if (argc == 0) usage(); //at least one argument is required
   for (arg = 1; arg<argc; arg++) {
-    DEBUG("Parsing argument %d\n", arg);
+    DEBUG("c02.pargs: Parsing argument %d\n", arg);
     if (argv[arg][0] == '-') arg = popt(arg, argc, argv); //Process Command Line Option
     else if (srcnam[0] == 0) strcpy(srcnam, argv[arg]);   //set Source File Name to first arg    
     else if (outnam[0] == 0) strcpy(outnam, argv[arg]);   //set Out File Name to second arg
     else ERROR("Unexpected argument '%s'\n", argv[arg], EXIT_FAILURE)
   }
-  if (srcnam[0]) DEBUG("srcnam set to '%s'\n", srcnam)
+  if (srcnam[0]) DEBUG("c02.pargs: srcnam set to '%s'\n", srcnam)
   else ERROR("Error: Source file not specified\n", 0, EXIT_FAILURE)
-  if (outnam[0]) DEBUG("outnam set to '%s'\n", outnam)
+  if (outnam[0]) DEBUG("c02.pargs: outnam set to '%s'\n", outnam)
 }
 
 /* Validate CPU Type *

@@ -21,7 +21,7 @@
  *                varcnt if not found      *
  * Returns: TRUE if found, otherwise FALSE */
 int fndvar(char *name) {
-  DEBUG("vars,fndvar: Looking up variable '%s'\n", name)
+  DEBUG("vars.fndvar: Looking up variable '%s'\n", name)
   for (varidx=0; varidx<varcnt; varidx++) {
     if (strcmp(vartbl[varidx].name, name) == 0) {
       memcpy(&varble, &vartbl[varidx], sizeof(varble));
@@ -66,6 +66,7 @@ int fndmbr(int idx, char *name) {
  *       alwcon - allow const variable      *
  *       name - variable name               */
 void chksym(int alwreg, int alwcon, char *name) {
+  DEBUG("Checking symbol %s ", name)
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
     if (alwreg && valtyp != ARRAY) { 
       valtyp = REGISTER;
