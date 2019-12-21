@@ -19,15 +19,15 @@
 
 /* Begin Program Block */
 void bgnblk(char blkchr) {
-  DEBUG("Beginning program block\n", 0)
+  DEBUG("stmnt.bgnblk: Beginning program block\n", 0)
   if (blkchr) {
-    DEBUG("Expecting Block Delimiter '%c'\n", blkchr);
+    DEBUG("stmnt.bgnblk: Expecting Block Delimiter '%c'\n", blkchr);
     expect(blkchr);
     inblck = TRUE;
   }
   else
     inblck = look('{');
-  DEBUG("Set INBLCK to %d\n", inblck)
+  DEBUG("stmnt.bgnblk: Set INBLCK to %d\n", inblck)
   setblk(inblck);
 }
 
@@ -35,9 +35,9 @@ void bgnblk(char blkchr) {
  * Args: blkflg: End of Multiline Block     */
 void endblk(int blkflg) {
   int lbtype;
-  DEBUG("Ending program block with flag %d\n", blkflg)
+  DEBUG("stmnt.endblk: Ending program block with flag %d\n", blkflg)
   expect('}'); //Block End Character
-  DEBUG("Found inblck set to %d\n", inblck)
+  DEBUG("stmnt.endblk: Found inblck set to %d\n", inblck)
   if (inblck != blkflg) ERROR("Encountered '}' without matching '{'\n", 0, EXIT_FAILURE)
   lbtype = poplbl();
   if (lbtype == LTDO) pdowhl(); //Parse While at End of Do Loop
@@ -82,7 +82,7 @@ void setasn(char *name, char ispntr) {
 }
 
 void prcixy(char rgstr, char* idx, int ivt) {
-  DEBUG("Processing %c register indexed assignment\n", rgstr)
+  DEBUG("stmnt.prcixy: Processing %c register indexed assignment\n", rgstr)
   if (strlen(idx)) { //Process X variable Index
     if (ivt != LITERAL) { 
      asmlin("PHA", "");  //Save Accumulator
@@ -101,14 +101,14 @@ void prcixy(char rgstr, char* idx, int ivt) {
 
 /* Process Assignment of X and Y variables */
 void prcaxy(void) {
-  DEBUG("Processing X assignment variable '%s'\n", xsnvar)
+  DEBUG("stmnt.prcaxy: Processing X assignment variable '%s'\n", xsnvar)
   if (xsnvar[0]) {
     setasn(xsnvar, FALSE);
     if (strlen(xsnidx)) prcixy('X', xsnidx, xsnivt); //Process Index
 	else asmlin("STX", word); //Store Return Value
     xsnvar[0] = 0;
   }
-  DEBUG("Processing Y assignment variable '%s'\n", ysnvar)
+  DEBUG("stmnt.axy: Processing Y assignment variable '%s'\n", ysnvar)
   if (ysnvar[0]) {
     setasn(ysnvar, FALSE);
     if (strlen(ysnidx)) prcixy('Y', ysnidx, ysnivt); //Process Index
@@ -123,11 +123,11 @@ void prcasn(char trmntr, char ispntr) {
   if (look('(')) prssif(trmntr); //Parse Shortcut If 
   else           prsxpr(trmntr); //Parse Expression
   prcaxy(); //Process X and Y assignments
-  DEBUG("Checking if '%s' is a register\n", asnvar)
+  DEBUG("stmnt.prcasn: Checking if '%s' is a register\n", asnvar)
   if      (strcmp(asnvar, "X")==0) asmlin("TAX", "");
   else if (strcmp(asnvar, "Y")==0) asmlin("TAY", "");
   else if (strcmp(asnvar, "A")==0) return;
-  DEBUG("Processing assignment variable '%s'\n", asnvar)
+  DEBUG("stmnt.prcasn: Processing assignment variable '%s'\n", asnvar)
   setasn(asnvar, ispntr);
   if (asnidx[0]) { 
     if (ispntr) prcptx(asnidx); //Process Pointer Index
@@ -142,7 +142,8 @@ void prcasn(char trmntr, char ispntr) {
 
 /* Process Integer Assignment */
 void prcasi(char trmntr) {
-  DEBUG("Processing Integer Assignment\n", 0);
+  DEBUG("stmnt.prcasi: Processing Integer Assignment\n", 0);
+  if (look('[')) ERROR("Illegal use of Integer Variable %s as Array\n", vrname, EXIT_FAILURE)
   expect('=');
   strcpy(xsnvar, vrname); //Set Assignment LSB
   strcpy(ysnvar, vrname); strcat(ysnvar, "+1"); //Set Assignment MSB
@@ -183,7 +184,7 @@ int prcava(char *name, char trmntr, char ispntr) {
 /* Process Assignment Variable(s) */
 void prcavr(char trmntr) {
   chksym(TRUE, FALSE, word);
-  DEBUG("Processing assignment of variable %s\n", word);
+  DEBUG("stmnt.prcavr: Processing assignment of variable %s\n", word);
   strcpy(vrname, word);  //save variable to assign to
   if (valtyp == STRUCTURE) prsmbr(vrname); //Updates word and vartyp
   if (vartyp == VTINT) {
@@ -192,18 +193,18 @@ void prcavr(char trmntr) {
     return;
   }
   if (prcava(vrname, trmntr, FALSE)) return;
-  if (look(',')) {     
+  if (look(',')) {
     if (asntyp == REGISTER) ERROR("Register %s not allowed in plural assignment\n", asnvar, EXIT_FAILURE)
     prsvar(FALSE, FALSE); //get variable name
     strcpy(ysnvar, word);
-    DEBUG("Set STY variable to %s\n", ysnvar)
+    DEBUG("stmnt.prcvar: Set STY variable to %s\n", ysnvar)
     if (valtyp == ARRAY) ysnivt = getidx(ysnidx); //Get Array Index and Type
     else ysnidx[0] = 0;
-    DEBUG("Set STY index to '%s'", ysnidx) DETAIL(" and type to %d\n", ysnivt)
+    DEBUG("stmnt.prcvar: Set STY index to '%s'", ysnidx) DETAIL(" and type to %d\n", ysnivt)
     if (look(',')) {
       prsvar(FALSE, FALSE); //get variable name
       strcpy(xsnvar, word);
-      DEBUG("Set STX variable to %s\n", xsnvar)
+      DEBUG("stmnt.prcvar: Set STX variable to %s\n", xsnvar)
       //if (valtyp == ARRAY) ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE) 
       if (valtyp == ARRAY) xsnivt = getidx(xsnidx); //Get Array Index and Type
       else xsnidx[0] = 0;
@@ -247,7 +248,7 @@ void prsasn(char trmntr) {
   if (match('*')) prcasp(trmntr);
   else {
     getwrd();               //Get Variable to be Assigned
-    DEBUG("Parsing assignment of word %s\n", word)
+    DEBUG("stmnt.prsasn: Parsing assignment of word %s\n", word)
     prcavr(trmntr);
   }
 }
@@ -255,16 +256,16 @@ void prsasn(char trmntr) {
 /* parse and compile 'break'/'continue' statement */
 void pbrcnt(int lbflag) 
 {
-  DEBUG("Parsing BREAK/CONTINUE statement\n", 0)
+  DEBUG("stmnt.pbrcnt: Parsing BREAK/CONTINUE statement\n", 0)
   if (lstlbl(lbflag) < 0) ERROR("Break/continue statement outside of loop\n", 0, EXIT_FAILURE)
-  DEBUG("Found Label '%s'\n", tmplbl)
+  DEBUG("stmnt.pbrcnt: Found Label '%s'\n", tmplbl)
   asmlin("JMP", tmplbl);
   expect(';'); 
 }
 
 /* parse and compile 'do' statement */
 void pdo(void) {
-  DEBUG("Parsing DO statement '%c'\n", nxtchr)
+  DEBUG("stmnt.pdo: Parsing DO statement '%c'\n", nxtchr)
   newlbl(endlbl);         //Create End Label
   pshlbl(LTDWHL, endlbl); //and Push onto Stack
   reqlbl(loplbl);         //Get or Create/Set Loop Label
@@ -274,7 +275,7 @@ void pdo(void) {
 
 /* parse and compile 'while' after 'do' statement */
 void pdowhl(void) {
-  DEBUG("Parsing WHILE after DO '%c'\n", nxtchr)
+  DEBUG("stmnt.dowhl: Parsing WHILE after DO '%c'\n", nxtchr)
   getwrd();               //Check for While
   if (!wordis("WHILE")) expctd("while statement");
   expect('(');
@@ -288,7 +289,7 @@ void pdowhl(void) {
 
 /* parse and compile for statement */
 void pfor(void) {
-  DEBUG("Parsing FOR statement '%c'\n", nxtchr);
+  DEBUG("stmnt.pfor: Parsing FOR statement '%c'\n", nxtchr);
   expect('(');
   prsasn(';');            //Process Initial Assignment     
   newlbl(forlbl);         //Create For Loop Conditional Label
@@ -309,7 +310,7 @@ void pfor(void) {
 
 /* parse and compile if statement */
 void pif(void) {
-  DEBUG("Parsing IF statement\n", 0)
+  DEBUG("stmnt.pif: Parsing IF statement\n", 0)
   expect('(');
   newlbl(cndlbl);      //Create New Label
   pshlbl(LTIF,cndlbl); //Push Onto Stack
@@ -319,7 +320,7 @@ void pif(void) {
 
 /* parse and compile else statement */
 void pelse(void) {
-  DEBUG("Parsing ELSE statement\n", 0)
+  DEBUG("stmnt.pelse: Parsing ELSE statement\n", 0)
   strcpy(lbltmp, lblasm);   //Save Line Label
   lblasm[0] = 0;            //and Clear It
   if (toplbl(skplbl) != LTELSE) { //Get Chained ELSE Label or
@@ -333,9 +334,9 @@ void pelse(void) {
 
 /* parse and compile if statement */
 void pgoto(void) {
-  DEBUG("Parsing GOTO statement\n", 0)
+  DEBUG("stmnt.pgoto: Parsing GOTO statement\n", 0)
   if (look('(')) {
-    DEBUG("Processing Indirect GOTO\n", 0);
+    DEBUG("stmnt.pgoto: Processing Indirect GOTO\n", 0);
 	prsxpi(')', FALSE); //Parse Integer Expression w/o Assembly
     sprintf(word, "(%s)", value); //Set Indirect Argument
   } else {
@@ -347,9 +348,9 @@ void pgoto(void) {
 
 /* parse and compile inline statement */
 void pinlne(void) {
-  DEBUG("Parsing INLINE statement\n", 0)
+  DEBUG("stmnt.pinlne: Parsing INLINE statement\n", 0)
   do { 
-    DEBUG("Parsing inline parameter\n", 0)
+    DEBUG("stmnt.pinlne: Parsing inline parameter\n", 0)
     if (look('&')) {
       reqvar(FALSE); //Get Variable Name
       strcpy(word, "<");
@@ -379,9 +380,15 @@ void pinlne(void) {
   expect(';');
 }
 
+/* parse and compile label */
+void plabel(void) {
+  prslab();      //Parse Program Label
+  setlbl(word);  //Set Label to Emit
+}
+
 /* parse and compile pop statement */
 void ppop(void) {
-  DEBUG("Parsing POP statement\n", 0)
+  DEBUG("stmnt.ppop: Parsing POP statement\n", 0)
   do {  
     if (look('.')) term[0]=0; 
     else {
@@ -397,7 +404,7 @@ void ppop(void) {
 
 /* parse and compile push statement */
 void ppush(void) {
-  DEBUG("Parsing PUSH statement\n", 0)
+  DEBUG("stmnt.ppush: Parsing PUSH statement\n", 0)
   do { 
     if (!chkadr(ADPUSH, TRUE)) {
       prsxpr(0);        //Parse Expression
@@ -409,7 +416,7 @@ void ppush(void) {
 
 /* parse and compile return statement */
 void pretrn(int INTRPT) {
-  DEBUG("Parsing RETURN statement\n", 0)
+  DEBUG("stmnt.pretrn: Parsing RETURN statement\n", 0)
   skpspc();
   if (INTRPT) {
     expect(';');
@@ -423,7 +430,7 @@ void pretrn(int INTRPT) {
 
 /* parse and compile select statement */
 void pslct(void) {
-  DEBUG("Parsing SELECT statement\n", 0)
+  DEBUG("stmnt.pslct: Parsing SELECT statement\n", 0)
   expect('(');
   prsxpr(')');            //Parse Expression
   newlbl(endlbl);         //Create New Label
@@ -435,7 +442,7 @@ void pslct(void) {
 
 /* process end of case block */
 void ecase(void) {
-  DEBUG("Processing end of CASE block\n", 0)
+  DEBUG("stmnt.ecase: Processing end of CASE block\n", 0)
   if (poplbl(cndlbl) != LTCASE) ERROR("%s not at end of CASE block\n", word, EXIT_FAILURE)
   if (toplbl(endlbl) != LTSLCT) ERROR("Illegal nesting in SELECT statement\n", 0, EXIT_FAILURE)  
   asmlin("JMP", endlbl);  //Emit jump over default case
@@ -474,14 +481,17 @@ void pdflt(void) {
 
 /* parse and compile while statement */
 void pwhile(void) {
-  DEBUG("Parsing WHILE statement '%c'\n", nxtchr)
+  DEBUG("stmnt.pwhile: Parsing WHILE statement '%c'\n", nxtchr)
   expect('(');
   newlbl(endlbl);          //Create End Label
+  DEBUG("stmnt.pwhile: Created End Label %s, ", endlbl);
   pshlbl(LTEND, endlbl);   //and Push onto Stack
   reqlbl(loplbl);          //Get or Create/Set Loop Label
+  DETAIL("Loop Label %s, ", loplbl);
   pshlbl(LTLOOP, loplbl);  //Push onto Stack
   if (!look(')')) {  
     newlbl(cndlbl);          //Create Conditional Skip Label
+    DETAIL("Conditional Label %s, ", cndlbl);
     prscnd(')', TRUE);       //Parse Conditional Expession
     asmlin("JMP", endlbl);   //Emit Jump to End of Loop
     setlbl(cndlbl);          //and Set Label to Emit on Next Line
@@ -503,7 +513,7 @@ void prsfns(void) {
 
 /* parse and compile identifier (variable or function call) */
 void prssym(void) {
-  DEBUG("Parsing Identifier %s\n", word)
+  DEBUG("stmnt.prssym: Parsing Identifier %s\n", word)
   valtyp = gettyp();
   if (valtyp == FUNCTION) prsfns();  //Parse Statement Function Call
   else prcavr(';'); //Parse Assignment
@@ -511,69 +521,33 @@ void prssym(void) {
 
 /* parse and compile program statement */
 void pstmnt(void) {
-  DEBUG("Parsing statement '%s'\n", word)
-  if (wordis("DO")) {
-    pdo();
-    return;
-  }
-  if (wordis("ELSE")) {
-    pelse();
-    return;
-  }
-  if (wordis("FOR")) {
-    pfor();
-    return;  
-  }
-  if (wordis("IF")) {
-    pif();
-    return;
-  }
-  if (wordis("SWITCH")) {
-    ERROR("SWITCH not implemented. Use SELECT.\n", word, EXIT_FAILURE)  
-  }
-  if (wordis("SELECT")) {
-    pslct();
-    return;
-  }
-  if (wordis("CASE")) {
-    pcase();
-    return;  
-  }
-  if (wordis("DEFAULT")) {
-    pdflt();
-    return;  
-  }
-  if (wordis("WHILE")) {
-    pwhile();
-    return;  
-  }
-  if(match(':')) {
-    prslab();      //Parse Program Label
-    setlbl(word);  //Set Label to Emit
-    return;
-  }
-  if (wordis("ASM")) pasm();
-  else if (wordis("BREAK")) 
-    pbrcnt(LFEND);
-  else if (wordis("CONTINUE"))
-    pbrcnt(LFBGN);
-  else if (wordis("GOTO"))
-    pgoto();
-  else if (wordis("INLINE"))
-    pinlne();
-  else if (wordis("POP"))
-    ppop();
-  else if (wordis("PUSH"))
-    ppush();
-  else if (wordis("RESUME"))
-    pretrn(TRUE);
-  else if (wordis("RETURN"))
-    pretrn(FALSE);
-  else
-    prssym();
+  DEBUG("stmnt.pstmnt: Parsing statement '%s'\n", word)
+  //Keywords that start a new block
+  if (wordis("DO"))      { pdo();    return; }
+  if (wordis("ELSE"))    { pelse();  return; }
+  if (wordis("FOR"))     { pfor();   return; }
+  if (wordis("IF"))      { pif();    return; }
+  if (wordis("SWITCH"))    ERROR("SWITCH not implemented. Use SELECT.\n", word, EXIT_FAILURE)
+  if (wordis("SELECT"))  { pslct();  return; }
+  if (wordis("CASE"))    { pcase();  return; }
+  if (wordis("DEFAULT")) { pdflt();  return; }
+  if (wordis("WHILE"))   { pwhile(); return; }
+  if (match(':'))        { plabel(); return; }
+
+  //Keywords that don't start a block
+  if (wordis("ASM"))           pasm();
+  else if (wordis("BREAK"))    pbrcnt(LFEND);
+  else if (wordis("CONTINUE")) pbrcnt(LFBGN);
+  else if (wordis("GOTO"))     pgoto();
+  else if (wordis("INLINE"))   pinlne();
+  else if (wordis("POP"))      ppop();
+  else if (wordis("PUSH"))     ppush();
+  else if (wordis("RESUME"))   pretrn(TRUE);
+  else if (wordis("RETURN"))   pretrn(FALSE);
+  else                         prssym();
+  
   if (lblcnt && !inblck) {
-    DEBUG("Ending implied block\n", 0)
-    if (poplbl() == LTDO)
-      pdowhl(); //Parse While at End of Do Loop
+    DEBUG("stmnt.pstmnt: Ending implied block\n", 0)
+    if (poplbl() == LTDO) pdowhl(); //Parse While at End of Do Loop
   }
 }
