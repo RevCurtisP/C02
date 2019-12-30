@@ -1,24 +1,43 @@
-/* Joystick Functions for  *
- * Commander X-16 Computer */
+/* Joystick Functions for  Commander X-16 Computer *
+ * Supports Keyboard, NES, and SNES Controllers    *
+ *   A and B on Keyboard and SNES Controller and   *
+ *   A, B, X, Y on SNES Controller are all         *
+ *   mapped to the joystick button JOYB0           *
+ * Individual button status and Controller Type    *
+ *   are returned as extended results              */
+
+/* Keyboard to NES Controller Mappings           *
+ * Key: Ctrl Alt  Space Enter Up Down Left Right *
+ * NES:  A    B  Select Start Up Down Left Right */
 
 #define JYSTKS 2 //Number of Joysticks
 
+//Joystick Result Bitmasks
 #define JOYUP $08 //Up    
 #define JOYDN $04 //Down  
 #define JOYLF $02 //Left  
 #define JOYRT $01 //Right 
-#define JOYB0 $80 //Button
+#define JOYB0 $C0 //Button
 
-char jydata[]; //Joystick Data
+//Extended Result Bitmasks
+#define JOYBA $80 //A Button
+#define JOYBB $40 //B Button
+#define JOYSL $20 //Select
+#define JOYST $10 //Start
+#define JOYBL $08 //Left Button
+#define JOYBR $04 //Right Button
+#define JOYBX $02 //X Button
+#define JOYBY $01 //Y Button
 
-/* Poll Joysticks`       *
- * Sets: j = Joystick Number *
- * Returns: $FF = Error      *
- *              No Joysticks */
-void getjoy(); 
+//Controller Types
+#define JOYKBD $00 //Keyboard (NES Emulation)
+#define JOYNES $01 //NES Controller
+#define JOYSNS $02 //SNS Controller
 
-/* Read Joystick State       *
- * Args: j = Joystick Number *
- * Returns: $FF = Error      *
- *              No Joysticks */
+/* Read Joystick Status                *
+ * Args: j = Joystick Number           *
+ * Returns: char j = Joystick Status   *
+ *                   $FF = Not Present *
+ *          char b = Extended Status   *
+ *          char c = Controller Type   */
 char joystk(); 
