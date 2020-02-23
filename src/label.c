@@ -19,15 +19,15 @@
 void addlab(char *name) {
   if (fndvar(name)) ERROR("Label %s conflicts with variable with same name", name, EXIT_FAILURE)
   if (fndlab(name)) ERROR("Duplicate program label %s\n", name, EXIT_FAILURE)
-  DEBUG("Adding Program Label %s ", name) DEBUG("at index %d\n", labcnt)
+  DEBUG("label.addlab: Adding Program Label %s ", name) DETAIL("at index %d\n", labcnt)
   strcpy(labnam[labcnt++], name);
 }
 
 int fndlab(char *name) {
-  DEBUG("Looking for Program Label %s\n", name)
+  DEBUG("label.fndlab: Looking for Program Label %s\n", name)
   for (labidx=0; labidx<labcnt; labidx++)
     if (strcmp(labnam[labidx], name) == 0) return TRUE;
-  DEBUG("Label %s Not Found\n", name)
+  DEBUG("label.fndlab: Label %s Not Found\n", name)
   return FALSE;
 }
 
@@ -51,10 +51,10 @@ const char lblflg[] = {LFNONE, LFNONE, LFNONE, LFBGN, LFEND, LFBGN, LFEND, LFEND
  *          (-1 if not found)         */
 int lstlbl(int lbflag) {
   int i;
-  DEBUG("Searching for label flag %d\n", lbflag)
+  DEBUG("label.lstlbl: Searching for label flag %d\n", lbflag)
   for (i = lblcnt - 1; i>-1; i--)
     if (lblflg[lbltyp[i]] == lbflag) break;
-  DEBUG("Search produced label index %d\n", i)
+  DEBUG("label.lstlbl: Search produced label index %d\n", i)
   if (i>=0) strcpy(tmplbl, lblnam[i]);
   return i;
 }
@@ -66,9 +66,9 @@ void setblk(int blkflg) { lblblk[lblcnt-1] = blkflg; }
  * Assembly Language Code     *
  * to word                    */
 void setlbl(char *lblset) {
-  DEBUG("Setting Label '%s'\n", lblset)
+  DEBUG("label.setlbl: Setting Label '%s'\n", lblset)
   if (strlen(lblasm) > 0) {
-    DEBUG("Emitting Label '%s'\n'", lblasm);
+    DEBUG("label.setlbl: Emitting Label '%s'\n'", lblasm);
     asmlin("",""); //Emit Block End Label on it's own line
   }
   if (strlen(lblset) > LBLLEN) ERROR("Label '%s' exceeds maximum size\n", word, EXIT_FAILURE)
@@ -77,7 +77,7 @@ void setlbl(char *lblset) {
 
 /* Parse Program Label */
 void prslab(void) {
-  DEBUG("Parsing Label '%s''\n", word)
+  DEBUG("label.prslab: Parsing Label '%s''\n", word)
   addlab(word);
   CCMNT(nxtchr);
   skpchr(); //skip ':'
@@ -86,7 +86,7 @@ void prslab(void) {
 /* generate new label */
 void newlbl(char* lbname) {
   sprintf(lbname, LBLFMT, lblnxt++);
-  DEBUG("Generated new label '%s'\n", lbname)
+  DEBUG("label.newlbl: Generated new label '%s'\n", lbname)
 }
 
 /* Check Label Contents             *
@@ -101,23 +101,23 @@ void chklbl(char* lbname) {
  * if label is already set, returns that label *
  * else generates new label and sets it        */
 void reqlbl(char* lbname) {
-  DEBUG("Requesting Label\n",0)
+  DEBUG("label.reqlbl: Requesting Label\n",0)
   if (lblasm[0] == 0) {newlbl(lbname); setlbl(lbname);}
-  else {strcpy(lbname,lblasm); DEBUG("Found lblasm set to \"%s\"\n", lblasm)}
+  else {strcpy(lbname,lblasm); DEBUG("label.reqlbl: Found lblasm set to \"%s\"\n", lblasm)}
 }
 
 /* End Function Block */
 void endfnc(void) {
-  DEBUG("Ending function definition with lsrtrn set to %d\n", lsrtrn)
+  DEBUG("label.endfnc: Ending function definition with lsrtrn set to %d\n", lsrtrn)
   if (!lsrtrn) asmlin("RTS", ""); 
   infunc = FALSE;
-  DEBUG("Set infunc to %d\n", infunc)
+  DEBUG("label.endfnc: Set infunc to %d\n", infunc)
 }
 
 /* Pop Label from Stack and Emit on Next Line */
 int poplbl(void) {
   int lbtype = lbltyp[--lblcnt];
-  DEBUG("Popped label type %d\n", lbtype)
+  DEBUG("label.poplbl: Popped label type %d\n", lbtype)
   switch (lbtype) {
     case LTFUNC: endfnc(); break; //Return From Subroutine
     case LTDO:   strcpy(loplbl, lblnam[lblcnt]); break;  
@@ -134,7 +134,7 @@ int poplbl(void) {
 int toplbl(char *rtlbl) {
   if (lblcnt) {
     strcpy(rtlbl, lblnam[lblcnt-1]);
-    DEBUG("Found top label %s\n", rtlbl)
+    DEBUG("label.toplbl: Found top label %s\n", rtlbl)
     return lbltyp[lblcnt-1];
   }
   rtlbl[0] = 0; //Clear Label
@@ -145,9 +145,9 @@ int toplbl(char *rtlbl) {
  * Args: lbltyp - Label type    *
  * Uses: curlbl - Label to push */
 void pshlbl(int lbtype, char* lbname) {
-  DEBUG("Pushing label type %d\n", lbtype)
+  DEBUG("label.pshlbl: Pushing label type %d\n", lbtype)
   strcpy(lblnam[lblcnt], lbname);
   lbltyp[lblcnt] = lbtype;
   lblblk[lblcnt++] = FALSE;
-  DEBUG("Pushed label '%s' onto stack\n", lbname)
+  DEBUG("label.pshlbl: Pushed label '%s' onto stack\n", lbname)
 }
