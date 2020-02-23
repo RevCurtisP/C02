@@ -12,6 +12,7 @@
 /* Error - Print Input File name & position and exit */
 void exterr(int errnum) {
   fprintf(stderr, "Line %d Column %d of File %s\n", curlin, curcol, inpnam);
+  fflush(stdout); fflush(stderr);
   exit(errnum);
 }
 
