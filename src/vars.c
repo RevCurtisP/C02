@@ -66,7 +66,7 @@ int fndmbr(int idx, char *name) {
  *       alwcon - allow const variable      *
  *       name - variable name               */
 void chksym(int alwreg, int alwcon, char *name) {
-  DEBUG("Checking symbol %s ", name)
+  DEBUG("vars.chksym: Checking symbol %s\n", name)
   if (strlen(name) == 1 && strchr("AXY", name[0])) {
     if (alwreg && valtyp != ARRAY) { 
       valtyp = REGISTER;
@@ -425,6 +425,9 @@ void defstc(void) {
         vartyp = VTCHAR;
         mbrsiz = 1;
         stcidx = -1;
+        break;
+      case TENUM:
+        ERROR("ENUM in STRUCT Not Implemented\n", 0, EXIT_FAILURE)
         break;
       default:
         ERROR("Invalid Type %s in Struct Definition\n", word, EXIT_FAILURE)
