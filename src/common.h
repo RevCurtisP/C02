@@ -37,9 +37,12 @@
 
 #define ASMFMT "%-7s %-3s %-12s %s\n"  //Assembly Language Line printf Format
 
-/* Internal defines */
+/* Internal Constants and Macros */
 #define TRUE -1
 #define FALSE 0
+#define NOT(exp) (exp) == 0
+#define TF(x) (x) ? TRUE : FALSE;
+
 
 void prtpos(); //Print current file name and position
 #define DEBUG(fmt, val) {if (debug) {prtpos(); printf(fmt, val);}}

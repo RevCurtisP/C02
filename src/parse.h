@@ -2,8 +2,6 @@
  * C02 Input File Parsing Routines   *
  *************************************/
 
-#define TF(x) (x) ? TRUE : FALSE;
-
 enum stypes {LITERAL, VARIABLE, REGISTER, ARRAY, STRUCTURE, FUNCTION, ADDRESS, INTEGER};  //Symbol Types
 enum etypes {ETDEF, ETMAC};                         //Definition Types
 
@@ -55,7 +53,7 @@ int  prsbyt();              //Parse Numeric Byte
 void prslit();              //Parse Literal
 int  prsnum(int maxval);    //Parse Numeric
 void prsopr();              //Parse Arithmetic Operator
-int  prspst(char trmntr, int isint, char* name, char* index, char indtyp, char ispntr);  //Parse Post Operator
+int  prspst(char oper, char trmntr, int isint, char* name, char* index, char indtyp, char ispntr);  //Parse Post Operator
 int  psizof(void);          //Parse SizeOf Operator
 int  pidxof(void);          //Parse SizeOf Operator
 void skpchr();              //Skip Next Character
