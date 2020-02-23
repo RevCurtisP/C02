@@ -112,10 +112,10 @@ void skpeol(void) {while (!isnl()) getnxt();}
 
 /* Advance Source File to end of comment    *
  * Recognizes both C and C++ style comments */
-void skpcmt(int exslsh)
+void skpcmt(int skslsh)
 {
   DEBUG("Skipping Comment\n", 0) 
-  if (exslsh) expect('/');  //skip initial /
+  if (skslsh) skpchr();  //skip initial /
   if (match('/')) skpeol(); //if C style comment skip rest of line
   else if (match('*'))      //if C++ style comment
     while (TRUE)            //  skip to */
@@ -439,14 +439,15 @@ void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
 }
 
 /* Parse Post Operator */
-int prspst(char trmntr, int isint, char* name, char* index, char indtyp, char ispntr) {
-  oper = getnxt();
+int prspst(char poper, char trmntr, int isint, char* name, char* index, char indtyp, char ispntr) {
+  if (poper) oper = poper;
+  else oper = getnxt();
   CCMNT(oper);
   DEBUG("Checking for post operation '%c'\n", oper)
   if (nxtchr == oper) {
     skpchr();
     CCMNT(oper);
-    expect(trmntr);
+    if (trmntr) expect(trmntr);
     prcpst(isint, name, index, indtyp, ispntr);  //Process Post-Op
     return 0;
   }

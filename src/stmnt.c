@@ -175,7 +175,7 @@ int prcava(char *name, char trmntr, char ispntr) {
   if (ispntr && strcmp(asnidx, "X") == 0) ERROR("Illegal use of register X\n", 0, EXIT_FAILURE) 
   DEBUG("stmnt.prcava: Set STA index to '%s'", asnidx) DETAIL(" and type to %d\n", asnivt)
   if (ispopr()) {
-    if (prspst(trmntr, FALSE, asnvar, asnidx, asnivt, ispntr)) expctd("post operator");
+    if (prspst(0, trmntr, FALSE, asnvar, asnidx, asnivt, ispntr)) expctd("post operator");
 	return TRUE;
   }
   return FALSE;
@@ -188,7 +188,7 @@ void prcavr(char trmntr) {
   strcpy(vrname, word);  //save variable to assign to
   if (valtyp == STRUCTURE) prsmbr(vrname); //Updates word and vartyp
   if (vartyp == VTINT) {
-    if (ispopr()) {if (prspst(trmntr, TRUE, vrname, "", 0, FALSE)) expctd("post operator");}
+    if (ispopr()) {if (prspst(0, trmntr, TRUE, vrname, "", 0, FALSE)) expctd("post operator");}
     else prcasi(trmntr); //Process Integer Assignment
     return;
   }
