@@ -44,7 +44,7 @@ int isxpre(void) {return TF(isvpre() || match('-'));}
 char prcchr(char c) {
   if (invasc) c = isalpha(c) ? (islower(c)?toupper(c):tolower(c)) : c;
   if (mskasc) c = c | 0x80;
-  if (invasc || mskasc) DEBUG("Character converted to '%c'\n", c)
+  if (invasc || mskasc) DEBUG("parse.prcchr: Character converted to '%c'\n", c)
   return c;
 }
 
@@ -72,7 +72,7 @@ char getnxt(void) {
 
 /* Advance Input File to next printable character */
 void skpspc(void) {
-  //DEBUG("Skipping Spaces\n", 0)
+  //DEBUG("parse.skpspc: Skipping Spaces\n", 0)
   if (isspc()) CCMNT(' '); //Add only the first space to comments
   while (isspc()) getnxt();
 }
@@ -114,7 +114,7 @@ void skpeol(void) {while (!isnl()) getnxt();}
  * Recognizes both C and C++ style comments */
 void skpcmt(int skslsh)
 {
-  DEBUG("Skipping Comment\n", 0) 
+  DEBUG("parse.skpcmt: Skipping Comment\n", 0) 
   if (skslsh) skpchr();  //skip initial /
   if (match('/')) skpeol(); //if C style comment skip rest of line
   else if (match('*'))      //if C++ style comment
@@ -147,7 +147,7 @@ void getwrd(void) {
 
 /* Escape Character */
 char escape(char c) {
-  DEBUG("Escaping character '%c'\n", c)
+  DEBUG("parse.escape: Escaping character '%c'\n", c)
   switch (c) {
     case 'a': return 0x07; //Alert (Beep/Bell)
     case 'b': return 0x08; //Backspace
@@ -163,7 +163,7 @@ char escape(char c) {
 
 /* Escape Numeric Literal */
 char escnum(void) {
-  DEBUG("Escaping numeric literal\n", 0);
+  DEBUG("parse.escnum: Escaping numeric literal\n", 0);
   char c = prsnum(0xff);
   return c;
 }
@@ -175,7 +175,7 @@ void getstr(void) {
   char strdel;
   int escnxt = FALSE;
   pstlen = 0;
-  DEBUG("Parsing string\n", 0)
+  DEBUG("parse.getstr: Parsing string\n", 0)
   strdel = getnxt();  //Get String Delimiter
   CCMNT(strdel);
   while(!match(strdel) || escnxt) {
@@ -248,7 +248,7 @@ int prshex(void) {
   wrdlen = 0;
   int digit;
   int number = 0;
-  DEBUG("Parsing hexadecimal literal '", 0)
+  DEBUG("parse.prshex: Parsing hexadecimal literal '", 0)
   if (!match('$')) expctd("hexadecimal number"); 
   word[wrdlen++] = getnxt();
   while (ishexd()) {
@@ -271,11 +271,11 @@ int prshex(void) {
 int prschr(void) {
   wrdlen = 0;
   char c;
-  DEBUG("Parsing character literal\n", 0)
+  DEBUG("parse.prschr: Parsing character literal\n", 0)
   word[wrdlen++] = getnxt(); //Initial Single Quote
   if (match('\\')) word[wrdlen++] = getnxt();
   c = getnxt();
-  DEBUG("Extracted character %c\n", c)
+  DEBUG("parse.prschr: Extracted character %c\n", c)
   word[wrdlen++] = prcchr(c);
   if (!match('\'')) expctd("character delimiter");
   word[wrdlen++] = getnxt();
@@ -298,7 +298,7 @@ int prsnum(int maxval) {
     case '\'': number = prschr(); break;
     default:   number = prsdec();
   }
-  DEBUG("Parsed number %s ", word)
+  DEBUG("parse.prsnum: Parsed number %s ", word)
   DETAIL("with value %d\n", number)
   if (number > maxval)  ERROR("Out of bounds literal '%d';\n", number, EXIT_FAILURE)
   if (maxval > 255) sprintf(value, "$%04X", number);
@@ -312,7 +312,7 @@ int prsbyt(void) {return prsnum(0xFF);}
 
 /* Find Defined Constant */
 void fnddef(char *name) {
-  DEBUG("Looking up defined constant '%s'\n", word)
+  DEBUG("parse.fnddef: Looking up defined constant '%s'\n", word)
   for (conidx=0; conidx<concnt; conidx++) 
     if (strcmp(connam[conidx], name) == 0) return;
   conidx = -1;
@@ -347,7 +347,7 @@ void prslit(void) {
   strcpy(word, value); //Patch for DASM
   strcpy(value, "#");
   strcat(value, word);
-  DEBUG("Generated literal '%s'\n", value)
+  DEBUG("parse.prslit: Generated literal '%s'\n", value)
 }
 
 /* Get Value Type */
@@ -362,7 +362,7 @@ int gettyp(void) {
 void prsopr(void) {
   if (!isoper()) expctd("Arithmetic or bitwise operator");
   oper = getnxt();
-  DEBUG("Parsed operator '%c'\n", oper)
+  DEBUG("parse.prsopr: Parsed operator '%c'\n", oper)
   CCMNT(oper);
   skpspc();
 }
@@ -443,7 +443,7 @@ int prspst(char poper, char trmntr, int isint, char* name, char* index, char ind
   if (poper) oper = poper;
   else oper = getnxt();
   CCMNT(oper);
-  DEBUG("Checking for post operation '%c'\n", oper)
+  DEBUG("parse.prspst: Checking for post operation '%c'\n", oper)
   if (nxtchr == oper) {
     skpchr();
     CCMNT(oper);
@@ -451,6 +451,6 @@ int prspst(char poper, char trmntr, int isint, char* name, char* index, char ind
     prcpst(isint, name, index, indtyp, ispntr);  //Process Post-Op
     return 0;
   }
-  DEBUG("Not a post operation\n", 0)
+  DEBUG("parse.prspst: Not a post operation\n", 0)
   return oper;
 }

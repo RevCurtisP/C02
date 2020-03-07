@@ -52,7 +52,7 @@ void prsval(int alwreg, int alwcon) {
 
 /* Process Unary Minus */
 void prcmns(void) {
-    DEBUG("Processing unary minus", 0)
+    DEBUG("expr.prcmns: Processing unary minus", 0)
     asmlin("LDA", "#$00");  //Handle Unary Minus
 }
 
@@ -105,7 +105,7 @@ void prcxix(void) {
 
 /* Check for, Parse, and Process Index */
 void chkidx(void) {
-  //DEBUG("Checking for Array Index with valtyp=%d\n", valtyp)
+  //DEBUG("expr.chkidx: Checking for Array Index with valtyp=%d\n", valtyp)
   if (valtyp == ARRAY) {
     if (look('-')) {
       prcmns();
@@ -123,7 +123,7 @@ void chkidx(void) {
 /* Parse Pointer                 *
  * Sets: term - Compiled Pointer */
 void prsptr(void) {
-  DEBUG("Parsing pointer\n", 0)
+  DEBUG("expr.prsptr: Parsing pointer\n", 0)
   expect('*');  //Pointer Dereference Operator
   prsvar(FALSE,FALSE); //Parse Variable to Dereference
   strcpy(term, value);
@@ -165,7 +165,7 @@ int prcptr(void) {
  * Sets: term - the term (as a string) *
  * Returns: TRUE if term is an integer */
 int prstrm(int alwint) {
-  DEBUG("Parsing term\n", 0)
+  DEBUG("expr.prstrm: Parsing term\n", 0)
   if (match('*')) return prcptr(); //Parse and Deference Pointer
   prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
@@ -181,7 +181,7 @@ int prstrm(int alwint) {
  * Args: adract = Address Action (adacts) * 
  *       symbol = Symbol to Process       */
 void prcadr(int adract, char* symbol) {
-  DEBUG("Processing address '%s'\n", word)
+  DEBUG("expr.prcadr: Processing address '%s'\n", word)
   strcpy(word,"#>(");
   strcat(word,symbol);
   strcat(word,")");
@@ -213,7 +213,7 @@ void prsadr(int adract) {
  *       alwstr = Allow String       */
 void prsstr(int adract, int alwstr) {
   if (!alwstr) ERROR("Illegal String Reference", 0, EXIT_FAILURE)
-  DEBUG("Parsing anonymous string\n", 0)
+  DEBUG("expr.prsstr: Parsing anonymous string\n", 0)
   newlbl(vrname);         //Generate Variable Name
   value[0] = 0;           //Use Variable Size 0
   setvar(MTNONE, VTCHAR); //Set Variable Name, Type, and Size
@@ -241,7 +241,7 @@ int chkadr(int adract, int alwstr) {
 void prsbop(void) {
   char byteop = getnxt();
   CCMNT(byteop);
-  DEBUG("Parsing byte operator '%c'\n", byteop)
+  DEBUG("expr.prsbop: Parsing byte operator '%c'\n", byteop)
   if (chkadr(FALSE, FALSE)) {
     sprintf(value, "%c(%s)", byteop, word);
     valtyp = LITERAL;
@@ -251,7 +251,7 @@ void prsbop(void) {
     if (byteop == '>') strcat(value, "+1");
     vartyp = VTCHAR;
   }
-  DEBUG("Set value to \"%s\"\n", value)
+  DEBUG("expr.prsbop: Set value to \"%s\"\n", value)
 }
 
 /* Parse Function Argument or Return Values */
@@ -299,7 +299,7 @@ void prsfpr(char trmntr) {
 
 /* Parse function call */
 void prsfnc(char trmntr) {
-  DEBUG("Processing Function Call '%s'\n", term)
+  DEBUG("expr.prsfnc: Processing Function Call '%s'\n", term)
   //int argexp = FALSE; //Expression(s) in second and third argument
   pshtrm(); //Push Function Name onto Term Stack
   skpchr(); //skip open paren
@@ -313,7 +313,7 @@ void prsfnc(char trmntr) {
 
 /* Process Integer Variable */
 void prcvri(void) {
-  DEBUG("Processing Integer Variable '%s'\n", value)
+  DEBUG("expr.prcvri: Processing Integer Variable '%s'\n", value)
   asmlin("LDX", value);
   strcat(value, "+1");
   asmlin("LDY", value);
@@ -343,7 +343,7 @@ int prcivr(int alwint) {
 
 /* Process first term of expression */
 int prcftm(int alwint) {
-  DEBUG("Processing first term '%s'\n", value)
+  DEBUG("expr.prcftm: Processing first term '%s'\n", value)
   strcpy(term, value);
   if (valtyp == VARIABLE && prcivr(alwint)) return TRUE;
   if (valtyp == FUNCTION) prsfnc(0); //Parse Expression Function
@@ -357,7 +357,7 @@ int prcftm(int alwint) {
 /* Parse first term of expession            *
  * First term can include function calls    */
 int prsftm(int alwint) {
-  DEBUG("Parsing first term\n", 0)
+  DEBUG("expr.prsftm: Parsing first term\n", 0)
   if (match('*')) { 
     prcptr(); //Parse and Deference Pointer
     asmlin("LDA", term); 
@@ -370,7 +370,7 @@ int prsftm(int alwint) {
 /* Process Arithmetic or Bitwise Operator *
  *   and the term that follows it         */
 void prcopr(void) {
-  DEBUG("Processing operator '%c'\n", oper)
+  DEBUG("expr.prcopr: Processing operator '%c'\n", oper)
   switch(oper) {
     case '+': asmlin("CLC", ""); asmlin("ADC", term); break;  //Addition
     case '-': asmlin("SEC", ""); asmlin("SBC", term); break;  //Subtraction
@@ -397,7 +397,7 @@ void prsrxp(char trmntr) {
 }
 
 int prsxpp(char trmntr, int alwint) {
-  DEBUG("Parsing expression\n", 0)
+  DEBUG("expr.prsxpp: Parsing expression\n", 0)
   skpspc();
   trmcnt = 0; //Initialize Expression Depth
   if (match('-')) prcmns(); //Process Unary Minus
@@ -426,10 +426,10 @@ int prsxpf(char trmntr) {
  * Sets: value - Parsed Value or Symbol */
 void prsxpi(char trmntr, int asmxpr) {
   skpspc();
-  DEBUG("Parsing integer expression\n", 0)
+  DEBUG("expr.prsxpi: Parsing integer expression\n", 0)
   if (!chkadr(TRUE, FALSE)) {
     if (isnpre()) {
-    DEBUG("Parsing Integer Literal\n", 0) 
+    DEBUG("expr.prsxpi: Parsing Integer Literal\n", 0) 
       int number = prsnum(0xFFFF); //Parse Number into value
       if (asmxpr) {
         sprintf(value, "#%d", number & 0xFF); asmlin("LDX", value);
