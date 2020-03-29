@@ -1,0 +1,53 @@
+;Mouse Control Assembly Language Routines for Commander x16 computer
+
+        SUBROUTINE _MOUSE
+
+;Mouse Mode Constants for MCNFG Routine
+MHIDE   EQU $00     ;Hide Mouse
+MSHOW   EQU $01     ;Show Mouse
+MCSTM   EQU $FF     ;Show Mouse - Custom Sprite
+
+;Mouse Button Bitmasks
+MBLEFT  EQU $01     ;Left Mouse Button
+MBMIDL  EQU $04     ;Middle Mouse Button
+MBRGHT  EQU $02     ;Right Mouse Button
+
+;Mouse Scaling Constants
+;Specific to the X16
+MSNONE  EQU $00     ;Do Not Change Resolution
+MSLOW   EQU $02     ;Low Resolution (320x240)
+MSHIGH  EQU $01     ;High Resolution (640x480)
+
+;Mouse Status Variables
+MOUSEX  EQU $02   ;Mouse X Position (ABI Register R0)
+MOUSEY  EQU $04   ;Mouse Y Position (ABI Register R1)
+MOUSEB  EQU $06   ;Mouse Button Status (ABI Register R2L)
+
+;Kernal Internal Mouse Variables
+MOUSEV  EQU $A021   ;Valid for Kernal Version R37
+
+;mcnfg(mode) - Configure Mouse
+;Args: A = Mode
+;Affects: X,Y
+;Returns: A = Result Code: $00 = Success
+MCNFG:   LDX #MSLOW     ;Set Scale for 320x240 Screen
+MCNFGS:  JSR $FF68  ;Kernal mouse_config Routine
+         LDA #0     ;Return Success
+         RTS
+
+;mread() - Read Mouse
+;Sets: MOUSEX, MOUSEY, MOUSEB
+;Affects: X
+;Returns: A = Result Code: $00 = Success
+MREAD:  LDX #MOUSEX ;Set Data Address
+        JSR $FF6B   ;Execute Kernal mouse_get Routine
+        STA MOUSEB  ;Store Mouse Button Status
+        LDA #0      ;Return Success
+        RTS
+
+;mscan() - Scan Mouse
+;Retrieves mouse state for subsequent mread()
+;This is called during the default interrupt
+;handler so should only be called if the interrupt
+;routine is entirey replaced.
+MSCAN   EQU $FF71   ;Aliased to Kernal mouse_scan routine

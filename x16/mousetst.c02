@@ -1,0 +1,95 @@
+/********************************
+ * MOUSETST - Test mouse module *
+ * for Commander X16 computer   *
+ ********************************/
+
+//use -h option on command line
+#include <screen.h02>
+#include <mouse.h02>
+
+alias char rambnk = $9F61; //RAM Bank Select Register
+
+char i,j,r;
+char aa,yy,xx;
+int yx;
+
+char key;   //Last Keypress
+char scale; //Mouse Scaling Factor
+
+void prtbtn(aa,yy,xx) {
+  putchr(' ');
+  if (aa & yy) xx = '*';
+  putchr(xx);
+}
+
+void prtbyt(aa) {
+  putchr('$');
+  prbyte(aa);
+}
+
+void prtwrd(.,yy,xx) {
+  putchr('$');
+  prbyte(yy);
+  prbyte(xx);
+}
+
+
+/* Print Kernal Mouse Status */
+void prtsts() {
+  putstr("MSTS: "); prtbyt(mousev.msts); 
+  if (mousev.msts:-) putstr(" ON"); else putstr(" OFF");
+  putstr(" SCALE: "); prhex(mousev.msts);
+}
+
+/* Print Kernal Mouse Variables */
+void prtkmv() {
+  push rambnk; //Save RAM Bank
+  rambnk = 0; //Set RAM Bank to Kernal Variables
+  newlin(); //Skip a Line
+  prtsts(); newlin();
+  putstr("XMIN: "); prtwrd(mousev.xmin); newlin();
+  putstr("XMAX: "); prtwrd(mousev.xmax); newlin();
+  putstr("XMIN: "); prtwrd(mousev.ymin); newlin();
+  putstr("XMAX: "); prtwrd(mousev.ymax); newlin();
+  putstr("XPOS: "); prtwrd(mousev.xpos); newlin();
+  putstr("XPOS: "); prtwrd(mousev.xpos); newlin();
+  putstr("BTNS: "); prtwrd(mousev.btns); newlin();
+  pop rambnk; //Retore RAM Bank
+}
+
+void error() {
+  putstr();
+  newlin();
+  goto exit;
+}
+
+main:
+
+  scale = #MSLOW;   //Set to mcnfg() default
+
+  //Enable Mouse
+  if (mcnfg(#MSHOW)) error("ERROR ENABLING MOUSE");
+  
+  while() {
+    key = getkey();
+    if (key == #ESCKEY) break;
+    if (key == ' ') {
+      scale = (scale == #MSLOW) ? #MSHIGH : #MSLOW;
+      mcnfg(#MHIDE); //Disable, then Enable with 
+      mcnfgs(#MSHOW, scale); //New Scaling
+    } 
+    if (mread()) error("ERROR READING MOUSE");
+    crsrhm();
+    putstr("SCALE:  "); prhex(scale); newlin();
+    putstr("MOUSEX: "); prtwrd(mousex); newlin();
+    putstr("MOUSEY: "); prtwrd(mousey); newlin();
+    putstr("MOUSEB: "); prtbyt(mouseb); 
+    prtbtn(mouseb, #MBLEFT, 'L');
+    prtbtn(mouseb, #MBMIDL, 'M');
+    prtbtn(mouseb, #MBRGHT, 'R'); newlin();
+    //prtkmv(); //Print Kernal Mouse Variables
+  }
+
+  mcnfg(#MHIDE); //Hide Mouse
+
+  goto exit;

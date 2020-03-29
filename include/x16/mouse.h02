@@ -1,0 +1,72 @@
+/* Mouse Control Functions    * 
+ * for Commander X16 Computer */
+ 
+/* Mouse Mode constants for mcnfg() */
+#define MHIDE $00 //Hide Mouse
+#define MSHOW $01 //Show Mouse - Default Cursor
+#define MCSTM $FF //Show Mouse - Custom Cursor
+
+/* Mouse Button bitmasks for mouseb *
+ * 0 means button not supported     */
+#define MBLEFT $01  //Left Mouse Button
+#define MBMIDL $03  //Middle Mouse Button
+#define MBRGHT $02  //Right Mouse Button
+
+/* Mouse Scale Factor constants for mcnfgs() */
+#define MSNONE  $00 //Do Not Change Resolution
+#define MSLOW   $01 //Low Resolution (320x240)
+#define MSHIGH  $02 //High Resolution (640x480)
+
+/* Mouse Status Variables *
+ * Set by mread()         */
+int  mousex;  //Mouse X Position
+int  mousey;  //Mouse Y Position
+char mouseb;  //Mouse Button Status
+
+/* Kernal Internal Mouse Variables */
+struct mouset {
+  char msts; //$80=on; 1/2: scale
+  int xmin;  //min x coordinate
+  int xmax;  //max x coordinate
+  int ymin;  //min y coordinate
+  int ymax;  //max y coordinate
+  int xpos;  //x coordinate
+  int ypos;  //y coordinate
+  char btns; //buttons (1: left, 2: right, 4: third)
+};
+struct mouset mousev;
+
+/* Configure Mouse                  *
+ * Args: char mode - Mouse Mode     *
+ *          #MHIDE - Hide Mouse     *
+ *          #MSHOW - Show Mouse     *
+ *          #MCSTM - Show (Custom)  *
+ * Returns: $00 - Success           *
+ *          $FF - Mouse Not Present */
+char mcnfg();
+
+/* Configure Mouse and Select Scale *
+ * Args: char mode - Mouse Mode     *
+ *          #MHIDE - Hide Mouse     *
+ *          #MSHOW - Show Mouse     *
+ *          #MCSTM - Show (Custom)  *
+ *        char scale - Scale Factor *
+ *          #MSNONE - No Change     *
+ *          #MSLOW  - 320x200       *
+ *          #MSHIGH - 640x480       *
+ * Returns: $00 - Success           *
+ *          $FF - Mouse Not Present */
+char mcnfgs();
+
+/* Read Mouse                       *
+ * Sets: mousex, mousey, mouseb     *
+ * Returns: $00 - Success           *
+ *          $FF - Mouse Not Present */
+char mread();
+
+/* Scan Mouse                        *
+ * Retrieves mouse state for mread() *
+ * Does not need to be called unless *
+ * the entire default interrupt      *
+ * routine is replaced.              */
+char mscan();
