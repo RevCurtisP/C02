@@ -1,0 +1,103 @@
+/* C02 Assembler */
+
+/* Address Modes */
+enum {ABS, //Absolute
+      ABX, //Absolute,X
+      ABY, //Absolute,Y
+      ACC, //Accumulator
+      IDX, //(Indirect,X)
+      IIY, //(Indirect),Y
+      IMD, //Immediate
+      IMP, //Implied
+      IND, //Indirect
+      REL, //Relative
+      ZPG, //Zero Page
+      ZPX, //Zero Page,X
+      ZPY, //Zero Page,X
+}
+
+/* Op Code Indexes */
+enum {ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC, 
+      CLD, CLI, CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR, INC, INX, INY, JMP, 
+      JSR, LDA, LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI, 
+      RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA};
+
+/* Op Code Mnemonic Lists */
+const char mnelst = {"ADC AND ASL CMP CPX CPY DEC EOR INC JMP JSR LDA LDX LDY LSR ORA ROL ROR SBC STA STX STY "};
+
+const char implst = {"BRK CLC CLD CLI CLV DEX DEYINX INY NOP PHA PHP PLA PLP RTI RTSSEC SED SEI TAX TAY TSX TXA TXS TYA "};
+
+const char rellst = {"BCC BCS BEQ BMI BNE BPL BVC BVS "};
+
+/* Op Code Lookup Tables */
+const char ocilst = {//x0    x1    x2    x3    x4    x5    x6    x7    x8    x9   xA     xB    xC    xD    xE    xF
+                     #BRK, #ORA,  255,  255,  255, #ORA, #ASL,  255, #PHP, #ORA, #ASL,  255,  255, #ORA, #ASL,  255,  //0x
+                     #BPL, #ORA,  255,  255,  255, #ORA, #ASL,  255, #CLC, #ORA,  255,  255,  255, #ORA, #ASL,  255,  //1x
+                     #JSR, #AND,  255,  255, #BIT, #AND, #ROL,  255, #PLP, #AND, #ROL,  255, #BIT, #AND, #ROL,  255,  //2x
+                     #BMI, #AND,  255,  255,  255, #AND, #ROL,  255, #SEC, #AND,  255,  255,  255, #AND, #ROL,  255,  //3x
+                     #RTI, #EOR,  255,  255,  255, #EOR, #LSR,  255, #PHA, #EOR, #LSR,  255, #JMP, #EOR, #LSR,  255,  //4x
+                     #BVC, #EOR,  255,  255,  255, #EOR, #LSR,  255, #CLI, #EOR,  255,  255,  255, #EOR, #LSR,  255,  //5x
+                     #RTS, #ADC,  255,  255,  255, #ADC, #ROR,  255, #PLA, #ADC, #ROR,  255, #JMP, #ADC, #ROR,  255,  //6x
+                     #BVS, #ADC,  255,  255,  255, #ADC, #ROR,  255, #SEI, #ADC,  255,  255,  255, #ADC, #ROR,  255,  //7x
+                      255, #STA,  255,  255, #STY, #STA, #STX,  255, #DEY,  255, #TXA,  255, #STY, #STA, #STX,  255,  //8x
+                     #BCC, #STA,  255,  255, #STY, #STA, #STX,  255, #TYA, #STA, #TXS,  255,  255, #STA,  255,  255,  //9x
+                     #LDY, #LDA, #LDX,  255, #LDY, #LDA, #LDX,  255, #TAY, #LDA, #TAX,  255, #LDY, #LDA, #LDX,  255,  //Ax
+                     #BCS, #LDA,  255,  255, #LDY, #LDA, #LDX,  255, #CLV, #LDA, #TSX,  255, #LDY, #LDA, #LDX,  255,  //Bx
+                     #CPY, #CMP,  255,  255, #CPY, #CMP, #DEC,  255, #INY, #CMP, #DEX,  255, #CPY, #CMP, #DEC,  255,  //Cx
+                     #BNE, #CMP,  255,  255,  255, #CMP, #DEC,  255, #CLD, #CMP,  255,  255,  255, #CMP, #DEC,  255,  //Dx
+                     #CPX, #SBC,  255,  255, #CPX, #SBC, #INC,  255, #INX, #SBC, #NOP,  255, #CPX, #SBC, #INC,  255,  //Ex
+                     #BEQ, #SBC,  255,  255,  255, #SBC, #INC,  255, #SED, #SBC,  255,  255,  255, #SBC, #INC,  255   //Fx
+}
+
+const char admlst = {//x0    x1    x2    x3    x4    x5    x6    x7    x8    x9   xA     xB    xC    xD    xE    xF
+                     #IMP, #IDX,  255,  255,  255, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255,  255, #ABS, #ABS,  255,  //0x
+                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //1x
+                     #IMP, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255, #ABS, #ABS, #ABS,  255,  //2x
+                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //3x
+                     #IMP, #IDX,  255,  255,  255, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255, #ABS, #ABS, #ABS,  255,  //4x
+                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //5x
+                     #IMP, #IDX,  255,  255,  255, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255, #IND, #ABS, #ABS,  255,  //6x
+                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //7x
+                      255, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP,  255, #IMP,  255, #ABS, #ABS, #ABS,  255,  //8x
+                     #IMP, #IIY,  255,  255, #ZPX, #ZPX, #ZPY,  255, #IMP, #ABY, #IMP,  255,  255, #ABX,  255,  255,  //9x
+                     #IMD, #IDX, #IMD,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #IMP,  255, #ABS, #ABS, #ABS,  255,  //Ax
+                     #IMP, #IIY,  255,  255, #ZPX, #ZPX, #ZPY,  255, #IMP, #ABY, #IMP,  255, #ABX, #ABX, #ABY,  255,  //Bx
+                     #IMD, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #IMP,  255, #ABS, #ABS, #ABS,  255,  //Cx
+                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //Dx
+                     #IMD, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #IMP,  255, #ABS, #ABS, #ABS,  255,  //Ex
+                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255   //Fx
+}
+
+char aa,ii,xx,yy; //Function Variables
+char ss[4];
+int  yx;
+
+/* Lookup Op Code Index Mnemonic *
+ * Args: int Address of String   *
+ *       char Address Mode       *
+ * Rets: char Op Code Index      *
+ *         $FF = Not Found       */
+char lkupmi(yx) {
+  aa = strlen(yx);   //Get Length of Mnemonic
+  if (ii <> 3)       //If Not 3 
+    return $FF;      //  Return Not Found
+  setdst(ss);        //Copy Mnemonic
+  strcpy(yx);        //to SS
+  strapd(' ');       //and Append a Space
+  setdst(mnelst);    //Return Position of
+  return strstr(ss); //ss[] in mnelst[]
+}
+
+/* Lookup Op Code *
+ * Args: char Opcode Index *
+ *       char Address Mode *
+ * Rets: char Op Code      *
+ *         $FF = Not Found */
+char lkupoc(aa, yx) {
+  ii = 0;
+  do {
+    if (ocilst[ii] == aa and admlst[ii] == yy) return ii;
+    ii++;
+  } while (ii);
+  return $FF; //Opcode Not Found
+}
