@@ -3,10 +3,11 @@
 #define PADDLS $04 //Number of Paddles
 #define BUTTNS $02 //Number of Paddle Buttons
 
-/* Get Paddle Button Status       *
- * Args: p = Paddle Number        *
- * Returns: $FF if Button Pressed *
- *          $00 if Not Pressed    */
+/* Get Paddle Button Status        *
+ * Args: n = Button Number         *
+ * Returns: char p = Button Status *
+ *                  $FF if Pressed *
+ *                  $00 if Not     */
 void button(); 
 
 /* Get Paddle Status       *
