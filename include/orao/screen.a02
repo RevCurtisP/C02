@@ -7,7 +7,7 @@ SMTEXT  EQU $00     ;Default Text Screen
 SMWIDE  EQU $FF     ;Wide Text Screen (Undefined)
 
 ;Set Screen Mode
-SETSCR: CMP SMTEXT  ;If Default Text Screen
+SETSCR: CMP #SMTEXT  ;If Default Text Screen
         BEQ GETSCR  ;Return Return 0
         LDA #$FF    ;Else Return ERROR
         RTS

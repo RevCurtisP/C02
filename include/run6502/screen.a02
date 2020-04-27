@@ -16,12 +16,16 @@ GETSCR: LDA #0      ;Return 0 (Default Text Mode)
 
 ;Clear the Screen
 CLRSCR: RTS         ;No Action
+        LDY #>.CLRSCS ;Execute System Call CLS
+        LDX #<.CLRSCS
+        JMP SYSTEM 
+.CLRSCS BYTE "CLS",0
 
 ;Move Cursor Home
-CRSRHM  EQU CLRSCR  ;No Action
+CRSRHM  RTS         ;No Action
 
 ;Move Cursor to Specified Coordinates
-SETPOS  EQU CLRSCR  ;No Action 
+SETPOS  RTS  ;No Action 
  
 ;Get Cursor Position
 GETPOS: LDA #$FF    ;Return Error 

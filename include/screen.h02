@@ -5,7 +5,7 @@
 /* Screen Modes for getscr() and setscr() *
  * Invalid Modes have value $FF           */
 #define SMTEXT $00 //System Default Text Mode 
-#define SMWIDE $FF //Wide Screen Text Mode (Usuallu 80 Columns)
+#define SMWIDE $FF //Wide Screen Text Mode (Usually 80 Columns)
 
 /* Clear the Screen */
 void clrscn();
