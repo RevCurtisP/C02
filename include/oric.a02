@@ -96,6 +96,10 @@ NEWLIN  EQU $CB9F   ;Basic NEWLINE Routine ($CBF0 for ATMOS)
 PUTCHR: TAX         ;Transfer Character to X Register
         JMP $F409   ;Execute VDU Routine
 
+;Print String to Screen
+PUTSTR: TXA         ;Copy LSB to A6
+        JMP $CCB0   ;Execute BASIC String Print Routine
+
 ;Get End of Free Memory
 RAMTOP: LDX $A6     ;Load HIMEM LSB
         LDY $A7     ;Load HIMEM MSB

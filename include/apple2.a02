@@ -1,5 +1,7 @@
 ;Apple 1 program initialization code for c02 programs
 
+        SUBROUTINE  _APPLE2
+
 ;System Specific ASCII Key Mappings
 DELKEY  EQU $08     ;Delete/Backspace Key (Left Arrow)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
@@ -30,8 +32,8 @@ TEMP2   EQU $FE
 TEMP3   EQU $FF
 
 ;I/O Locations
-KBD     EQU $C000   ;Keyboard Data
-AKD     EQU $C010   ;Keyboard Strobe Register
+.KBD     EQU $C000   ;Keyboard Data
+.AKD     EQU $C010   ;Keyboard Strobe Register
 
 ;Monitor Routines
 PRBYTE  EQU $FDDA   ;Print Accumulator as Hexadecimal Number
@@ -46,10 +48,10 @@ START:  JSR NEWLIN  ;Start On New Line
 ;Poll Keyboard for Raw Character
 POLKEY: INC RDSEED  ;Cycle Random Seed
         LDA #0      ;Clear Accumulator
-        BIT KBD     ;Check Keyboard Strobe Bit
+        BIT .KBD     ;Check Keyboard Strobe Bit
         BPL POLKER  ;If Key Pressed  
-        LDA KBD     ;  Load Key Value
-        STA AKD     ;  Clear Strobe
+        LDA .KBD     ;  Load Key Value
+        STA .AKD     ;  Clear Strobe
 POLKER: RTS
 
 ;Get ASCII Character from Keyboard
@@ -74,7 +76,9 @@ PUTCHR: ORA #$80    ;Set High Bit
         CMP #$E0    ;
         BCC PRCHRX  ;If Lower Case 
         AND #$1F    ;  Convert to Inverse
-PRCHRX: JMP $FDF0   ;Call Monitor Routine COUT1
+PRCHRX: JMP $FDF0   ;Execute Monitor Routine COUT1
 
 ;Advance Character to Next line
 NEWLIN   EQU $FD8E  ;Monitor Routine CROUT
+
+        INCLUDE "../include/putstr.a02" ;PUTSTR routine

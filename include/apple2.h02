@@ -42,6 +42,7 @@ char getsiz(); //Get Screen Size
 void newlin(); //Advance cursor to beginning of next line
 char polkey(); //Poll Console for character
 char putchr(); //Print ASCII character to Console
+char putstr(); //Print ASCII string to Console
 void setpos(); //Set Cursor Position
 
 //System Labels

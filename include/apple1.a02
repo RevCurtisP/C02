@@ -1,28 +1,30 @@
 ;Apple 1 program initialization code for c02 programs
 
+        SUBROUTINE  _APPLE1
+
 ;System Specific ASCII Key Mappings
 DELKEY  EQU $5F     ;Delete/Backspace Key (Left Arrow/Underscore)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
 ;Locations used by Monitor 
-XAML    EQU $24     ;Examine Index
-XAMH    EQU $25     ;
-STL     EQU $26     ;Store Index
-STH     EQU $27     ;
-HEXL    EQU $28     ;Hex Data
-HEXH    EQU $29     ;
-YSAVE   EQU $2A     ;Y Register Storage
-MODE    EQU $2B     ;Mode: Store, Examine, Block Examine
-BUFFER  EQU $200    ;Input Buffer
+.XAML    EQU $24     ;Examine Index
+.XAMH    EQU $25     ;
+.STL     EQU $26     ;Store Index
+.STH     EQU $27     ;
+.HEXL    EQU $28     ;Hex Data
+.HEXH    EQU $29     ;
+.YSAVE   EQU $2A     ;Y Register Storage
+.MODE    EQU $2B     ;Mode: Store, Examine, Block Examine
+.BUFFER  EQU $200    ;Input Buffer
 
 ;Standard Library Variables
 SRCLO   EQU $30     ;Source String Pointer (stdio.a02)
 SRCHI   EQU $31
 DSTLO   EQU $32     ;Destination String Pointer (string.a02)
 DSTHI   EQU $33
-DSTLO   EQU $34     ;Destination String Pointer (string.a02)
-DSTHI   EQU $35
+BFRLO   EQU $34     ;Work Buffer Pointer
+BFRHI   EQU $35
 BLKLO   EQU $36     ;Block Segment Pointer (block.a02)
 BLKHI   EQU $37
 STKLO   EQU $38     ;System Pointer (pointer.a02)
@@ -47,13 +49,13 @@ STKELO  EQU $4E     ;Stack End Address
 STKEHI  EQU $4F
 
 ;PIA 6820 Registers
-KBD     EQU $D010   ;Keyboard Data
-KBDCR   EQU $D011   ;Keyboard Control Register
-DSP     EQU $D012   ;Display Data
-DSPCR   EQU $D013   ;Display Control Register
+.KBD     EQU $D010   ;Keyboard Data
+.KBDCR   EQU $D011   ;Keyboard Control Register
+.DSP     EQU $D012   ;Display Data
+.DSPCR   EQU $D013   ;Display Control Register
 
 EXIT    EQU $FF00   ;Monitor Entry Point
-ECHO    EQU $FFEF   ;Subroutine - Print Character in Accumulator
+.ECHO   EQU $FFEF   ;Subroutine - Print Character in Accumulator
 PRBYTE  EQU $FFDC   ;Subroutine - Print Accumulator as Hexadadecimal number
 PRHEX   EQU $FFE5   ;Subroutine - Print Low Nybble of Accumulator as Hex Digit
 
@@ -67,26 +69,27 @@ START:  LDX #$FF    ;Reset stack - the monitor doesn't do this
 
 ;Subroutine Poll Keyboard
 PLKEY:  INC RDSEED  ;Cycle Keypress Counter       
-        BIT KBDCR   ;Check the Keyboard Control Register
-        BMI RDKEYA  ;If Key Pressed, Read Key 
-        LDA #0      ;Otherwise Return ASCII NUL
-        RTS
+        LDA #0      ;Set Return Value to 0
+        BIT .KBDCR  ;Check the Keyboard Control Register
+        BPL .PLKEYX ;If No Key Pressed, Return 0
+        LDA .KBD    ;Else Read Key and Return
+.PLKEYX RTS
 
-GETCHR: INC RDSEED  ;Cycle Keypress Counter
-RDKEYC: BIT KBDCR   ;Check the Keyboard Control Register
-        BPL RDKEYC  ;  and loop if key not pressed
-RDKEYA: LDA KBD     ;  Read key into Accumulator
-        RTS
+GETKEY: JSR PLKEY   ;Read Keyboard
+        AND #$7F    ;Strip High Bit
+        RTS  
 
-GETKEY: JSR GETCHR  ;Subroutine - Read ASCII from Keyboard
-GETKEA: AND #$7F    ;Strip High Bit
-        BIT GETKEM  ;If Character is in   
-        BEQ GETKEX  ;  Alpha Block ($40-$74)
+        BIT .GETKEM ;If Character is in   
+        BEQ .GETKEX ;  Alpha Block ($40-$74)
         AND #$5F    ;  Strip Bit 5
-GETKEX: RTS 
-GETKEM: DC  $40     ;Character Block Bit Mask        
+.GETKEX RTS 
+.GETKEM DC  $40     ;Character Block Bit Mask        
 
-PUTCHR  EQU ECHO    ;Alias to Monitor Routine
+GETCHR: JSR GETKEY  ;Get Keypress
+        BEQ GETCHR  ;Loop if No Key Pressed
+        RTS
+
+PUTCHR  EQU .ECHO   ;Alias to Monitor Routine
 
 ;Delete Previous Character
 DELCHR: LDA #DELKEY ;Load Underscore Character
@@ -95,3 +98,5 @@ DELCHR: LDA #DELKEY ;Load Underscore Character
 ;Advance Character to Next line
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
         JMP PUTCHR  ;  and Print it
+
+        INCLUDE "../include/putstr.a02" ;PUTSTR routine

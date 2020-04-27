@@ -1,13 +1,5 @@
 /* Apple 1 Header File */
 
-/* Monitor Variables */
-char xaml, xamh;  //Examine Index
-char stl, sth;    //Store Index
-char hexl,hexh;   //Hex Data
-char ysave;       //Y Register Storage
-char mode;        //Mode: Store, Examine, Block Examine
-char buffer[];    //Input Buffer
-
 //Platform Specific Constants
 #define DELKEY $5F //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key
@@ -27,12 +19,6 @@ char stkslo, stkshi;    //Stack Start Address
 char stkelo, stkehi;    //Stack End Address
 
 char temp0, temp1, temp2, temp3;  //Temporary Variables
-
-//PIA 6820 Registers
-char kbd;         //Keyboard Data
-char kbdcr;       //Keyboard Control Register
-char dsp;         //Display Data
-char dspcr;       //Display Control Register
 
 //Monitor Subroutines
 void echo();      //Print Character in Accumulator
