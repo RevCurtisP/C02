@@ -1,0 +1,84 @@
+;run6502 program initialization code for c02 programs
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $08     ;Delete/Backspace Key (Backspace)
+ESCKEY  EQU $18     ;Escape/Stop Key      (Control-X)
+RTNKEY  EQU $0A     ;Return/Enter Key     (Line Feed)
+
+;Zero Page Locations
+SRCPTR  EQU $30     ;Source String Pointer (stdio.a02)
+SRCLO   EQU $30
+SRCHI   EQU $31
+DSTPTR  EQU $32     ;Destination String Pointer (string.a02)
+DSTLO   EQU $32
+DSTHI   EQU $33
+BFRPTR  EQU $34     ;Work Buffer Pointer
+BFRLO   EQU $34
+BFRHI   EQU $35
+BLKPTR  EQU $36     ;Block Segment Pointer (block.a02)
+BLKLO   EQU $36
+BLKHI   EQU $37
+STKLO   EQU $38     ;Stack Pointer (stack.a02)
+STKHI   EQU $39
+
+RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
+RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
+
+TEMP0   EQU $40     ;Temporary Storage
+TEMP1   EQU $41
+TEMP2   EQU $42
+TEMP3   EQU $43
+
+BLKSLO  EQU $46     ;Block Start Address
+BLKSHI  EQU $47
+BLKELO  EQU $48     ;Block End Address
+BLKEHI  EQU $49
+BLKLEN  EQU $4A     ;Block Segment Length     
+
+STKSLO  EQU $4C     ;Stack Start Address
+STKSHI  EQU $4D
+STKELO  EQU $4E     ;Stack End Address
+STKEHI  EQU $4F
+
+;Memory Mapped I/O 
+_KBHIT  EQU $FFF0   ;Is a Key Pressed
+_GETCH  EQU $FFF1   ;Read Keyboard (Blocking)
+
+        ORG $8000   ;START at RAM midpoint
+
+START:  JMP MAIN    ;Execute Program
+
+;Read Character from Console
+GETKEY  EQU $FFF4   ;Emulator CHRIN Routine
+
+;Poll Character from Keyboard
+POLKEY: BRK         ;Exit Emulator
+        
+
+;Wait for Character from Console
+GETCHR: JSR GETKEY  ;Read Character from STDIN
+        CMP #$FF    ;If EOF
+        BNE GETCHX
+        LDA #ESCKEY ;  Set to Escape Character
+GETCHX: ORA 0       ;Set Zero Flag
+        RTS
+
+;Delete Previous Character
+DELCHR: LDA #$08    ;Load Backspace into Accumulator
+        JSR PUTCHR  ;  and Print it
+        LDA #$20    ;Load Space into Accumulater
+        JSR PUTCHR  ;  and Print it
+        LDA #$08    ;Load Backspace into Accumulator
+        JMP PUTCHR  ;  and Print it
+
+;Advance Character to Next line
+NEWLIN: LDA #RTNKEY ;Load Line Feed into Accumulater
+        JMP PUTCHR  ;  and Print it
+
+;Print Character to Console
+PUTCHR  EQU $FFF6   ;Emulator CHROUT Routine
+
+EXIT    EQU $FFF8   ;Emulator SHUTDN Routine
+
+        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
+        INCLUDE "../include/putstr.a02" ;PUTSTR routine
