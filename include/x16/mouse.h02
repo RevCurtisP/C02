@@ -23,19 +23,6 @@ int  mousex;  //Mouse X Position
 int  mousey;  //Mouse Y Position
 char mouseb;  //Mouse Button Status
 
-/* Kernal Internal Mouse Variables */
-struct mouset {
-  char msts; //$80=on; 1/2: scale
-  int xmin;  //min x coordinate
-  int xmax;  //max x coordinate
-  int ymin;  //min y coordinate
-  int ymax;  //max y coordinate
-  int xpos;  //x coordinate
-  int ypos;  //y coordinate
-  char btns; //buttons (1: left, 2: right, 4: third)
-};
-struct mouset mousev;
-
 /* Configure Mouse                  *
  * Args: char mode - Mouse Mode     *
  *          #MHIDE - Hide Mouse     *

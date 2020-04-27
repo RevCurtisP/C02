@@ -15,24 +15,21 @@ MBRGHT  EQU $02     ;Right Mouse Button
 ;Mouse Scaling Constants
 ;Specific to the X16
 MSNONE  EQU $00     ;Do Not Change Resolution
-MSLOW   EQU $02     ;Low Resolution (320x240)
-MSHIGH  EQU $01     ;High Resolution (640x480)
+MSLOW   EQU $01     ;Low Resolution (320x240)
+MSHIGH  EQU $02     ;High Resolution (640x480)
 
 ;Mouse Status Variables
 MOUSEX  EQU $02   ;Mouse X Position (ABI Register R0)
 MOUSEY  EQU $04   ;Mouse Y Position (ABI Register R1)
 MOUSEB  EQU $06   ;Mouse Button Status (ABI Register R2L)
 
-;Kernal Internal Mouse Variables
-MOUSEV  EQU $A021   ;Valid for Kernal Version R37
-
 ;mcnfg(mode) - Configure Mouse
 ;Args: A = Mode
 ;Affects: X,Y
 ;Returns: A = Result Code: $00 = Success
-MCNFG:   LDX #MSLOW     ;Set Scale for 320x240 Screen
-MCNFGS:  JSR $FF68  ;Kernal mouse_config Routine
-         LDA #0     ;Return Success
+MCNFG:   LDX #MSLOW   ;Set Scale for 320x240 Screen
+MCNFGS:  JSR $FF68    ;Kernal mouse_config Routine
+         LDA #0       ;Return Success
          RTS
 
 ;mread() - Read Mouse

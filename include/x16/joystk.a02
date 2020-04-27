@@ -1,29 +1,15 @@
 ;Joystick Constants and Functions for Commander X16 Computer
 
+;NOTE: As of R35, joystick_scan() has not been added to the
+;vsync() interrupt routine. This will be in R36, so development
+;on this module is currently on hold
+
         SUBR  _JOYSTK
 
 JYSTKS  EQU 2       ;Number of Joysticks
 
-.GETJOY  EQU $FF06   ;Kernal GETJOY Routine
-.JYDATA  EQU $02BC   ;Joystick 0 Data
-;JOY1  JOY2  
-;$02BC $02BF      | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-;            NES  | A | B |SEL|STA|UP |DN |LT |RT |
-;            SNES | B | Y |SEL|STA|UP |DN |LT |RT |
-;            
-;$02BD $20C0      | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-;            NES  | 0 | 0 | 0 | 0 | 0 | 0 | 0 |KBD|
-;            SNES | A | X | L | R | 1 | 1 | 1 | 1 |
-;            
-;$02BE $02C1  $00 = joystick present
-;             $FF = joystick not present
-
-;The Joystick Button is mapped to
-;A,B on the NES Controller and
-;A,B,X,Y on the SNES Controller
-
-;Select and Start are Ignored as Bits 4 and 5 of the return value
-;are always 0 because returning $FF means no controller found
+JOY0    EQU $A031   ;Joystick 0 Status
+JOY1    EQU $A034   ;Joystick 1 Status
 
 ;Joystick Bit Masks
 JOYUP   EQU $08     ;Up    
@@ -54,75 +40,88 @@ JOYSNS  EQU $02     ;SNS Controller
 ;      TEMP2 - Extended Result (Buttons)
 ;Destroys: TEMP3
 ;Returns: A = Joystick Status (Joystick Bit Masks
+;             The Joystick Button is mapped to
+;             A,B on the NES Controller and
+;             A,B,X,Y on the SNES Controller
 ;         Y = Extended Status (Extended Bit Masks)
+;             Used with Extended Bitmasks to check
+;             A,B,X,Y,Select, Start, Left and Right
 ;         X = Controller Type (0=Keyboard, 1=NES, 2=SNES)
 JOYSTK: CMP #JYSTKS       ;If Invalid Joystick Number
         BCS .JOYSTE       ;  Return ERROR
-        STA TEMP0         ;Save Joystick Number
-        BYTE $FF
-JOYSTL: WAI               ;Wait for Interrupt
-        LDA $9F27         ;  Check Vera Interrupt Register
-        AND #$01          ;  If Not Vera Interrupt
-        BEQ JOYSTL        ;  Loop
-        JSR .GETJOY       ;Call Kernal GETJOY Routine
-        LDA TEMP0         ;Retrieve Joystick Number
-        ASL               ;Multiply it by 3
-        ADC TEMP0         ;(Assumes Number<128)
-        TAX               ;and Copy to X-Register
-        LDA .JYDATA+2,X   ;If Controller Not Present
-        BNE .JOYSTE       ;  Return ERROR
-        LDA .JYDATA,X     ;Get Base Status
-        EOR #$FF          ;Invert Bits
-        JSR .JOYEXT       ;Build Extended Results
-        AND #$CF          ;Mask off Select and Start
-.JOYSTX RTS 
-
-;Return Error
-.JOYSTE LDA #$FF
-        RTS
-        
-;Build Extended Result
-.JOYEXT STA TEMP0         ;Save Controller Status
+        JSR JOYGET        ;Read Joystick State
+        EOR #$FF          ;Invert Controller Status
+        STA TEMP0         ;and Save in TEMP0
+        STX TEMP1         ;Save Extended Status in TEMP1
+        TYA               ;If Controller Not Present
+        BNE .JOYSTF       ;  Return $FF, $FF, $FF
+;JOYEXT                   ;Process Extended Bits
         STZ TEMP3         ;Clear Button Mask
-        LDA .JYDATA+1,X   ;Get Extended Status
+        LDA TEMP1         ;Get Extended Status
         BIT #$0E          ;Check Bits 1 - 3
-        BNE .JOYEXS       ;If NES/Keyboard        
-        STA TEMP1         ;    Save for Debugging
-        EOR #$01          ;    Invert Extended Bits
+        BNE .JOYSNS       ;If NES/Keyboard        
+;JOYNES                   ;  Process NES Buttons
+        EOR #$01          ;  Invert Extended Bit 0
         TAX               ;    and Copy to X
         LDA TEMP0         ;  Get Controller Status
         AND #$F0          ;    Isolate Bits 4-7
         TAY               ;    and Copy Back to Y
-        BRA .JOYEXX       ;Else
-.JOYEXS JSR .JOYSNS       ;  Process SNES Buttons 
-.JOYEXX LDA TEMP0         ;Restore Controller Status
-        ORA TEMP3         ;Combine Buttons
+        BRA .JOYSTX       ;Else
+.JOYSNS                   ;  Process SNES Buttons
+        LDX #2            ;  Set Controller Type to 2
+        LDA TEMP1         ;    and Save Result
+        AND #$C0          ;  Isolate SNES A,X Buttons
+        STA TEMP3         ;  and Save in Button Mask
+        LDA TEMP1         ;  Retrieve Extended Buttons
+        AND #$30          ;  Isolate L and R
+        ASL               ;  and Shift to Bits 2 and 3
+        ASL                  
+        BIT TEMP1         ;  Get Ext Status High Bits
+        BCC +2            ;  If Extended Bit 7 was Set
+        ORA #$80          ;    Set Buttons Bit 7 (A)
+        BVC +2            ;  If Extended Bit 6 was Set
+        ORA #$20          ;    Set Buttons Bit 1 (X)
+        STA TEMP2         ;  Save Buttons A,X,L,R
+        LDA TEMP0         ;  Retrieve Controller Status
+        AND #$30          ;  Isolate Select and Start
+        ORA TEMP2         ;  Combine with A,X,L,R
+        BIT TEMP2         ;  Get Status High Bits
+        BCC +2            ;  If Status Bit 7 was Set
+        ORA #$40          ;    Set Buttons Bit 6 (B)
+        BVC +2            ;  If Status Bit 6 was Set
+        ORA #$01          ;    Set Buttons Bit 0 (Y)
+        STA TEMP2         ;  Save Buttons in TEMP2
+        TAY               ;    and Copy to Y
+.JOYSTX                   ;Build Joystick Status
+        LDA TEMP0         ;   Restore Controller Status
+        ORA TEMP3         ;   Combine Buttons
+        AND #$CF          ;   Mask off Select and Start
+        RTS
+.JOYSTE                   ;Return Error
+        LDA #$FF          ;Return $FF, $FF, $FF
+        TAY
+.JOYSTF TAX               ;A, Y already $FF
         RTS
 
-;Process SNES Buttons
-.JOYSNS LDX #2            ;Set Controller Type to 2
-        EOR #$FF          ;Invert Extended Bits
-        STA TEMP1         ;  and Save Result
-        AND #$C0          ;Isolate SNES A,X Buttons
-        STA TEMP3         ;and Save in Button Mask
-        LDA TEMP1         ;Retrieve Extended Buttons
-        AND #$30          ;Isolate L and R
-        ASL               ;and Shift to Bits 2 and 3
-        ASL               
-        BIT TEMP1         ;Get Ext Status High Bits
-        BCC +2            ;If Extended Bit 7 was Set
-        ORA #$80          ;  Set Buttons Bit 7 (A)
-        BVC +2            ;If Extended Bit 6 was Set
-        ORA #$20          ;  Set Buttons Bit 1 (X)
-        STA TEMP2         ;Save Buttons A,X,L,R
-        LDA TEMP0         ;Retrieve Controller Status
-        AND #$30          ;Isolate Select and Start
-        ORA TEMP2         ;Combine with A,X,L,R
-        BIT TEMP2         ;Get Status High Bits
-        BCC +2            ;If Status Bit 7 was Set
-        ORA #$40          ;  Set Buttons Bit 6 (B)
-        BVC +2            ;If Status Bit 6 was Set
-        ORA #$01          ;  Set Buttons Nit 0 (Y)
-        STA TEMP2         ;Save Buttons in TEMP2
-        TAY               ;  and Copy to Y
-        RTS
+;joyscn() - Queries the Joysticks and Saves their State
+;Note: The default interrupt handler already takes care 
+;of this, so this routine should only be called if the 
+;interrupt handler has been completely replaced.
+JOYSCN  EQU $FF53   ;Kernal joystick_scan Routine
+
+;joyget(j) - Get State of Joystick Number j
+;Args: A = Joystick Number (0 or 1)
+;Returns: A = Joystick Status Bits
+;                  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+;             NES  | A | B |SEL|STA|UP |DN |LT |RT |
+;             SNES | B | Y |SEL|STA|UP |DN |LT |RT |
+;         X = Joystick Extended Status Bits
+;                  | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+;             NES  | 0 | 0 | 0 | 0 | 0 | 0 | 0 |KBD|
+;             SNES | A | X | L | R | 1 | 1 | 1 | 1 |
+;         Y = Joystick Present
+;             $00 = Joystick Present
+;             $FF = Joystick Not Present
+;Note: Status Bits will be 0 if Pressed, 1 if Not
+JOYGET  EQU $FF56   ;Kernal joystick_get Routine
+

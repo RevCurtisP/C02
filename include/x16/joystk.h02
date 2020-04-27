@@ -1,3 +1,5 @@
+/* Module Development on Hold until R36 */
+
 /* Joystick Functions for  Commander X-16 Computer *
  * Supports Keyboard, NES, and SNES Controllers    *
  *   A and B on Keyboard and SNES Controller and   *
@@ -34,10 +36,28 @@
 #define JOYNES $01 //NES Controller
 #define JOYSNS $02 //SNS Controller
 
+struct joysts {char btnsts, extsts, status;};
+struct joysts joy0, joy1;
+
 /* Read Joystick Status                *
  * Args: j = Joystick Number           *
  * Returns: char j = Joystick Status   *
  *                   $FF = Not Present *
- *          char b = Extended Status   *
- *          char c = Controller Type   */
+ *          char x = Extended Status   *
+ *          char t = Controller Type   */
 char joystk(); 
+
+/* Get Joystick Raw Status                    *
+ * X16 Specific System Routine                *
+ * Args: j = Joystick Number                  *
+ * Returns: char j = Joystick Raw Status Bits *
+ *          char x = Extended Raw Status Bits *
+ *          char t = Joystick Status          *
+ *                   $FF = Not Present        */
+char joyget();
+
+/* Query Joysticks and Save State          *
+ * X16 Specific System Routine             *
+ * Called by the default interrupt handler */
+void joyscn();
+
