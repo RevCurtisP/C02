@@ -44,12 +44,12 @@ STKEHI  EQU $4F
 _KBHIT  EQU $FFF0   ;Is a Key Pressed
 _GETCH  EQU $FFF1   ;Read Keyboard (Blocking)
 
-        ORG $8000   ;START at RAM midpoint
+        ORG $0200   ;START at RAM midpoint
 
 START:  JMP MAIN    ;Execute Program
 
 ;Read Character from Console
-GETKEY  EQU $FFF4   ;Emulator CHRIN Routine
+GETKEY  EQU $FFE0   ;Emulator CHRIN Routine
 
 ;Poll Character from Keyboard
 POLKEY: BRK         ;Exit Emulator
@@ -76,9 +76,9 @@ NEWLIN: LDA #RTNKEY ;Load Line Feed into Accumulater
         JMP PUTCHR  ;  and Print it
 
 ;Print Character to Console
-PUTCHR  EQU $FFF6   ;Emulator CHROUT Routine
+PUTCHR  EQU $FFE3   ;Emulator CHROUT Routine
 
-EXIT    EQU $FFF8   ;Emulator SHUTDN Routine
+EXIT    EQU $FFEC   ;Emulator SHUTDN Routine
 
         INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
         INCLUDE "../include/putstr.a02" ;PUTSTR routine
