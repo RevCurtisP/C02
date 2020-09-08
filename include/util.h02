@@ -2,12 +2,12 @@
  * util - C02 Utility Functions *
  ********************************/
 
-/* Decode Tokeniz into Destination String *
+/* Decode Token into Destination String *
  * Args: &t - Address of Token List       *
  * Returns: Tokenized Value of String     */
 char tkndec();
 
-/* Encode Tokenized from Destination String *
+/* Encode Token from Destination String *
  * Args: &t - Address of Token List         *
  * Returns: Tokenized Value of String       */
 char tknenc();

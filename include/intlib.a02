@@ -19,28 +19,32 @@ IABS:   CPY #$80        ;If Negative (High Bit Set)
         TAY             ;    and Copy to Y Register
 IABSX:  RTS
 
-;imax(m,n) - Get MAXimum of Two Integers
-;Args: A,Y = Numbers to Compare
+;imax(i) - Get MAXimum of Two Integers
+;Args: Y,X = Second Integer
+;Uses: SRCHI,SRCLO = First Integer
 ;Affects: N,Z,C
-;Returns: A = Larger of the Two Arguments
+;Returns: Y,X = Larger of the Two Arguments
 IMAX:   CPY SRCHI       ;If Y < SRCHI
         BCC IMAXC       ;  Return SRCLO, SRCHI
         CPX SRCLO       ;IF X >= SRCLO
         BCS IMINX       ;  Return Argument
 IMAXC:  JMP GETSRC      ;Return Integer in SRCLO, SRCHI
 
-;imin(m,n) - Get MINimum Get MAXimum of Two Numbers
-;Args: A,Y = Numbers to Compare
-;Sets: TEMP0 = Second Argument
+;imin(i) - Get MINimum of Two Integers
+;Args: Y,X = Second Integer
+;Uses: SRCHI,SRCLO = First Integer
 ;Affects: N,Z,C
-;Returns: A = Smaller of the Two Arguments
+;Returns: Y,X = Larger of the Two Arguments
 IMIN:   CPY SRCHI       ;If Y < SRCHI
-        BCS IMINX       ;  Return Argument
+        BCC IMINX       ;  Return Argument
         BNE IMAXC       ;If Y > SRCHI Return SRCHI,SRCLO
-        CPX SRCLO       ;If X < SRCLO
-        BCS IMINX       ;  Return Argument
-        BNE IMAXC       ;If X > SRCLO Return SRCHI,SRCLO 
+        CPX SRCLO       ;If X >= SRCLO
+        BCS IMAXC       ; Return SRCHI,SRCLO 
 IMINX:  RTS             ;Return Argument
+
+;iaddc(c,i) - Add Byte c to Integer i
+IADDC:  JSR SETSRC      ;Save Integer and Clear Y
+        TAX             ;Copy Byte to LSB and drop into IADD
 
 ;iadd(d) - ADD Integer d to from Integer g
 ;Args: Y,X = Addend
@@ -82,18 +86,72 @@ ISUB:   JSR SAVRXY  ;Store Subtrahend in TEMP1,TEMP2
         RTS         ;  and Return
 
 ;imult(m) - MULTiply Two Integers
-IMULT:  RTS
+;Args: Y,X - Multiplier
+;Requires: DSTHI,DSTLO = Multiplicand
+;Sets: TEMP0-TEMP3 = 32 Bit Product
+;Destroys: SRCHI, SRCLO
+;Affects: A,C,Z,N
+;Returns: Y,X = 16 Bit Product
+IMULT:  JSR SETSRC      ;Save Multiplier
+        STY TEMP2       ;Clear Upper Bits of Product
+        STY TEMP3 
+        LDX #16         ;Rotate Through 16 Bits
+IMULTS: LSR SRCHI       ;Divide Multiplier by 2 
+        ROR SRCLO
+        BCC IMULTR      ;If Shifted out Bit is 1
+        LDA TEMP2       ;  Add Multiplicand
+        CLC             ;  to Upper Half of Product
+        ADC DSTLO
+        STA TEMP2
+        LDA TEMP3 
+        ADC DSTHI
+IMULTR: ROR             ;Rotate Partial Product 
+        STA TEMP3 
+        ROR TEMP2
+        ROR TEMP1 
+        ROR TEMP0 
+        DEX             ;Decrement Counter
+        BNE IMULTS      ;and Process Next Bit
+        LDX TEMP0       
+        LDY TEMP1       ;Return Low 16 Bits of Product
+        RTS
 
-;idiv(d) - MULTiply Two Numbers
-IDIV:   RTS
-
+;idiv(d) - DIVide Two Numbers
+;Args: Y,X - Divisor
+;Requires: DSTHI,DSTLO = Dividend
+;Sets: SRCHI,SRCLO = Divisor
+;      DSTHI,DSTLO = Quotient
+;      TEMP1,TEMP2 = Remainder
+;Affects: A,C,Z,N
+;Returns: Y,X = 16 Bit Quotient
+IDIV:   JSR SETSRC      ;Save Divisor
+        STA TEMP1
+        STA TEMP2
+        LDX #16	        ;repeat for each bit: ...
+IDIVL:	ASL DSTLO       ;dividend lb & hb*2, msb -> Carry
+        ROL DSTHI       
+        ROL TEMP1       ;remainder lb & hb * 2 + msb from carry
+        ROL TEMP2       
+        LDA TEMP1       
+        SEC
+        SBC SRCLO       ;substract divisor to see if it fits in
+        TAY	            ;lb result -> Y, for we may need it later
+        LDA TEMP2       
+        SBC SRCHI       
+        BCC IDIVS       ;if carry=0 then divisor didn't fit in yet
+        STA TEMP2       ;else save substraction result as new remainder,
+        STY TEMP1       
+        INC DSTLO       ;and INCrement result cause divisor fit in 1 times
+IDIVS:	DEX
+        BNE IDIVL
+        RTS
 
 ;ishftl(n,i) - Shift Integer i to the Left n Bits
 ;Sets: TEMP1, TEMP2 = LSB, MSB of Result
 ;Affects: A,Y,N,Z,C
 ;Returns: Y,X = Shifted Integer
 ISHFTL: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
-        TYA             ;Set Counter to Number of Bits
+        TAY             ;Set Counter to Number of Bits
         ASL TEMP1       ;Shift LSB to Left
         ROL TEMP2       ;Rotate MSB to Left
         DEY             ;Decrement Counter
@@ -105,7 +163,7 @@ ISHFTL: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
 ;Affects: A,Y,N,Z,C
 ;Returns: Y,X = Shifted Integer
 ISHFTR: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
-        TYA             ;Copy 
+        TAY             ;Copy 
         LSR TEMP1       ;Shift LSB to Right
         ROR TEMP2       ;Rotate MSB to Right
         DEY             ;Decrement Counter
@@ -162,11 +220,11 @@ ITOA:   JSR CVIBCD      ;Convert Integer to Packed BCD
         LDY #0          ;Initialize Index into String
         STY TEMP3
 ITOAA:  LDY #4          ;Set Initial Digit Number
-        JSR UPBCDI      ;Unpack Digit Y
-ITOAZ:  BNE ITOAS       ;If Zero
-        DEX             ;  Decrement Digit Number
+ITOAZ:  JSR UPBCDI      ;Unpack Digit Y
+        BNE ITOAS       ;If Zero
+        DEY             ;  Decrement Digit Number
         BNE ITOAZ       ;  If Not Zero Loop
-        BEQ ITOAS       ;  Else Skip Unpack 
+        BEQ ITOAS       ;  Else IDIVS Unpack 
 ITOAL:  JSR UPBCDI      ;Unpack Digit #Y
 ITOAS:  TAX             ;Save Digit in X
         TYA             ;Push Digit Number into Stack
@@ -209,8 +267,8 @@ UPBCDS: AND #$0F    ;Strip Off High Nybble
 ;cvibcd(int) - ConVert Integer to packed Binary Coded Decimal
 ;Args: Y,X - Integer to Convert
 ;Sets: TEMP0 = Tens and Ones Digit
-;      TEMP1 = Hundreds Digit
-;      TEMP2 = Thousands Digit
+;      TEMP1 = Thousands and Hundreds Digit
+;      TEMP2 = Ten-Thousands Digit
 ;Affects: A,X,Y
 CVIBCD: LDA #0      ;Clear BCD Bytes
         STA TEMP0

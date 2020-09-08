@@ -63,6 +63,39 @@ GETSRC: LDX SRCLO
         LDY SRCHI
         RTS
 
+;Add TEMP1,TEMP2 to X,Y
+ADDTXY: TXA         
+        CLC
+        ADC TEMP1   
+        TAX
+        TYA
+        ADC TEMP2
+        TAY
+        RTS
+
+;Subtract TEMP1,TEMP2 from X,Y
+SUBTXY: TXA         
+        SEC
+        SBC TEMP1   
+        TAX
+        TYA
+        SBC TEMP2
+        TAY
+        RTS
+
+;Decrement X,Y Register Pair
+DECRXY: CPY #0
+        BNE DECRXZ
+        DEY
+DECRXZ: DEX
+        RTS
+
+;Increment X,Y Register Pair
+INCRXY: INX
+        BNE INCRXZ
+        INY
+INCRXZ: RTS
+
 ;Add Accumulator to Destination Address
 ADDDSA: TAX             ;Move Accumulator to Argument LSB
         LDY #0          ;Clear Argument MSB

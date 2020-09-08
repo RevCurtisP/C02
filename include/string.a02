@@ -4,6 +4,18 @@
 ; external zero page byte pairs SRCLO,SRCHI and DSTLO,DSTHI
 ; and external bytes TEMP0 and TEMP1
 
+;Affects N,Z
+;Returns A,Y = New String Length
+STRAPD: STA TEMP0       ;Save Character to Append
+        JSR STRLEN      ;Get Length of String
+        BMI STRCLX      ;Return 255 if > 127
+        LDA TEMP0       ;Restore Character to Append
+STRAPL: STA (SRCLO),Y   ;Store at End of String
+        BEQ STRLEX      ;Exit if NUL
+        INY             ;Increment Past New Character
+        LDA #0          ;Set Character to NUL
+        BEQ STRAPL      ;and Append to String
+
 ;strcmp(&s) - Compare String (to Destination String)
 ;Requires: DSTLO, DSTHI - Pointer to destination string
 ;Args: X,Y = Pointer to source string
@@ -46,6 +58,10 @@ STRCLC: CLC             ;Clear Carry
 STRCLX: LDA #$FF        ;Load -1 into Accumulater
         RTS             ;and Return
 
+;strapd(c, &s) - Append Character to String
+;Args: A = Character to Append
+;      X,Y = Pointer to String
+;Sets: SRCLO, SRCHI - Pointer to String
 ;strlen(&s) - Return Length of String
 ;Args: X,Y - Pointer to string
 ;Sets: SRCLO,SRCHI = Pointer to source string
@@ -95,6 +111,8 @@ STRCAX: STY TEMP3       ;Subtract Destination String Length
 ;Sets: SRCLO,SRCHI = Pointer to source string
 ;Affects: N,Z
 ;Returns: A,Y = Number of characters copied
+STRCPA: LDY #0          ;Alternate entry point
+        BEQ STRCPL      ;for when Source already set
 STRCPY: JSR SETSRC      ;Initialize Source String
 STRCPL: LDA (SRCLO),Y   ;Get Character from Source String
         STA (DSTLO),Y   ;Copy to Destination String

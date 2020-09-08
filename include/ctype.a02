@@ -83,8 +83,7 @@ ISCTL:  CMP #$7F    ;If Char = DEL
         JMP ISBCS   ;  Return Carry Set Else Return Carry Clear
 
 ISBIN:  CMP #$32    ;If Char >= '2'
-
-        BCS ISCLC   ;  Return Carry Clear
+        BCS ISCLC   ;  Return Carry Set
                     ;Else
 ISDGT:  CMP #$30    ;If Char < '0'
         BCC ISRTS   ;  Return Carry Clear

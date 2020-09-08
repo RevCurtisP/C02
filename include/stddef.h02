@@ -19,6 +19,9 @@ void addsrc();
  *       &n - amount to add    */
 void addzpw();
 
+/* Decrement X, and Y Registers */
+int decrxy();
+
 /* Get Destination Pointer          *
  * Returns: Y,X=Destination address */
 int getdst();
@@ -26,6 +29,9 @@ int getdst();
 /* Get Source Pointer          *
  * Returns: Y,X=Source address */
 int getsrc();
+
+/* Increment X, and Y Registers */
+int incrxy();
 
 /* Restore Destination Pointer      *
  * Returns: Y,X=Destination address */
@@ -56,10 +62,6 @@ void savrxy();
 /* Save Source Pointer         *
  * Returns: Y,X=Source address */
 int savsrc(); 
-
-/* Set Buffer Pointer        *
- * Args: &d - Buffer address */
-void setbfr();
 
 /* Set Destination Pointer to Source Pointer */
 int setdss();

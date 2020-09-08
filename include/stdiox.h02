@@ -36,24 +36,35 @@ void putder();
 /* Print Destination String */
 void putdst(); 
 
+/* Print Extended Hexadecimal Number   *
+ * Args: char n - High Byte            *
+ *        int w - Middle and Low Bytes */
+void putexh(); 
+
 /* Print Byte as Hexadecimal Number *
  * Args: b - Number to print        */
 void puthex(); 
+
+/* Print Word as Decimal Number *
+ * Args: int w - Number to print    */
+void putint();
+
+void putwrd(); 
+/* Print Byte as Masked Bits *
+ * Args: b - Byte to print   *
+ *       m - Bitmask         */
+void putmsk(); 
+
+/* Print Nybble as Hexadecimal Number *
+ * Args: b - Number to print        */
+void putnyb(); 
 
 /* Print a Space Character */
 void putspc(); 
 
-/* Print /* Print Byte as Hexadecimal Number *
- * Args: b - Number to print        */
-void puthex(); 
-
-/* Print Byte as Hexadecimal Number *
- * Args: b - Number to print        */
-void puthex(); 
-
-/* Print Byte as Hexadecimal Number *
- * Args: b - Number to print        */
-void puthex(); 
+/* Print Word as Three Hex Digits *
+ * Args: int w - Number to print    */
+void putsqb(); 
 
 /* Print Word as Hexadecimal Number *
  * Args: int w - Number to print    */

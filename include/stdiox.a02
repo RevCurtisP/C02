@@ -30,16 +30,26 @@ GETCPR: JSR PUTS        ;Print Prompt
 
 ;void putbin(b) - PUT Binary
 ;Args: A = number to print
-;Sets: TEMP0 = 0
+;Destroys: TEMP0, TEMP1
 ;Affects: A,Y,C,N,X
-PUTBIN: STA TEMP0       ;Save Number
+PUTBIN: LDY #$FF        ;Set Bitmask to All 1's
+
+;void putmsk(b) - PUT bitMaSK
+;Args: A = byte to print
+;      Y = Bitmask
+;Destroys: TEMP0, TEMP1
+;Affects: A,Y,C,N,X
+PUTMSK: STA TEMP2       ;Save Byte
+        STY TEMP1       ;Save Bitmask
         LDX #8          ;Print 8 Binary Digits
-PUTBIL: LDA #0
-        ASL TEMP0       ;Shift Top Bit Out
+PUTMSL: LDA #0          ;Clear Accumulator
+        ASL TEMP2       ;Shift Top Bit Out of Byte
         ADC #$30        ;Convert to '0' or '1'
-        JSR PUTCHR      ;Print Digit
-        DEX             ;Decrement Index
-        BNE PUTBIL      ;Loop if Not Done
+        ASL TEMP1       ;Shift Top Bit Out of Mask
+        BCC PUTMSS      ;If Set
+        JSR PUTCHR      ;  Print Digit
+PUTMSS: DEX             ;Decrement Index
+        BNE PUTMSL      ;Loop if Not Done
         RTS
 
 ;void putdel(b) - PUT DEcimal Left justified
@@ -90,14 +100,14 @@ PUTDE3: LDA TEMP0       ;Get Low Byte
 PUTDGT: ORA #$30        ;Convert to ASCII digit
         JMP PUTCHR      ;And Print
 
-;puthex(&word) - PUT HEXadecimal
+;puthex(b) - PUT HEXadecimal
 PUTHEX  EQU PRBYTE      ;Print Byte as Hexadecimal
 
 ;putint(&word) - PUT INTeger
 PUTINT: JSR CVIBCD      ;Convert Integer to Packed BCD
         LDY #4          ;Set Initial Digit Number
-        JSR UPBCDI      ;Unpack Digit X
-PUTINZ: BNE PUTINS      ;If Zero
+PUTINZ: JSR UPBCDI      ;Unpack Digit X
+        BNE PUTINS      ;If Zero
         DEY             ; Decrement Digit Number
         BNE PUTINZ      ; If Not Zero Loop
         BEQ PUTDGT      ; Else Print Digit and Return
@@ -107,22 +117,59 @@ PUTINS: JSR PUTDGT      ;Print Digit
         BPL PUTINL      ;Loop if >= Zero
         RTS
 
+;putnyb(b) - PUT NYBble
+PUTNYB  EQU PRHEX       ;Print Nybble as Hexadecimal
+
+;putsqb(&word) - PUT SesQuiByte
+;Args: Y = High Nybble
+;      X = Low Byte
+;Calls: PRBYTE = Print Byte
+;       PRHEZ = Print Hex Digit
+;       SAVRXY = Save X and Y Registers
+;Affects: A,Y,X,N,Z,C
+PUTSQB: JSR SAVRXY      ;Save Address
+PUTSQA: LDA TEMP2       ;Load Address MSB
+        JSR PRHEX       ;Print High Nybble 
+        LDA TEMP1       ;Load Address LSB
+        JMP PRBYTE      ;Print and Return`
+
+;putexh(&word) - PUT EXtended Hexadecimal
+;Args: A = Value Extended Byte
+;      Y = Value High Byte
+;      X = Value Low Byte
+;Calls: PRBYTE = Print Byte
+;       SAVRXY = Save X and Y Registers
+;       PUTWRA = Put Word (Alternate Entry Point)
+;Affects: A,Y,X,N,Z,C
+PUTEXH: JSR SAVRXY      ;Save High and Low Bytes
+        JSR PRBYTE      ;Print Extended Byte
+        JMP PUTWRA      ;Print High and Low Bytes
+
 ;putwrd(&word) - PUT WoRD
 ;Args: Y = Word MSB
 ;      X = Word LSB
-;Calls: PUTS = Put String
-;       PRBYTE = Print Byte
+;Calls: PRBYTE = Print Byte
 ;       SAVRXY = Save X and Y Registers
 ;Affects: A,Y,X,N,Z,C
-PUTWRD: JSR SAVRXY      ;Save Address
-PUTWRA: LDA TEMP2       ;Load Address MSB
+PUTWRD: JSR SAVRXY      ;Save Word
+PUTWRA: LDA TEMP2       ;Load Word MSB
         JSR PRBYTE      ;Print as Hexadecimal
-        LDA TEMP1       ;Load Address LSB
+        LDA TEMP1       ;Load Word LSB
         JMP PRBYTE      ;Print and Return`
 
 ;Print a Space
 PUTSPC: LDA #32         ;Load Space Character
         JMP PUTCHR      ;and Print it
+
+;Print Repeated Spaces
+PUTRPS: TAY             ;Set Counter to Number of Spaces
+        LDA #32
+        
+;Print Repeated Character
+PUTRPT: JSR PUTCHR      ;Print Space Character
+        DEY             ;Decrement Counter
+        BNE PUTRPT      ;If Not 0, Loop
+        RTS
 
 ;void printf(b, &s) - PRINT Formatted byte and/or string
 ;Args: A = byte to format
@@ -132,8 +179,8 @@ PUTSPC: LDA #32         ;Load Space Character
 ;      TEMP3 - number to format
 ;Destroys: TEMP0,TEMP1,TEMP2
 ;Returns: A,Y = Total number of characters printed
-PRINTF: JSR SETSRC      ;Initialize Source String
-        STA TEMP3       ;Save Byte to Format
+PRINTF: STA TEMP3       ;Save Byte to Format
+        JSR SETSRC      ;Initialize Source String
 PRINTL: LDA (SRCLO),Y   ;Read next character in string
         BEQ PRINTX      ;If Not 0
         CMP #'%         ;'  If Format Specified 
@@ -160,9 +207,14 @@ PRINTR: CMP #'R         ;'If "r" or "R"
         JSR PUTDES      ;  Print Right Justified
         JMP PRINTY      ;  and Continue Printing String
 PRINTD: CMP #'D         ;'Else If "d" or "D" 
-        BNE PRINTH
+        BNE PRINTG
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTDEC      ;  Print as Decimal
+        JMP PRINTY      ;  and Continue Printing String
+PRINTG: CMP #'G         ;'Else If "g" or "G" 
+        BNE PRINTH
+        LDA TEMP3       ;  Load Byte to Format
+        JSR PUTNYB      ;  Print as Low Nybble as Hexadecimal
         JMP PRINTY      ;  and Continue Printing String
 PRINTH: CMP #'H         ;'Else If "h" or "H" 
         BNE PRINTB
@@ -171,8 +223,10 @@ PRINTH: CMP #'H         ;'Else If "h" or "H"
         JMP PRINTY      ;  and Continue Printing String
 PRINTB: CMP #'B         ;'Else If "b" or "B" 
         BNE PRINTN
+        STY TEMP0       ;  Save Index
         LDA TEMP3       ;  Load Byte to Format
         JSR PUTBIN      ;  Print as Binary
+        LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;  and Continue Printing String
 PRINTN: CMP #'N         ;'Else If "n" or "N" 
         BNE PRINTS
@@ -181,9 +235,16 @@ PRINTN: CMP #'N         ;'Else If "n" or "N"
         LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;  and Continue Printing String
 PRINTS: CMP #'S         ;'Else If "s" or "S" 
-        BNE PRINTW
+        BNE PRINTQ
         STY TEMP0       ;  Save Index
         JSR PUTDST      ;  Print Destination String
+        LDY TEMP0       ;  Restore Index
+        JMP PRINTY      ;
+PRINTQ: CMP #'Q         ;'Else If "w" or "W" 
+        BNE PRINTW
+        STY TEMP0       ;  Save Index
+        JSR SAVDST      ;  Save Destination Address
+        JSR PUTSQA      ;  Print MSB and LSB as Hex
         LDY TEMP0       ;  Restore Index
         JMP PRINTY      ;
 PRINTW: CMP #'W         ;'Else If "w" or "W" 

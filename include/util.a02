@@ -1,5 +1,5 @@
 ; C02 library util.h02 assembly language subroutines
-; Requires external function SETSRC, STRLEN, STRCML, and STRCPL
+; Requires external function SETSRC, STRLEL, STRCML, and STRCPL
 ; and external zero page locations DSTLO, DSTHI, SRCLO, and SRCHI
 
 ;tkndec(&list) - Decode Token into Destination String
@@ -22,7 +22,7 @@ TKNDEL: JSR STRLEL      ;Get Length of first Token in List
         INY             ;plus 1
         TXA             ;Compare Argument
         CMP (SRCLO),Y   ;to Tokenized Value
-        BEQ TKNDET      ;If Not Egual
+        BEQ TKNDET      ;If Not Equal
         TYA             ;  Get Token Length
         JSR TKNNXT      ;  Skip to Next Token
         BEQ TKNDEL      ;  and Loop
