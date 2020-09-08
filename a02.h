@@ -22,7 +22,7 @@
 #define INDCY 0x0800  //(Indirect),Y
 #define RELTV 0x1000  //Relative
 
-char zpgabs[][] = {"Absolute", "ZeroPage"};
+char zpgabs[][9] = {"Absolute", "ZeroPage"};
 
 struct amd {int amode; char desc[12];};
 struct amd amdesc[] = {

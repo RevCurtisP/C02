@@ -67,8 +67,15 @@ void usage(char* appnam) {
   exit(EXIT_FAILURE);
 }
 
+/* Print Error Dump Info */
+void xdump(void) {
+  puts("Error Dump");
+  oprnd[opridx]=0; printf("Operand: %s\n", oprnd);
+}
+
 /* Print Error Message and Exit */
 void xerror(char* format, char *s) {
+  if (debug) xdump();
   if (lineno) fprintf(stderr, "%04d: ", lineno);
   fprintf(stderr, format, s);
   exit(EXIT_FAILURE);
@@ -182,7 +189,7 @@ int evlbin() {
   return result;
 }
 
-/* Evaluate Binary Number */
+/* Evaluate Character Constant */
 int evlchr() {
   int result = 0;
   cpychr('\'');
@@ -207,7 +214,7 @@ int evlhex() {
   int result = 0;
   cpychr('$');
   while (isxdigit(*linptr)) {
-    int digit = *linptr - '0';
+    int digit = toupper(*linptr) - '0';
     if (digit > 9) digit = digit - 7;
     result = (result << 4) + digit;
     cpychr(0);
@@ -333,7 +340,7 @@ void asmwrd(void) {
   } while (cpychr(','));
 }
 
-/* Assemble FILL Pseudo-Op */
+/* Assemble ALIGN Pseudo-Op */
 void asmaln(void) {
   if (debug) puts("Assembling ALIGN Pseudo-Op");
   int size = evlopd(0xFFFF); if (size < 2) return;
