@@ -6,14 +6,15 @@ CHRROM  EQU $8000 ;Character Generator ROM
 VICCLR  EQU $9600 ;Color RAM (Unexpanded)
 
 ;Machine Language Basic Stub
-        ORG $0401           ;Start of Basic Program 
+        ORG $1001           ;Start of Basic Program 
 BASIC:  DC  $0C, $04        ;Pointer to Next Line 
         DC  $00, $00        ;Line Number (0)
         DC  $9E             ;SYS 
         DC  $20             ;' '
-        DC  $31,$30,$33,$38 ;"1038" 
+        DC  $34,$31,$31,$30 ;"4110" 
         DC  $00             ;End of Line Marker
         DC  $00, $00        ;End of Basic Program
 
         INCLUDE "../include/vic.a02" ;Include VIC 20 Common Code
         INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
+
