@@ -1,0 +1,123 @@
+;SoundFX for VIC-20 by chysn
+;Converted to A02 syntax by Curtis F Kaylor
+
+        SUBROUTINE "SOUNDFX"
+
+;Available Sound Effect 
+FXCOIN  EQU 0   ;Insert Coin
+FXKLXN  EQU 1   ;Klaxon
+FXFALL  EQU 2   ;Falling Into Something
+FXPOWR  EQU 3   ;Power Up
+FXLASR  EQU 4   ;Laser Cannon
+FXCROS  EQU 5   ;Command Ship Crossing
+FXDROP  EQU 6   ;Dropped Something
+FXEXPL  EQU 7   ;Explosion
+
+;SoundFX Constants
+.VOICE  EQU $900C     ;$900C=high, $900B=mid, $900A=low, $900D=noise
+.VOLUME EQU $900E
+
+;Internal Variables
+.FREQ   BYTE $00      ;Current effect frequency register
+.LENGTH BYTE $00      ;Effect length for current effect
+.COUNT  BYTE $00      ;Effect countdown for current effect
+.DIR    BYTE $00      ;Effect direction ($00 if left, $80 is right)
+.SPEED  BYTE $00      ;Effect countdown reset value
+.IADDR  WORD $00      ;System Interrupt Routine Address
+
+;fxinit() - Start SoundFX Module
+;Destroys: A
+FXINIT  JSR .CLEAR    ;Clear Sound Registers
+        LDA #15       ;Set Volume to Max
+        STA .VOLUME
+        PHP           ;Disable Interrupts
+        SEI
+        LDA $0314     ;Save Interrupt Routine Address
+        STA .IADDR
+        LDA $0315
+        STA .IADDR+1
+        LDA #<.FXSVC  ;Install SoundFX Interrupt Routine
+        STA $0314
+        LDA #>.FXSVC
+        STA $0315
+        PLP           ;Enable Interrupts
+        RTS
+
+;fxstop() - Stop SoundFX Module
+FXSTOP  PHP           ;Disable Interrupts
+        SEI
+        LDA .IADDR    ;Restore Interrupt Vector
+        STA $0314
+        LDA .IADDR+1
+        STA $0315
+        PLP           ;Enable Interrupts
+.CLEAR  LDA #0        ;Clear Sound Registers
+        LDX #5
+.LOOP   STA $9009,X
+        DEX 
+        BNE .LOOP
+        RTS
+
+;Sound Effects Service - Plays next sound effect,
+;rotates the 8-bit sound effect register, and plays the pitch      
+.FXSVC  LDA .LENGTH     ;Has the sound been launched?
+        BEQ .DONE       ;If unlaunched, kill voice and return
+        DEC .LENGTH     ;Decrement both length
+        DEC .COUNT      ;  and countdown
+        BNE .RETURN     ;If countdown has elapsed,
+        LDA .SPEED      ;  reset it with the current effect speed
+        STA .COUNT      
+        BIT .DIR        ;Rotate the register, based on the direction
+        BMI .RIGHT      ;  specified by the direction flag
+.LEFT   LDA #$00         
+        ASL .FREQ       ;Rotate the register left if flag = $00
+        ADC .FREQ       ;If carry was set, set bit 0
+        JMP .UPDATE     ;Update and play the new frequency
+.RIGHT  LSR .FREQ       ;Rotate the register right if flag = $80
+        LDA .FREQ      
+        BCC .PLAY       ;If carry was set, set bit 7
+        LDA #%10000000  
+        ORA .FREQ      
+.UPDATE STA .FREQ     
+.PLAY   ORA #$80        ;Gate the high voice
+.DONE   STA .VOICE      
+.RETURN JMP (.IADDR)    ;Execute System Interrupt Routine      
+        
+; Launch Sound Effect
+; Args: A = The sound effect index
+FXPLAY  SEI             ;Don't play anything while setting up
+        ASL             ;Each effect has two bytes in the table
+        TAX             
+        LDA .TABLE,X    ;Get the register byte
+        STA .DIR        ;Set the direction (only bit 7 will be used)
+        AND #$7F        ;Mask away the direction bit to get the 7-bit
+        STA .FREQ      ;  frequency
+        LDA .TABLE+1,X  ;Get the length byte
+        TAX             ;  and preserve it
+        AND #$F0        ;Length is in bits 4-7 of the length byte
+        STA .LENGTH      
+        TXA             
+        AND #$0F        ;Speed (jiffies per rotation) is in the low
+        STA .SPEED      ;nybble of the length byte
+        STA .COUNT      
+        CLI             ;Go! 
+        RTS
+
+; Sound effects for the sound effects player
+; Each effect has four parameters (DFFFFFFF LLLLSSSS)
+;   (1) Bit 7 (D) of the first byte is the direction
+;       * Unset=shift left, or a rising sound 
+;       * Set=shift right, or a falling sound
+;   (2) Bits 0-6 (F) of the first byte is the frequency register
+;   (3) High nybble of the second byte (L) is the length in jiffies x 16
+;       * Between approx. 1/4 sec and 4 sec in length
+;   (4) Low nybble of second byte (S) is speed in jiffies
+.TABLE  BYTE $7a,$13    ;0 - Insert Coin
+        BYTE $55,$68    ;1 - Klaxon
+        BYTE $f0,$26    ;2 - Falling Into Something
+        BYTE $07,$13    ;3 - Power Up
+        BYTE $3b,$31    ;4 - Laser Cannon
+        BYTE $6c,$74    ;5 - Command Ship Crossing
+        BYTE $95,$14    ;6 - Dropped Something
+        BYTE $92,$11    ;7 - Explosion
+

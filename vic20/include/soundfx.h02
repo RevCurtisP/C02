@@ -1,0 +1,12 @@
+//SoundFX module for VIC-20 by chysn
+
+//Available Sound Effects
+enum {FXCOIN, FXKLXN, FXFALL, FXPOWR, FXLASR, FXCROS, FXDROP, FXEXPL};
+
+/* Initialize SoundFX Module  *
+ * Installs Interrupt Routine */
+void fxinit();
+
+/* Play Sound Effect     *
+ * Args: char n - Effect */
+ void fxplay();

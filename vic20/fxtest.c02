@@ -1,0 +1,37 @@
+/* Test SoundFX Module */
+
+/* To compile: ..\c02 -h vic3k -s vic fxtest.c02   *
+ *   assemble: ..\a02.exe -p fxtest.asm fxtest.prg */
+
+#include <screen.h02>
+#include "include/soundfx.h02"
+
+char key, effect;
+
+void putlin() {putstr(); newlin();}
+
+main:
+  clrscr();
+  putlin("PRESS KEY FOR EFFECT");
+  newlin();
+  putlin(" 1 - INSERT COIN");
+  putlin(" 2 - KLAXON");
+  putlin(" 3 - FALLING");
+  putlin(" 4 - POWER UP");
+  putlin(" 5 - LASER CANNON");
+  putlin(" 6 - SHIP CROSSING");
+  putlin(" 7 - DROPPED");
+  putlin(" 8 - EXPLOSION");
+  newlin();
+  putlin("PRESS STOP TO EXIT");
+
+  fxinit(); //Initilize SoundFX Engine
+  while() {
+    key = getchr();
+    if (key == #ESCKEY) break;
+    effect = key - '1';
+    if (effect < 8) fxplay(effect);
+  }
+  fxstop();
+  goto exit;
+  
