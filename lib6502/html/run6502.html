@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- saved from url=(0056)https://www.piumarta.com/software/lib6502/run6502.1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="tty2html http://piumarta.com/software">
+<title>run6502(1)</title></head>
+<body>
+<pre>RUN6502(1)                BSD General Commands Manual               RUN6502(1)
+
+<b>NAME</b>
+     <b>run6502</b> - execute a 6502 microprocessor program
+
+<b>SYNOPSIS</b>
+     <b>run6502</b> [<u>option</u> <u>...</u>]
+     <b>run6502</b> [<u>option</u> <u>...</u>] <b>-B</b> [<u>file</u> <u>...</u>]
+
+<b>DESCRIPTION</b>
+     The <b>run6502</b> command emulates the execution of a 6502 microprocessor.  It
+     creates a memory image from the contents of one or more files on the com-
+     mand line and then simulates a power-on hardware reset to begin execu-
+     tion.
+
+     In its first form, <b>run6502</b> emulates an embedded 6502 processor with 64
+     kilobytes of RAM, no memory-mapped hardware, and no input-output capabil-
+     ities.  Limited interaction with the machine is possible only through the
+     <b>-G</b>, <b>-M</b> and <b>-P</b> options.
+
+     In its second form (with the <b>-B</b> option) <b>run6502</b> provides minimal emula-
+     tion of Acorn 'BBC Model B' hardware with 32 kilobytes of RAM, 16 kilo-
+     bytes of paged language ROMs, and 16 kilobytes of operating system ROM.
+     A few MOS calls are intercepted to provide keyboard input and screen out-
+     put via stdin and stdout.  Switching between the sixteen paged read-only
+     memory banks is also supported by the usual memory-mapped control regis-
+     ter.  Any <u>file</u> arguments after the <b>-B</b> are loaded into successive paged
+     ROM banks (starting at 15 and working down towards 0) before execution
+     begins.
+
+   <b>Options</b>
+     <b>-B</b>      enable minimal Acorn 'BBC Model B' hardware emulation:
+
+             <b>o</b>   the contents of memory between addresses 0x8000 and 0xBFFF
+                 are copied into paged ROM number 0;
+
+             <b>o</b>   memory between 0x8000 and 0xBFFF becomes bank-switchable
+                 between sixteen different ROM images;
+
+             <b>o</b>   the memory-mapped pages ('FRED', 'JIM' and 'SHEILA') between
+                 0xFC00 and 0xFEFF are initialised to harmless values;
+
+             <b>o</b>   the upper half of the address space is write-protected; and
+
+             <b>o</b>   callbacks are installed on several OS entry points to provide
+                 input-output via stdin and stdout.
+
+             Any remaining non-option arguments on the command line will name
+             files to be loaded successively into paged ROMs, starting at 15
+             and working downwards towards 0.
+
+     <b>-d</b> <u>addr</u> <u>end</u>
+             dump memory from the address <u>addr</u> (given in hexadecimal) up to
+             (but not including) <u>end</u>.  The <u>end</u> argument is either an absolute
+             address or a relative address specified as a '+' character fol-
+             lowed by the number (in hexadecimal) of bytes to dump.  In other
+             words, the following two options dump the same region of memory:
+
+                   <b>-d</b> 8000  C000
+                   <b>-d</b> 8000 +4000
+
+             The format of the dump cannot currently be modified and consists
+             of the current address followed by one, two or three hexadecimal
+             bytes, and a symbolic representation of the instruction at that
+             address.
+
+     <b>-G</b> <u>addr</u>
+             arrange that subroutine calls to <u>addr</u> will behave as if there
+             were an implementation of getchar(3) at that address, reading a
+             character from stdin and returning it in the accumulator.
+
+     <b>-h</b>      print a summary of the available options and then exit.
+
+     <b>-I</b> <u>addr</u>
+             set the IRQ (interrupt request) vector (the address to which the
+             processor will transfer control upon execution of a BRK instruc-
+             tion).  Setting this address to zero will cause execution to halt
+             (and the emulator to exit) when a BRK instruction is encountered.
+
+     <b>-i</b> <u>addr</u> <u>file</u>
+             Load <u>file</u> into the memory image at the address <u>addr</u> (in hexadeci-
+             mal), skipping over any initial '#!' interpreter line.
+
+     <b>-l</b> <u>addr</u> <u>file</u>
+             Load <u>file</u> into the memory image at the address <u>addr</u> (in hexadeci-
+             mal).
+
+     <b>-M</b> <u>addrio</u>
+             arrange that memory reads from address <u>addrio</u> will return the
+             next character on stdin (blocking if necessary), and memory
+             writes to <u>addrio</u> will send the value written to stdout.
+
+     <b>-N</b> <u>addr</u>
+             set the NMI (non-maskable interrupt) vector to <u>addr</u>.
+
+     <b>-P</b> <u>addr</u>
+             arrange that subroutine calls to <u>addr</u> will behave as if there
+             were an implementation of putchar(3) at that address, writing the
+             contents of the accumulator to stdout.
+
+     <b>-R</b> <u>addr</u>
+             set the RST (hardware reset) vector.  The processor will transfer
+             control to this address when emulated execution begins.
+
+     <b>-s</b> <u>addr</u> <u>end</u> <u>file</u>
+             save the contents of memory from the address <u>addr</u> up to <u>end</u>
+             (exclusive) to the given <u>file</u>.  As with the <b>-d</b> option, <u>end</u> can be
+             absolute or '+' followed by a byte count.
+
+     <b>-v</b>      print version information and then exit.
+
+     <b>-X</b> <u>addr</u>
+             arrange that any transfer of control to the address <u>addr</u> will
+             cause an immediate exit with zero exit status.
+
+     <b>-x</b>      exit immediately.  (Useful after <b>-d</b> or when <b>run6502</b> is being used
+             as a trivial 'image editor', with several <b>-l</b> options followed by
+             <b>-s</b> and <b>-x</b>.)
+
+     <u>file</u> <u>...</u>
+             following a <b>-B</b> option, load one or more ROM image files into suc-
+             cessive paged ROM slots.  Other than the paging aspect, this is
+             equivalent to:
+
+                   <b>-l</b> <u>8000</u> <u>image</u>
+
+<b>EXAMPLES</b>
+   <b>A</b> <b>Very</b> <b>Simple</b> <b>Program</b>
+     The perl(1) command can be used to create a binary file from hexadecimal
+     input:
+
+         echo a2418a20eeffe8e05bd0f7a90a20eeff00 |
+         perl -e 'print pack "H*",&lt;STDIN&gt;' &gt; temp.img
+
+     The file can be loaded and executed with:
+
+         run6502 -l 1000 temp.img -R 1000 -P FFEE -X 0
+
+     The contents of the file can be inspected symbolically with:
+
+         run6502 -l 1000 temp.img -d 1000 +12
+
+     The options passed to <b>run6502</b> in the above examples have the following
+     effects:
+
+     -l 1000 temp.img
+             loads the file <u>temp.img</u> into memory at address 0x8000.
+
+     -R 1000
+             sets the reset vector (the address of first instruction to be
+             executed after 'power on') to 0x1000.
+
+     -P FFEE
+             arranges for calls to address 0xFFEE to behave as if there were
+             an implementation of putchar(3) at that address.
+
+     -X 0    arranges for transfers of control to address 0 to exit from the
+             emulator.  This works in the above example because the final
+             'BRK' instruction causes an implicit subroutine call through an
+             uninitialised interrupt vector to location 0.  To see this
+             instruction...
+
+     -d 1000 +12
+             disassembles 18 bytes of memory at address 0x8000.
+
+   <b>Standalone</b> <b>Images</b>
+     The <b>-i</b> option is designed for use in the 'interpreter command' appearing
+     on the first line of an executable script.  Adding the line
+
+         #!run6502 -R 1000 -P FFEE -X 0 -i 1000
+
+     (with no leading spaces and a single trailing newline character) to the
+     <u>temp.img</u> file from the first example turns it into a script.  If the file
+     is made executable with
+
+         chmod +x temp.img
+
+     it can be run like a standalone program:
+
+         ./temp.img
+
+   <b>A</b> <b>Very</b> <b>Complex</b> <b>Program</b>
+     Consider a pair of files named <u>os1.2</u> and <u>basic2</u> containing (legally-
+     acquired, of course) ROM images of Acorn MOS 1.2 and BBC Basic 2.  The
+     following command loads each of the images into memory at the appropriate
+     address, cleans up the regions of memory containing memory-mapped i/o on
+     the BBC computer, saves a snapshot of the entire memory to the file <u>image</u>
+     and then exits:
+
+         run6502 -l C000 os1.2 -l 8000 basic2 -B -s0 +10000 image -x
+
+     Running the generated image with
+
+         run6502 image
+
+     will cold-start the emulated hardware, run the OS for a while, and then
+     drop into the language ROM.  Basic programs can then be entered, edited
+     and run from the terminal.
+
+     More details are given in the <u>README</u> file available in the <u>examples</u>
+     directory of the distribution.
+
+   <b>Exercises</b>
+     Create a standalone image (one that can be run as a program, with a '#!'
+     interpreter line at the beginning) that contains Basic2 and OS1.2 (as
+     described above).  This image should be no larger than 32K (memory below
+     0x8000, which would be full of zeroes, should not appear in the image
+     file).
+
+<b>DIAGNOSTICS</b>
+     If nothing goes wrong, none.  Otherwise lots.  They should be self-
+     explanatory.  I'm too lazy to enumerate them.
+
+<b>COMPATIBILITY</b>
+     See lib6502(3) for a discussion of the emulated instruction set.
+
+<b>SEE</b> <b>ALSO</b>
+     lib6502(3)
+
+     The file <u>examples/README</u> in the lib6502 distribution.  (Depending on your
+     system this may be installed in <u>/usr/doc/lib6502</u>, <u>/usr/local/doc</u>/<u>lib6502</u>,
+     <u>/usr/share/doc/lib6502</u>, or similar.)
+
+     <u>http://piumarta.com/software/lib6502</u> for updates and documentation.
+
+     <u>http://6502.org</u> for lots of 6502-related resources.
+
+<b>AUTHORS</b>
+     The software and manual pages were written by Ian Piumarta.
+
+     The software is provided as-is, with absolutely no warranty, in the hope
+     that you will enjoy and benefit from it.  You may use (entirely at your
+     own risk) and redistribute it under the terms of a very liberal license
+     that does not seek to restrict your rights in any way (unlike certain so-
+     called 'open source' licenses that significantly limit your freedom in
+     the name of 'free' software that is, ultimately, anything but free).  See
+     the file COPYING for details.
+
+<b>BUGS</b>
+     <b>o</b>   Options must appear one at a time.
+
+     <b>o</b>   Any attempt (in a load or save operation) to transfer data beyond
+         0xFFFF is silently truncated at the end of memory.
+
+     <b>o</b>   There is no way to specify the slot into which a ROM image should be
+         loaded, other than implicitly according to the order of arguments on
+         the command line.
+
+     <b>o</b>   Execution can only be started via the emulated power-up reset.  There
+         is no support for 'warm-starting' execution in an image at an arbi-
+         trary address.
+
+     <b>o</b>   Even though the emulator fully supports them, there is no way to
+         artificially generate a hardware interrupt request, non-maskable
+         interrupt, or reset condition.  If you need these, read lib6502(3)
+         and write your own shell.
+
+     <b>o</b>   The Acorn 'BBC Model B' hardware emulation is totally lame.
+
+     Please send bug reports (and feature requests) to the author at: first-
+     Name (at) lastName (dot) com.  (See <u>AUTHORS</u> above for suitable values of
+     firstName and lastName.)
+
+BSD                            October 31, 2005                            BSD
+</pre>
+
+
+</body></html>

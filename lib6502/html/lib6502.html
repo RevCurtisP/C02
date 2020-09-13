@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- saved from url=(0056)https://www.piumarta.com/software/lib6502/lib6502.3.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="tty2html http://piumarta.com/software">
+<title>lib6502(3)</title></head>
+<body>
+<pre>LIB6502(3)               BSD Library Functions Manual               LIB6502(3)
+
+<b>NAME</b>
+     <b>lib6502</b> - 6502 microprocessor emulator
+
+<b>SYNOPSIS</b>
+     <b>#include</b> <b>&lt;stdint.h&gt;</b>
+     <b>#include</b> <b>&lt;lib6502.h&gt;</b>
+
+     <u>M6502</u> <u>*</u>
+     <b>M6502_new</b>(<u>M6502</u><b>_</b><u>Registers</u> <u>*registers</u>, <u>M6502</u><b>_</b>M<u>emory</u> <u>memory</u>,
+             <u>M6502</u><b>_</b><u>Callbacks</u> <u>*callbacks</u>);
+
+     <u>void</u>
+     <b>M6502_reset</b>(<u>M6502</u> <u>*mpu</u>);
+
+     <u>void</u>
+     <b>M6502_nmi</b>(<u>M6502</u> <u>*mpu</u>);
+
+     <u>void</u>
+     <b>M6502_irq</b>(<u>M6502</u> <u>*mpu</u>);
+
+     <u>uint16</u><b>_</b><u>t</u>
+     <b>M6502_getVector</b>(<u>M6502</u> <u>*mpu</u>, <u>vector</u>);
+
+     <u>uint16</u><b>_</b><u>t</u>
+     <b>M6502_setVector</b>(<u>M6502</u> <u>*mpu</u>, <u>vector</u>, <u>uint16</u><b>_</b><u>t</u> <u>a</u>d<u>dress</u>);
+
+     <u>M6502</u><b>_</b><u>Callback</u>
+     <b>M6502_getCallback</b>(<u>M6502</u> <u>*mpu</u>, <u>type</u>, <u>uint16</u><b>_</b><u>t</u> <u>a</u>d<u>dress</u>);
+
+     <u>M6502</u><b>_</b><u>Callback</u>
+     <b>M6502_setCallback</b>(<u>M6502</u> <u>*mpu</u>, <u>type</u>, <u>uint16</u><b>_</b><u>t</u> <u>a</u>d<u>dress</u>,
+             <u>M6502</u><b>_</b><u>Callback</u> <u>callback</u>);
+
+     <u>void</u>
+     <b>M6502_run</b>(<u>M6502</u> <u>*mpu</u>);
+
+     <u>int</u>
+     <b>M6502_disassemble</b>(<u>M6502</u> <u>*mpu</u>, <u>uint16</u><b>_</b><u>t</u> <u>addres</u>_s, <u>char</u> <u>buffer[64]</u>);
+
+     <u>void</u>
+     <b>M6502_dump</b>(<u>M6502</u> <u>*mpu</u>, <u>char</u> <u>buffer[64]</u>);
+
+     <u>void</u>
+     <b>M6502_delete</b>(<u>M6502</u> <u>*mpu</u>);
+
+<b>DESCRIPTION</b>
+     <b>M6502_new</b>() creates an instance of a 6502 microprocessor.  <b>M6502_reset</b>(),
+     <b>M6502_nmi</b>() and <b>M6502_irq</b>() place it into the states associated with the
+     hardware signals for reset, non-maskable interrupt and interrupt request,
+     respectively.  The macros <b>M6502_getVector</b>() and <b>M6502_setVector</b>() read
+     and write the vectors through which the processor jumps in response to
+     the above signals.  The macros <b>M6502_getCallback</b>() and <b>M6502_setVec</b>tt<b>or</b>()
+     read and write client-supplied functions that intercept accesses to mem-
+     ory.  <b>M6502_run</b>() begins emulated execution.  <b>M6502_dump</b>() and
+     <b>M6502_disassemble</b>() create human-readable representations of processor or
+     memory state.  <b>M6502_delete</b>() frees all resources associated with a pro-
+     cessor instance.  Each of these functions and macros is described in more
+     detail below.
+
+     <b>M6502_new</b>() returns a pointer to a <u>M6502</u> structure containing at least
+     the following members:
+
+     struct _M6502
+     {
+         M6502_Registers  *registers;   /* processor state */
+         uint8_t          *memory;      /* memory image */
+         M6502_Callbacks  *callbacks;   /* r/w/x callbacks */
+     };
+
+     These members are initialised according to the supplied <u>registers</u>, <u>memory</u>
+     and <u>callbacks</u> arguments.  If a given argument is NULL, the corresponding
+     member is initialised automatically with a suitable (non-NULL) value.
+
+     The members of <u>M6502</u> are as follows:
+
+     <u>registers</u>  the processor state, containing all registers and condition
+                codes.
+
+     <u>memory</u>     a block of at least 64 kilobytes of storage containing the
+                processor's memory.  (An array type <u>M6502</u><b>_</b><u>Memory,</u> suitable for
+                defining values to pass as the <u>memory</u> argument, is defined in
+                the <b>#include</b> <b>&lt;lib6502.h&gt;</b>
+                include file.)
+
+     <u>callbacks</u>  a structure mapping processor memory accesses to client call-
+                back functions.
+
+     Access to the contents of the <u>registers</u> and <u>memory</u> members can be made
+     directly.  The <u>registers</u> member is a <u>M6502</u><b>_</b><u>Registers</u> containing the fol-
+     lowing members:
+
+     struct _M6502_Registers
+     {
+         uint8_t   a;  /* accumulator */
+         uint8_t   x;  /* X index register */
+         uint8_t   y;  /* Y index register */
+         uint8_t   p;  /* processor status register */
+         uint8_t   s;  /* stack pointer */
+         uint16_t pc;  /* program counter */
+     };
+
+     The <u>memory</u> member is an array of <u>unsigned</u> <u>char</u> and can be indexed
+     directly.  In addition, two convenience macros <b>M6502_getVector</b>() and
+     <b>M6502_setVector</b>() provide access to the reset and interrupt vectors
+     within <u>memory</u>.  <b>M6502_getVector</b>() returns the address stored in the named
+     <u>vector</u> which must be precisely one of the following:
+
+           RST  the reset vector.
+
+           NMI  the non-maskable interrupt vector.
+
+           IRQ  the interrupt request vector.
+
+     <b>M6502_setVector</b>() stores its <u>address</u> argument in the named <u>vector</u> and
+     returns the new value.
+
+     The <u>callbacks</u> member contains an opaque structure mapping processor mem-
+     ory accesses to client callback functions.  Whenever the processor per-
+     forms an access for which a corresponding entry exists in the the
+     <u>callbacks</u> structure, the emulator suspends execution and invokes the
+     callback to complete the operation.  Each callback function should have a
+     signature equivalent to:
+
+           int <u>callback</u> (M6502 *mpu, uint16_t address, uint8_t data);
+
+     The macros <b>M6502_getCallback</b>() and <b>M6502_setCallback</b>() read and write
+     entries in the <u>callbacks</u> structure.  These macros identify a unique mem-
+     ory access operation from the specified <u>address</u> on which it operates and
+     <u>type</u> of access involved.  The <u>type</u> argument must be one of the following:
+
+     read   the <u>callback</u> is invoked when the processor attempts to read from
+            the given address.  The emulator passes the effective address of
+            the operation to the callback in its <u>address</u> argument.  (The <u>data</u>
+            argument is undefined.)  The value returned by the callback will
+            be used by the emulator as the result of the read operation.
+
+     write  the <u>callback</u> is invoked when the processor attempts to write to
+            the given address.  The emulator passes the effective address of
+            the operation to the callback in its <u>address</u> argument and the byte
+            being written in the <u>data</u> argument.  The emulator will not perform
+            the write operation before invoking the callback; if the write
+            should complete, the callback must modify the processor's <u>memory</u>
+            explicitly.  The valued returned from the callback is ignored.
+
+     call   the <u>callback</u> is invoked when the processor attempts to transfer
+            control to the given address by any instruction other than a rela-
+            tive branch.  The emulator passes the destination address to the
+            callback in its <u>address</u> argument and the instruction that initi-
+            ated the control transfer in its <u>data</u> argument (one of JMP, JSR,
+            BRK, RTS or RTI).  If the callback returns zero (the callback
+            refuses to handle the operation) the emulator will allow the oper-
+            ation to complete as normal.  If the callback returns a non-zero
+            address (indicating that the callback has handled the operation
+            internally) the emulator will transfer control to that address.
+
+     <b>M6502_getCallback</b>() returns zero if there is no callback associated with
+     the given <u>type</u> and <u>address</u>.  Passing zero as the <u>callback</u> argument of
+     <b>M6502_setCallback</b>() removes any callback that might have been associated
+     with <u>type</u> and <u>address</u>.
+
+     <b>M6502_run</b>() emulates processor execution in the given <u>mpu</u> by repeatedly
+     fetching the instruction addressed by <u>pc</u> and dispatching to it.  This
+     function normally never returns.
+
+     <b>M6502_dump</b>() writes a (NUL-terminated) symbolic representation of the
+     processor's internal state into the supplied <u>buffer</u>.  Typical output
+     resembles:
+
+           PC=1010 SP=01FE A=0A X=5B Y=00 P=D1 NV-B---C
+
+     <b>M6502_disassemble</b>() writes a (NUL-terminated) symbolic representation of
+     the instruction in the processor's memory at the given <u>address</u> into the
+     supplied <u>buffer</u>.  It returns the size (in bytes) of the instruction.  (In
+     other words, the amount by which <u>address</u> should be incremented to arrive
+     at the next instruction.)  Typical output resembles:
+
+           1009 cpx #5B
+
+     (The <u>buffer</u> arguments are oversized to allow for future expansion.)
+
+     <b>M6502_delete</b>() frees the resources associated with the given <u>mpu.</u> Any
+     members that were allocated implicitly (passed as NULL to <b>M6502_new</b>())
+     are deallocated.  Members that were initialised from non-NULL arguments
+     are not deallocated.
+
+<b>IMPLEMENTATION</b> <b>NOTES</b>
+     You can share the <u>memory</u> and <u>callbacks</u> members of <u>M6502</u> between multiple
+     instances to simulate multiprocessor hardware.
+
+<b>RETURN</b> <b>VALUES</b>
+     <b>M6502_new</b>() returns a pointer to a <u>M6502</u> structure.  <b>M6502_getVector</b>()
+     and <b>M6502_setVector</b>() return the contents of the given <u>vector</u>.
+     <b>M6502_getCallback</b>() and <b>M6502_setCallback</b>() return the <u>M</u><u>6502</u><b>_</b><u>Callback</u>
+     function associated with the given <u>address</u> and access <u>type</u>.
+     <b>M6502_disassemble</b>() returns the size (in bytes) of the instruction at the
+     given <u>address</u>.  <b>M6502_reset</b>(), <b>M6502_nmi</b>(), <b>M6502_irq</b>(), <b>M6502_run</b>(),
+     <b>M6502_dump</b>() and <b>M6502_delete</b>() don't return anything (unless you forgot
+     to include
+
+<b>EXAMPLES</b>
+     The following program creates a 6502 processor, sets up callbacks for
+     printing characters and halting after a BRK instruction, stores a program
+     into memory that prints the alphabet, disassembles the program on stdout,
+     and then executes the program.
+
+           #include &lt;stdint.h&gt;
+           #include &lt;stdlib.h&gt;
+           #include &lt;stdio.h&gt;
+
+           #include "lib6502.h"
+
+           #define WRCH    0xFFEE
+
+           int wrch(M6502 *mpu, uint16_t address, uint8_t data)
+           {
+             int pc;
+             putchar(mpu-&gt;registers-&gt;a);
+             pc  = mpu-&gt;memory[++mpu-&gt;registers-&gt;s + 0x100];
+             pc |= mpu-&gt;memory[++mpu-&gt;registers-&gt;s + 0x100] &lt;&lt; 8;
+             return pc + 1;  /* JSR pushes next insn addr - 1 */
+           }
+
+           int done(M6502 *mpu, uint16_t address, uint8_t data)
+           {
+             char buffer[64];
+             M6502_dump(mpu, buffer);
+             printf("\nBRK instruction\n%s\n", buffer);
+             exit(0);
+           }
+
+           int main(int argc, char **argv)
+           {
+             M6502    *mpu = M6502_new(0, 0, 0);
+             unsigned  pc  = 0x1000;
+
+             mpu-&gt;callbacks-&gt;call[WRCH] = wrch;     /* write character */
+             mpu-&gt;callbacks-&gt;call[0000] = done;     /* reached after BRK */
+
+           # define gen1(X)        (mpu-&gt;memory[pc++] = (uint8_t)(X))
+           # define gen2(X,Y)      gen1(X); gen1(Y)
+           # define gen3(X,Y,Z)    gen1(X); gen2(Y,Z)
+
+             gen2(0xA2, 'A'     );  /* LDX #'A'   */
+             gen1(0x8A          );  /* TXA        */
+             gen3(0x20,0xEE,0xFF);  /* JSR FFEE   */
+             gen1(0xE8          );  /* INX        */
+             gen2(0xE0, 'Z'+1   );  /* CPX #'Z'+1 */
+             gen2(0xD0, -9      );  /* BNE 1002   */
+             gen2(0xA9, '\n'    );  /* LDA #'\n'  */
+             gen3(0x20,0xEE,0xFF);  /* JSR FFEE   */
+             gen2(0x00,0x00     );  /* BRK        */
+
+             {
+               uint16_t ip = 0x1000;
+               while (ip &lt; pc)
+                 {
+                   char insn[64];
+                   ip += M6502_disassemble(mpu, ip, insn);
+                   printf("%04X %s\n", ip, insn);
+                 }
+             }
+
+             M6502_setVector(mpu, RST, 0x1000);
+
+             M6502_reset(mpu);
+             M6502_run(mpu);
+             M6502_delete(mpu);
+
+             return 0;
+           }
+
+<b>DIAGNOSTICS</b>
+     If <b>M6502_new</b>() cannot allocate sufficient memory it prints "out of mem-
+     ory" to stderr and exits with a non-zero status.
+
+     If <b>M6502_run</b>() encounters an illegal or undefined instruction, it prints
+     "undefined instruction" and the processor's state to stderr, then exits
+     with a non-zero status.
+
+<b>COMPATIBILITY</b>
+     M6502 is a generic name. The initial letter is mandated by C naming con-
+     ventions and chosen in deference to MOS Technology, the original design-
+     ers of the processor.  To the best of my knowledge the 'M' prefix was
+     never stamped on a physical 6502.
+
+     The emulator implements the CMOS version of the processor (NMOS bugs in
+     effective address calculations involving page boundaries are corrected)
+     but does not tolerate the execution of undefined instructions (which were
+     all no-ops in the first-generation CMOS hardware).  It would be nice to
+     support the several alternative instruction sets (model-specific undocu-
+     mented instructions in NMOS models, and various documented extensions in
+     the later CMOS models) but there are currently no plans to do so.
+
+     The emulated 6502 will run much faster than real hardware on any modern
+     computer.  The fastest 6502 hardware available at the time of writing has
+     a clock speed of 14 MHz.  On a 2 GHz PowerPC, the emulated 6502 runs at
+     almost 300 MHz.
+
+<b>SEE</b> <b>ALSO</b>
+     run6502(1)
+
+     For development tools, documentation and source code: <u>http://6502.org</u>
+
+<b>AUTHORS</b>
+     The software and manual pages were written by Ian Piumarta.
+
+     The software is provided as-is, with absolutely no warranty, in the hope
+     that you will enjoy and benefit from it.  You may use (entirely at your
+     own risk) and redistribute it under the terms of a very liberal license
+     that does not seek to restrict your rights in any way (unlike certain so-
+     called 'open source' licenses that significantly limit your freedom in
+     the name of 'free' software that is, ultimately, anything but free).  See
+     the file COPYING for details.
+
+<b>BUGS</b>
+     <b>M6502_getVector</b>() and <b>M6502_setVector</b>() evaluate their arguments more
+     than once.
+
+     The out-of-memory condition and attempted execution of illegal/undefined
+     instructions should not be fatal errors.
+
+     There is no way to limit the duration of execution within <b>M6502_run</b>() to
+     a certain number of instructions or cycles.
+
+     The emulator should support some means of implicit interrupt generation,
+     either by polling or in response to (Unix) signals.
+
+     The <u>COMPATIBILITY</u> section in this manual page has been diverted from its
+     legitimate purpose.
+
+     The plural of 'callback' really aught to be 'callsback'.
+
+     Please send bug reports (and feature requests) to the author at: first-
+     Name (at) lastName (dot) com.  (See <u>AUTHORS</u> above for suitable values of
+     firstName and lastName.)
+
+BSD                            October 31, 2005                            BSD
+</pre>
+
+
+</body></html>
