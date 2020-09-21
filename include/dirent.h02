@@ -1,0 +1,50 @@
+/**********************************************************
+ * dirent - Directory Entries Module for run6502 emulator *
+ * Requires fileio.h                                      *
+ **********************************************************/
+
+/* Sample Directory Entry          *
+ * The only required field is name */
+struct dirent {
+  char name[128]; //Entry Filename
+};
+
+/* Sample Directory Header         *
+ * The only required field is name */
+/* Directory Header    */
+struct dirhdr {
+  char name[128]; //Header Name
+};
+
+/* Open Directory for Reading      *
+ * Args: char d - Drive | Disk     *
+ *       int &n - Directory Name   *
+ * Returns: char f - Channel       *
+ *               0 = Not Opened    *
+ *          char e - Error, 0=None *
+ *           255 = Not Implemented */
+cchar opndir();
+
+/* Read Disk/Directory Header         *
+ * Args: char f - Directory Channel   *
+ *       int &s - dirhdr Struct       *
+ * Returns: char n - Length of Header *
+ *               0 = N/A or Error     *
+ *          char e - Error, 0=None    *
+ *           255 = Not Implemented    */
+char rdhdr();
+
+/* Read Directory Entry              *
+ * Args: char f - Directory Channel  *
+ *       int &s - dirent Struct      *
+ * Returns: char n - Length of Entry *
+ *               0 = EOF or Error    *
+ *          char e - Error, 0=None   *
+ *           255 = Not Implemented   */
+char rddir();
+
+/* Close Directory Channel          *
+ * Args: char f - Directory Channel *
+ * Returns: char e - Error, 0=None  *
+ *           255 = Not Implemented  */
+char clsdir();

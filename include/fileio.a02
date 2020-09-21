@@ -1,65 +1,99 @@
 ;C02 Module file.h02 Assembly Lamnguage 
 ;Template Code
 
-;Sample Device Numbers
-CASST1  EQU 0
-MODEM1  EQU 2
-PRNTR1  EQU 3
-PRNTR2  EQU 4
-DRIVE1  EQU 5
-DRIVE2  EQU 6
-DRIVE3  EQU 7
-DRIVE4  EQU 8
+DRIVES  EQU   0         ;Number of Disk Drives (None)
+DRIVE   BYTE  0         ;List of Drive Device Numbers
 
-;Disk Numbers (Within Drive)
-DISK0   EQU $00
-DISK1   EQU $40
+DISKS   EQU   0         ;Number of Disks in Drive (None)
+DISK    BYTE  0         ;List of Disk IDs
 
 ;File Open Modes
 MWRITE  EQU $80
 MREAD   EQU $00
 
-
-;fflush(chan) - Flush Write Buffer to File
-;Args: A = Mode + Drive ID 
-;Returns: A = File Channel (0=File Not Opened)
-FFLUSH: ;Return Success (fall through)
-
-;fopen(args, &name) - Open File
-;Args: A = Mode + Drive ID 
-;      Y,X = Pointer to File Name
-;Returns: A = File Channel (0=File Not Opened)
-FOPEN:  LDA $00         ;Return File Not Opened (fall through)
+; File Load Modes
+MRELCT  EQU $00         ;Relocate (Load at Specified Address)
+MABSLT  EQU $80         ;Absolute (Load at Address in File Header)
 
 ;fclose(chan) - Close File
 ;Args: A = Channel Number
-FCLOSE: RTS             ;No Action
+;Returns: A = Error (0=None)
+FCLOSE:                 ;Return Error (Fall through)
+
+;feof(chan) - Check for End of File
+;Args: A = Channel Number
+;Returns: A = $00 - Not End of File
+;             $FF - End of File
+;             Otherwise, Error Code
+FEOF:   ;Return Error - Not Implemented
+
+;fflush(chan) - Flush Write Buffer to File
+;Args: A = Channel 
+;Returns: A = Error (0=None)
+FFLUSH: ;Return Error - Not Implemented
+
+;fputc(chan, char) - Write Character to File
+;Args: A = Character to Write
+;      Y = Channel Number
+;Returns: A = Error Code ($00 - Success)
+FPUTC:  ;Return Error - Not Implemented
+
+;fload(name) - Load File into Memory
+;Setup: Call FSNAME with filename address
+;       Call FSADDR with start address
+;Args: A = Option + DriveID
+;      Y,X = End Address
+;Returns: A = Error Code ($00 - Success)
+;         X,Y = Load Address
+FLOAD:  ;Return Error - Not Implemented (fall through)
+
+;fsave(name) - Save File from Memory
+;Setup: Call FSNAME with filename address
+;       Call FSADDR with start address
+;Args: A = Option + DriveID
+;      Y,X = End Address
+;Returns: A = Error Code ($00 - Success)
+FSAVE:  LDA $FF         ;Return Error - Not Implemented
+        RTS
+
+;fopen(mode, &name) - Open File
+;Args: A = Mode + Drive ID + Disk # 
+;      Y,X = Pointer to File Name
+;Returns: A = File Channel (0=File Not Opened)
+;         Y = Error (0=None)
+FOPEN:  ;Return Error - Not Implemented
 
 ;fgetc(chan) - Read Character from File
 ;Args: A = Channel Number
 ;Returns: A = Character
-;         Y = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-FGETC:  ;Return Error - Not Implemented (fall through)
+;         Y = Error Code ($00 - Success)
+FGETC:  ;Return Error - Not Implemented
 
 ;fgets(chan, &s) - Read String from File
 ;Args: A = Channel Number
-;      Y,X = Pointer to String Array
+;      Y,X = Address of String
 ;Returns: A = Number of Bytes Read
-;         Y = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-FGETS:  ;Return Error - Not Implemented (fall through)
+;         Y = Error Code ($00 - Success)
+FGETS:  ;Return Error - Not Implemented
+
+;fputln(chan, &s) - Write String to File with Newline
+;Args: A = Channel Number
+;      Y,X = Address of String
+;Returns: A = Error Code ($00 - Success)
+FPUTLN: ;Return Error - Not Implemented
+
+;fputs(chan, &s) - Write String to File
+;Args: A = Channel Number
+;      Y,X = Address of String
+;Returns: A = Error Code ($00 - Success)
+FPUTS:  ;Return Error - Not Implemented
 
 ;fread(chan, count) - Read Bytes from File
-;Args: A = Channel Number
-;      Y = Number of Bytes to Read
-;Uses: DSTLO,DSTHI - Pointer Destination Array
+;Setup: Call FSADDR with array address
+;Args: A = Number of Bytes to Read
+;      Y = Channel Number
 ;Returns: A = Number of Bytes Read
-;         Y = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
+;         Y = Error Code ($00 - Success)
 FREAD:  ;Return Error - Not Implemented (fall through)
 
 ;fwrite(chan, count) - Write Bytes to File
@@ -74,67 +108,24 @@ FWRITE: LDA $00         ;Return 0 Bytes Read/Written
         LDY $FF         ;and Error - Not Implemented
         RTS
 
-;feof(chan) - Check for End of File
+;ferror(chan, &msg) - Check for Error
 ;Args: A = Channel Number
-;Returns: A = Platform Specific EOF Value
-;             $00 - Not End of File
-;             $FF - Not Implemented
-FEOF:   ;Return Error - Not Implemented (fall through)
-
-;ferror(chan) - Check for Error
-;Args: A = Channel Number
-;Returns: A = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-FERROR: ;Return Error - Not Implemented (fall through)
-
-;fputc(chan, char) - Write Character to File
-;Args: A = Channel Number
-;      Y = Character to Write
-;Returns: A = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-FPUTC:  ;Return Error - Not Implemented (fall through)
-
-;fputs(chan, &s) - Write String from File
-;Args: A = Channel Number
-;      Y,X = Pointer to String Array
-;Returns: A = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-FPUTS:  ;Return Error - Not Implemented (fall through)
-
-;fload(name) - Load File into Memory
-;Args: A = Option + DriveID
-;      Y,X = Pointer to File Name
-;Uses: SRCLO,SRCHI = Start Address
-;      DSTLO,DSTHI = End Address
-;Returns: A = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-;         X,Y = Load Address
-FLOAD:  ;Return Error - Not Implemented (fall through)
-
-;fsave(name) - Save File from Memory
-;Args: A = Option + DriveID
-;Args: Y,X = Pointer to File Name
-;Uses: SRCLO,SRCHI = Start Address
-;      DSTLO,DSTHI = End Address
-;Returns: A = Error Code
-;             $00 - Success
-;             $FF - Not Implemented
-FSAVE:  LDA $FF         ;Return Error - Not Implemented
+;      Y,X = String Address
+;Returns: A = Last Error ($FF - Invalid Channel)
+;         Y = Error (0=None)
+FERROR: LDA #$FF        ;Return Invalid Channel
+        TAY             ;and Error - Not Implemented
         RTS
 
-;Internal routines are all prefixed with FS
+;fsinit() - Initialize File System
+FSINIT: ;No Action (Fall Through)
 
-;fsetup() - Set Parameters for File Open
-;Platform Specific
-
-;fsinit() - Initialize Control Block
-;For platforms that use File or Parameter Control Blocks
-
-;fname(&name) - Set File Name
-;If a seperate OS Call to set the File Name
-;or a terminator other than NUL is required
-
+;fsaddr(&array) - Set File Buffer Address
+;Emulation: sets internal variable filebuff
+;Args: Y,X = Address of String or Array
+FSADDR: ;No Action (Fall Through)
+        
+;fsname(&name) - Set File Name
+;Emulation: sets internal variable filename
+;Args: Y,X = Address of Filename
+FSNAME: RTS             ;No Action

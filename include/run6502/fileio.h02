@@ -1,27 +1,25 @@
-/***************************************
- * fileio - File I/O Functions for C02 *
- *      Non-Functional Template Header *
- ***************************************/
+/*********************************************************
+ * fileio - Standard File Functions for run6502 emulator *
+ *********************************************************/
 
-#define DRIVES 0 //Number of Disk Drives
+#define DRIVES 26 //Number of Disk Drives
 const char drive[];   //Disk Drives
 
-#define DISKS  0  //Number of Drives in Disk
+#define DISKS  1  //Number of Drives in Disk
 const char disk[];  
 
 /* File Open Modes */
-#define MWRITE $80 //Open File for Write
 #define MREAD  $00 //Open File for Read
+#define MWRITE $80 //Open File for Write
 
 /* File Load Modes */
 #define MRELCT $00 //Relocate (Load at Specified Address)
 #define MABSLT $80 //Absolute (Load at Address in File Header)
 
-/* File Close                      *
- *   Closes File Opened on Channel *
- * Args: char f - File Channel     *
- * Returns: char e - Error, 0=None *
- *           255 = Not Implemented */
+/* File Close                       *
+ *   Closes File Opened on Channel  *
+ * Args: char f - File Channel      *
+ * Returns: char e - Error (0=None) */
 char fclose();
 
 /* End of File                       *
@@ -33,28 +31,25 @@ char fclose();
  *           or non-zero Error code) */
 char feof();
 
-/* File Error                      *
- *   Check File Error Indicator    *
- * Args: char c - channel          *
- *       int &s - error msg buffer *
- * Returns: char l - Last Error    *
- *          char e - Error, 0=None *
- *           255 = Not Implemented */
+/* File Error                       *
+ *   Check File Error Indicator     *
+ * Args: char c - channel           *
+ *       int &s - error msg buffer  *
+ * Returns: char l - Last Error     *
+ *          char e - Error (0=None) */
 char ferror();
 
-/* File Flush                      *
- *   Flush File Output Buffer      *
- * Args: char f - File Channel     *
- * Returns: char e - Error, 0=None *
- *           255 = Not Implemented */
+/* File Flush                       *
+ *   Flush File Output Buffer       *
+ * Args: char f - File Channel      *
+ * Returns: char e - Error (0=None) */
 char fflush();
 
-/* File Get Character              *
- * Args: char f - File Channel     *
- *   Read Character from Fie       *
- * Returns: char c - Character     *
- *          char e - Error, 0=None *
- *           255 = Not Implemented */
+/* File Get Character               *
+ * Args: char f - File Channel      *
+ *   Read Character from Fie        *
+ * Returns: char c - Character      *
+ *          char e - Error (0=None) */
 char fgetc();
 
 /* File Get String                   *
@@ -63,18 +58,16 @@ char fgetc();
  * Args: char f - File Channel       *
  *       int &s - String to Read     *
  * Returns: char n - Characters Read *
- *          char e - Error, 0=None   *
- *           255 = Not Implemented   */
+ *          char e - Error (0=None)  */
 char fgets(); 
 
-/* File Load                       *
- *   Loads File into Memory        *
- * Setup: fsname(&filename)        *
- *        fsaddr(address)          *
- * Args: char d - Options | Device *
- * Returns: char e - Error, 0=None *
- *           255 = Not Implemented *
- *          int la - Load Address  */
+/* File Load                        *
+ *   Loads File into Memory         *
+ * Setup: fsname(&filename)         *
+ *        fsaddr(address)           *
+ * Args: char d - Options | Device  *
+ * Returns: char e - Error (0=None) *
+ *          int la - Load Address   */
 char fload();
 
 /* File Open                           *
@@ -82,16 +75,14 @@ char fload();
  * Args: char d - Options | Device     *
  ^       int &n - Filename             *
  * Returns: char c - Channel (0=Error) *
- *          char e - Error, 0=None     *
- *           255 = Not Implemented     */
+            char e - Error  (0=None)   */
 char fopen();
 
 /* File Put Character               *
  *   Write Character to File        *
  * Args: char c - Character         *
  *       char f - File Channel      *
- * Returns: char e - Error, 0=None  *
- *           255 = Not Implemented  */
+ * Returns: char e - Error (0=None) */
 char fputc(); 
 
 /* File Put Line                        *
@@ -100,8 +91,7 @@ char fputc();
  * Args: char f - File Channel          *
  *       int &s - String to Write       *
  * Returns: char n - Characters Written *
- *          char e - Error, 0=None     *
- *           255 = Not Implemented     */
+ *          char e - Error (0=None)     */
 char fputln();
 
 /* File Put String                      *
@@ -110,8 +100,7 @@ char fputln();
  * Args: char f - File Channel          *
  *       int &s - String to Write       *
  * Returns: char n - Characters Written *
- *          char e - Error, 0=None     *
- *           255 = Not Implemented     */
+ *          char e - Error (0=None)     */
 char fputs();
 
 /* File Read                        *
@@ -120,8 +109,7 @@ char fputs();
  * Args: char f - File Channel      *
  *       char n - Number of Bytes   *
  * Returns: char r - Bytes Read     *
- *          char e - Error, 0=None     *
- *           255 = Not Implemented     */
+ *          char e - Error (0=None) */
 char fread(); 
 
 /* File Set Address              *
@@ -135,9 +123,17 @@ char fread();
  *        fsaddr(start)             *
  * Args: char d - Options | Device  *
  *      int end - End Address       *
- * Returns: char e - Error, 0=None  *
- *           255 = Not Implemented  */
+ * Returns: char e - Error (0=None) */
 char fsave();
+
+/* File System Command           *
+ *   Execute File Operation      *
+ * Args: char cmd - Command Code *
+ *       params - Parameter(s)   *
+ * Returns: char cmd - Command   *
+ *          char err - Error     *
+ *          char res - Result    */
+char fscmd();  
 
 /* File System Init             *
  *   Initialize File System     */
@@ -154,16 +150,5 @@ char fsinit();
  * Args: char n - Number of Bytes   *
  *       char f - File Channel      *
  * Returns: char n - Bytes Written  *
- * Returns: char e - Error, 0=None  *
- *           255 = Not Implemented  */
+ *          char e - Error (0=None) */
 char fwrite();
-
-
-/* End of File                       *
- *   Check for End of File Condition *
- * Args: fp - file pointer           *
- * Returns: EOF Indicator            *
- *          (0 if not at end of file *
- *           255 if not implemented  *
- *           or non-zero EOF value)  */
-char feof();

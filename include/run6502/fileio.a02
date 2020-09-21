@@ -1,0 +1,241 @@
+; C02 Module fileio Assembly Language Eoutines for run6502 emulator
+; This is the reference implementation of the fileo module
+
+; The run6502 program has been customized with an emulated file
+; routine at the address set with the -F command line option
+; The file routine is JSRed with the command code in A, and any
+; parameters in Y and/or X. After command execution. Y and/or X
+; will contain any return values. Y is usually the error code.
+
+        SUBROUTINE FILEIO
+
+DRIVES  EQU 26          ;Number of Disk Drives
+DRIVE   BYTE  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26
+
+DISKS   EQU 1           ;Number of Disks in Drive
+DISK    BYTE  0
+
+;File Open Modes
+MREAD   EQU $00
+MWRITE  EQU $80
+
+; File Load Modes
+MRELCT  EQU $00         ;Relocate (Load at Specified Address)
+MABSLT  EQU $80         ;Absolute (Load at Address in File Header)
+
+;fflush(chan) - Flush Write Buffer to File
+;Args: A = Channel 
+;Returns: A = Error (0=None)
+FFLUSH: TAY             ;Set Channel Number
+        LDA #'F'        ;Set Command to FLUSH
+        BNE .FEXECX     ;Execute and Return Result in A
+.FEXEC  JSR FSCMD       ;Execute Command
+        TYA             ;Return Error Code
+
+;fopen(mode, &name) - Open File
+;Args: A = Mode + Drive ID 
+;      Y,X = Pointer to File Name
+;Returns: A = File Channel (0=File Not Opened)
+;         Y = Error (0=None)
+FOPEN:  JSR FSVDRV      ;Validate Drive Number
+        BCS .DRVERR
+        JSR FSNAME      ;Set Filename
+        TAY             ;and Pass in Y
+        LDA #'O'        ;Set Command to OPEN
+.FEXECX JSR FSCMD       ;Execute Command
+        TXA             ;Return Channel in A
+.DRVERR RTS
+
+;fclose(chan) - Close File
+;Args: A = Channel Number
+;Returns: A = Error (0=None)
+FCLOSE: TAY             ;Set Channel
+        LDA #'C'        ;Set Command to CLOSE
+        BNE .FEXEC      ;Execute and Return Error in A
+
+;feof(chan) - Check for End of File
+;Args: A = Channel Number
+;Returns: A = $00 - Not End of File
+;             $FF - End of File
+;             Otherwise, Error Code
+FEOF:   TAY             ;Set Channel
+        LDA #'E'        ;Set Command to EOF
+        BNE .FEXEC      ;Execute and Return Error in A
+
+;fgetc(chan) - Read Character from File
+;Args: A = Channel Number
+;Returns: A = Character
+;         Y = Error Code ($00 - Success)
+FGETC:  TAY             ;Set Channel
+        LDA #'G'        ;Set Command to GET
+        BNE .FEXECX     ;Execute and Return Result in A
+
+;fgets(chan, &s) - Read String from File
+;Args: A = Channel Number
+;      Y,X = Address of String
+;Returns: A = Number of Bytes Read
+;         Y = Error Code ($00 - Success)
+FGETS:  JSR FSADDR      ;Set String Address
+        TAY             ;Set Channel Number
+        LDA #'H'        ;Set Command to GETS
+        BNE .FEXECX     ;Execute and Return Result in A
+
+;fputc(chan, char) - Write Character to File
+;Args: A = Character to Write
+;      Y = Channel Number
+;Returns: A = Error Code ($00 - Success)
+FPUTC:  TAX             ;Set Character to Write
+        LDA #'P'        ;Set Command to PUT
+        BNE .FEXEC      ;Execute and Return Error in A
+       
+;fputln(chan, &s) - Write String to File with Newline
+;Args: A = Channel Number
+;      Y,X = Address of String
+;Returns: A = Number of Characters Written
+;         Y = Error Code ($00 - Success)
+FPUTLN: SEC             ;Append Newline
+        BCS .FPUTSA     ;Write String to File
+
+;fputs(chan, &s) - Write String to File
+;Args: A = Channel Number
+;      Y,X = Address of String
+;Returns: A = Number of Characters Written
+;         Y = Error Code ($00 - Success)
+FPUTS:  CLC             ;Do Not Append Newline
+.FPUTSA JSR FSADDR      ;Set File Buffer Address
+        TAY             ;Set Channel
+        LDA #'Q'        ;Set Command to PUTS
+        BNE .FEXECX     ;Execute and Return Result in A
+
+;fread(chan, count) - Read Bytes from File
+;Setup: Call FSADDR with array address
+;Args: A = Number of Bytes to Read
+;      Y = Channel Number
+;Returns: A = Number of Bytes Read
+;         Y = Error Code ($00 - Success)
+FREAD:  TAX           ;Set Number of Bytes to Write
+        LDA #'R'      ;Set Command to READ
+        BNE .FEXECX   ;Execute and Return Result in A
+
+;fwrite(chan, count) - Write Bytes to File
+;Setup: Call FSADDR with array address
+;Args: A = Number of Bytes to Write
+;      Y = Channel Number
+;Returns: A = Number of Bytes Written
+;         Y = Error Code ($00 - Success)
+FWRITE: TAX           ;Set Number of Bytes to Write
+        LDA #'W'      ;Set Command to WRITE
+        BNE .FEXECX   ;Execute and Return Result in A
+
+;fload(name) - Load File into Memory
+;Setup: Call FSNAME with filename address
+;       Call FSADDR with start address
+;Args: A = Option + DriveID
+;      Y,X = End Address
+;Returns: A = Error Code ($00 - Success)
+;         X,Y = Load Address
+FLOAD:  CMP #MABSLT   ;Check Load Mode
+        BNE .ERR22    ;If Invalid, Return Error
+        LDA #'L'      ;Set Command to LOAD
+        JMP FSCMD     ;Execute Command and Return
+.ERR22  LDA #22
+        RTS
+
+;fsave(name) - Save File from Memory
+;Setup: Call FSNAME with filename address
+;       Call FSADDR with start address
+;Args: A = Option + DriveID
+;      Y,X = End Address
+;Returns: A = Error Code ($00 - Success)
+FSAVE: ORA $0        ;If Not Drive 0
+       BNE .ERR22    ;Return Error
+       LDA #'S'      ;Set Command to SAVE
+       BNE .FSCMD    ;Execute Command and Return
+
+;ferror(chan, &msg) - Check for Error
+;Args: A = Channel Number
+;      Y,X = String Address
+;Returns: A = Last Error ($FF - Invalid Channel)
+;         Y = Error (0=None)
+FERROR: JSR FSADDR    ;Set Buffer Address
+        TAY           ;Set Channel Number
+        LDA #'Y'      ;Set Command to FERROR
+        BNE .FEXECX   ;Execute and Return Result in A
+
+;File System Commands
+
+;Check fot Valid Drive Number
+;Args: A = Drive Number
+;Returns: A = Index into Drives
+;         Carry Clear = Valid Drive Number
+;         Carry Set = Invalid Drive Number
+FSVDRV: PHA
+        AND #$1F        ;Isolate Drive Number
+        CMP #DRIVES+2   ;Compare against Number of Drives
+        PLA
+        BCS .FSVERR
+        RTS
+
+.FSVERR LDA #$FF        ;Return Operation Failed
+        LDY #1          ;Error - Invalid Argument
+        RTS
+
+;fsinit() - Initialize File System
+FSINIT: LDA #'I'        ;Set Command to INITFS
+.FSCMD  JMP FSCMD       ;Execute Command and Return
+
+;fsaddr(&array) - Set File Buffer Address
+;Emulation: sets internal variable filebuff
+;Args: Y,X = Address of String or Array
+FSADDR: PHA             ;Save Accumulator
+        LDA #'A'        ;Set Command to ADDRESS
+        BNE .FSCMDA     ;Execute and Restore Accumulator
+        
+;fsname(&name) - Set File Name
+;Emulation: sets internal variable filename
+;Args: Y,X = Address of Filename
+FSNAME: PHA             ;Save Accumulator
+        LDA #'N'        ;Set command to name
+.FSCMDA JSR FSCMD       ;Execute command
+        PLA             ;Restore Accumulator
+        RTS
+
+;fscmd(cmd, args) - File I/O Command Processor
+;Args: A = Command Code
+;      Y,X = Arguments(s)
+;Returns: A = Command Code (usually)
+;         Y = Error Code (usually)
+;         X = Result (when applicable)
+FSCMD: EQU $FFE6        ;run6502 File I/O Command Routine
+        
+; Command   Description           Arguments       Requires  Returns
+; FSADDR    Set Buffer Address    A='A', YX=Addr            YX=Addr
+; CLOSEDIR  Close Directory       A='B', Y=Chan             Y=Err
+; FCLOSE    Close File            A='C', Y=Chan             Y=Err
+; OPENDIR   Open Directory        A='D', YX=Name            Y=Err, X=Chan
+; FEOF      Check for EOF         A="E'. Y=Chan             Y=Err ($FF=EOF)
+; FFLUSH    Flush Output          A='F', Y=Chan             Y=Err
+; FGETC     Get Character         A='G', Y=Chan             Y=Err, X=Char
+; FGETS     Get String            A='H', Y=Chan #           Y=Err
+; FSINIT    Init File System      A='I'
+; READDIR   Read Dir Entry        A='J', Y=Chan #           Y=Err
+; REMOVE    Remove File           A='K', YX=Name            Y=Err
+; FLOAD     Load File             A='L'  *                  A=Err, YX=End
+; RENAME    Rename File           A='M', YX=New +           Y=Err
+; FSNAME    Set Filename          A='N', YX=Name        
+; FOPEN     Open File             A='O', Y=Mode +           Y=Err
+; FPUTC     Put Character         A='P', Y=Chan, X=Char     Y=Err
+; FPUTS     Put String            A='Q', Y=Chan  #          Y=Err
+; FREAD     Read Bytes            A='R', Y=Chan, X=Count #  Y=Err, X=Count   
+; FSAVE     Save File             A='S', Y=Chan, YX=End  *  Y=Err
+; GETCWD    Get Current Dir       A='T', Y=Chan, YX=Addr    Y=Err, X=Len
+; CHDIR     Change Directory      A='U', YX=Name            Y=Err
+; GCDRIVE   Get/Set Cur Drive     A='V', Y=Drive, C=Mode    Y=Err, X=Result
+; FWRITE    Write Bytes           A='W', Y=Chan, X=Count #  Y=Err, X=Count
+; MKRMDIR   Create/Remove Dir     A='X', YX=Name, C=Mode    Y=Err, X=Result
+; FERROR    Get Last Error        A='Y', Y=Chan #           Y=Err
+
+
+; # Requires call to FSADDR
+; + Requires call to FSNAMR
+; * Requires calls to FSADDR and FSNAME 

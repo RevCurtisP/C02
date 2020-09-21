@@ -1,0 +1,34 @@
+; C02 dirent.h02 Assembly Language Subroutines
+; Requires external functions ...
+; external zero page locations ...
+; and external locations ...
+
+;opndir() - Open Directory for Reading
+;Args: A = Drive Identifier
+;      Y,X = Pointer to Directory Name
+;Returns: A = File Pointer (0 = Not Opened)
+;         Y = Error Code (0 = None)
+OPNDIR:  ;Return Error - Not Implemented (fall through)
+
+;rdhdr() - Read Directory Header
+;Note: Call once before first readdir
+;Args: A = Directory File Pointer
+;      Y,X = Pointer to HDRENT buffer
+;Returns: A = Length of Header (0=None)
+;         Y = Error Code (0=None)
+RDHDR:   ;Return Error - Not Implemented (fall through)
+
+;rddir() - Read Directory Entry
+;Args: A = Directory File Pointer
+;      Y,X = Pointer to dirent structure 
+;Returns: A = Length of Entry (0=None)
+;         Y = Error Cooe (0=None)
+RDDIR:  LDA #$00          ;Return Result - None
+        LDY #$FF          ;and Error - Not Implemented
+        RTS
+        
+;clsdir() - Close Directory File
+;Args: A = Directory File Pointer
+;Returns: A = Error Code (0 = Success)
+CLSDIR: LDA #$FF    ;Return Error - Not Implemented
+        RTS

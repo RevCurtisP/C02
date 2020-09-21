@@ -1,0 +1,49 @@
+; C02 Module dirent Assembly Language Eoutines for run6502 emulator
+; This is the reference implementation of the dirent module 
+; Requires external functions FSADDR, FSCMD, and FSVDRV (fileio.h02)
+
+        SUBROUTINE DIRENT
+
+;opndir() - Open Directory for Reading
+;Args: A = Drive Identifier
+;      Y,X = Pointer to Directory Name
+;Returns: A = File Pointer (0 = Not Opened)
+;         Y = Error Code (0 = None)
+OPNDIR: JSR FSVDRV        ;Validate Drive Number
+        BCS .OPNERR       ;If Invalid Return Error
+        LDA #'D'          ;Set Command to OPENDIR
+.FSCMDX JSR FSCMD         ;Execute Command
+        TXA               ;Return Channel
+        RTS
+
+.OPNERR LDA #0              ;Directory Not Opened
+        RTS
+
+;rdhdr() - Read Directory Header
+;Note: Call once before first readdir
+;Args: A = Directory File Pointer
+;      Y,X = Pointer to HDRENT buffer
+;Returns: A = Length of Header (0=None)
+;         Y = Error Code (0=None)
+RDHDR:  SEC         ;Set Mode to HEADER
+        BCS .RDDIR  ;Execute READDIR
+
+;rddir() - Read Directory Entry
+;Args: A = Directory File Pointer
+;      Y,X = Pointer to dirent structure 
+;Returns: A = Length of Entry (0=None)
+;         Y = Error Cooe (0=None)
+RDDIR:  CLC         ;Set Mode to ENTRY
+.RDDIR  JSR FSADDR  ;Save Address
+        TAY         ;Set Channel
+        LDA #'J'    ;Set Command to READDIR
+        BNE .FSCMDX ;Execute and Return Result
+
+;clsdir() - Close Directory File
+;Args: A = Directory File Pointer
+;Returns: A = Error Code (0 = Success)
+CLSDIR: TAY         ;Set Channel
+        LDA #'B'    ;Set Command to CLOSEDIR
+        JSR FSCMD   ;Execute Command
+        TYA         ;and Return Error Code
+        RTS

@@ -1,0 +1,34 @@
+/******************************************
+ * direct - Directory Manipulation Module *
+ *          for run6502 emulator          *
+ * Requires fileio.h02                    *
+ ******************************************/
+
+/* Change Directory                    *
+ * Args: drv - Drive/Disk Identifier   *
+ *       &dir - Directory Name         *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     */
+char chdir();
+
+/* Get Current Working Directory     *
+ * Args: drv - Drive/Disk Identifier *
+ *       &dir - Directory Name       *
+ * Returns: char n - Length of Name  *
+ *               0 = None or Error   *
+ *          char e - Error, 0=None   */
+char getcwd();
+
+/* Make Directory                      *
+ * Args: drv - Drive/Disk Identifier   *
+ *       &dir - Directory Name         *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     */
+char mkdir();
+
+/* Remove Directory                     *
+ * Args: drv - Drive/Disk Identifier    *
+ *       &dir - Directory Name          *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     */
+char rmdir();

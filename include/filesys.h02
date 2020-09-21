@@ -1,0 +1,42 @@
+/**************************************************
+ * filesys - File System Module Template for C02 *
+ **************************************************/
+
+/* Change Drive                        *
+ * Args: char d - Drive ID | Disk #    *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char chdrv();
+
+/* Drive Name                        *
+ * Args: char d - Drive ID | Disk #  *
+ * Returns: char n - Drive Name      *
+ *               0 = Invalid Device  * 
+ *          char e - Error, 0=None   *
+ *             255 = Not Implemented */
+char drvnam();
+
+/* Get Drive                            *
+ * Returns: char d - Current Drive/Disk *
+ *               0 = None or Error      * 
+ *          char e - Error, 0=None      *
+ *             255 = Not Implemented    */
+char getdrv();
+
+/* Remove File                         *
+ * Args: char d - Drive ID | Disk #    *
+ *       int &name - File Name         *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char remove();
+
+/* Rename File                         *
+ * Setup: fsname(&o) - Old File Name   *
+ * Args: char d - Drive ID | Disk #    *
+ *       int &n - New File Name        *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char rename();

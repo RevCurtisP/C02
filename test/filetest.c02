@@ -1,0 +1,133 @@
+/***********(((************************
+ * FILETEST - Test/Demo Module fileio *
+ **************************************/
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <memory.h02>
+#include <fileio.h02>
+
+const char txtfil = "TESTFILE.TXT";
+const char savfil = "SAVEFILE.TXT";
+char fp;        //Text File Pointer
+char err;       //Error Code
+char c;         //Character Read from File
+char i;         //Loop Index Variable
+char n;         //Number of Characters to Write
+int addr;       //End Address for load()
+char l[255];    //Array for load()
+char r[255];    //Array for fread()
+char s[128];    //String for fgets()
+const char save = "ZYXWVUTSRQPONMLKJIHGFEDCBA9876543210";
+const char bnry = "ZYW1XVU2TS3RQ4PO5NM6LKJI7HG8FED9CBA0";
+char aa,xx,yy,zz;  //Function Arguments
+
+main:
+  clrscr();
+  fsinit(); //Initialize File System
+  fp = opnfil(#MWRITE, &txtfil);
+  if (fp) {
+    printf(fp, "WRITING TO CHANNEL %d%n");
+    wstrng(fp); //Test fputs()
+    wbnry(fp);  //Test fwrite()
+    wchars(fp); //Test fputc()
+  }
+  sfile(0, &savfil);
+  clsfil(fp);
+
+  fp = opnfil(#MREAD, &txtfil);
+  if (fp) {
+    printf(fp, "READING CHANNEL %d%n");
+    rstrng(fp);
+    rbnry(fp);
+    rchars(fp);
+  }
+  clsfil(fp);
+  lfile(#MABSLT, &savfil); //Test fload()
+
+  goto exit;
+
+void error(aa, yy, xx) {
+  printf();
+  goto exit;
+}
+
+void opnfil(aa,yy,xx) {
+  puts("OPENING "); puts(.,yy,xx); 
+  printf(aa, " WITH OPTIONS $%h%n");
+  aa, yy = fopen(aa,yy,xx);
+  if (aa) printf(aa,"OPENED ON CHANNEL %d%n");
+  else error(yy, "ERROR %d OPENING FILE%n");
+  return aa;
+}
+
+void wbnry(aa) {
+  fsaddr(&bnry);
+  n, err = fwrite(@bnry, aa);
+  if (err) printf(err, "ERROR %d%n");
+}
+
+void wchars(aa) {
+  for (i='0'; i<='Z'; i++) {fputc(i, aa);}
+}
+
+void wstrng(aa) {
+  fputs(aa, "THE QUICK BROWN FOX ");
+  fputln(aa, "JUMPED OVER THE LAZY DOG");
+}
+
+void sfile(aa, yy, xx) {
+  setdst(); printf("SAVING FILE %s%n");
+  setdst(&save); printf("START ADDRESS %w%n");
+  setdst(&bnry); printf("END ADDRESS %w%n");
+  fsname(.,yy,xx); //Set Filename
+  fsaddr(&save);   //Set Start Address
+  err, addr = fsave(aa, &bnry);
+  if (err) printf(err, "ERROR %d%n");
+  else putln("FILE SAVED");
+}
+
+void rbnry(aa) {
+  fsaddr(&r);
+  n, err = fread(@bnry, aa);
+  if (err) printf(err, "ERROR %d%n");
+  else putln(&r);
+}
+
+void lfile(aa, yy, xx) {
+  setdst(); printf("LOADING FILE %s%n");
+  memclr(255, &l); printf("START ADDRESS %w%n");
+  fsname(.,yy,xx); //Set Filename
+  fsaddr(&l);      //Set Load Address  
+  err, addr = fload(aa);
+  if (err) printf(err, "ERROR %d%n");
+  else {
+    setdst(addr); printf("END ADDRESS %w%n");
+    putln(&l);
+  }
+}
+
+void rchars(aa) {
+  while(!feof(aa)) {
+    c, err = fgetc(aa); if (err) break;
+    putc(c);
+  }
+  newlin();
+}
+
+void rstrng(aa) {
+  n, err = fgets(aa, &s);
+  if (err) printf(err, "ERROR %d%n");
+  else puts(&s);
+}
+
+void clsfil(aa) {
+  printf(aa, "CLOSING CHANNEL %d%n");
+  fclose(aa);
+}

@@ -1,0 +1,60 @@
+/*****************************************
+ * TESTDIR - Test/Demo Module direct.h02 *
+ *****************************************/
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <fileio.h02>
+#include <direct.h02>
+
+
+const char dir = "TEMPDIR";
+char d, err, i, n, r;
+char m[128], s[128];
+char aa,xx,yy;
+main:
+  prtcwd();
+  mrdir();
+  goto exit;
+
+void prtcwd() {
+  puts("GETCWD: "); 
+  n, err = getcwd(0, &s);
+  if (err) goto error;
+  putln(&s);
+}
+
+void chkerr() {
+  if (err) {
+    printf(err, "ERROR %d - ");
+    ferror(0, m); putln(m);
+  }
+  else if (r) putln("FAILED");
+  else putln("SUCCESS");
+}
+
+void chgdir(aa, yy, xx) {
+  setdst(); printf("CHDIR '%s': ");
+  n, err = chdir(0,yy,xx); chkerr();
+  prtcwd();
+}
+
+void mrdir() {
+  setdst(&dir); printf("MKDIR(\"%s\"): ");
+  r,err = mkdir(&dir); chkerr();
+  chgdir(&dir);
+  anykey();
+  chgdir("..");
+  setdst(&dir); printf("RMDIR(\"%s\"): ");
+  r,err = rmdir(&dir); chkerr();
+}
+
+error:
+  printf(err, "ERROR %d%n");
+  goto exit;

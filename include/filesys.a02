@@ -1,0 +1,43 @@
+; C02 filesys.h02 assembly language subroutines
+; Requires external functions ...
+; external zero page locations ...
+; and external locations ...
+
+;remove(drv, &filnam) - Remove File filnam
+;Args: A = Drive Identifier
+;      Y,X = Address of Directory Name String
+;Returns: A = Error Code (0 = None)
+REMOVE: ;Return Error - Not Implemented (Fall Through)
+        
+;rename(drv, &filnam) - Rename File to filnam
+;Setup: Call FSNAME with Address of Old Name
+;Args: A = Drive Identifier
+;      Y,X = Address of Directory Name String
+;Returns: A = Error Code (0 = None)
+RENAME: ;Return Error - Not Implemented (Fall Through)
+
+;inidrv(drv) - Initialize Disk Drive
+;Args: A = Drive Identifier
+;Returns: A = Error Code (0 = None)
+INIDRV: ;Return Error - Not Implemented (Fall Through)
+
+;chdrv() - Set Current Drive/Disk
+;Args: A = Drive# | Disk#
+;Returns: A = Result (0 - Success)
+;         Y = Error Code (0 = None)
+CHDRV:  LDA #$FF          ;Return Result - Failure
+        TAY               ;and Error - Not Implemented
+        RTS
+
+;getdrv() - Get Current Drive/Disk
+;Returns: A = Drive# | Disk# (0=Failure)
+;         Y = Error Code (0 = None)
+GETDRV: ;Return Error - Not Implemented (Fall Through)
+
+;drvnam(drv) - Get Drive Name
+;Args: A = Drive Number
+;Returns: A = Drive Name (0=Failure)
+;         Y = Error (0=None)
+DRVNAM: LDA #$00          ;Return Result (None)
+        LDY #$FF          ;and Error - Not Implemented
+        RTS

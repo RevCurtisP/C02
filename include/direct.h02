@@ -1,0 +1,37 @@
+/******************************************
+ * direct - Directory Manipulation Module *
+ * Requires fileio.h02                    *
+ ******************************************/
+
+/* Change Directory                    *
+ * Args: drv - Drive/Disk Identifier   *
+ *       &dir - Directory Name         *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char chdir();
+
+/* Get Current Working Directory     *
+ * Args: drv - Drive/Disk Identifier *
+ *       &dir - Directory Name       *
+ * Returns: char n - Length of Name  *
+ *               0 = None or Error   *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char getcwd();
+
+/* Make Directory                      *
+ * Args: drv - Drive/Disk Identifier   *
+ *       &dir - Directory Name         *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char mkdir();
+
+/* Remove Directory                     *
+ * Args: drv - Drive/Disk Identifier    *
+ *       &dir - Directory Name          *
+ * Returns: char r - Result, 0=Success *
+ *          char e - Error, 0=None     *
+ *             255 = Not Implemented   */
+char rmdir();

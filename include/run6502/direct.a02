@@ -1,0 +1,49 @@
+; C02 Module direct Assembly Language Routines for run6502 emulator
+; This is the reference implementation of the direct module 
+; Requires external function FSCMD and FSVDRV (fileio.h02)
+
+        SUBROUTINE DIRECT
+
+;getcwd(drv, &dir) - Get Current Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to String
+;Returns: A = Result (0 = Succes, $FF = Failure)
+;         Y = Error Code (0 = None)
+GETCWD: JSR FSVDRV        ;Validate Drive Number
+        BCS .DRVERR       ;If Invalid Return Error
+        LDA #'T'          ;Set Command to GETCWD
+.FSCMDX JSR FSCMD         ;Execute Command
+        TXA               ;Return Length of Name
+.DRVERR RTS
+
+;chdir(drv, &dir) - Get Current Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to String
+;Returns: A = Result (0 = Succes, $FF = Failure)
+;         Y = Error Code (0 = None)
+CHDIR:  JSR FSVDRV        ;Validate Drive Number
+        BCS .DRVERR       ;If Invalid Return Error
+        LDA #'U'          ;Set Command to GETCWD
+        BNE .FSCMDX       ;Execute Command and Return Result
+
+;rmdir(drv, &dir) - Create Directory
+;Args: A = Drive Identifier
+;      Y,X = Address of Directory Name String
+;Returns: A = Error Code (0 = None)
+RMDIR:  SEC               ;Set Mode to RMDIR
+        BCS .MRDIR        ;Execute MKRMDIR and Return Result
+
+;mkdir(drv, &dir) - Create Directory
+;Args: A = Drive Identifier
+;      Y,X = Address of Directory Name String
+;Returns: A = Error Code (0 = None)
+MKDIR:  CLC               ;Set Mode to MKDIR
+.MRDIR  PHP               ;Save Status Register
+        JSR FSVDRV        ;Validate Drive Number
+        BCS .DRVERR       ;If Invalid Return Error
+        PLP               ;Restore Status Register
+        LDA #'X'          ;Set Command to MKRMDIR
+        BNE .FSCMDX       ;Execute Command and Return Result
+
+.PLAERR PLP               ;Restore Status Register
+        RTS               ;and Return

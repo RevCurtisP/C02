@@ -1,0 +1,55 @@
+/*********************************
+ * DISKDIR - Read Disk Directory *
+ *********************************/
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <memory.h02>
+#include <string.h02>
+#include <fileio.h02>
+#include <dirent.h02>
+
+struct dirent entry;
+struct dirhdr header;
+
+const char dir = "";
+char dp;        //Directory File Pointer
+char err;       //Error Code
+char c;         //Character read from Struct
+char i;         //Loop Index Variable
+char n;         //Number of Characters Read
+char m[128], s[128];
+char wrdlo,wrdhi;
+char aa,ff,xx,yy,zz;  //Function Arguments
+
+main:
+  setdst(dir); printf("OPENING DIRECTORY '%s'%n");
+  dp, err = opndir(0, dir);
+  if (err) goto error;
+  printf(dp, "CHANNEL=%d%n");
+
+  putln("READING HEADER");
+  n, err = rdhdr(dp, header);
+  if (err) goto error;
+  if (n) putln(header.name);
+  else putln("NO HEADER");
+
+  putln("READING ENTRIES");
+  do {
+    n, err = rddir(dp, entry);
+    if (n) putln(entry.name);
+  } while (n);
+  if (err) goto error;
+  putln("END OF DIRECTORY");
+
+  clsdir(dp);
+  goto exit;
+
+error:
+  printf(err, "ERROR %d%n");
+  goto exit;

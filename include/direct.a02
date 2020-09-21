@@ -1,0 +1,30 @@
+; C02 Module direct Assembly Language Routines
+
+        SUBROUTINE DIRECT
+
+;getcwd(drv, &dir) - Get Current Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to String
+;Returns: A = Result (0 = Success, $FF = Failure)
+;         Y = Error Code (0 = None)
+GETCWD: ;Return Error - Not Implemented (Fall Through)
+
+;chdir(drv, &dir) - Get Current Directory
+;Args: A = Drive Identifier
+;      Y,X = Pointer to String
+;Returns: A = Result (0 = Success, $FF = Failure)
+;         Y = Error Code (0 = None)
+CHDIR:  ;Return Error - Not Implemented (Fall Through)
+
+;rmdir(drv, &dir) - Create Directory
+;Args: A = Drive Identifier
+;      Y,X = Address of Directory Name String
+;Returns: A = Error Code (0 = None)
+RMDIR:  ;Return Error - Not Implemented (Fall Through)
+
+;mkdir(drv, &dir) - Create Directory
+;Args: A = Drive Identifier
+;      Y,X = Address of Directory Name String
+;Returns: A = Error Code (0 = None)
+MKDIR:  LDA #$FF          ;Return Result = Failure
+        TAY               ;and Error - Not Implemented
