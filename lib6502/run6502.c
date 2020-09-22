@@ -444,12 +444,14 @@ static int seterror(int chan) {
 /* Set File Name */
 static int setname(M6502 *mpu, word addr, char *name) {
   int i;
+  if (DEBUG) fprintf(stderr, "copying name from address $%04x\n", addr);
   for (i=0; i<STRLEN; i++) {
     char c = mpu->memory[addr + i & 0xFFFF];
     if (c) name[i] = c;
     else break;
   }
   name[i] = 0; //Terminate String
+  if (DEBUG) fprintf(stderr, "copied %d characters\n", i);
   return i;
 }
 
@@ -619,8 +621,8 @@ static int fTrap(M6502 *mpu, word addr, byte data)	{
       x = setname(mpu, yx, filename); //Set filename and Return Length
       if (DEBUG) fprintf(stderr, "filename set to '%s'\n", filename);
       break;
-    case 'O': //Open file - Y = mode
-      strcpy(mode, modes[y>>7]); 
+    case 'O': //Open file - Y = Drive#, X = Mode (0x80 = Write)
+      strcpy(mode, modes[x >> 7]); //Set Mode based on Negative Flag
       x = 0; //File channel (none)
       y = 0; //Error code (none)
       chan = uniocb(); if (chan <0) {y = -chan; break;}
