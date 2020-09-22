@@ -33,11 +33,3 @@ CHDRV:  LDA #$FF          ;Return Result - Failure
 ;Returns: A = Drive# | Disk# (0=Failure)
 ;         Y = Error Code (0 = None)
 GETDRV: ;Return Error - Not Implemented (Fall Through)
-
-;drvnam(drv) - Get Drive Name
-;Args: A = Drive Number
-;Returns: A = Drive Name (0=Failure)
-;         Y = Error (0=None)
-DRVNAM: LDA #$00          ;Return Result (None)
-        LDY #$FF          ;and Error - Not Implemented
-        RTS

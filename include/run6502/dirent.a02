@@ -1,6 +1,6 @@
 ; C02 Module dirent Assembly Language Eoutines for run6502 emulator
 ; This is the reference implementation of the dirent module 
-; Requires external functions FSADDR, FSCMD, and FSVDRV (fileio.h02)
+; Requires external functions FSADDR, FSCMD, and FSDRVN (fileio.h02)
 
         SUBROUTINE DIRENT
 
@@ -9,7 +9,7 @@
 ;      Y,X = Pointer to Directory Name
 ;Returns: A = File Pointer (0 = Not Opened)
 ;         Y = Error Code (0 = None)
-OPNDIR: JSR FSVDRV        ;Validate Drive Number
+OPNDIR: JSR FSDRVN        ;Convert Drive Letter to Drive Number
         BCS .OPNERR       ;If Invalid Return Error
         LDA #'D'          ;Set Command to OPENDIR
 .FSCMDX JSR FSCMD         ;Execute Command

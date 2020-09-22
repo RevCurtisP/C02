@@ -10,7 +10,7 @@
         SUBROUTINE FILEIO
 
 DRIVES  EQU 26          ;Number of Disk Drives
-DRIVE   BYTE  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26
+DRIVE   BYTE  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  ;Disk Drive Letters
 
 DISKS   EQU 1           ;Number of Disks in Drive
 DISK    BYTE  0
@@ -37,14 +37,15 @@ FFLUSH: TAY             ;Set Channel Number
 ;      Y,X = Pointer to File Name
 ;Returns: A = File Channel (0=File Not Opened)
 ;         Y = Error (0=None)
-FOPEN:  JSR FSVDRV      ;Validate Drive Number
-        BCS .DRVERR
-        JSR FSNAME      ;Set Filename
-        TAY             ;and Pass in Y
+FOPEN:  JSR FSNAME      ;Set Filename
+        TAX             ;Pass Mode to X
+        JSR FSDRVN      ;Convert Drive Letter to Drive Number
+        BCS .RETURN     ;If Error, Return Carry Set
+        TAY             ;Pass Drive Number in Y
         LDA #'O'        ;Set Command to OPEN
 .FEXECX JSR FSCMD       ;Execute Command
         TXA             ;Return Channel in A
-.DRVERR RTS
+        RTS
 
 ;fclose(chan) - Close File
 ;Args: A = Channel Number
@@ -164,21 +165,25 @@ FERROR: JSR FSADDR    ;Set Buffer Address
 
 ;File System Commands
 
-;Check fot Valid Drive Number
-;Args: A = Drive Number
-;Returns: A = Index into Drives
+;Convert Drive Letter Into Drive Number
+;Drive letters A-Z in DOS map to drive numbers 1-26
+;A drice specifier of NULL - SPACE or @ maps to drive 0, which
+;means the current drive in the run6502 File Command Processor.
+;Args: A = Drive Letter
+;Returns: A = Drive Number
 ;         Carry Clear = Valid Drive Number
 ;         Carry Set = Invalid Drive Number
-FSVDRV: PHA
-        AND #$1F        ;Isolate Drive Number
-        CMP #DRIVES+2   ;Compare against Number of Drives
-        PLA
-        BCS .FSVERR
-        RTS
-
-.FSVERR LDA #$FF        ;Return Operation Failed
-        LDY #1          ;Error - Invalid Argument
-        RTS
+FSDRVN: SEC
+        SBC #' '        ;If Drive Specifier 
+        BCS .FSDRVL     ;is NULL through SPACE
+        LDA #0          ;  Return Drive Number 0
+        RTS             ;  and Carry Clear
+.FSDRVL AND #$1F        ;Convert A-Z, a-z to 1-26
+        CMP #DRIVES+2   ;If Drive Number is 
+        BCC .RETURN     ;greater than 26
+        LDA #$FF        ;  Return Operation Failed
+        LDY #1          ;  and Error - Invalid Argument
+.RETURN RTS
 
 ;fsinit() - Initialize File System
 FSINIT: LDA #'I'        ;Set Command to INITFS

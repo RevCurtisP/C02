@@ -24,7 +24,7 @@ main:
   goto exit;
 
 void prtcwd() {
-  puts("GETCWD: "); 
+  puts("GETCWD(0)="); 
   n, err = getcwd(0, &s);
   if (err) goto error;
   putln(&s);

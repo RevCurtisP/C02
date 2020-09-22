@@ -4,7 +4,7 @@
  ***************************************/
 
 #define DRIVES 0 //Number of Disk Drives
-const char drive[];   //Disk Drives
+const char drive[];  
 
 #define DISKS  0  //Number of Drives in Disk
 const char disk[];  

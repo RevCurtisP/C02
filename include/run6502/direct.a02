@@ -1,15 +1,15 @@
 ; C02 Module direct Assembly Language Routines for run6502 emulator
 ; This is the reference implementation of the direct module 
-; Requires external function FSCMD and FSVDRV (fileio.h02)
+; Requires external function FSCMD and FSDRVN (fileio.h02)
 
         SUBROUTINE DIRECT
 
 ;getcwd(drv, &dir) - Get Current Directory
 ;Args: A = Drive Identifier
 ;      Y,X = Pointer to String
-;Returns: A = Result (0 = Succes, $FF = Failure)
+;Returns: A = Result (0 = Success, $FF = Failure)
 ;         Y = Error Code (0 = None)
-GETCWD: JSR FSVDRV        ;Validate Drive Number
+GETCWD: JSR FSDRVN        ;Convert Drive Letter to Drive Number
         BCS .DRVERR       ;If Invalid Return Error
         LDA #'T'          ;Set Command to GETCWD
 .FSCMDX JSR FSCMD         ;Execute Command
@@ -21,7 +21,7 @@ GETCWD: JSR FSVDRV        ;Validate Drive Number
 ;      Y,X = Pointer to String
 ;Returns: A = Result (0 = Succes, $FF = Failure)
 ;         Y = Error Code (0 = None)
-CHDIR:  JSR FSVDRV        ;Validate Drive Number
+CHDIR:  JSR FSDRVN        ;Convert Drive Letter to Drive Number
         BCS .DRVERR       ;If Invalid Return Error
         LDA #'U'          ;Set Command to GETCWD
         BNE .FSCMDX       ;Execute Command and Return Result
@@ -39,7 +39,7 @@ RMDIR:  SEC               ;Set Mode to RMDIR
 ;Returns: A = Error Code (0 = None)
 MKDIR:  CLC               ;Set Mode to MKDIR
 .MRDIR  PHP               ;Save Status Register
-        JSR FSVDRV        ;Validate Drive Number
+        JSR FSDRVN        ;Convert Drive Letter to Drive Number
         BCS .DRVERR       ;If Invalid Return Error
         PLP               ;Restore Status Register
         LDA #'X'          ;Set Command to MKRMDIR

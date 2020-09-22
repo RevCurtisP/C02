@@ -1,6 +1,6 @@
 ; C02 Module filesys Assembly Language Eoutines for run6502 emulator
 ; This is the reference implementation of the filesys module 
-; Requires external functions FSCMD and FSVDRV (fileio.h02)
+; Requires external functions FSCMD and FSDRVN (fileio.h02)
 
 
         SUBROUTINE FILESYS
@@ -9,11 +9,11 @@
 ;Args: A = Drive Identifier
 ;      Y,X = Address of Directory Name String
 ;Returns: A = Error Code (0 = None)
-REMOVE: JSR FSVDRV        ;Validate Drive Number
-        BCS .DRVERR       ;If Invalid Return Error
-        LDA #'K'            ;Set Command to KILL (REMOVE)
-.FSCMDX JSR FSCMD           ;Execute Command
-        TXA                 ;Return Result
+REMOVE: JSR FSDRVN        ;Validate Drive Number
+        BCS .RETURN       ;If Invalid Return Error
+        LDA #'K'          ;Set Command to KILL (REMOVE)
+.FSCMDX JSR FSCMD         ;Execute Command
+        TXA               ;Return Result
         RTS
         
 ;rename(drv, &filnam) - Rename File to filnam
@@ -21,10 +21,10 @@ REMOVE: JSR FSVDRV        ;Validate Drive Number
 ;Args: A = Drive Identifier
 ;      Y,X = Address of Directory Name String
 ;Returns: A = Error Code (0 = None)
-RENAME: JSR FSVDRV        ;Validate Drive Number
-        BCS .DRVERR       ;If Invalid Return Error
-        LDA #'M'            ;Set Command to KILL (REMOVE)
-        BNE .FSCMDX         ;Execute Command and Return Result
+RENAME: JSR FSDRVN        ;Convert Drive Letter to Drive Number
+        BCS .RETURN       ;If Invalid Return Error
+        LDA #'M'          ;Set Command to KILL (REMOVE)
+        BNE .FSCMDX       ;Execute Command and Return Result
 
 ;inidrv(drv) - Initialize Disk Drive
 ;Args: A = Drive Identifier
@@ -36,25 +36,19 @@ INIDRV: LDA #$FF            ;Return Error - Not Implemented
 ;Args: A = Drive# | Disk#
 ;Returns: A = Result (0 - Success)
 ;         Y = Error Code (0 = None)
-CHDRV:  JSR FSVDRV        ;Validate Drive Number
-        BCS .DRVERR       ;If Invalid Return Error
+CHDRV:  JSR FSDRVN        ;Validate Drive Number
+        BCS .RETURN       ;If Invalid Return Error
         TAY               ;Set Drive Number
         SEC               ;Set Mode to Change
-        BCS .GETDRV       ;Execute DRIVE Command and Return Result
-
+        LDA #'V'          ;Set Command to DRIVE
+        BNE .FSCMDX       ;Execute Command and Return Result
+        
 ;getdrv() - Get Current Drive/Disk
 ;Returns: A = Drive# | Disk# (0=Failure)
 ;         Y = Error Code (0 = None)
 GETDRV: CLC               ;Set Mode to Get
-.GETDRV LDA #'V'          ;Set Command to DRIVE
-        BNE .FSCMDX       ;Execute and Return Result
-
-;drvnam(drv) - Get Drive Name
-;Args: A = Drive Number
-;Returns: A = Drive Name (0=Failure)
-;         Y = Error (0=None)
-DRVNAM: JSR FSVDRV          ;Validate Drive Number
-        BCS .DRVERR         ;If Valid
-        LDY #0              ;  Set Error to None
-        ADC #'@'            ;  Return Drive Letter
-.DRVERR RTS                
+        LDA #'V'          ;Set Command to DRIVE
+        JSR FSCMD         ;Execute Command
+        TXA               ;Copy Drive Number to A
+        ADC #'@'          ;  Convert to Drive Letter
+.RETURN RTS

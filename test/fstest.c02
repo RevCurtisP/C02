@@ -13,7 +13,6 @@
 #include <fileio.h02>
 #include <filesys.h02>
 
-
 const char dir = "TEMPDIR";
 const char oldnam = "OLDFILE.TMP";
 const char newnam = "NEWFILE.TMP";
@@ -27,51 +26,51 @@ main:
   delfil();
   prtdrv();  
   chgdrv();
-  goto exit;
+goto exit;
 
-void chkerr() {
+void chkerr(aa) {
   puts(": ");
   if (err) {
     e = ferror(0, &m);
     printf(e, "ERROR %d - ");
     putln(&m);
   }
-  else if (r) putln("FAILED");
+  else if (aa) putln("FAILED");
   else putln("SUCCESS");
 }
 
 void prtdrv() {
-  d, err = getdrv(); printf(d,"GETDRV: %d "); chkerr();
-  printf(drvnam(d), "DRVNAM: '%c'"); chkerr();
+  d, err = getdrv(); 
+  printf(d,"GETDRV()='%c'"); 
+  chkerr(0);
 }
 
 void newfil() {
   puts("CREATING FILE "); puts(oldnam);
-  f, err = fopen(#MWRITE, oldnam); chkerr();
-  puts("WRITING TO FILE ");
-  n, err = fputln(f, "FILE CONTENTS"); chkerr();
-  puts("CLOSING FILE ");
-  err = fclose(f); chkerr();
+  f, err = fopen(#MWRITE, oldnam); chkerr(0);
+  puts("WRITING TO FILE");
+  n, err = fputln(f, "FILE CONTENTS"); chkerr(0);
+  puts("CLOSING FILE");
+  err = fclose(f); chkerr(0);
 }
 
 void renfil() {
   puts("RENAMING "); puts(oldnam);
   puts(" TO "); puts(newnam);
   fsname(oldnam);
-  r, err = rename(newnam); chkerr();
+  r, err = rename(newnam); chkerr(r);
 }
 
 void delfil() {
   puts("REMOVING "); puts(newnam);
-  r, err = remove(newnam); chkerr();
+  r, err = remove(newnam); chkerr(r);
 }
 
 void chgdrv() {
   for (i=0; i<#DRIVES; i++) {
     d = drive[i];
-    printf(d, "CHDRV(%d) ");
-    printf(drvnam(d), "'%c'");
-    r, err = chdrv(d); chkerr();
+    printf(d, "CHDRV('%c') ");
+    r, err = chdrv(d); chkerr(r);
   }
 }
 
