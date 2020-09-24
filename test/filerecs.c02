@@ -1,0 +1,49 @@
+/***********************************************
+ * FILERECS - Test/Demo File Record Read/Write *
+ ***********************************************/
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <memory.h02>
+#include <fileio.h02>
+
+
+struct txtrec {
+  char name[23]; 
+  char start[3], dash, end[3];
+  char cr; char lf; char null;};
+
+struct binrec {
+  char name[24];
+  char start[4], end[4];
+};
+
+char f;          //File Channel
+char text[128]; //Input Text
+struct txtrec tr;
+
+main:
+  f = fopen(#MREAD, "RECTEXT.TXT");
+  while (fgets(f, tr)) 
+    puts(tr);
+  fclose(f);
+  goto exit;
+
+data: inline
+  "TEX AVERY",&1935,&1942, "TED BONNICKSEN",&1963,&1963, "BERNARD B. BROWN",&1934,&1934,
+  "GERRY CHINIQUY",&1964,&1964, "BOB CLAMPETT",&1937,&1946, "CAL DALTON",&1938,&1940,
+  "ARTHUR DAVIS",&1946,&1962, "EARL DUVALL",&1933,&1934, "FRIZ FRELENG",&1934,&1964,
+  "BEN HARDAWAY",&1934,&1940, "KEN HARRIS",&1959,&1959, "CAL HOWARD",&1938,&1938,
+  "UB IWERKS",&1937,&1937, "CHUCK JONES",&1938,&1964, "JACK KING",&1934,&1936,
+  "ABE LEVITOW",&1959,&1962, "ALEX LOVY",&1967,&1968, "NORMAN MCCABE",&1940,&1943,
+  "ROBERT MCKIMSON",&1946,&1969, "PHIL MONROE",&1963,&1964, "MAURICE NOBLE",&1961,&1964,
+  "TOM PALMER",&1933,&1933, "HAWLEY PRATT",&1961,&1964, "FRANK TASHLIN",&1936,&1946,
+  "RICHARD THOMPSON",&1963,&1963, "BILL TYTLA",&1964,&1964;
+  
+  
