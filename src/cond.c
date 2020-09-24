@@ -79,7 +79,7 @@ void prscmp(int revrse) {
     if (cmpenc != 0) cmprtr = cmprtr | cmpenc; //Combine Encoded Comparator
   }
   skpspc();
-  if (cmprtr) prstrm(FALSE);
+  if (cmprtr) prstrm(FALSE, TRUE);
   //prccmp(); - Do after check for logical operator
   DEBUG("Parsed comparator %d\n", cmprtr)
 }

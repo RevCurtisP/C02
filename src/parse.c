@@ -38,7 +38,7 @@ int isspc(void)  {return isspace(nxtchr);}
 int isszop(void) {return match('@');}
 int isvpre(void) {return TF(isalph() || islpre());}
 int isxfop(void) {return match('?');}
-int isxpre(void) {return TF(isvpre() || match('-'));}
+int isxpre(void) {return TF(isvpre() || match('-') || match('*'));}
 
 /* Process ASCII Character */
 char prcchr(char c) {

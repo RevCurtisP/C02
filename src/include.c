@@ -21,11 +21,13 @@
 /* Read next include file name from Source File  *
  * Sets: incnam - the include file name         */
 void pincnm(void) {
+  DEBUG("Parsing include file name", 0)
   char dlmtr;
   int inclen = 0;
   int sublen[SUBMAX];
   skpspc();
   dlmtr = getnxt();
+  DETAIL(" with delimiter '%c'\n", dlmtr)
   if (dlmtr == '<') {
     strcpy(incnam, incdir);
     inclen = strlen(incnam);

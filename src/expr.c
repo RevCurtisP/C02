@@ -21,7 +21,7 @@ void pshtrm(void) {
   strcpy(trmstk[trmidx], term); //Put Current Term on Stack
   trmidx++;                     //Increment Stack Pointer
   DEBUG("expr.pshtrm: Pushed term %s ", term)
-  DETAIL("and operator '%onto stack'\n", oper)
+  DETAIL("and operator '%c' onto stack\n", oper)
 }
 
 /* Pop Term and Operator off Stack */
@@ -153,7 +153,7 @@ int prcptr(void) {
   }  else if (cmos) {
     sprintf(word, "(%s)", term);
   } else {
-	asmlin("LDY","0");
+	asmlin("LDY","#0");
     sprintf(word, "(%s),Y", term);
   }
   strcpy(term, word);
@@ -161,12 +161,17 @@ int prcptr(void) {
   return FALSE;  //Return Value Not an Integer
 }
 
-/* Parse Term in Expression            *
- * Sets: term - the term (as a string) *
- * Returns: TRUE if term is an integer */
-int prstrm(int alwint) {
+/* Parse Term in Expression                *
+ * Args: alwint: Allow Integer Value       *
+ *       alwptr: Allow Pointer Dereference *
+ * Sets: term - the term (as a string)     *
+ * Returns: TRUE if term is an integer     */
+int prstrm(int alwint, int alwptr) {
   DEBUG("expr.prstrm: Parsing term\n", 0)
-  if (match('*')) return prcptr(); //Parse and Deference Pointer
+  if (match('*')) {
+    if (alwptr)return prcptr(); //Parse and Deference Pointer
+    else ERROR("Pointer dereference not allowed\n", 0, EXIT_FAILURE)
+  }
   prsval(FALSE, TRUE); //Parse Value - Disallow Registers, Allow Constants
   if (valtyp == FUNCTION) ERROR("Function call only allowed in first term\n", 0, EXIT_FAILURE)
   strcpy(term, value);
@@ -263,16 +268,14 @@ void prsfpr(char trmntr) {
     if (look('.')) pusha = 255; 
     else {if (prsxpf(0)) goto prsfne;}
     if (look(',') && !chkadr(ADLDYX, TRUE)) {
-      if (look('.')) {
-        pushy = -1;
-	  }
+      if (look('.')) { pushy = -1; }
 	  else {
 	    if (look('(')) { 
 		  if (pusha==0) {pusha = 1; asmlin("PHA","");} //Save A on Stack
           prsxpr(')'); asmlin("TAY", ""); //Evaluate Expression, and Copy to Y
 		}
         else {
-		  if (prstrm(TRUE)) goto prsfne;
+		  if (prstrm(TRUE, FALSE)) goto prsfne;
           asmlin("LDY", term); 
 	    }
 	  } 
@@ -389,7 +392,7 @@ void prsrxp(char trmntr) {
   while (isoper()) {
 	trmcnt++; //Increment Expression Depth
     prsopr(); //Parse Operator
-    prstrm(FALSE); //Parse Term
+    prstrm(FALSE, TRUE); //Parse Term
     prcopr(); //Process Operator
 	trmcnt--; //Decrement Expression Depth
   } 

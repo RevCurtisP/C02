@@ -25,7 +25,7 @@ void prsfnc(char trmntr);   //Parse function call
 void prsfpr(char trmntr);   //Parse Function Paraeters or Return
 void prsidx();              //Parse Array Index
 void prsptr(void);          //Parse Pointer
-int  prstrm(int alwint);    //Parse Term in Expression
+int  prstrm(int alwint, int alwptr); //Parse Term in Expression
 void prsrxp(char trmntr);   //Parse Rest of Expression 
 int  prsxpf(char trmntr);   //Parse Expression in Function Call
 void prsxpr(char trmntr);   //Parse Expression

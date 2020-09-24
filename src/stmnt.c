@@ -198,16 +198,21 @@ void prcavr(char trmntr) {
     prsvar(FALSE, FALSE); //get variable name
     strcpy(ysnvar, word);
     DEBUG("stmnt.prcvar: Set STY variable to %s\n", ysnvar)
-    if (valtyp == ARRAY) ysnivt = getidx(ysnidx); //Get Array Index and Type
-    else ysnidx[0] = 0;
-    DEBUG("stmnt.prcvar: Set STY index to '%s'", ysnidx) DETAIL(" and type to %d\n", ysnivt)
-    if (look(',')) {
-      prsvar(FALSE, FALSE); //get variable name
-      strcpy(xsnvar, word);
-      DEBUG("stmnt.prcvar: Set STX variable to %s\n", xsnvar)
-      //if (valtyp == ARRAY) ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE) 
-      if (valtyp == ARRAY) xsnivt = getidx(xsnidx); //Get Array Index and Type
-      else xsnidx[0] = 0;
+ 	if (vartyp == VTINT) {
+      strcpy(xsnvar, ysnvar); //Set Assignment LSB
+      strcat(ysnvar, "+1"); //Set Assignment MSB
+	} else {   
+      if (valtyp == ARRAY) ysnivt = getidx(ysnidx); //Get Array Index and Type
+      else ysnidx[0] = 0;
+      DEBUG("stmnt.prcvar: Set STY index to '%s'", ysnidx) DETAIL(" and type to %d\n", ysnivt)
+      if (look(',')) {
+        prsvar(FALSE, FALSE); //get variable name
+        strcpy(xsnvar, word);
+        DEBUG("stmnt.prcvar: Set STX variable to %s\n", xsnvar)
+        //if (valtyp == ARRAY) ERROR("Array element not allowed in third assignment\n", 0, EXIT_FAILURE) 
+        if (valtyp == ARRAY) xsnivt = getidx(xsnidx); //Get Array Index and Type
+        else xsnidx[0] = 0;
+      }
     }
   }
   prcasn(trmntr, FALSE);
@@ -348,17 +353,23 @@ void pgoto(void) {
 
 /* parse and compile inline statement */
 void pinlne(void) {
+  int i; //For Parsing Integers
   DEBUG("stmnt.pinlne: Parsing INLINE statement\n", 0)
   do { 
     DEBUG("stmnt.pinlne: Parsing inline parameter\n", 0)
     if (look('&')) {
-      reqvar(FALSE); //Get Variable Name
-      strcpy(word, "<");
-      strcat(word, value);
-      strcat(word, ", >");
-      strcat(word, value);
+      if (isnpre()) {
+	    i = prsnum(0xFFFF);
+        sprintf(word, "$%02x,$%02x", i & 0xFF, i >> 8);
+      } else {
+        reqvar(FALSE); //Get Variable Name
+        strcpy(word, "<");
+        strcat(word, value);
+        strcat(word, ", >");
+        strcat(word, value);
+      }
       asmlin(BYTEOP, word);
-    }
+    }     
     else if (look('"')) {
       value[0] = 0;
       while (!match('"')) {
@@ -456,7 +467,7 @@ void pcase(void) {
   newlbl(cndlbl);          //Create Conditional Label
   pshlbl(LTCASE, cndlbl);  //and Push onto Stack
   while(TRUE) {
-    prstrm(FALSE);         //Parse CASE argument
+    prstrm(FALSE, TRUE);   //Parse CASE argument
     if (!fcase || valtyp != LITERAL || litval) 
       asmlin("CMP", term); //Emit Comparison
     if (look(',')) {
