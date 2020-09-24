@@ -1,4 +1,4 @@
-/* lib6502.c -- MOS Technology 6502 emulator	-*- C -*- */
+/* lib6502.c -- MOS Technology 6502 emulator    -*- C -*- */
 
 /* Copyright (c) 2005 Ian Piumarta
  * 
@@ -36,606 +36,606 @@ typedef uint8_t  byte;
 typedef uint16_t word;
 
 enum {
-  flagN= (1<<7),	/* negative 	 */
-  flagV= (1<<6),	/* overflow 	 */
-  flagX= (1<<5),	/* unused   	 */
-  flagB= (1<<4),	/* irq from brk  */
-  flagD= (1<<3),	/* decimal mode  */
-  flagI= (1<<2),	/* irq disable   */
-  flagZ= (1<<1),	/* zero          */
-  flagC= (1<<0)		/* carry         */
+  flagN= (1<<7),        /* negative      */
+  flagV= (1<<6),        /* overflow      */
+  flagX= (1<<5),        /* unused        */
+  flagB= (1<<4),        /* irq from brk  */
+  flagD= (1<<3),        /* decimal mode  */
+  flagI= (1<<2),        /* irq disable   */
+  flagZ= (1<<1),        /* zero          */
+  flagC= (1<<0)         /* carry         */
 };
 
-#define getN()	(P & flagN)
-#define getV()	(P & flagV)
-#define getB()	(P & flagB)
-#define getD()	(P & flagD)
-#define getI()	(P & flagI)
-#define getZ()	(P & flagZ)
-#define getC()	(P & flagC)
+#define getN()  (P & flagN)
+#define getV()  (P & flagV)
+#define getB()  (P & flagB)
+#define getD()  (P & flagD)
+#define getI()  (P & flagI)
+#define getZ()  (P & flagZ)
+#define getC()  (P & flagC)
 
-#define setNVZC(N,V,Z,C)	(P= (P & ~(flagN | flagV | flagZ | flagC)) | (N) | ((V)<<6) | ((Z)<<1) | (C))
-#define setNZC(N,Z,C)		(P= (P & ~(flagN |         flagZ | flagC)) | (N) |            ((Z)<<1) | (C))
-#define setNZ(N,Z)		(P= (P & ~(flagN |         flagZ        )) | (N) |            ((Z)<<1)      )
-#define setZ(Z)			(P= (P & ~(                flagZ        )) |                  ((Z)<<1)      )
-#define setC(C)			(P= (P & ~(                        flagC)) |                             (C))
+#define setNVZC(N,V,Z,C)        (P= (P & ~(flagN | flagV | flagZ | flagC)) | (N) | ((V)<<6) | ((Z)<<1) | (C))
+#define setNZC(N,Z,C)           (P= (P & ~(flagN |         flagZ | flagC)) | (N) |            ((Z)<<1) | (C))
+#define setNZ(N,Z)              (P= (P & ~(flagN |         flagZ        )) | (N) |            ((Z)<<1)      )
+#define setZ(Z)                 (P= (P & ~(                flagZ        )) |                  ((Z)<<1)      )
+#define setC(C)                 (P= (P & ~(                        flagC)) |                             (C))
 
-#define NAND(P, Q)	(!((P) & (Q)))
+#define NAND(P, Q)      (!((P) & (Q)))
 
 #define tick(n)
 #define tickIf(p)
 
 /* memory access (indirect if callback installed) -- ARGUMENTS ARE EVALUATED MORE THAN ONCE! */
 
-#define putMemory(ADDR, BYTE)			\
-  ( writeCallback[ADDR]				\
-      ? writeCallback[ADDR](mpu, ADDR, BYTE)	\
+#define putMemory(ADDR, BYTE)                   \
+  ( writeCallback[ADDR]                         \
+      ? writeCallback[ADDR](mpu, ADDR, BYTE)    \
       : (memory[ADDR]= BYTE) )
 
-#define getMemory(ADDR)				\
-  ( readCallback[ADDR]				\
-      ?  readCallback[ADDR](mpu, ADDR, 0)	\
+#define getMemory(ADDR)                         \
+  ( readCallback[ADDR]                          \
+      ?  readCallback[ADDR](mpu, ADDR, 0)       \
       :  memory[ADDR] )
 
 /* stack access (always direct) */
 
-#define push(BYTE)		(memory[0x0100 + S--]= (BYTE))
-#define pop()			(memory[++S + 0x0100])
+#define push(BYTE)              (memory[0x0100 + S--]= (BYTE))
+#define pop()                   (memory[++S + 0x0100])
 
 /* adressing modes (memory access direct) */
 
-#define implied(ticks)				\
+#define implied(ticks)                          \
   tick(ticks);
 
-#define immediate(ticks)			\
-  tick(ticks);					\
+#define immediate(ticks)                        \
+  tick(ticks);                                  \
   ea= PC++;
 
-#define abs(ticks)				\
-  tick(ticks);					\
-  ea= memory[PC] + (memory[PC + 1] << 8);	\
+#define abs(ticks)                              \
+  tick(ticks);                                  \
+  ea= memory[PC] + (memory[PC + 1] << 8);       \
   PC += 2;
 
-#define relative(ticks)				\
-  tick(ticks);					\
-  ea= memory[PC++];				\
-  if (ea & 0x80) ea -= 0x100;			\
+#define relative(ticks)                         \
+  tick(ticks);                                  \
+  ea= memory[PC++];                             \
+  if (ea & 0x80) ea -= 0x100;                   \
   tickIf((ea >> 8) != (PC >> 8));
 
-#define indirect(ticks)				\
-  tick(ticks);					\
-  {						\
-    word tmp;					\
-    tmp= memory[PC]  + (memory[PC  + 1] << 8);	\
-    ea = memory[tmp] + (memory[tmp + 1] << 8);	\
-    PC += 2;					\
+#define indirect(ticks)                         \
+  tick(ticks);                                  \
+  {                                             \
+    word tmp;                                   \
+    tmp= memory[PC]  + (memory[PC  + 1] << 8);  \
+    ea = memory[tmp] + (memory[tmp + 1] << 8);  \
+    PC += 2;                                    \
   }
 
-#define absx(ticks)						\
-  tick(ticks);							\
-  ea= memory[PC] + (memory[PC + 1] << 8);			\
-  PC += 2;							\
-  tickIf((ticks == 4) && ((ea >> 8) != ((ea + X) >> 8)));	\
+#define absx(ticks)                                             \
+  tick(ticks);                                                  \
+  ea= memory[PC] + (memory[PC + 1] << 8);                       \
+  PC += 2;                                                      \
+  tickIf((ticks == 4) && ((ea >> 8) != ((ea + X) >> 8)));       \
   ea += X;
 
-#define absy(ticks)						\
-  tick(ticks);							\
-  ea= memory[PC] + (memory[PC + 1] << 8);			\
-  PC += 2;							\
-  tickIf((ticks == 4) && ((ea >> 8) != ((ea + Y) >> 8)));	\
+#define absy(ticks)                                             \
+  tick(ticks);                                                  \
+  ea= memory[PC] + (memory[PC + 1] << 8);                       \
+  PC += 2;                                                      \
+  tickIf((ticks == 4) && ((ea >> 8) != ((ea + Y) >> 8)));       \
   ea += Y
 
-#define zp(ticks)				\
-  tick(ticks);					\
+#define zp(ticks)                               \
+  tick(ticks);                                  \
   ea= memory[PC++];
 
-#define zpx(ticks)				\
-  tick(ticks);					\
-  ea= memory[PC++] + X;				\
+#define zpx(ticks)                              \
+  tick(ticks);                                  \
+  ea= memory[PC++] + X;                         \
   ea &= 0x00ff;
 
-#define zpy(ticks)				\
-  tick(ticks);					\
-  ea= memory[PC++] + Y;				\
+#define zpy(ticks)                              \
+  tick(ticks);                                  \
+  ea= memory[PC++] + Y;                         \
   ea &= 0x00ff;
 
-#define indx(ticks)				\
-  tick(ticks);					\
-  {						\
-    byte tmp= memory[PC++] + X;			\
-    ea= memory[tmp] + (memory[tmp + 1] << 8);	\
+#define indx(ticks)                             \
+  tick(ticks);                                  \
+  {                                             \
+    byte tmp= memory[PC++] + X;                 \
+    ea= memory[tmp] + (memory[tmp + 1] << 8);   \
   }
 
-#define indy(ticks)						\
-  tick(ticks);							\
-  {								\
-    byte tmp= memory[PC++];					\
-    ea= memory[tmp] + (memory[tmp + 1] << 8);			\
-    tickIf((ticks == 5) && ((ea >> 8) != ((ea + Y) >> 8)));	\
-    ea += Y;							\
+#define indy(ticks)                                             \
+  tick(ticks);                                                  \
+  {                                                             \
+    byte tmp= memory[PC++];                                     \
+    ea= memory[tmp] + (memory[tmp + 1] << 8);                   \
+    tickIf((ticks == 5) && ((ea >> 8) != ((ea + Y) >> 8)));     \
+    ea += Y;                                                    \
   }
 
-#define indabsx(ticks)					\
-  tick(ticks);						\
-  {							\
-    word tmp;						\
-    tmp= memory[PC ] + (memory[PC  + 1] << 8) + X;	\
-    ea = memory[tmp] + (memory[tmp + 1] << 8);		\
+#define indabsx(ticks)                                  \
+  tick(ticks);                                          \
+  {                                                     \
+    word tmp;                                           \
+    tmp= memory[PC ] + (memory[PC  + 1] << 8) + X;      \
+    ea = memory[tmp] + (memory[tmp + 1] << 8);          \
   }
 
-#define indzp(ticks)					\
-  tick(ticks);						\
-  {							\
-    byte tmp;						\
-    tmp= memory[PC++];					\
-    ea = memory[tmp] + (memory[tmp + 1] << 8);		\
+#define indzp(ticks)                                    \
+  tick(ticks);                                          \
+  {                                                     \
+    byte tmp;                                           \
+    tmp= memory[PC++];                                  \
+    ea = memory[tmp] + (memory[tmp + 1] << 8);          \
   }
 
 /* insns */
 
-#define adc(ticks, adrmode)								\
-  adrmode(ticks);									\
-  {											\
-    byte B= getMemory(ea);								\
-    if (!getD())									\
-      {											\
-	int c= A + B + getC();								\
-	int v= (int8_t)A + (int8_t)B + getC();						\
-	fetch();									\
-	A= c;										\
-	setNVZC((A & 0x80), (((A & 0x80) > 0) ^ (v < 0)), (A == 0), ((c & 0x100) > 0));	\
-	next();										\
-      }											\
-    else										\
-      {											\
-	int l, h, s;									\
-	/* inelegant & slow, but consistent with the hw for illegal digits */		\
-	l= (A & 0x0F) + (B & 0x0F) + getC();						\
-	h= (A & 0xF0) + (B & 0xF0);							\
-	if (l >= 0x0A) { l -= 0x0A;  h += 0x10; }					\
-	if (h >= 0xA0) { h -= 0xA0; }							\
-	fetch();									\
-	s= h | (l & 0x0F);								\
-	/* only C is valid on NMOS 6502 */						\
-	setNVZC(s & 0x80, !(((A ^ B) & 0x80) && ((A ^ s) & 0x80)), !s, !!(h & 0x80));	\
-	A= s;										\
-	tick(1);									\
-	next();										\
-      }											\
+#define adc(ticks, adrmode)                                                             \
+  adrmode(ticks);                                                                       \
+  {                                                                                     \
+    byte B= getMemory(ea);                                                              \
+    if (!getD())                                                                        \
+      {                                                                                 \
+        int c= A + B + getC();                                                          \
+        int v= (int8_t)A + (int8_t)B + getC();                                          \
+        fetch();                                                                        \
+        A= c;                                                                           \
+        setNVZC((A & 0x80), (((A & 0x80) > 0) ^ (v < 0)), (A == 0), ((c & 0x100) > 0)); \
+        next();                                                                         \
+      }                                                                                 \
+    else                                                                                \
+      {                                                                                 \
+        int l, h, s;                                                                    \
+        /* inelegant & slow, but consistent with the hw for illegal digits */           \
+        l= (A & 0x0F) + (B & 0x0F) + getC();                                            \
+        h= (A & 0xF0) + (B & 0xF0);                                                     \
+        if (l >= 0x0A) { l -= 0x0A;  h += 0x10; }                                       \
+        if (h >= 0xA0) { h -= 0xA0; }                                                   \
+        fetch();                                                                        \
+        s= h | (l & 0x0F);                                                              \
+        /* only C is valid on NMOS 6502 */                                              \
+        setNVZC(s & 0x80, !(((A ^ B) & 0x80) && ((A ^ s) & 0x80)), !s, !!(h & 0x80));   \
+        A= s;                                                                           \
+        tick(1);                                                                        \
+        next();                                                                         \
+      }                                                                                 \
   }
 
-#define sbc(ticks, adrmode)								\
-  adrmode(ticks);									\
-  {											\
-    byte B= getMemory(ea);								\
-    if (!getD())									\
-      {											\
-	int b= 1 - (P &0x01);								\
-	int c= A - B - b;								\
-	int v= (int8_t)A - (int8_t) B - b;						\
-	fetch();									\
-	A= c;										\
-	setNVZC(A & 0x80, ((A & 0x80) > 0) ^ ((v & 0x100) != 0), A == 0, c >= 0);	\
-	next();										\
-      }											\
-    else										\
-      {											\
-	/* this is verbatim ADC, with a 10's complemented operand */			\
-	int l, h, s;									\
-	B= 0x99 - B;									\
-	l= (A & 0x0F) + (B & 0x0F) + getC();						\
-	h= (A & 0xF0) + (B & 0xF0);							\
-	if (l >= 0x0A) { l -= 0x0A;  h += 0x10; }					\
-	if (h >= 0xA0) { h -= 0xA0; }							\
-	fetch();									\
-	s= h | (l & 0x0F);								\
-	/* only C is valid on NMOS 6502 */						\
-	setNVZC(s & 0x80, !(((A ^ B) & 0x80) && ((A ^ s) & 0x80)), !s, !!(h & 0x80));	\
-	A= s;										\
-	tick(1);									\
-	next();										\
-      }											\
+#define sbc(ticks, adrmode)                                                             \
+  adrmode(ticks);                                                                       \
+  {                                                                                     \
+    byte B= getMemory(ea);                                                              \
+    if (!getD())                                                                        \
+      {                                                                                 \
+        int b= 1 - (P &0x01);                                                           \
+        int c= A - B - b;                                                               \
+        int v= (int8_t)A - (int8_t) B - b;                                              \
+        fetch();                                                                        \
+        A= c;                                                                           \
+        setNVZC(A & 0x80, ((A & 0x80) > 0) ^ ((v & 0x100) != 0), A == 0, c >= 0);       \
+        next();                                                                         \
+      }                                                                                 \
+    else                                                                                \
+      {                                                                                 \
+        /* this is verbatim ADC, with a 10's complemented operand */                    \
+        int l, h, s;                                                                    \
+        B= 0x99 - B;                                                                    \
+        l= (A & 0x0F) + (B & 0x0F) + getC();                                            \
+        h= (A & 0xF0) + (B & 0xF0);                                                     \
+        if (l >= 0x0A) { l -= 0x0A;  h += 0x10; }                                       \
+        if (h >= 0xA0) { h -= 0xA0; }                                                   \
+        fetch();                                                                        \
+        s= h | (l & 0x0F);                                                              \
+        /* only C is valid on NMOS 6502 */                                              \
+        setNVZC(s & 0x80, !(((A ^ B) & 0x80) && ((A ^ s) & 0x80)), !s, !!(h & 0x80));   \
+        A= s;                                                                           \
+        tick(1);                                                                        \
+        next();                                                                         \
+      }                                                                                 \
   }
 
-#define cmpR(ticks, adrmode, R)			\
-  adrmode(ticks);				\
-  fetch();					\
-  {						\
-    byte B= getMemory(ea);			\
-    byte d= R - B;				\
-    setNZC(d & 0x80, !d, R >= B);		\
-  }						\
+#define cmpR(ticks, adrmode, R)                 \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  {                                             \
+    byte B= getMemory(ea);                      \
+    byte d= R - B;                              \
+    setNZC(d & 0x80, !d, R >= B);               \
+  }                                             \
   next();
 
-#define cmp(ticks, adrmode)	cmpR(ticks, adrmode, A)
-#define cpx(ticks, adrmode)	cmpR(ticks, adrmode, X)
-#define cpy(ticks, adrmode)	cmpR(ticks, adrmode, Y)
+#define cmp(ticks, adrmode)     cmpR(ticks, adrmode, A)
+#define cpx(ticks, adrmode)     cmpR(ticks, adrmode, X)
+#define cpy(ticks, adrmode)     cmpR(ticks, adrmode, Y)
 
-#define dec(ticks, adrmode)			\
-  adrmode(ticks);				\
-  fetch();					\
-  {						\
-    byte B= getMemory(ea);			\
-    --B;					\
-    putMemory(ea, B);				\
-    setNZ(B & 0x80, !B);			\
-  }						\
+#define dec(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  {                                             \
+    byte B= getMemory(ea);                      \
+    --B;                                        \
+    putMemory(ea, B);                           \
+    setNZ(B & 0x80, !B);                        \
+  }                                             \
   next();
 
-#define decR(ticks, adrmode, R)			\
-  fetch();					\
-  tick(ticks);					\
-  --R;						\
-  setNZ(R & 0x80, !R);				\
+#define decR(ticks, adrmode, R)                 \
+  fetch();                                      \
+  tick(ticks);                                  \
+  --R;                                          \
+  setNZ(R & 0x80, !R);                          \
   next();
 
-#define dea(ticks, adrmode)	decR(ticks, adrmode, A)
-#define dex(ticks, adrmode)	decR(ticks, adrmode, X)
-#define dey(ticks, adrmode)	decR(ticks, adrmode, Y)
+#define dea(ticks, adrmode)     decR(ticks, adrmode, A)
+#define dex(ticks, adrmode)     decR(ticks, adrmode, X)
+#define dey(ticks, adrmode)     decR(ticks, adrmode, Y)
 
-#define inc(ticks, adrmode)			\
-  adrmode(ticks);				\
-  fetch();					\
-  {						\
-    byte B= getMemory(ea);			\
-    ++B;					\
-    putMemory(ea, B);				\
-    setNZ(B & 0x80, !B);			\
-  }						\
+#define inc(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  {                                             \
+    byte B= getMemory(ea);                      \
+    ++B;                                        \
+    putMemory(ea, B);                           \
+    setNZ(B & 0x80, !B);                        \
+  }                                             \
   next();
 
-#define incR(ticks, adrmode, R)			\
-  fetch();					\
-  tick(ticks);					\
-  ++R;						\
-  setNZ(R & 0x80, !R);				\
+#define incR(ticks, adrmode, R)                 \
+  fetch();                                      \
+  tick(ticks);                                  \
+  ++R;                                          \
+  setNZ(R & 0x80, !R);                          \
   next();
 
-#define ina(ticks, adrmode)	incR(ticks, adrmode, A)
-#define inx(ticks, adrmode)	incR(ticks, adrmode, X)
-#define iny(ticks, adrmode)	incR(ticks, adrmode, Y)
+#define ina(ticks, adrmode)     incR(ticks, adrmode, A)
+#define inx(ticks, adrmode)     incR(ticks, adrmode, X)
+#define iny(ticks, adrmode)     incR(ticks, adrmode, Y)
 
-#define bit(ticks, adrmode)			\
-  adrmode(ticks);				\
-  fetch();					\
-  {						\
-    byte B= getMemory(ea);			\
-    P= (P & ~(flagN | flagV | flagZ))		\
-      | (B & (0xC0)) | (((A & B) == 0) << 1);	\
-  }						\
+#define bit(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  {                                             \
+    byte B= getMemory(ea);                      \
+    P= (P & ~(flagN | flagV | flagZ))           \
+      | (B & (0xC0)) | (((A & B) == 0) << 1);   \
+  }                                             \
   next();
 
-#define tsb(ticks, adrmode)			\
-  adrmode(ticks);				\
-  fetch();					\
-  {						\
-    byte b= getMemory(ea);			\
-    b |= A;					\
-    putMemory(ea, b);				\
-    setZ(!b);					\
-  }						\
+#define tsb(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  {                                             \
+    byte b= getMemory(ea);                      \
+    b |= A;                                     \
+    putMemory(ea, b);                           \
+    setZ(!b);                                   \
+  }                                             \
   next();
 
-#define trb(ticks, adrmode)			\
-  adrmode(ticks);				\
-  fetch();					\
-  {						\
-    byte b= getMemory(ea);			\
-    b |= (A ^ 0xFF);				\
-    putMemory(ea, b);				\
-    setZ(!b);					\
-  }						\
+#define trb(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  {                                             \
+    byte b= getMemory(ea);                      \
+    b |= (A ^ 0xFF);                            \
+    putMemory(ea, b);                           \
+    setZ(!b);                                   \
+  }                                             \
   next();
 
-#define bitwise(ticks, adrmode, op)		\
-  adrmode(ticks);				\
-  fetch();					\
-  A op##= getMemory(ea);			\
-  setNZ(A & 0x80, !A);				\
+#define bitwise(ticks, adrmode, op)             \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  A op##= getMemory(ea);                        \
+  setNZ(A & 0x80, !A);                          \
   next();
 
-#define and(ticks, adrmode)	bitwise(ticks, adrmode, &)
-#define eor(ticks, adrmode)	bitwise(ticks, adrmode, ^)
-#define ora(ticks, adrmode)	bitwise(ticks, adrmode, |)
+#define and(ticks, adrmode)     bitwise(ticks, adrmode, &)
+#define eor(ticks, adrmode)     bitwise(ticks, adrmode, ^)
+#define ora(ticks, adrmode)     bitwise(ticks, adrmode, |)
 
-#define asl(ticks, adrmode)			\
-  adrmode(ticks);				\
-  {						\
-    unsigned int i= getMemory(ea) << 1;		\
-    putMemory(ea, i);				\
-    fetch();					\
-    setNZC(i & 0x80, !i, i >> 8);		\
-  }						\
+#define asl(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  {                                             \
+    unsigned int i= getMemory(ea) << 1;         \
+    putMemory(ea, i);                           \
+    fetch();                                    \
+    setNZC(i & 0x80, !i, i >> 8);               \
+  }                                             \
   next();
 
-#define asla(ticks, adrmode)			\
-  tick(ticks);					\
-  fetch();					\
-  {						\
-    int c= A >> 7;				\
-    A <<= 1;					\
-    setNZC(A & 0x80, !A, c);			\
-  }						\
+#define asla(ticks, adrmode)                    \
+  tick(ticks);                                  \
+  fetch();                                      \
+  {                                             \
+    int c= A >> 7;                              \
+    A <<= 1;                                    \
+    setNZC(A & 0x80, !A, c);                    \
+  }                                             \
   next();
 
-#define lsr(ticks, adrmode)			\
-  adrmode(ticks);				\
-  {						\
-    byte b= getMemory(ea);			\
-    int  c= b & 1;				\
-    fetch();					\
-    b >>= 1;					\
-    putMemory(ea, b);				\
-    setNZC(0, !b, c);				\
-  }						\
+#define lsr(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  {                                             \
+    byte b= getMemory(ea);                      \
+    int  c= b & 1;                              \
+    fetch();                                    \
+    b >>= 1;                                    \
+    putMemory(ea, b);                           \
+    setNZC(0, !b, c);                           \
+  }                                             \
   next();
 
-#define lsra(ticks, adrmode)			\
-  tick(ticks);					\
-  fetch();					\
-  {						\
-    int c= A & 1;				\
-    A >>= 1;					\
-    setNZC(0, !A, c);				\
-  }						\
+#define lsra(ticks, adrmode)                    \
+  tick(ticks);                                  \
+  fetch();                                      \
+  {                                             \
+    int c= A & 1;                               \
+    A >>= 1;                                    \
+    setNZC(0, !A, c);                           \
+  }                                             \
   next();
 
-#define rol(ticks, adrmode)			\
-  adrmode(ticks);				\
-  {						\
-    word b= (getMemory(ea) << 1) | getC();	\
-    fetch();					\
-    putMemory(ea, b);				\
-    setNZC(b & 0x80, !(b & 0xFF), b >> 8);	\
-  }						\
+#define rol(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  {                                             \
+    word b= (getMemory(ea) << 1) | getC();      \
+    fetch();                                    \
+    putMemory(ea, b);                           \
+    setNZC(b & 0x80, !(b & 0xFF), b >> 8);      \
+  }                                             \
   next();
 
-#define rola(ticks, adrmode)			\
-  tick(ticks);					\
-  fetch();					\
-  {						\
-    word b= (A << 1) | getC();			\
-    A= b;					\
-    setNZC(A & 0x80, !A, b >> 8);		\
-  }						\
+#define rola(ticks, adrmode)                    \
+  tick(ticks);                                  \
+  fetch();                                      \
+  {                                             \
+    word b= (A << 1) | getC();                  \
+    A= b;                                       \
+    setNZC(A & 0x80, !A, b >> 8);               \
+  }                                             \
   next();
 
-#define ror(ticks, adrmode)			\
-  adrmode(ticks);				\
-  {						\
-    int  c= getC();				\
-    byte m= getMemory(ea);			\
-    byte b= (c << 7) | (m >> 1);		\
-    fetch();					\
-    putMemory(ea, b);				\
-    setNZC(b & 0x80, !b, m & 1);		\
-  }						\
+#define ror(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  {                                             \
+    int  c= getC();                             \
+    byte m= getMemory(ea);                      \
+    byte b= (c << 7) | (m >> 1);                \
+    fetch();                                    \
+    putMemory(ea, b);                           \
+    setNZC(b & 0x80, !b, m & 1);                \
+  }                                             \
   next();
 
-#define rora(ticks, adrmode)			\
-  adrmode(ticks);				\
-  {						\
-    int ci= getC();				\
-    int co= A & 1;				\
-    fetch();					\
-    A= (ci << 7) | (A >> 1);			\
-    setNZC(A & 0x80, !A, co);			\
-  }						\
+#define rora(ticks, adrmode)                    \
+  adrmode(ticks);                               \
+  {                                             \
+    int ci= getC();                             \
+    int co= A & 1;                              \
+    fetch();                                    \
+    A= (ci << 7) | (A >> 1);                    \
+    setNZC(A & 0x80, !A, co);                   \
+  }                                             \
   next();
 
-#define tRS(ticks, adrmode, R, S)		\
-  fetch();					\
-  tick(ticks);					\
-  S= R;						\
-  setNZ(S & 0x80, !S);				\
+#define tRS(ticks, adrmode, R, S)               \
+  fetch();                                      \
+  tick(ticks);                                  \
+  S= R;                                         \
+  setNZ(S & 0x80, !S);                          \
   next();
 
-#define tax(ticks, adrmode)	tRS(ticks, adrmode, A, X)
-#define txa(ticks, adrmode)	tRS(ticks, adrmode, X, A)
-#define tay(ticks, adrmode)	tRS(ticks, adrmode, A, Y)
-#define tya(ticks, adrmode)	tRS(ticks, adrmode, Y, A)
-#define tsx(ticks, adrmode)	tRS(ticks, adrmode, S, X)
+#define tax(ticks, adrmode)     tRS(ticks, adrmode, A, X)
+#define txa(ticks, adrmode)     tRS(ticks, adrmode, X, A)
+#define tay(ticks, adrmode)     tRS(ticks, adrmode, A, Y)
+#define tya(ticks, adrmode)     tRS(ticks, adrmode, Y, A)
+#define tsx(ticks, adrmode)     tRS(ticks, adrmode, S, X)
 
-#define txs(ticks, adrmode)			\
-  fetch();					\
-  tick(ticks);					\
-  S= X;						\
+#define txs(ticks, adrmode)                     \
+  fetch();                                      \
+  tick(ticks);                                  \
+  S= X;                                         \
   next();
 
-#define ldR(ticks, adrmode, R)			\
-  adrmode(ticks);				\
-  fetch();					\
-  R= getMemory(ea);				\
-  setNZ(R & 0x80, !R);				\
+#define ldR(ticks, adrmode, R)                  \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  R= getMemory(ea);                             \
+  setNZ(R & 0x80, !R);                          \
   next();
 
-#define lda(ticks, adrmode)	ldR(ticks, adrmode, A)
-#define ldx(ticks, adrmode)	ldR(ticks, adrmode, X)
-#define ldy(ticks, adrmode)	ldR(ticks, adrmode, Y)
+#define lda(ticks, adrmode)     ldR(ticks, adrmode, A)
+#define ldx(ticks, adrmode)     ldR(ticks, adrmode, X)
+#define ldy(ticks, adrmode)     ldR(ticks, adrmode, Y)
 
-#define stR(ticks, adrmode, R)			\
-  adrmode(ticks);				\
-  fetch();					\
-  putMemory(ea, R);				\
+#define stR(ticks, adrmode, R)                  \
+  adrmode(ticks);                               \
+  fetch();                                      \
+  putMemory(ea, R);                             \
   next();
 
-#define sta(ticks, adrmode)	stR(ticks, adrmode, A)
-#define stx(ticks, adrmode)	stR(ticks, adrmode, X)
-#define sty(ticks, adrmode)	stR(ticks, adrmode, Y)
-#define stz(ticks, adrmode)	stR(ticks, adrmode, 0)
+#define sta(ticks, adrmode)     stR(ticks, adrmode, A)
+#define stx(ticks, adrmode)     stR(ticks, adrmode, X)
+#define sty(ticks, adrmode)     stR(ticks, adrmode, Y)
+#define stz(ticks, adrmode)     stR(ticks, adrmode, 0)
 
-#define branch(ticks, adrmode, cond)		\
-  if (cond)					\
-    {						\
-      adrmode(ticks);				\
-      PC += ea;					\
-      tick(1);					\
-    }						\
-  else						\
-    {						\
-      tick(ticks);				\
-      PC++;					\
-    }						\
-  fetch();					\
+#define branch(ticks, adrmode, cond)            \
+  if (cond)                                     \
+    {                                           \
+      adrmode(ticks);                           \
+      PC += ea;                                 \
+      tick(1);                                  \
+    }                                           \
+  else                                          \
+    {                                           \
+      tick(ticks);                              \
+      PC++;                                     \
+    }                                           \
+  fetch();                                      \
   next();
 
-#define bcc(ticks, adrmode)	branch(ticks, adrmode, !getC())
-#define bcs(ticks, adrmode)	branch(ticks, adrmode,  getC())
-#define bne(ticks, adrmode)	branch(ticks, adrmode, !getZ())
-#define beq(ticks, adrmode)	branch(ticks, adrmode,  getZ())
-#define bpl(ticks, adrmode)	branch(ticks, adrmode, !getN())
-#define bmi(ticks, adrmode)	branch(ticks, adrmode,  getN())
-#define bvc(ticks, adrmode)	branch(ticks, adrmode, !getV())
-#define bvs(ticks, adrmode)	branch(ticks, adrmode,  getV())
+#define bcc(ticks, adrmode)     branch(ticks, adrmode, !getC())
+#define bcs(ticks, adrmode)     branch(ticks, adrmode,  getC())
+#define bne(ticks, adrmode)     branch(ticks, adrmode, !getZ())
+#define beq(ticks, adrmode)     branch(ticks, adrmode,  getZ())
+#define bpl(ticks, adrmode)     branch(ticks, adrmode, !getN())
+#define bmi(ticks, adrmode)     branch(ticks, adrmode,  getN())
+#define bvc(ticks, adrmode)     branch(ticks, adrmode, !getV())
+#define bvs(ticks, adrmode)     branch(ticks, adrmode,  getV())
 
-#define bra(ticks, adrmode)			\
-  adrmode(ticks);				\
-  PC += ea;					\
-  fetch();					\
-  tick(1);					\
+#define bra(ticks, adrmode)                     \
+  adrmode(ticks);                               \
+  PC += ea;                                     \
+  fetch();                                      \
+  tick(1);                                      \
   next();
 
-#define jmp(ticks, adrmode)				\
-  adrmode(ticks);					\
-  PC= ea;						\
-  if (mpu->callbacks->call[ea])				\
-    {							\
-      word addr;					\
-      externalise();					\
-      if ((addr= mpu->callbacks->call[ea](mpu, ea, 0)))	\
-	{						\
-	  internalise();				\
-	  PC= addr;					\
-	}						\
-    }							\
-  fetch();						\
+#define jmp(ticks, adrmode)                             \
+  adrmode(ticks);                                       \
+  PC= ea;                                               \
+  if (mpu->callbacks->call[ea])                         \
+    {                                                   \
+      word addr;                                        \
+      externalise();                                    \
+      if ((addr= mpu->callbacks->call[ea](mpu, ea, 0))) \
+        {                                               \
+          internalise();                                \
+          PC= addr;                                     \
+        }                                               \
+    }                                                   \
+  fetch();                                              \
   next();
 
-#define jsr(ticks, adrmode)				\
-  PC++;							\
-  push(PC >> 8);					\
-  push(PC & 0xff);					\
-  PC--;							\
-  adrmode(ticks);					\
-  if (mpu->callbacks->call[ea])				\
-    {							\
-      word addr;					\
-      externalise();					\
-      if ((addr= mpu->callbacks->call[ea](mpu, ea, 0)))	\
-	{						\
-	  internalise();				\
-	  PC= addr;					\
-	  fetch();					\
-	  next();					\
-	}						\
-    }							\
-  PC=ea;						\
-  fetch();						\
+#define jsr(ticks, adrmode)                             \
+  PC++;                                                 \
+  push(PC >> 8);                                        \
+  push(PC & 0xff);                                      \
+  PC--;                                                 \
+  adrmode(ticks);                                       \
+  if (mpu->callbacks->call[ea])                         \
+    {                                                   \
+      word addr;                                        \
+      externalise();                                    \
+      if ((addr= mpu->callbacks->call[ea](mpu, ea, 0))) \
+        {                                               \
+          internalise();                                \
+          PC= addr;                                     \
+          fetch();                                      \
+          next();                                       \
+        }                                               \
+    }                                                   \
+  PC=ea;                                                \
+  fetch();                                              \
   next();
 
-#define rts(ticks, adrmode)			\
-  tick(ticks);					\
-  PC  =  pop();					\
-  PC |= (pop() << 8);				\
-  PC++;						\
-  fetch();					\
+#define rts(ticks, adrmode)                     \
+  tick(ticks);                                  \
+  PC  =  pop();                                 \
+  PC |= (pop() << 8);                           \
+  PC++;                                         \
+  fetch();                                      \
   next();
 
-#define brk(ticks, adrmode)					\
-  tick(ticks);							\
-  PC++;								\
-  push(PC >> 8);						\
-  push(PC & 0xff);						\
-  P |= flagB;							\
-  push(P | flagX);						\
-  P |= flagI;							\
-  {								\
-    word hdlr= getMemory(0xfffe) + (getMemory(0xffff) << 8);	\
-    if (mpu->callbacks->call[hdlr])				\
-      {								\
-	word addr;						\
-	externalise();						\
-	if ((addr= mpu->callbacks->call[hdlr](mpu, PC - 2, 0)))	\
-	  {							\
-	    internalise();					\
-	    hdlr= addr;						\
-	  }							\
-      }								\
-    PC= hdlr;							\
-  }								\
-  fetch();							\
+#define brk(ticks, adrmode)                                     \
+  tick(ticks);                                                  \
+  PC++;                                                         \
+  push(PC >> 8);                                                \
+  push(PC & 0xff);                                              \
+  P |= flagB;                                                   \
+  push(P | flagX);                                              \
+  P |= flagI;                                                   \
+  {                                                             \
+    word hdlr= getMemory(0xfffe) + (getMemory(0xffff) << 8);    \
+    if (mpu->callbacks->call[hdlr])                             \
+      {                                                         \
+        word addr;                                              \
+        externalise();                                          \
+        if ((addr= mpu->callbacks->call[hdlr](mpu, PC - 2, 0))) \
+          {                                                     \
+            internalise();                                      \
+            hdlr= addr;                                         \
+          }                                                     \
+      }                                                         \
+    PC= hdlr;                                                   \
+  }                                                             \
+  fetch();                                                      \
   next();
 
-#define rti(ticks, adrmode)			\
-  tick(ticks);					\
-  P=     pop();					\
-  PC=    pop();					\
-  PC |= (pop() << 8);				\
-  fetch();					\
+#define rti(ticks, adrmode)                     \
+  tick(ticks);                                  \
+  P=     pop();                                 \
+  PC=    pop();                                 \
+  PC |= (pop() << 8);                           \
+  fetch();                                      \
   next();
 
-#define nop(ticks, adrmode)			\
-  fetch();					\
-  tick(ticks);					\
+#define nop(ticks, adrmode)                     \
+  fetch();                                      \
+  tick(ticks);                                  \
   next();
 
-#define ill(ticks, adrmode)						\
-  fetch();								\
-  tick(ticks);								\
-  fflush(stdout);							\
-  fprintf(stderr, "\nundefined instruction %02X\n", memory[PC-1]);	\
+#define ill(ticks, adrmode)                                             \
+  fetch();                                                              \
+  tick(ticks);                                                          \
+  fflush(stdout);                                                       \
+  fprintf(stderr, "\nundefined instruction %02X\n", memory[PC-1]);      \
   return;
 
-#define phR(ticks, adrmode, R)			\
-  fetch();					\
-  tick(ticks);					\
-  push(R);					\
+#define phR(ticks, adrmode, R)                  \
+  fetch();                                      \
+  tick(ticks);                                  \
+  push(R);                                      \
   next();
 
-#define pha(ticks, adrmode)	phR(ticks, adrmode, A)
-#define phx(ticks, adrmode)	phR(ticks, adrmode, X)
-#define phy(ticks, adrmode)	phR(ticks, adrmode, Y)
-#define php(ticks, adrmode)	phR(ticks, adrmode, P | flagX | flagB)
+#define pha(ticks, adrmode)     phR(ticks, adrmode, A)
+#define phx(ticks, adrmode)     phR(ticks, adrmode, X)
+#define phy(ticks, adrmode)     phR(ticks, adrmode, Y)
+#define php(ticks, adrmode)     phR(ticks, adrmode, P | flagX | flagB)
 
-#define plR(ticks, adrmode, R)			\
-  fetch();					\
-  tick(ticks);					\
-  R= pop();					\
-  setNZ(R & 0x80, !R);				\
+#define plR(ticks, adrmode, R)                  \
+  fetch();                                      \
+  tick(ticks);                                  \
+  R= pop();                                     \
+  setNZ(R & 0x80, !R);                          \
   next();
 
-#define pla(ticks, adrmode)	plR(ticks, adrmode, A)
-#define plx(ticks, adrmode)	plR(ticks, adrmode, X)
-#define ply(ticks, adrmode)	plR(ticks, adrmode, Y)
+#define pla(ticks, adrmode)     plR(ticks, adrmode, A)
+#define plx(ticks, adrmode)     plR(ticks, adrmode, X)
+#define ply(ticks, adrmode)     plR(ticks, adrmode, Y)
 
-#define plp(ticks, adrmode)			\
-  fetch();					\
-  tick(ticks);					\
-  P= pop();					\
+#define plp(ticks, adrmode)                     \
+  fetch();                                      \
+  tick(ticks);                                  \
+  P= pop();                                     \
   next();
 
-#define clF(ticks, adrmode, F)			\
-  fetch();					\
-  tick(ticks);					\
-  P &= ~F;					\
+#define clF(ticks, adrmode, F)                  \
+  fetch();                                      \
+  tick(ticks);                                  \
+  P &= ~F;                                      \
   next();
 
-#define clc(ticks, adrmode)	clF(ticks, adrmode, flagC)
-#define cld(ticks, adrmode)	clF(ticks, adrmode, flagD)
-#define cli(ticks, adrmode)	clF(ticks, adrmode, flagI)
-#define clv(ticks, adrmode)	clF(ticks, adrmode, flagV)
+#define clc(ticks, adrmode)     clF(ticks, adrmode, flagC)
+#define cld(ticks, adrmode)     clF(ticks, adrmode, flagD)
+#define cli(ticks, adrmode)     clF(ticks, adrmode, flagI)
+#define clv(ticks, adrmode)     clF(ticks, adrmode, flagV)
 
-#define seF(ticks, adrmode, F)			\
-  fetch();					\
-  tick(ticks);					\
-  P |= F;					\
+#define seF(ticks, adrmode, F)                  \
+  fetch();                                      \
+  tick(ticks);                                  \
+  P |= F;                                       \
   next();
 
-#define sec(ticks, adrmode)	seF(ticks, adrmode, flagC)
-#define sed(ticks, adrmode)	seF(ticks, adrmode, flagD)
-#define sei(ticks, adrmode)	seF(ticks, adrmode, flagI)
+#define sec(ticks, adrmode)     seF(ticks, adrmode, flagC)
+#define sed(ticks, adrmode)     seF(ticks, adrmode, flagD)
+#define sei(ticks, adrmode)     seF(ticks, adrmode, flagI)
 
-#define do_insns(_)												\
+#define do_insns(_)                                                                                             \
   _(00, brk, implied,   7);  _(01, ora, indx,      6);  _(02, ill, implied,   2);  _(03, ill, implied, 2);      \
   _(04, tsb, zp,        3);  _(05, ora, zp,        3);  _(06, asl, zp,        5);  _(07, ill, implied, 2);      \
   _(08, php, implied,   3);  _(09, ora, immediate, 3);  _(0a, asla,implied,   2);  _(0b, ill, implied, 2);      \
@@ -749,50 +749,50 @@ void M6502_run(M6502 *mpu)
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
 
   static void *itab[256]= { &&_00, &&_01, &&_02, &&_03, &&_04, &&_05, &&_06, &&_07, &&_08, &&_09, &&_0a, &&_0b, &&_0c, &&_0d, &&_0e, &&_0f,
-			    &&_10, &&_11, &&_12, &&_13, &&_14, &&_15, &&_16, &&_17, &&_18, &&_19, &&_1a, &&_1b, &&_1c, &&_1d, &&_1e, &&_1f,
-			    &&_20, &&_21, &&_22, &&_23, &&_24, &&_25, &&_26, &&_27, &&_28, &&_29, &&_2a, &&_2b, &&_2c, &&_2d, &&_2e, &&_2f,
-			    &&_30, &&_31, &&_32, &&_33, &&_34, &&_35, &&_36, &&_37, &&_38, &&_39, &&_3a, &&_3b, &&_3c, &&_3d, &&_3e, &&_3f,
-			    &&_40, &&_41, &&_42, &&_43, &&_44, &&_45, &&_46, &&_47, &&_48, &&_49, &&_4a, &&_4b, &&_4c, &&_4d, &&_4e, &&_4f,
-			    &&_50, &&_51, &&_52, &&_53, &&_54, &&_55, &&_56, &&_57, &&_58, &&_59, &&_5a, &&_5b, &&_5c, &&_5d, &&_5e, &&_5f,
-			    &&_60, &&_61, &&_62, &&_63, &&_64, &&_65, &&_66, &&_67, &&_68, &&_69, &&_6a, &&_6b, &&_6c, &&_6d, &&_6e, &&_6f,
-			    &&_70, &&_71, &&_72, &&_73, &&_74, &&_75, &&_76, &&_77, &&_78, &&_79, &&_7a, &&_7b, &&_7c, &&_7d, &&_7e, &&_7f,
-			    &&_80, &&_81, &&_82, &&_83, &&_84, &&_85, &&_86, &&_87, &&_88, &&_89, &&_8a, &&_8b, &&_8c, &&_8d, &&_8e, &&_8f,
-			    &&_90, &&_91, &&_92, &&_93, &&_94, &&_95, &&_96, &&_97, &&_98, &&_99, &&_9a, &&_9b, &&_9c, &&_9d, &&_9e, &&_9f,
-			    &&_a0, &&_a1, &&_a2, &&_a3, &&_a4, &&_a5, &&_a6, &&_a7, &&_a8, &&_a9, &&_aa, &&_ab, &&_ac, &&_ad, &&_ae, &&_af,
-			    &&_b0, &&_b1, &&_b2, &&_b3, &&_b4, &&_b5, &&_b6, &&_b7, &&_b8, &&_b9, &&_ba, &&_bb, &&_bc, &&_bd, &&_be, &&_bf,
-			    &&_c0, &&_c1, &&_c2, &&_c3, &&_c4, &&_c5, &&_c6, &&_c7, &&_c8, &&_c9, &&_ca, &&_cb, &&_cc, &&_cd, &&_ce, &&_cf,
-			    &&_d0, &&_d1, &&_d2, &&_d3, &&_d4, &&_d5, &&_d6, &&_d7, &&_d8, &&_d9, &&_da, &&_db, &&_dc, &&_dd, &&_de, &&_df,
-			    &&_e0, &&_e1, &&_e2, &&_e3, &&_e4, &&_e5, &&_e6, &&_e7, &&_e8, &&_e9, &&_ea, &&_eb, &&_ec, &&_ed, &&_ee, &&_ef,
-			    &&_f0, &&_f1, &&_f2, &&_f3, &&_f4, &&_f5, &&_f6, &&_f7, &&_f8, &&_f9, &&_fa, &&_fb, &&_fc, &&_fd, &&_fe, &&_ff };
+                            &&_10, &&_11, &&_12, &&_13, &&_14, &&_15, &&_16, &&_17, &&_18, &&_19, &&_1a, &&_1b, &&_1c, &&_1d, &&_1e, &&_1f,
+                            &&_20, &&_21, &&_22, &&_23, &&_24, &&_25, &&_26, &&_27, &&_28, &&_29, &&_2a, &&_2b, &&_2c, &&_2d, &&_2e, &&_2f,
+                            &&_30, &&_31, &&_32, &&_33, &&_34, &&_35, &&_36, &&_37, &&_38, &&_39, &&_3a, &&_3b, &&_3c, &&_3d, &&_3e, &&_3f,
+                            &&_40, &&_41, &&_42, &&_43, &&_44, &&_45, &&_46, &&_47, &&_48, &&_49, &&_4a, &&_4b, &&_4c, &&_4d, &&_4e, &&_4f,
+                            &&_50, &&_51, &&_52, &&_53, &&_54, &&_55, &&_56, &&_57, &&_58, &&_59, &&_5a, &&_5b, &&_5c, &&_5d, &&_5e, &&_5f,
+                            &&_60, &&_61, &&_62, &&_63, &&_64, &&_65, &&_66, &&_67, &&_68, &&_69, &&_6a, &&_6b, &&_6c, &&_6d, &&_6e, &&_6f,
+                            &&_70, &&_71, &&_72, &&_73, &&_74, &&_75, &&_76, &&_77, &&_78, &&_79, &&_7a, &&_7b, &&_7c, &&_7d, &&_7e, &&_7f,
+                            &&_80, &&_81, &&_82, &&_83, &&_84, &&_85, &&_86, &&_87, &&_88, &&_89, &&_8a, &&_8b, &&_8c, &&_8d, &&_8e, &&_8f,
+                            &&_90, &&_91, &&_92, &&_93, &&_94, &&_95, &&_96, &&_97, &&_98, &&_99, &&_9a, &&_9b, &&_9c, &&_9d, &&_9e, &&_9f,
+                            &&_a0, &&_a1, &&_a2, &&_a3, &&_a4, &&_a5, &&_a6, &&_a7, &&_a8, &&_a9, &&_aa, &&_ab, &&_ac, &&_ad, &&_ae, &&_af,
+                            &&_b0, &&_b1, &&_b2, &&_b3, &&_b4, &&_b5, &&_b6, &&_b7, &&_b8, &&_b9, &&_ba, &&_bb, &&_bc, &&_bd, &&_be, &&_bf,
+                            &&_c0, &&_c1, &&_c2, &&_c3, &&_c4, &&_c5, &&_c6, &&_c7, &&_c8, &&_c9, &&_ca, &&_cb, &&_cc, &&_cd, &&_ce, &&_cf,
+                            &&_d0, &&_d1, &&_d2, &&_d3, &&_d4, &&_d5, &&_d6, &&_d7, &&_d8, &&_d9, &&_da, &&_db, &&_dc, &&_dd, &&_de, &&_df,
+                            &&_e0, &&_e1, &&_e2, &&_e3, &&_e4, &&_e5, &&_e6, &&_e7, &&_e8, &&_e9, &&_ea, &&_eb, &&_ec, &&_ed, &&_ee, &&_ef,
+                            &&_f0, &&_f1, &&_f2, &&_f3, &&_f4, &&_f5, &&_f6, &&_f7, &&_f8, &&_f9, &&_fa, &&_fb, &&_fc, &&_fd, &&_fe, &&_ff };
 
   register void **itabp= &itab[0];
   register void  *tpc;
 
-# define begin()				fetch();  next()
-# define fetch()				tpc= itabp[memory[PC++]]
-# define next()					goto *tpc
-# define dispatch(num, name, mode, cycles)	_##num: name(cycles, mode) oops();  next()
+# define begin()                                fetch();  next()
+# define fetch()                                tpc= itabp[memory[PC++]]
+# define next()                                 goto *tpc
+# define dispatch(num, name, mode, cycles)      _##num: name(cycles, mode) oops();  next()
 # define end()
 
 #else /* (!__GNUC__) || (__STRICT_ANSI__) */
 
-# define begin()				for (;;) switch (memory[PC++]) {
+# define begin()                                for (;;) switch (memory[PC++]) {
 # define fetch()
-# define next()					break
-# define dispatch(num, name, mode, cycles)	case 0x##num: name(cycles, mode);  next()
-# define end()					}
+# define next()                                 break
+# define dispatch(num, name, mode, cycles)      case 0x##num: name(cycles, mode);  next()
+# define end()                                  }
 
 #endif
 
   register byte  *memory= mpu->memory;
   register word   PC;
-  word		  ea;
-  byte		  A, X, Y, P, S;
+  word            ea;
+  byte            A, X, Y, P, S;
   M6502_Callback *readCallback=  mpu->callbacks->read;
   M6502_Callback *writeCallback= mpu->callbacks->write;
 
-# define internalise()	A= mpu->registers->a;  X= mpu->registers->x;  Y= mpu->registers->y;  P= mpu->registers->p;  S= mpu->registers->s;  PC= mpu->registers->pc
-# define externalise()	mpu->registers->a= A;  mpu->registers->x= X;  mpu->registers->y= Y;  mpu->registers->p= P;  mpu->registers->s= S;  mpu->registers->pc= PC
+# define internalise()  A= mpu->registers->a;  X= mpu->registers->x;  Y= mpu->registers->y;  P= mpu->registers->p;  S= mpu->registers->s;  PC= mpu->registers->pc
+# define externalise()  mpu->registers->a= A;  mpu->registers->x= X;  mpu->registers->y= Y;  mpu->registers->p= P;  mpu->registers->s= S;  mpu->registers->pc= PC
 
   internalise();
 
@@ -819,20 +819,20 @@ int M6502_disassemble(M6502 *mpu, word ip, char buffer[64])
 
   switch (b[0])
     {
-#    define _implied							    return 1;
-#    define _immediate	sprintf(s, "#%02X",	   b[1]);		    return 2;
-#    define _zp		sprintf(s, "%02X",	   b[1]);		    return 2;
-#    define _zpx	sprintf(s, "%02X,X",	   b[1]);		    return 2;
-#    define _zpy	sprintf(s, "%02X,Y",	   b[1]);		    return 2;
-#    define _abs	sprintf(s, "%02X%02X",	   b[2], b[1]);		    return 3;
-#    define _absx	sprintf(s, "%02X%02X,X",   b[2], b[1]);		    return 3;
-#    define _absy	sprintf(s, "%02X%02X,Y",   b[2], b[1]);		    return 3;
-#    define _relative	sprintf(s, "%04X",	   ip + 2 + (int8_t)b[1]);  return 2;
-#    define _indirect	sprintf(s, "(%02X%02X)",   b[2], b[1]);		    return 3;
-#    define _indzp	sprintf(s, "(%02X)",	   b[1]);		    return 2;
-#    define _indx	sprintf(s, "(%02X,X)",	   b[1]);		    return 2;
-#    define _indy	sprintf(s, "(%02X),Y",	   b[1]);		    return 2;
-#    define _indabsx	sprintf(s, "(%02X%02X,X)", b[2], b[1]);		    return 3;
+#    define _implied                                                        return 1;
+#    define _immediate  sprintf(s, "#%02X",        b[1]);                   return 2;
+#    define _zp         sprintf(s, "%02X",         b[1]);                   return 2;
+#    define _zpx        sprintf(s, "%02X,X",       b[1]);                   return 2;
+#    define _zpy        sprintf(s, "%02X,Y",       b[1]);                   return 2;
+#    define _abs        sprintf(s, "%02X%02X",     b[2], b[1]);             return 3;
+#    define _absx       sprintf(s, "%02X%02X,X",   b[2], b[1]);             return 3;
+#    define _absy       sprintf(s, "%02X%02X,Y",   b[2], b[1]);             return 3;
+#    define _relative   sprintf(s, "%04X",         ip + 2 + (int8_t)b[1]);  return 2;
+#    define _indirect   sprintf(s, "(%02X%02X)",   b[2], b[1]);             return 3;
+#    define _indzp      sprintf(s, "(%02X)",       b[1]);                   return 2;
+#    define _indx       sprintf(s, "(%02X,X)",     b[1]);                   return 2;
+#    define _indy       sprintf(s, "(%02X),Y",     b[1]);                   return 2;
+#    define _indabsx    sprintf(s, "(%02X%02X,X)", b[2], b[1]);             return 3;
 
 #    define disassemble(num, name, mode, cycles) case 0x##num: s += sprintf(s, "%s ", #name); _##mode
       do_insns(disassemble);
@@ -849,9 +849,9 @@ void M6502_dump(M6502 *mpu, char buffer[64])
   uint8_t p= r->p;
 # define P(N,C) (p & (1 << (N)) ? (C) : '-')
   sprintf(buffer, "PC=%04X SP=%04X A=%02X X=%02X Y=%02X P=%02X %c%c%c%c%c%c%c%c",
-	  r->pc, 0x0100 + r->s,
-	  r->a, r->x, r->y, r->p,
-	  P(7,'N'), P(6,'V'), P(5,'?'), P(4,'B'), P(3,'D'), P(2,'I'), P(1,'Z'), P(0,'C'));
+          r->pc, 0x0100 + r->s,
+          r->a, r->x, r->y, r->p,
+          P(7,'N'), P(6,'V'), P(5,'?'), P(4,'B'), P(3,'D'), P(2,'I'), P(1,'Z'), P(0,'C'));
 # undef P
 }
 

@@ -25,15 +25,12 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <direct.h>
-#include <dirent.h>
 
 #include "config.h"
 #include "lib6502.h"
+#include "file6502.h"
 
 #define VERSION	PACKAGE_NAME " " PACKAGE_VERSION " " PACKAGE_COPYRIGHT
-
-#define DEBUG 0
 
 typedef uint8_t  byte;
 typedef uint16_t word;
@@ -41,25 +38,6 @@ typedef uint16_t word;
 static char *program= 0;
 
 static byte bank[0x10][0x4000];
-
-/* I/O Blocks for File I/O */
-#define MAXIOB 15
-#define STRLEN 128
-struct iocb 
-{
-  int opened;           //Flag: file opened
-  char type;            //Channel Type: 'F', 'D'
-  char mode;            //File Mode: 'R', 'W'
-  FILE *fp;             //File Pointer
-  DIR *dp;              //Directory Pointer
-  int errnum;           //Last Error Number
-  char name[STRLEN];    //File/Directory Name
-};
-
-static struct iocb iocbs[MAXIOB];
-static char filename[STRLEN]; //File name for open
-static char filebuff[256];    //File I/O Buffer
-static word fileaddr;         //File Read/Write Address
 
 void fail(const char *fmt, ...)
 {
@@ -270,6 +248,7 @@ static void usage(int status)
   fprintf(stream, "       %s [option ...] -B [image ...]\n", program);
   fprintf(stream, "  -B                -- minimal Acorn 'BBC Model B' compatibility\n");
   fprintf(stream, "  -d addr last      -- disassemble memory between addr and last\n");
+  fprintf(stream, "  -D                -- print debug messages\n");
   fprintf(stream, "  -F addr           -- emulate fileio at addr\n");
   fprintf(stream, "  -G addr           -- emulate getchar(3) at addr\n");
   fprintf(stream, "  -h                -- help (print this message)\n");
@@ -288,6 +267,12 @@ static void usage(int status)
   fprintf(stream, "\n");
   fprintf(stream, "'last' can be an address (non-inclusive) or '+size' (in bytes)\n");
   exit(status);
+}
+
+static int doDebug(int argc, char **argv, M6502 *mpu)
+{
+  setdebug(-1);
+  return 0;
 }
 
 
@@ -360,14 +345,12 @@ static int load(M6502 *mpu, word address, const char *path)
   size_t max= 0x10000 - address;
   if (!(file= fopen(path, "rb")))
     return 0;
-  if (DEBUG) fprintf(stderr, "loading %s\nstart address %04x\n", path, address);
   while ((count= fread(mpu->memory + address, 1, max, file)) > 0)
   {
     address += count;
     max -= count;
   }
   fclose(file);
-  if (DEBUG) fprintf(stderr, "end address %04x\n", address);
   return address;
 }
 
@@ -411,342 +394,10 @@ doVEC(RST);
 
 #undef doVEC
 
-int setiocb(int chan, int opened, char type, char mode, FILE *fp, DIR *dp, char *name) {
-  iocbs[chan].opened = opened;
-  iocbs[chan].type = type;
-  iocbs[chan].mode = mode;
-  iocbs[chan].fp = fp;
-  iocbs[chan].dp = dp;
-  iocbs[chan].errnum = 0;
-  strcpy(iocbs[chan].name, name);
-  return 0;
-}
-
-void initiocb(int chan) {
-  setiocb(chan, 0, ' ', ' ', NULL, NULL, "");
-}
-
-void initiocbs(void) 
-{
-  filename[0] = 0; //Set filename to ""
-  for (int chan=0; chan<=MAXIOB; chan++)
-    initiocb(chan);
-}
-
-/* Set Error Number and Error Message */
-static int seterror(int chan) {
-  int errnum = errno;
-  if (DEBUG) fprintf(stderr, "setting channel %d error to %d\n", chan, errnum);
-  iocbs[chan].errnum = errnum;
-  return errnum;
-}
-
-/* Set File Name */
-static int setname(M6502 *mpu, word addr, char *name) {
-  int i;
-  if (DEBUG) fprintf(stderr, "copying name from address $%04x\n", addr);
-  for (i=0; i<STRLEN; i++) {
-    char c = mpu->memory[addr + i & 0xFFFF];
-    if (c) name[i] = c;
-    else break;
-  }
-  name[i] = 0; //Terminate String
-  if (DEBUG) fprintf(stderr, "copied %d characters\n", i);
-  return i;
-}
-
-/* Find Unused IOCB */
-static int uniocb(void) {
-  int chan;
-  for (chan=1; chan<=MAXIOB; chan++) {
-    if (iocbs[chan].opened == 0) break;
-    if (chan > MAXIOB) {chan = -24; break;}
-  }
-  return chan;
-}
-
-/* Validate Channel */
-static int valchan(int chan, char valtype) {
-  int errnum = 0; //Error (none)
-  if (DEBUG) fprintf(stderr, "validating channel %d\n", chan);
-  if (chan > MAXIOB) errnum = 44; //Channel number out of range
-  else if (iocbs[chan].opened == 0) errnum = 9; //Bad file descriptor
-  else if (iocbs[chan].type != valtype) {
-    if (DEBUG) fprintf(stderr, "invalid channel type '%c'\n", iocbs[chan].type);
-    switch (iocbs[chan].type) {
-      case 'D': errnum = 21; //Is a directory
-      case 'F': errnum = 20; //Not a directory
-      default: errnum = 77; //File descriptor in bad state 
-    }
-  }
-  return errnum;
-}
-
-/* Write Buffer to Memory */
-static int writemem(M6502 *mpu, char* buffer, int count) {
-  int i;
-  for (i = 0; i<count; i++)
-    mpu->memory[fileaddr+i] = buffer[i];
-  return i;
-}  
-
-/* Write String to Memory */
-static int writestr(M6502 *mpu, char* buffer, int count) {
-  int i;
-  if (DEBUG) fprintf(stderr, "writing '%s' to address %04x\n", buffer, fileaddr);
-  for (i = 0; i<count; i++) {
-    char c = buffer[i];
-    if (c == 0) break;    
-    mpu->memory[fileaddr+i] = c;
-  }
-  mpu->memory[fileaddr+i] = 0; //Terminate String
-  if (DEBUG) fprintf(stderr, "wrote %d characters\n", i);
-  return i;
-}
-
-/* Emulate fileio at addr */
 static int fTrap(M6502 *mpu, word addr, byte data)	{ 
-  const char modes[2][3] = {"r", "w"};
-  int chan, e, i;
-  char c, mode[3]; 
-  char *name;
-  struct dirent *de;
-  byte a = mpu->registers->a;
-  byte x = mpu->registers->x;
-  byte y = mpu->registers->y;
-  byte p = mpu->registers->p;
-  word yx = y << 8 | x;
-  char drive = y & 0x1f;
-  if (DEBUG) fprintf(stderr, "executing '%c' with options %02x,%02x,%02x\n", a, y, x, p);
-  switch (a) { //File I/O Command
-    case 'A': //Set filebuffer address - Y.X = address
-      fileaddr = yx;
-      if (DEBUG) fprintf(stdout, "file address set to %04x\n", fileaddr);
-      break;
-    case 'B': //Close Directory - Y = channel
-      chan = y;
-      if (DEBUG) fprintf(stderr, "closing directory channel %d\n", chan);
-      y = valchan(chan, 'D'); if (y) break;
-      if (closedir(iocbs[chan].dp)) y = seterror(chan);
-      else initiocb(chan);
-      break;
-    case 'C': //Close file - Y = channel
-      chan = y;
-      if (DEBUG) fprintf(stderr, "closing file channel %d\n", chan);
-      y = valchan(chan, 'F'); if (y) break;
-      if (fclose(iocbs[chan].fp)) y = seterror(chan);
-      else initiocb(chan);
-      break;
-    case 'D': //Open Directory - Y,X = Directory Name
-      x = 0; //File channel (none)
-      y = 0; //Error code (none)
-      chan = uniocb(); if (chan <0) {y = -chan; break;}
-      setname(mpu, yx, filename); 
-      if (strlen(filename) == 0) strcpy(filename, ".");
-      if (DEBUG) fprintf(stderr, "opening directory '%s'\n", filename, mode);
-      DIR *dp = opendir(filename);
-      if (dp == NULL) { y = seterror(0); break;}
-      if (DEBUG) fprintf(stderr, "directory opened on channel %d\n", chan);
-      y = setiocb(chan, -1, 'D', ' ', NULL, dp, filename); //Setup IOCB      
-      if (y == 0) x = chan;
-      break;
-    case 'E': //EOF - Y = channel
-      chan = y;
-      y = valchan(chan, 'F'); if (y) break;
-      y = feof(iocbs[chan].fp);
-      break;
-    case 'F': //Flush File - Y = Channel
-      chan = y;
-      y = valchan(chan, 'F'); if (y) break;
-      if (fflush(iocbs[chan].fp)) y = seterror(chan);
-      break;
-    case 'G': //Get character - Y = channel
-      chan = y;
-      x = 0; //Character read (none)
-      y = valchan(chan, 'F'); if (y) break;
-      c = fgetc(iocbs[chan].fp);
-      if (feof(iocbs[chan].fp)) {y = 255; break;}
-      if (c == EOF) {y = seterror(chan); break;}
-      x = c & 0xFF;
-      break;
-    case 'H': //Get String - Y = channel
-      chan = y;
-      x = 0; //Number of Characters read
-      y = valchan(chan, 'F'); if (y) break;
-      char *s = fgets(filebuff, STRLEN, iocbs[chan].fp);
-      if (s == NULL) {y = seterror(chan); break;}
-      if (DEBUG) fprintf(stderr, "read string '%s'\n", filebuff);
-      writestr(mpu, filebuff, STRLEN);
-      break;
-    case 'I': //Init File System
-      initiocbs();  //Initialize I/O Control Blocks
-      break;
-    case 'J': //Read Directory Entry
-      chan = y;
-      x = 0; //Return Value (Read Failed)
-      y = valchan(chan, 'D'); if (y) break;
-      if (p & 1) {
-        if (DEBUG) fprintf(stdout, "retrieving directory name\n");
-        x = writestr(mpu, iocbs[chan].name, STRLEN);
-      } else {
-        if (DEBUG) fprintf(stdout, "reading directory entry\n");
-        de = readdir(iocbs[chan].dp);
-        if (de) {
-          if (DEBUG) fprintf(stdout, "read entry '%s'\n", de->d_name);
-          x = writestr(mpu, de->d_name, STRLEN);
-        }
-        else if (errno != 2) y = seterror(chan);
-      }
-      break;
-    case 'K': //REMOVE - Delete File - Y,X = Filename
-      setname(mpu, yx, filename); 
-      if (DEBUG) fprintf(stderr, "removing file '%s'\n", filename);
-      x = remove(filename);
-      if (x) y=seterror(0); else y=0;
-      break;
-    case 'L': //Load file
-      a = 0; //Error (none)
-      if (DEBUG) fprintf(stderr, "loading file at %04h\n", fileaddr);
-      e = load(mpu, fileaddr, filename);
-      if (!e) {a = seterror(0); break;}
-      y = e >> 8; x = e & 0xff;
-      break;
-    case 'M': //MOVE - Rename File  - Y,X = Filename
-      setname(mpu, yx, filebuff); 
-      if (DEBUG) fprintf(stderr, "renaming file '%s' to '%s'\n", filename, filebuff);
-      x = rename(filename, filebuff);
-      if (x) y=seterror(0); else y=0;
-      break;
-    case 'N': //Set filename - Y,X = string address
-      x = setname(mpu, yx, filename); //Set filename and Return Length
-      if (DEBUG) fprintf(stderr, "filename set to '%s'\n", filename);
-      break;
-    case 'O': //Open file - Y = Drive#, X = Mode (0x80 = Write)
-      strcpy(mode, modes[x >> 7]); //Set Mode based on Negative Flag
-      x = 0; //File channel (none)
-      y = 0; //Error code (none)
-      chan = uniocb(); if (chan <0) {y = -chan; break;}
-      if (DEBUG) fprintf(stderr, "opening file '%s' with mode '%s'\n", filename, mode);
-      FILE *fp = fopen(filename, mode);
-      if (fp == NULL) { y = seterror(0); break;}
-      if (DEBUG) fprintf(stderr, "file opened on channel %d\n", chan);
-      y = setiocb(chan, -1, 'F', mode[0], fp, NULL, filename); //Setup IOCB      
-      if (y == 0) x = chan;
-      break;
-    case 'P': //Put character - Y = channel; X = character
-      chan = y;
-      c = x;
-      if (DEBUG) fprintf(stderr, "writing '%c' to channel %d\n", c, chan);
-      a = 0; //Character written (none)
-      y = valchan(chan, 'F'); if (y) break;
-      e = fputc(c, iocbs[chan].fp);
-      if (e == EOF) {y = seterror(chan); break;}
-      a = e & 0xFF;
-      break;
-    case 'Q': //Put String - Y = channel
-      chan = y;
-      x = 0; //Number of characters written
-      y = valchan(chan, 'F'); if (y) break;
-      for (i = 0; i<128; i++) {
-        c = mpu->memory[fileaddr+i];
-        if (c) filebuff[i] = c;
-        else break;
-      }
-      filebuff[i] = 0;
-      if (DEBUG) fprintf(stderr, "writing string '%s'\n", filebuff);
-      if (p & 1) strcat(filebuff, "\n");
-      e = fputs(filebuff, iocbs[chan].fp);
-      if (e == EOF) {y = seterror(chan); break;}
-      break;
-    case 'R': //Read bytes - Y = channel, X=Number of Bytes
-      chan = y;
-      y = valchan(chan, 'F'); if (y) break;
-      if (DEBUG) fprintf(stderr, "reading %d bytes\n", x);
-      e = fread(filebuff, x, 1, iocbs[chan].fp);
-      if (e != 1) {y = seterror(chan); break;}
-      writemem(mpu, filebuff, x);
-      break;
-    case 'S': //Save file Y,X = end address
-      a = 0; //Error (none)
-      if (DEBUG) fprintf(stderr, "saving file from %04x to %04x\n", fileaddr, yx);
-      e = save(mpu, fileaddr, yx-fileaddr-1, filename);
-      if (!e) {a = seterror(0); break;}
-      y = e >> 8; x = e & 0xff;
-      break;
-    case 'T': //Get Current Directory - YX = String Address
-      x = 0; //Directory Name Length
-      y = 0; //Error (None)
-      if (DEBUG) fprintf(stderr, "getting current working directory\n");
-      if (_getcwd(filename, STRLEN)) {
-        if (DEBUG) fprintf(stderr, "cwd: %s\n", filename);
-        for (i = 0; i<STRLEN; i++) {
-          c = filename[i];
-          if (c == 0) break;
-          mpu->memory[yx+i] = c;
-        }
-        mpu->memory[yx+i] = 0;
-        x = i;
-      }  
-      else y = seterror(0);
-      break;
-    case 'U': //Change Directory - YX = Directory Name
-      x = 0; //Result (Success)
-      y = 0; //Error (None)
-      setname(mpu, yx, filename); //Set filename to Directory Name
-      if (DEBUG) fprintf(stderr, "changing directory to '%s'\n", filename);
-      if (_chdir(filename)) {x = 0xFF; y = seterror(0);}
-      break;
-    case 'V': //Get or Set Current Drive, Y=Drive, Carry=Get/Set
-      if (p & 1) {
-        if (DEBUG) fprintf(stderr, "changing drive to %c\n", y+'@');
-        x = _chdrive(y);
-        if (x) y=seterror(0); else y=0;
-      } else {
-        x = _getdrive();
-        if (x) y=0; else y=seterror(0);
-        if (DEBUG) fprintf(stderr, "current drive is %c\n", x+'@');
-      }
-      break;
-    case 'W': //Write bytes - Y = channel, X=Number of Bytes
-      chan = y;
-      y = valchan(chan, 'F'); if (y) break;
-      for (i = 0; i<x; i++) 
-        filebuff[i] = mpu->memory[fileaddr+i];
-      if (DEBUG) fprintf(stderr, "writing %d bytes\n", x);
-      e = fwrite(filebuff, x, 1, iocbs[chan].fp);
-      if (e != 1) {y = seterror(chan); break;}
-      break;
-    case 'X': //Make/Remove Directory - YX = Directory Name
-      setname(mpu, yx, filename); 
-      if (p & 1) {
-        if (DEBUG) fprintf(stderr, "removing directory '%s'\n", filename);
-        x = _rmdir(filename);
-      } else {
-        if (DEBUG) fprintf(stderr, "creating directory '%s'\n", filename);
-        x = _mkdir(filename);
-      }
-      if (x) y=seterror(0); else y=0;
-      break;
-    case 'Y': //Get Last Error, Y=chan
-      chan = y;
-      y = 0; //Set Error to None
-      x = 0xFF; //Set Result to Invalid
-      if (chan > MAXIOB) {y = 44; break;}
-      if (DEBUG) fprintf(stderr, "getting last error for channel %d\n", chan);
-      x = iocbs[chan].errnum;
-      char *msg = strerror(x);
-      if (DEBUG) fprintf(stderr, "retrieved error %d, '%s'\n", x, msg);
-      writestr(mpu, msg, STRLEN);
-      break;
-    default: 
-      y = 22; //Error - invalid argument
-  }
-  mpu->registers->a = a;
-  mpu->registers->x = x;
-  mpu->registers->y = y;
-  rts; 
+	filecmd(mpu, addr, data);
+	rts; 
 }
-
 static int doFtrap(int argc, char **argv, M6502 *mpu)
 {
   unsigned addr;
@@ -853,6 +504,7 @@ int main(int argc, char **argv)
 {
   M6502 *mpu= M6502_new(0, 0, 0);
   int bTraps= 0;
+  setdebug(0);
 
   program= argv[0];
 
@@ -868,6 +520,7 @@ int main(int argc, char **argv)
 	int n= 0;
 	if      (!strcmp(*argv, "-B"))  bTraps= 1;
 	else if (!strcmp(*argv, "-d"))	n= doDisassemble(argc, argv, mpu);
+	else if (!strcmp(*argv, "-D"))	n= doDebug(argc, argv, mpu);
 	else if (!strcmp(*argv, "-F"))	n= doFtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-G"))	n= doGtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-h"))	n= doHelp(argc, argv, mpu);
