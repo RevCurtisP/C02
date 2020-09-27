@@ -192,12 +192,12 @@ enum {
         /* inelegant & slow, but consistent with the hw for illegal digits */           \
         l= (A & 0x0F) + (B & 0x0F) + getC();                                            \
         h= (A & 0xF0) + (B & 0xF0);                                                     \
-        if (l >= 0x0A) { l -= 0x0A;  h += 0x10; }                                       \
-        if (h >= 0xA0) { h -= 0xA0; }                                                   \
+        if (l >= 0x0A) { l += 0x06;  h += 0x10; }                                       \
+        if (h >= 0xA0) { h += 0x60; }                                                   \
         fetch();                                                                        \
-        s= h | (l & 0x0F);                                                              \
+        s= (h & 0xF0) | (l & 0x0F);                                                              \
         /* only C is valid on NMOS 6502 */                                              \
-        setNVZC(s & 0x80, !(((A ^ B) & 0x80) && ((A ^ s) & 0x80)), !s, !!(h & 0x80));   \
+        setNVZC(s & 0x80, !(((A ^ B) & 0x80) && ((A ^ s) & 0x80)), (s==0), ((h & 0x100) > 0));      \
         A= s;                                                                           \
         tick(1);                                                                        \
         next();                                                                         \
