@@ -2,11 +2,12 @@
  * TESTMEM - Test Array Handling Functions *
  *******************************************/
  
-#include <py65.h02>
+//Specify System Header using -H option
 #include <stddef.h02>
 #include <stdlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
+#include <intlib.h02>
 #include <memory.h02>
 
 char c, d, f, i, n, p;
@@ -16,11 +17,11 @@ char lttr[255];
 char nmbr[255];
 char temp[255];
 char dest[255];
-char less = "less";
-char more = "more";
-char most = "most";
-char fail = " Fail  ";
-char pass = " Pass  ";
+const char less = "less";
+const char more = "more";
+const char most = "most";
+const char fail = " Fail  ";
+const char pass = " Pass  ";
 
 void prtemp() {
   puts("temp: ");

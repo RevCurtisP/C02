@@ -2,11 +2,12 @@
  * TESTMIO - Test Memory File Functions *
  ****************************************/
  
-#include <py65.h02>
+//Specify System Header using -H option
 #include <stddef.h02>
 #include <stdlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
+#include <intlib.h02>
 #include <memory.h02>
 #include <memio.h02>
 #include <string.h02>
@@ -171,7 +172,7 @@ putln("Reading from memory file using mread()");
 iarray(&s); mread(mp, 10); puts(&s); putc(':'); if (strcmp(&digits)) fail(); else pass();
 iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&upcase)) fail(); else pass();
 iarray(&s); mread(mp, 26); puts(&s); putc(':'); if (strcmp(&locase)) fail(); else pass();
-mread(mp,0); putdec(s); putc(':'); if (s) fail(); else pass();
+mread(mp,0); putdec(s[0]); putc(':'); if (s[0]) fail(); else pass();
 
 goto exit;
 
