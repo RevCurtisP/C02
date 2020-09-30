@@ -35,9 +35,9 @@ puts("failln();"); failln();
 newlin();
 
 //Test trufls()
-printf(trufls($00),"trufls($00)=$%h\n");
-printf(trufls($01),"trufls($01)=$%h\n");
-printf(trufls($FF),"trufls($FF)=$%h\n");
+printf(trufls($00),"trufls($00)=$%x\n");
+printf(trufls($01),"trufls($01)=$%x\n");
+printf(trufls($FF),"trufls($FF)=$%x\n");
 newlin();
 
 //Test psorfl()

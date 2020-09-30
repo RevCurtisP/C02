@@ -32,8 +32,8 @@ void passed() { putln("PASSED");}
 
 void paddrs(aa) {
   if (aa) newlin(); else puts(", ");
-  printf(setdst(xgetpa()),"PA=$%h%w, ");
-  printf(setdst(xgetla()),"LA=$%h%w  ");
+  printf(setdst(xgetpa()),"PA=$%x%w, ");
+  printf(setdst(xgetla()),"LA=$%x%w  ");
 }
 
 void perror() {
@@ -50,13 +50,13 @@ void tstlpl(sbank,spage,sbank) {
     putc('.');
     while() {
       while() {
-        //printf(setdst(ibank,ipage,ibyte),"%n ORIGINAL: $%h%w");
+        //printf(setdst(ibank,ipage,ibyte),"%n ORIGINAL: $%x%w");
         pbank,ppage,pbyte = xclcpa(ibank,ipage,ibyte);
-        //printf(setdst()," PHYSICAL: $%h%w");
+        //printf(setdst()," PHYSICAL: $%x%w");
         lbank,lpage,lbyte = xclcla(pbank,ppage,pbyte);
-        //printf(setdst(),", LOGICAL: $%h%w");
+        //printf(setdst(),", LOGICAL: $%x%w");
         if (lbank<>ibank or lpage<>ipage or ibyte<>lbyte)
-          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%h ADDRESS $%w");
+          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%x ADDRESS $%w");
         if (getkey()==#ESCKEY) goto exit;
         ibyte=ibyte+$10; if (!ibyte) break;
       } ipage++; if (!ipage) break;
@@ -70,12 +70,12 @@ void tstgsl(ibank,ipage,ibank) {
     putc('.');
     while() {
       while() {
-        //printf(setdst(ibank,ipage,ibyte),"%n SET: $%h%w");
+        //printf(setdst(ibank,ipage,ibyte),"%n SET: $%x%w");
         xsetla(ibank,ipage,ibyte);
         lbank,lpage,lbyte = xgetla();
-        //printf(setdst(),", GOT: $%h%w");
+        //printf(setdst(),", GOT: $%x%w");
         if (lbank<>ibank or lpage<>ipage or ibyte<>lbyte)
-          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%h ADDRESS $%w");
+          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%x ADDRESS $%w");
         if (getkey()==#ESCKEY) goto exit;
         ibyte=ibyte+$10; if (!ibyte) break;
       } ipage++; if (!ipage) break;
@@ -92,11 +92,11 @@ void tstipa(ibank,ipage,ibank) {
       //clrscr();
       while() {
         pbank,ppage,pbyte = xgetpa(ibank,ipage,ibyte);
-        //printf(setdst(),"$%h%w:");
+        //printf(setdst(),"$%x%w:");
         lbank,lpage,lbyte = xgetla(); //Get Logical Address
-        //printf(setdst(),"$%h%w ");
+        //printf(setdst(),"$%x%w ");
         if (lbank<>ibank or lpage<>ipage or ibyte<>lbyte)
-          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%h ADDRESS $%w");
+          perror(setdst(ibank,ipage,ibyte),"%nERROR IN BANK $%x ADDRESS $%w");
         xincpa(); //Increment Physical Address
         ibyte++; if (!ibyte) break;
       } ipage++; if (!ipage) break;
@@ -108,14 +108,14 @@ void tstipa(ibank,ipage,ibank) {
 /* Test xgetc() and xputc() */
 void tstgpc(sbank,spage,sbyte) {
   while() {
-    //printf(setdst(),"$%h%w");
+    //printf(setdst(),"$%x%w");
     putc('.');
     ibank=sbank; ipage=spage; ibyte=sbyte;
     xsetla(ibank,ipage,ibyte);
     i=0; do { xputc(i); i++; } while (i);
     xsetla(ibank,ipage,ibyte);
     i=0; do {
-      if (xgetc()<>i) perror(setdst(xgetpa()),"%nERROR IN BANK $%h ADDRESS $%w");
+      if (xgetc()<>i) perror(setdst(xgetpa()),"%nERROR IN BANK $%x ADDRESS $%w");
       i++;
     } while (i);
     sbank++;spage++;sbyte++;
@@ -126,7 +126,7 @@ void tstgpc(sbank,spage,sbyte) {
 /* Test xgeti() and xputi() */
 void tstgpi(sbank,spage,sbyte) {
   while() {
-    //*printf(setdst(),"$%h%w");
+    //*printf(setdst(),"$%x%w");
     putc('.');
     ibank=sbank; ipage=spage; ibyte=sbyte;
     //Write 256 Integers
@@ -142,7 +142,7 @@ void tstgpi(sbank,spage,sbyte) {
       mpage=i;mbyte=i^$FF;
       intger = xgeti();
       if (<intger<>mbyte or >intger<>mpage) 
-        perror(setdst(xgetpa()),"%nERROR IN BANK $%h ADDRESS $%w");
+        perror(setdst(xgetpa()),"%nERROR IN BANK $%x ADDRESS $%w");
       i++;
     } while (i);
     //Set Next Start Address
@@ -154,7 +154,7 @@ void tstgpi(sbank,spage,sbyte) {
 /* Test xgetl() and xputl() */
 void tstgpl(sbank,spage,sbyte) {
   while() {
-    //*printf(setdst(),"$%h%w");
+    //*printf(setdst(),"$%x%w");
     putc('.');
     ibank=sbank; ipage=spage; ibyte=sbyte;
     //Write 256 Integers
@@ -170,7 +170,7 @@ void tstgpl(sbank,spage,sbyte) {
       mbyte=i; mpage=i^$FF; mbank = -i; 
       intger = xgeti();
       if (<intger<>mbyte or >intger<>mpage) 
-        perror(setdst(xgetpa()),"%nERROR IN BANK $%h ADDRESS $%w");
+        perror(setdst(xgetpa()),"%nERROR IN BANK $%x ADDRESS $%w");
       i++;
     } while (i);
     //Set Next Start Address
@@ -198,12 +198,12 @@ void tstxrw(sbank,spage,epage) {
     //Read 256,1-255 bytes of Array 
     ipage=spage; xsetla(ibank,0,ipage);
     do {
-      //printf(ipage,"%n%h:");
+      //printf(ipage,"%n%x:");
       //inline $ff;
       //paddrs(#TRUE);
       xread(ipage,&r);
       i=0; do {
-        //printf(r[i],"%h."); printf(w[i],"%h,");
+        //printf(r[i],"%x."); printf(w[i],"%x,");
         if (r[i]<>w[i]) perror(i,"ERROR IN INDEX %d");
         i++;
       } while(i<>ipage);        

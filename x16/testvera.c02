@@ -99,8 +99,8 @@ void prtrgb(aa,yy,xx) {
 }
 
 void prtscl() {
-  printf(hscale, "HSCALE=%h, ");
-  printf(vscale, "VSCALE=%h%n");  
+  printf(hscale, "HSCALE=%x, ");
+  printf(vscale, "VSCALE=%x%n");  
 }
 
 /*Print Sprite Attributes */
@@ -108,15 +108,15 @@ void prtspr() {
   printf(setdst(spattr.addr),"ADR=$%w, ");
   printf(setdst(spattr.horz),"HRZ=%i, ");
   printf(setdst(spattr.vert),"VRT=%i, ");
-  printf(spattr.ctrl,"CTL=$%h, ");
-  printf(spattr.size,"SIZ=$%h%n");
+  printf(spattr.ctrl,"CTL=$%x, ");
+  printf(spattr.size,"SIZ=$%x%n");
 }
 
 void prttmp() {
-  printf(temp0, "TEMP0=$%h%n");
-  printf(temp1, "TEMP1=$%h%n");
-  printf(temp2, "TEMP2=$%h%n");
-  printf(temp3, "TEMP3=$%h%n");
+  printf(temp0, "TEMP0=$%x%n");
+  printf(temp1, "TEMP1=$%x%n");
+  printf(temp2, "TEMP2=$%x%n");
+  printf(temp3, "TEMP3=$%x%n");
 }
 
 void prtvid() {
@@ -168,7 +168,7 @@ main:
     setbdr(i);
     index = getbdr();
     if (index<>i) xerror();
-    //printf(index, "BORDER=%h%n");
+    //printf(index, "BORDER=%x%n");
     i++;
   } while(i);
   passed();
@@ -187,7 +187,7 @@ main:
 
   //putln("SAVING START AND STOP REGISTERS");
   setadr($1F, &$0004); getmem(5, &hrzvrt);
-  //for (i=0;i<5;i++) printf(hrzvrt[i], "%h "); newlin();
+  //for (i=0;i<5;i++) printf(hrzvrt[i], "%x "); newlin();
   
   puts("TESTING GETHSR() AND SETHSR()");
   sethsr(&$024C); 
@@ -309,18 +309,18 @@ main:
 
   printf("TESTING GETMSZ() AND SETMSZ()");
   for (i=0;i<2;i++) {for (j=0;j<4;j++) {for (k=0;k<4;k++) {
-    //printf(j,"%nJ=%h, "); printf(k,"K=%h");
+    //printf(j,"%nJ=%x, "); printf(k,"K=%x");
     setmsz(i,j,k); w, h = getmsz(i);
-    //printf(w," WIDTH=%h, "); printf(h,"HEIGHT=%h");
+    //printf(w," WIDTH=%x, "); printf(h,"HEIGHT=%x");
     if (w<>j or h<>k) xerror();
   }}}
   passed();
 
   printf("TESTING GETTSZ() AND SETTSZ()");
   for (i=0;i<2;i++) {for (j=0;j<2;j++) {for (k=0;k<2;k++) {
-    //printf(j,"%nJ=%h, "); printf(k,"K=%h");
+    //printf(j,"%nJ=%x, "); printf(k,"K=%x");
     settsz(i,j,k); w, h = gettsz(i);
-    //printf(w," WIDTH=%h, "); printf(h,"HEIGHT=%h");
+    //printf(w," WIDTH=%x, "); printf(h,"HEIGHT=%x");
     if (w<>j or h<>k) xerror();
   }}}
   passed();
@@ -328,12 +328,12 @@ main:
   printf("TESTING MAPSIZ() AND TILSIZ()");
   for (i=0; i<@msizel; i++) {
     msize = mapsiz(i); 
-    //printf(i,"%nMAP SIZE %h = "); setdst(msize); printf("$%w PIXELS");
+    //printf(i,"%nMAP SIZE %x = "); setdst(msize); printf("$%w PIXELS");
     if (<msize<>msizel[i] or >msize<>msizeh[i]) xerror();
   }
   for (i=0; i<@tsizel; i++) {
     tsize = tilsiz(i);
-    //printf(i,"%nTILE SIZE %h = "); printf(tsize, "$%h PIXELS");
+    //printf(i,"%nTILE SIZE %x = "); printf(tsize, "$%x PIXELS");
     if (tsize<>tsizel[i]) xerror();
   }
   passed();
@@ -445,7 +445,7 @@ main:
     //printf(i,"%nSPRITE %r ");
     setspg(i,1,$80); //Set Bit 7 of Register 1 (Mode)
     setspd(i,spaddr); 
-    //printf(getspg(i,1),"REG=$%h"); printf(getspg(i,0),"%h "); 
+    //printf(getspg(i,1),"REG=$%x"); printf(getspg(i,0),"%x "); 
     if (!getspg(i,1)&$80) xerror(); //Check Bit 7 of Register 1
     addr = getspd(i);
     //printf(setdst(addr),"ADDRESS=$%w");
@@ -466,7 +466,7 @@ main:
       setspb(i,j); 
       spmode = getspb(i);
       //printf(spmode,"MODE=%d ");
-      //printf(getspg(i,1),"REG=$%h ");
+      //printf(getspg(i,1),"REG=$%x ");
       if (spmode<>j) xerror();
     }
     if (getspg(i,1)<>k) xerror(); //Check Bits 0-6 of Register
@@ -506,9 +506,9 @@ main:
     for (j=1; j:+; j--) { //1 to 0
       k = j-1; //#FALSE then #TRUE 
       setspf(i,k); 
-      //printf(getspn(i),"REG=$%h ");
+      //printf(getspn(i),"REG=$%x ");
       n = getspf(i);
-      //prtflg(n,"HFLIP=$%h (%s) ");
+      //prtflg(n,"HFLIP=$%x (%s) ");
       if (n<>k) xerror();
     }
     if (getspn(i)<>$ff) xerror();
@@ -522,9 +522,9 @@ main:
     for (j=1; j:+; j--) { //1 to 0
       k = j-1; //#FALSE then #TRUE 
       setspv(i,k); 
-      //printf(getspn(i),"REG=$%h ");
+      //printf(getspn(i),"REG=$%x ");
       n = getspv(i);
-      //prtflg(n,"HFLIP=$%h (%s) ");
+      //prtflg(n,"HFLIP=$%x (%s) ");
       if (n<>k) xerror();
     }
     if (getspn(i)<>$ff) xerror();
@@ -537,7 +537,7 @@ main:
     setspn(i,$ff); //Set All Bits in Control Register
     for (j=0; j<4; j++) {
       setspz(i,j); 
-      //printf(getspn(i),"REG=$%h ");
+      //printf(getspn(i),"REG=$%x ");
       n = getspz(i);
       //printf(n,"ZDEPTH=%d ");
       if (n<>j) xerror();
@@ -552,7 +552,7 @@ main:
     setspn(i,$ff); //Set All Bits in Control Register
     for (j=0; j<16; j++) {
       setspm(i,j); 
-      //printf(getspn(i),"%h:");
+      //printf(getspn(i),"%x:");
       n = getspm(i);
       //printf(n,"%g ");
       if (n<>j) xerror();
@@ -567,7 +567,7 @@ main:
     setsps(i,$ff); //Set All Bits in Control Register
     for (j=0; j<16; j++) {
       setspp(i,j); 
-      //printf(getsps(i),"%h:");
+      //printf(getsps(i),"%x:");
       n = getspp(i);
       //printf(n,"%g ");
       if (n<>j) xerror();
@@ -582,7 +582,7 @@ main:
     setsps(i,$ff); //Set All Bits in Control Register
     for (j=0; j<4; j++) {
       setsph(i,j); 
-      //printf(getsps(i),"[$%h] ");
+      //printf(getsps(i),"[$%x] ");
       n = getsph(i);
       //printf(n,"%d ");
       if (n<>j) xerror();
@@ -597,7 +597,7 @@ main:
     setsps(i,$ff); //Set All Bits in Control Register
     for (j=0; j<4; j++) {
       setspw(i,j); 
-      //printf(getsps(i),"[$%h] ");
+      //printf(getsps(i),"[$%x] ");
       n = getspw(i);
       //printf(n,"%d ");
       if (n<>j) xerror();

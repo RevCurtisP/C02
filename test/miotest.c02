@@ -67,7 +67,7 @@ while (!meof(mp)) {
   prbyte(msb); prbyte(lsb);
   i, c = mgets(mp, &s);
   printf(i, " %r");
-  printf(c, " %h: ");
+  printf(c, " %x: ");
   puts(&s);
   if (c <> $0A) newlin();
 }
@@ -134,12 +134,12 @@ puts(&s); strdst(&upcase); if (strcmp(&s)) fail(); else pass();
 puts("Reading from file using mgets(): ");
 i,c = mgets(op, &s); putln(&s);
 printf(i, " Characters read: %d"); if (strlen(&locase)+1 == i) pass(); else fail();
-printf(c, " Last char read: %h"); if (c == 13) pass(); else fail();
+printf(c, " Last char read: %x"); if (c == 13) pass(); else fail();
 
 puts("Reading from file using mgets(): ");
 i,c = mgets(op, &s); putln(&s);
 printf(i, " Characters read: %d"); if (strlen(&digits) == i) pass(); else fail();
-printf(c, " Last char read: %h"); if (c) fail(); else pass();
+printf(c, " Last char read: %x"); if (c) fail(); else pass();
 
 puts("Checking for End of File: ");
 e = meof(op); putdec(e); if (e) pass(); else fail();

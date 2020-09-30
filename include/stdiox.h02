@@ -25,6 +25,10 @@ void putbin();
  * Args: b - Number to print    */
 void putdec(); 
 
+/* Print Byte Zero Filled Modulo 100 *
+ * Args: b - Number to print         */
+void putdeh(); 
+
 /* Print Byte as Left Justified Decimal *
  * Args: b - Number to print            */
 void putdel(); 
@@ -32,6 +36,10 @@ void putdel();
 /* Print Byte as Right Justified Decimal *
  * Args: b - Number to print             */
 void putder(); 
+
+/* Print Byte as Zero Filled Decimal Number *
+ * Args: b - Number to print                */
+void putdez(); 
 
 /* Print Destination String */
 void putdst(); 

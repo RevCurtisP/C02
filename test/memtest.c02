@@ -65,19 +65,19 @@ putln("memdst(&more);");
 memdst(&more);
 
 rcmp = memcmp(2, &most); 
-printf(rcmp,"memcmp(2, &most)=$%h:"); 
+printf(rcmp,"memcmp(2, &most)=$%x:"); 
 if (!rcmp) puts(&pass); else puts(&fail);
 
 rcmp = memcmp(4, &most);
-printf(rcmp,"memcmp(4, &most)=$%h:");
+printf(rcmp,"memcmp(4, &most)=$%x:");
 if (rcmp :-) putln(&pass); else putln(&fail);
 
 rcmp = memcmp(4, &more);
-printf("memcmp(4, &more)=$%h:");
+printf("memcmp(4, &more)=$%x:");
 if (!rcmp) puts(&pass); else puts(&fail);
 
 rcmp = memcmp(4, &less);
-printf("memcmp(4, &less)=$%h:");
+printf("memcmp(4, &less)=$%x:");
 if (rcmp > 0) putln(&pass); else putln(&fail);
 newlin();
 

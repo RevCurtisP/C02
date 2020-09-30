@@ -3,76 +3,151 @@
  ***********************************************/
  
 //Specify System Header using -H option
+#include <screen.h02>
 #include <stddef.h02>
 #include <stdlib.h02>
+#include <intlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
 
+
 char i, j;
 const char s = "STRING";
+char w,nlm,akm;
+
+void pause() {if (anykey() == #ESCKEY) goto exit;}
 
 main:
+
+if (getsiz() > 40) {
+  nlm = 15; akm = 255;
+} else {  
+  nlm = 7; akm = 127;
+}
 
 getcpr("PRESS A KEY TO BEGIN");
 
 i = 0;
 
-putln("PRTDEC()");
+//goto doprtf;
+
+putln("PUTDEC()");
 do {
   putdec(i);
   putc(':');
   i++;
-  if (!i&7) newlin();
-  if (!i&127) anykey();
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
 } while (i);
 
-putln("PRTDEL()");
+putln("PUTDEL()");
 do {
   putdel(i);
   putc(':');
   i++;
-  if (!i&7) newlin();
-  if (!i&127) anykey();
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
 } while (i);
 
-putln("PRTDER()");
+putln("PUTDER()");
 do {
   putder(i);
   putc(':');
   i++;
-  if (!i&7) newlin();
-  if (!i&127) anykey();
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
 } while (i);
 
-putln("PRTHEX()");
+putln("PUTDEZ()");
+do {
+  putdez(i); putc(':');
+  i++;
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+
+putln("PUTDEH()");
+do {
+  putdeh(i); putc(':');
+  i++;
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+
+
+putln("PUTHEX()");
 do {
   puthex(i);
   putc(':');
   i++;
-  if (!i&7) newlin();
-  if (!i&127) anykey();
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
 } while (i);
 
-putln("PRTWRD()");
+putln("PUTNYB()");
 do {
-  j = i ^ $FF;
-  putwrd(?,i,j);
+  putnyb(i);
   putc(':');
   i++;
-  if (!i&3) newlin();
-  if (!i&63) anykey();
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
 } while (i);
 
+tstint:
+nlm>>; akm>>;
+
+putln("PUTINT()");
 do {
-  if (!i&15) putln("%C %H .%R %L. %D%%");
-  if (i<32) printf(i, "   %h %r %l %d%%%n");
-  else      printf(i," %c %h %r %l %d%%%n");
-  i++; if (!i&15) anykey();
+  putint(.,0,i); putc(':');
+  i++; 
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+do {
+  j = i ^ $FF;
+  putint(.,i,j); putc(':');
+  i++;
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+
+dopinr: putln("PUTINR()");
+do {
+  putinr(.,0,i); putc(':');
+  i++; 
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+do {
+  j = i ^ $FF;
+  putinr(.,i,j); putc(':');
+  i++;
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+
+putln("PUTWRD(), PUTSQB()");
+do {
+  j = i ^ $FF;
+  putwrd(.,i,j); putc(',');
+  putsqb(.,i,j); putc(':');
+  i++;
+  if (!i&nlm) newlin();
+  if (!i&akm) pause();
+} while (i);
+
+doprtf:
+do {
+  if (!i&15) putln("%C %X %Y .%R %L.  %Z %h %D%%");
+  if (i<32) printf(i, "   %x  %y %r %l %z %h %d%%%n");
+  else      printf(i," %c %x  %y %r %l %z %h %d%%%n");
+  i++; if (!i&  15) pause();
 } while (i<128);    
 
-putln("%W.. '%S'");
+doprts:
+putln("%W.. %Q. '%S'     ...%J %I");
 setdst(&s);
-printf("%w '%s'%n");
+printf("%w %q '%s' %j %i%n");
 
 done:
   goto exit;

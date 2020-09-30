@@ -53,7 +53,7 @@ void prtmsk(aa,yy) {
 
 //Print Three Values Enclosed in Parentheses
 void prtprn(aa,yy,xx) {
-  printf(aa,"($%h"); printf(yy,",$%h"); printf(xx,",$%h)");
+  printf(aa,"($%x"); printf(yy,",$%x"); printf(xx,",$%x)");
 }
 
 main:
@@ -74,7 +74,7 @@ main:
   if (mono) puts(" MONOCHROME"); else puts(" COLOR");
   if (field) puts(", ODD"); else puts(", EVEN"); putln(" FIELD");
   
-  bcpidx = getbdr(); printf(bcpidx, "  BORDER PALETTE INDEX: $%h");
+  bcpidx = getbdr(); printf(bcpidx, "  BORDER PALETTE INDEX: $%x");
   bcolor = getclr(bcpidx); puts(setdst(bcolor)); printf(", COLOR=$%w "); 
   prtprn(clrrgb(bcolor)); newlin();
   
@@ -89,9 +89,9 @@ main:
 
   putln("PALETTE COLORS");
 
-  putrps(5); i=0 ;do {printf(i," %h "); i=i+16; } while(i) ; newlin();
+  putrps(5); i=0 ;do {printf(i," %x "); i=i+16; } while(i) ; newlin();
   for (i=0;i<16;i++) {
-    printf(i,"  %h ");
+    printf(i,"  %x ");
     j=0; do {
       k = i + j; setdst(getclr(k)); printf(k,"%q ");
       j = j + 16;
@@ -137,7 +137,7 @@ main:
     setdst(gethsc(layer)); printf("  HORIZONTAL SCROLL: $%i");
     setdst(getvsc(layer)); printf(",  VERTICAL SCROLL: $%i%n");
 
-    printf(getbpo(layer)); printf("  BITMAP PALETTE OFFSET: $%h%n");
+    printf(getbpo(layer)); printf("  BITMAP PALETTE OFFSET: $%x%n");
     
     newlin();
   }

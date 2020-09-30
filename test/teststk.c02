@@ -184,7 +184,7 @@ void chksiz(aa,yy,xx) {
   puts("\tChecking Stack Size\t");
   puts("stksiz()\t");
   zz, dsthi, dstlo = stksiz();
-  printf(zz, "Sts=$%h Size=$%w:");
+  printf(zz, "Sts=$%x Size=$%w:");
   if (zz == aa and dsthi == yy and dstlo == xx ) pass(); 
   else {fail(); goto exit;}
 }

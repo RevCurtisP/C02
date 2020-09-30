@@ -43,8 +43,8 @@ void prtspr() {
   printf(setdst(spattr.addr),"ADR=$%w, ");
   printf(setdst(spattr.horz),"HRZ=%i, ");
   printf(setdst(spattr.vert),"VRT=%i, ");
-  printf(spattr.ctrl,"CTL=$%h, ");
-  printf(spattr.size,"SIZ=$%h%n");
+  printf(spattr.ctrl,"CTL=$%x, ");
+  printf(spattr.size,"SIZ=$%x%n");
 }
 
 main:
