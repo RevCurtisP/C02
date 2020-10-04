@@ -2,7 +2,7 @@
 
 #define MAXSTR 128  //Maximum String Length
 #define MAXLBL 8    //Maximum Symbol Length
-#define MAXSYM 1024  //Maximum Number of Global Labels
+#define MAXSYM 1024  //Maximum Number of Labels
 
 #define FALSE 0
 #define TRUE -1
@@ -45,7 +45,7 @@ struct opc {char name[5], token; int amode;};
 struct opc psolst[] = {
   {"BYTE", 'B', 0}, {"HEX", 'H'}, {"WORD", 'W', 0}, {"EQU", '=', 0}, {"FILL", 'F', 0}, 
   {"INCL", 'I', 0}, {"SUBR", 'S', 0}, {"DC", 'B', 0}, {"DS", 'F', 0}, {"ALIG", 'A', 0},
-  {"ORG", '*', 0}, {"PROC", 'P', 0}, {"END", 'E', 0}, {"", 0, 0}
+  {"ORG", '*', 0}, {"PROC", 'P', 0}, {"END", 'E', 0}, {"ENDS", 'M', 0}, {"", 0, 0}
 };
 
 struct opc opclst[] = {

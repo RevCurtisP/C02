@@ -34,6 +34,7 @@
 #define ALNOP  "ALIGN"      //Align Pseudo-Op
 #define USEGOP "SEG.U"      //Uninitalized Segment Pseudo-Op
 #define LOCOP  "SUBROUTINE" //Local Variable Boundary Pseudo-Op
+#define LOCEND "ENDSUB"		//End Local Variables Pseudo-Op
 
 #define ASMFMT "%-7s %-3s %-12s %s\n"  //Assembly Language Line printf Format
 

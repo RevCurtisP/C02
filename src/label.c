@@ -110,6 +110,7 @@ void reqlbl(char* lbname) {
 void endfnc(void) {
   DEBUG("label.endfnc: Ending function definition with lsrtrn set to %d\n", lsrtrn)
   if (!lsrtrn) asmlin("RTS", ""); 
+  asmlin(LOCEND, "");
   infunc = FALSE;
   DEBUG("label.endfnc: Set infunc to %d\n", infunc)
 }
