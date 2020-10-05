@@ -3,8 +3,9 @@ abs      stdlib   Absolute Value        Return absolute value of byte.
 adddst   stddef   Add Destination       Add value to Destination Pointer.
 addsrc   stddef   Add Source            Add value to Source Pointer.
 addzpw   stddef   Add Zero Page Word    Add value to word in zero page     
-anykey   stdiox   Any Key               Display "Any Key" prompt and wait for keypress.
+anykey   stdiox   Any Key               Display "ANY KEY" prompt and wait for keypress.
 atoc     stdlib   ASCII to Character    Convert numeric string to byte.
+atoi     intlib   ASCII to Integer      Convert string to integer.
 blkbgn   block    Block Begin           Set beginning of block address.
 blkend   block    Block End             Set end of block address.
 blkseg   block    Block Segment         Set block segment size.
@@ -46,9 +47,12 @@ getc     stdio    Get Character         Read character from keyboard.
 getcwd   direct   Get CWD               Return current working directory
 getdrv   direct   Get Drive             Return current drive identifier
 getdst   stddef   Get Destination       Get address in Destination Pointer.
-getprc   stdiox   Get Prompt Character  Display prompt and wait for keypress.
+getprc   stdiox   Get Prompt Character  Display prompt and wait for key press.
 gets     stdio    Get String            Read string from keyboard.
 getsrc   stddef   Get Source            Get address in Source Pointer.
+iabs     intlib   Integer Absolute      Return absolute value of integer.
+imax     intlib   Integer Maximum       Return greater of two integers.
+imin     intlib   Integer Minimum       Return lesser of two integers.
 isalnm   ctype    Is Alphanumeric       Return TRUE if character is A-Z, a-z, or 0-9.
 isalph   ctype    Is Alphabetic         Return TRUE if character is A-Z or a-z.
 isbdgt   ctype    Is Binary Digit       Return TRUE if character is 0 or 1.
@@ -56,11 +60,14 @@ isctrl   ctype    is Control            Return TRUE if ASCII code is 0-31 or 127
 isdigt   ctype    Is Digit              Return TRUE if character is 0-9.
 isgrph   ctype    Is Graphical          Return TRUE if ASCII code is 33-126.
 ishdgt   ctype    Is Hex Digit          Return TRUE if character is 0-9, A-F, or a-f.
+ishftl   intlib   Integer Shift Left    Shift integer left specified number of bits.
+ishftr   intlib   Integer Shift Right   Shift integer right specified number of bits.
 islowr   ctype    Is Lowercase          Return TRUE if character is a-z.   
 ispnct   ctype    Is Punctuation        Return TRUE if Graphical and not Alphanumeric.
 isprnt   ctype    Is Printable          Return TRUE if ASCII code is 32-126.
 isspce   ctype    Is white Space        Return TRUE if ASCII code is 9-13 or 32.
 isuppr   ctype    Is Uppercase          Return TRUE if character is A-Z.
+itoa     intlib   Integer to ASCII      Convert Integer to String.
 joystk   joystk   Joystick              Read Atari style joystick controller status.
 lgtpen   lgtpen   Light Pen             Read light pen status.
 maddr    memio    Memory Address        Return address contained in memory file pointer.

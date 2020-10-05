@@ -1,0 +1,74 @@
+Integer Functions for C02 Programs
+
+This module contains functions for manipulating and converting
+integer values.
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <intlib.h02>
+
+The following functions are defined:
+
+  j = iabs(i);          Returns the absolute value of the two's-complement 
+                        integer i.
+    
+                        In two's-complement arithmetic, the unsigned values 
+                        0 - 32,767 are considered positive, while the unsigned
+                        values 32,768 - 65,535 are considered negative.
+    
+  j = atoi(s);          Returns the integer numeric value of string s. 
+                        
+                        Does not skip leading white-space characters and 
+                        stops when first non-digit character is encountered.
+                        
+                        Overflows are ignored, so numbers greater than 65,535
+                        will be returned modulo 65,536.
+    
+  itoa(i);              Stores the ASCII representation of unsigned integer 
+                        i into the destination string.
+                        
+                        The destination string must be dimensioned at least 
+                        six bytes in length, and is specified by calling
+                        setdst().
+
+                        Note: Calls cvibcd, then calls upbcdi for each digit
+                        to be printed.
+
+
+  j = imax(i);          Returns the greater of the unsigned integer b and
+                        the unsigned integer in the source pointer.
+                        
+                        Requires a prior call to setsrc() with the integer
+                        value to be compared against.
+
+  j = imin(i);          Returns the lesser of the unsigned integer b and
+                        the unsigned integer in the source pointer.
+                        
+                        Requires a prior call to setsrc() with the integer
+                        value to be compared against.
+
+  j = ishftl(n,i)       Shifts word b by n bits to the left and returns 
+                        the result in j. If n is 0, the word is not 
+                        shifted, and if n greater than 16, the returned
+                        value will be 0.
+
+  j = ishftr(n,i)       Shifts word b by n bits to the right and returns 
+                        the result in j. If n is 0, the word is not 
+                        shifted, and if n greater than 16, the returned
+                        value will be 0.
+
+
+Note: This library expects the following functions to be defined:
+
+along with the zero page variables
+  
+  zpage0,zpage1:        Zero page variable pair
+
+the external variables
+  
+  exvar0,exvar1:        External variable pair
+
+and the constants
+  
+  #CNSTNAME             Constant description
