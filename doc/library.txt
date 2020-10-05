@@ -24,42 +24,57 @@ module. The available modules are as follows:
 
     stddef      Standard Definitions
 
-                Contains commonly used constants, as well as base
-                functions common to nearly every other module.
+                Commonly used constants, as well as base functions
+                common to nearly every other module.
 
     stdlib      Standard Library
 
-                Includes the most commonly used functions, including
+                The most commonly used functions, including eight bit
                 mathematical operations and string/numeric conversions.
+
+    bitlib      Bit Library
+    
+                Bit shift, rotate, and nybble manipulation functions
+                for 8-bit values.
+
+    intlib      Integer Library
+    
+                Mathematical, bit shifting and string/numeric 
+                conversion functions for 16-bit values.
+
+    ctype       Characted Type
+    
+                Functions to detect character types and convert 
+                between lower and upper case.
 
     stdio       Standard Input/Output
 
-                Contains functions for reading and writing characters 
+                Functions for reading and writing characters 
                 and strings from the keyboard and to the screen.
 
     stdiox      Standard Input/Output Extended
 
-                Contains functions for writing formatted data to the
+                Functions for writing formatted data to the
                 screen, including decimal and hexadecimal numbers.
 
     string      String functions
 
-                Contains functions for copying, searching, comparing,
+                Functions for copying, searching, comparing,
                 and concatenating strings.
 
     stringx     String Extended
     
-                Contains the more powerful, but less frequently used 
+                The more powerful, but less frequently used 
                 string manipulation functions.
 
     memory      Memory functions
 
-                Contains functions for copying, searching, and comparing
+                Functions for copying, searching, and comparing
                 arrays.
 
     block       Block functions
 
-                Contains functions for reading, writing, and searching 
+                Functions for reading, writing, and searching 
                 for fixed length segments of data to an arbitrarily large 
                 section of memory.
 
@@ -70,11 +85,22 @@ module. The available modules are as follows:
 
     memio       Memory Input/Ouput
 
-                Provides functions to simulate reading and writing to
+                Functions to simulate reading and writing to
                 a section of memory as though it were a file.
 
     fileio      File Input/Ouput
 
-                Provides functions to access, read from, and write to
+                Functions to access, read from, and write to
                 files on cassette and/or disk.
 
+    dirent      Directory Entry
+    
+                Functions to read directories from disk, disk
+                like devices, and possibly tapes.
+                
+    direct      Directory Access
+    
+                Functions to switch between, create and remove 
+                directories, and to switch between devices.
+                
+    

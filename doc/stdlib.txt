@@ -13,7 +13,7 @@ The following functions are defined:
                       0 - 127 are considered positive, while the unsigned 
                       values 128 - 255 are considered negative.
 
-  c = atoc(&s);       Returns the numeric value of the string in array s. 
+  c = atoc(s);        Returns the numeric value of the string in array s. 
                       
                       Does not skip leading white-space characters and 
                       stops when first non-digit character is encountered.
@@ -21,7 +21,7 @@ The following functions are defined:
                       Overflows are ignored, so numbers greater than 255
                       will be returned modulo 256.
 
-  ctoa(c, &s);        Stores the ASCII representation of usigned byte c 
+  ctoa(c, &s);        Stores the ASCII representation of unsigned byte c 
                       as a null-terminated string in array s. 
                       
                       The array must be dimensioned to at least 4 bytes.
@@ -58,28 +58,6 @@ The following functions are defined:
                       is cycled by the keyboard routines, so the getkey() 
                       or getchr() function must called at least once before 
                       a rands(0) call.
-
-  c = shiftl(b, n);   Returns byte b shifted n bits to the left, filling
-                      with 0's from the right.
-
-                      If n is greater than 8, all bits will be shifted out,
-                      and a value of 0 is treated as 256.
-
-  c = shiftr(b, n);   Returns byte b shifted n bits to the right, filling
-                      with 0's from the left.
-
-                      If n is greater than 8, all bits will be shifted out,
-                      and a value of 0 is treated as 256.
-                      
-                      Note: Using the shiftl() or shiftr() functions with
-                      an asignment generates 9 to 12 bytes of code, whereas
-                      the << and >> post-operators generate either 2 or 3
-                      bytes each. So for a constant number of shifts, the
-                      post-operators will generate smaller code for less 
-                      than 5 shifts and will always be faster.
-
-  c = swap(b);        Returns the byte b with the high and low nybbles
-                      swapped.
 
 Note: This library expects the following function to be defined
 

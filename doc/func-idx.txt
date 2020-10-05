@@ -1,5 +1,8 @@
 Function Library  Name                  Description
 abs      stdlib   Absolute Value        Return absolute value of byte.
+adddst   stddef   Add Destination       Add value to Destination Pointer.
+addsrc   stddef   Add Source            Add value to Source Pointer.
+addzpw   stddef   Add Zero Page Word    Add value to word in zero page     
 anykey   stdiox   Any Key               Display "Any Key" prompt and wait for keypress.
 atoc     stdlib   ASCII to Character    Convert numeric string to byte.
 blkbgn   block    Block Begin           Set beginning of block address.
@@ -15,30 +18,33 @@ blkstr   block    Block String          Search block for segment beginning with 
 blkswp   block    Block Swap            Swap bytes of array with the current segment.
 blksrt   block    Block Sort            Sort segments in block by initial string.
 button   paddle   Button                Read paddle button controller status.
+chdir    direct   Change Directory      Change to specified directory
+chdrv    direct   Change Drive          Change to specified drive
 ctoa     stdlib   Character to ASCII    Convert byte to numeric string.
 div      stdlib   Divide                Divide two bytes.
+drvnam   direct   Drive Name            Return name of specified drive
 failed   test     Failed                Write "  Fail" to screen.
 failln   test     Failed Line           Write "  Fail" plus newline to screen.
-fclall   file     File Close All        Close all files. 
-fclose   file     File Close            Close file.
-feof     file     File End of File      Check for end of file condition.
-ferror   file     File Error            Get file error information.
-fgetc    file     File Get Character    Read character from file.
-fgets    file     File Get String       Read string from file.
-fopen    file     File Open             Open file.
+fclose   fileio   File Close            Close file.
+feof     fileio   File End of File      Check for end of file condition.
+ferror   fileio   File Error            Get file error information.
+fflush   fileio   File Flush            Flush output buffer to file.
+fgetc    fileio   File Get Character    Read character from file.
+fgets    fileio   File Get String       Read string from file.
+fopen    fileio   File Open             Open file.
 florps   test     Fail or Pass          Write "  Fail" or "  Pass" to screen.
 flpsln   test     Fail or Pass Line     Write "  Fail" or "  Pass" plus newline to screen.
-fputc    file     File Put Character    Write character to file.
-fputs    file     File Put String       Write string to file.
-fread    file     File Read             Read bytes from file.
-fschk    file     File System Check     Check for valid file pointer
-fsdst    file     File Set Destination  Set destination array for fread.
-fsinit   file     File System Init      Initialize file system.
-fsptr    file     File System Pointer   Get unused file pointer.
-fssrc    file     File Set Source       Set source array for fwrite.
-fstat    file     File System Status    Get file pointer status.
-fwrite   file     File Write            Write bytes to file.
+fputc    fileio   File Put Character    Write character to file.
+fputln   fileio   File Put Line         Write line to file.
+fputs    fileio   File Put String       Write string to file.
+fread    fileio   File Read             Read bytes from file.
+fsaddr   fileio   File Set Address      Set address for fread, fwrite, fsave, or fload.
+fsinit   fileio   File System Init      Initialize file system.
+fsname   fileio   File Set Name         Set filename for fopen, fsave, or fload.
+fwrite   fileio   File Write            Write bytes to file.
 getc     stdio    Get Character         Read character from keyboard.
+getcwd   direct   Get CWD               Return current working directory
+getdrv   direct   Get Drive             Return current drive identifier
 getdst   stddef   Get Destination       Get address in Destination Pointer.
 getprc   stdiox   Get Prompt Character  Display prompt and wait for keypress.
 gets     stdio    Get String            Read string from keyboard.
@@ -71,11 +77,14 @@ mflush   memio    Memory Flush          Flush memory file.
 mgetc    memio    Memory Get Character  Read single character from memory file. 
 mgets    memio    Memory Get String     Read string from memory file. 
 min      stdlib   Minimum               Return lesser of two byte.
+mkdir    direct   Make Directory        Create specified directory
 mopen    memio    Memory Open           Open memory file.
 mputc    memio    Memory Put Character  Write single character to memory file. 
 mputln   memio    Memory Put String     Write string followed by newline to memory file. 
 mputs    memio    Memory Put String     Write string to memory file. 
 mult     stdlib   Multiply              Multiply two bytes.
+opndir   dirent   Open Directory        Open directory for reading
+pack     bitlib   Pack nybbles          Pack two nybbles into a single byte.
 paddle   paddle   Paddle                Read paddle controller position.
 passed   test     Passed                Write "  Pass" to screen.
 passln   test     Passed Line           Print "  Pass" plus newline to screen.
@@ -106,10 +115,16 @@ putsub   stdio    Put Substring         Write substring to screen.
 putwrd   stdiox   Put Word              Write address to screen as hexadecimal number.
 rand     stdlib   Random                Generate pseudorandom number.
 rands    stdlib   Random Seed           Seed random number generator.
-ressrc   stddef   Restore Destination   Restore Destination      Pointer from TEMP variables.
+rddir    dirent   Read Directory        Read Directory Entry
+rdhdr    dirent   Read Header           Read Directory Header
+rmdir    direct   Remove Directory      Remove specified directory
+resdst   stddef   Restore Destination   Restore Destination Pointer from TEMP variables.
 resreg   stddef   Restore Registers     Restore A, X, and Y registers from TEMP variables.
 resrxy   stddef   Restore Reg. X and Y  Restore X, and Y registers from TEMP variables.
 ressrc   stddef   Restore Source        Restore Source Pointer from TEMP variables.
+rotl     bitlib   Rotate Left           Rotate byte left specified number of bits.
+rotr     bitlib   Rotate Right          Rotate byte right specified number of bits.
+savdst   stddef   Save Destination      Save Destination Pointer in TEMP variables.
 savreg   stddef   Save Registers        Save A, X, and Y registers in TEMP variables.
 savrxy   stddef   Save Reg. X and Y     Save X, and Y registers in TEMP variables.
 savsrc   stddef   Save Source           Save Source Pointer in TEMP variables.
@@ -117,8 +132,8 @@ setdss   stddef   Set Dest. Source      Set Destination Pointer to Source Pointe
 setdst   stddef   Set Destination       Set Destination Pointer to address.
 setsrc   stddef   Set Source            Set Source Pointer to address.
 setsrd   stddef   Set Source Dest.      Set Source Pointer to Destination Pointer.
-shiftl   stdlib   Shift Left            Shift byte left specified number of bits.
-shiftr   stdlib   Shift Right           Shift byte right specified number of bits.
+shiftl   bitlib   Shift Left            Shift byte left specified number of bits.
+shiftr   bitlib   Shift Right           Shift byte right specified number of bits.
 stkbgn   stack    Stack Begin           Set start of stack address.
 stkdup   stack    Stack Duplicate       Duplicate top entry of stack.
 stkend   stack    Stack End             Set end of stack address.
@@ -144,7 +159,8 @@ strpbk   stringx  String Pointer Break  Find first character in destination foun
 strrch   string   String Reverse Char   Search for character from end of string.
 strspn   stringx  String Span           Return length of span in destination found in string.
 strstr   string   String String         Search for string in destination string.
-swap     stdlib   Swap nybbles          Swaps the upper and lower nybbles in a byte.
+swap     bitlib   Swap nybbles          Swaps left and right nybbles in byte.
 tolowr   ctype    To Lowercase          Convert character to lowercase.
 touppr   ctype    To Uppercase          Convert character to uppercase.
 trufls   test     True or False         Convert value to #TRUE or #FALSE.
+unpack   bitlib   Unpack nybbles        Unpack byte into two nybbles.

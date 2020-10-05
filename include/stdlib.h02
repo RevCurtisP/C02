@@ -53,18 +53,6 @@ char mult();
  * Returns: Random number between 1 and 255 */
 char rand();
 
-/* Shift Byte Left                   *
- * Args: b - Byte to Shift           *
- *       n - Number of Bits to Shift *
- * Returns: Shifted Byte             */
-char shiftl();
-
-/* Shift Byte Right                  *
- * Args: b - Byte to Shift           *
- *       n - Number of Bits to Shift *
- * Returns: Shifted Byte             */
-char shiftr();
-
 /* Seed Pseudo-Random Number Generator *
  * Args: n -  Seed number              */
 void srand();

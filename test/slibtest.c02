@@ -1,6 +1,6 @@
-/**************************************************
- * TESTSLIB - Test Library stdlib.h02 for py65mon *
- **************************************************/
+/*********************************
+ * SLIBTEST - Test Module stdlib *
+ *********************************/
  
 //Specify System Header using -H option
 #include <stddef.h02>
@@ -118,50 +118,6 @@ char countr, rndnum, rndtbl[255];
 
 tstros: //Test rotatl(), rotatr(), swap()
 char lbyte, rbyte, obyte, sbyte, tbyte, scount;
-
-  putstr("ROTATL(), SHIFTL()");
-  obyte = 0; 
-  do {
-    if (!obyte & $F) putchr('.');
-    scount = 0; sbyte = obyte; tbyte = obyte; 
-    do {
-      rbyte = rotatl(obyte, scount); if (rbyte <> tbyte) goto rtlerr;
-      lbyte = shiftl(obyte, scount); if (lbyte <> sbyte) goto shlerr;
-      sbyte<<;
-      temp0 = tbyte; tbyte<<; if (temp0:-) tbyte++;
-      scount++; if (scount == 8) scount = $F8;
-    } while (scount);  
-    obyte ++;
-  } while (obyte);
-  prtok();
-  
-  putstr("ROTATR(), SHIFTR()");
-  obyte = 0; 
-  do {
-    if (!obyte & $F) putchr('.');
-    scount = 0; sbyte = obyte; tbyte = obyte; 
-    do {
-      rbyte = rotatr(obyte, scount); if (rbyte <> tbyte) goto rtrerr;
-      lbyte = shiftr(obyte, scount); if (lbyte <> sbyte) goto shrerr;
-      sbyte>>;
-      temp0 = tbyte; tbyte>>; if (temp0 & 1) tbyte = tbyte | $80;
-      scount++; if (scount == 8) scount = $F8;
-    } while (scount);  
-    obyte ++;
-  } while (obyte);
-  prtok();
-  
-  putstr("SWAP()");
-  lbyte=0; do {
-    rbyte = 0; do {
-      obyte = lbyte & $f0; obyte = rbyte & $0f + lbyte;
-      tbyte = lbyte & $0f; tbyte = rbyte & $f0 + lbyte;
-      sbyte = swap(obyte);
-      if (sbyte <> tbyte) goto swperr;      
-      rbyte = rbyte + $11;
-    } while (rbyte & $0f);
-  } while (lbyte & $0f);
-  prtok();
 
 tstc2a: //Test ctoa();
 char srcchr, dstchr, tststr[4];
