@@ -3,117 +3,120 @@
 ;C02 Functions modify Accumulator and Flags
 ;  ISxxxx will load $FF into Accumulator to and Set Carry if True
 ;          and load $00 into Accumulator to and clear Carry if False
-;  toxxxx set Carry if character IS converted, otherwISe clear Carry 
+;  toxxxx set Carry if character is converted, otherwise clear Carry 
 ;Machine Language Subroutines modify Flags but not Accumulator
 ;  Carry will be Set if True and Cleared if False 
-;Index RegISters are not modified by any routines
+;Index Registers X an Y are not modified by any routines
+
+        SUBROUTINE CTYPE
 
 ;Character Test Functions - Set Accumulator
 ISALNM: JSR ISALN   ;Is Alphanumeric Character
-        BVC ISBTF
-ISALPH: JSR ISALP;  ;Is Alphabetic Character
-        BVC ISBTF
+        BVC .ISBTF
+ISALPH: JSR ISALP   ;Is Alphabetic Character
+        BVC .ISBTF
 ISBDGT: JSR ISBIN   ;Is Binary Digit 
-        BVC ISBTF
+        BVC .ISBTF
 ISCTRL: JSR ISCTL   ;Is Control Character
-        BVC ISBTF
+        BVC .ISBTF
 ISDIGT: JSR ISDGT   ;Is Digit
-        BVC ISBTF
+        BVC .ISBTF
 ISGRPH: JSR ISGRP   ;Is Graphical Character
-        BVC ISBTF
+        BVC .ISBTF
 ISHDGT: JSR ISHEX   ;Is Hex Digit 
-        BVC ISBTF
+        BVC .ISBTF
 ISLOWR: JSR ISLWR   ;Is Lowercase Character
-        BVC ISBTF
+        BVC .ISBTF
 ISPNCT: JSR ISPNC   ;Is Punctuation Character
-        BVC ISBTF
+        BVC .ISBTF
 ISPRNT: JSR ISPRT   ;Is Printable Character
-        BVC ISBTF
+        BVC .ISBTF
 ISSPCE: JSR ISSPC   ;Is White Space Character
-        BVC ISBTF
+        BVC .ISBTF
 ISUPPR: JSR ISUPR   ;Is Uppercase Character
-        BVC ISBTF
+        BVC .ISBTF
 
 ;Internal Routines - Set Accumulator based on Carry Flag
-ISBTF:  BCC ISFLS   ;If Carry Set
-ISTRU:  LDA #$FF    ;  Return TRUE
+.ISBTF  BCC .ISFLS   ;If Carry Set
+.ISTRU  LDA #$FF    ;  Return TRUE
         RTS         ;Else 
-ISFLS:  LDA #$00    ;  Return FALSE
+.ISFLS  LDA #$00    ;  Return FALSE
         RTS
 
 ;C02/ML Character Conversion Routines
 TOLOWR: JSR ISUPR   ;If Char IS Not Upper Case
-        BCC ISRTS   ;  Return
+        BCC .ISRTS  ;  Return
         ORA #$20    ;Else Set Bit 5 
         RTS         ; and Return
 
 TOUPPR: JSR ISLWR   ;If Char IS Not Lower Case
-        BCC ISRTS   ;  Return
+        BCC .ISRTS  ;  Return
         AND #$DF    ;Else Clear Bit 5 
         RTS         ; and Return
 
 ;Machine Language Subroutines - Set/Clear Carry, Preserve Accumulator 
 ISALN:  JSR ISDGT  ;If Char IS Digit
-        BCS ISRTS   ;  Return Carry Set
+        BCS .ISRTS  ;  Return Carry Set
                     ;Else
 ISALP:  JSR ISUPR  ;If Char IS Upper Case
-        BCS ISRTS   ;  Return Carry Set
+        BCS .ISRTS  ;  Return Carry Set
                     ;Else
 ISLWR:  CMP #$61    ;If Char < 'a'
-        BCC ISRTS   ;  Return with Carry Clear
+        BCC .ISRTS  ;  Return with Carry Clear
         CMP #$7B    ;Else If Char >= '{'
         JMP ISBCS   ;  Return with Carry Clear Else Return with Carry Set
 
 ISUPR:  CMP #$41    ;If Char < 'A'
-        BCC ISRTS   ;  Return with Carry Clear
+        BCC .ISRTS  ;  Return with Carry Clear
         CMP #$5B    ;Else If Char >= '['
-ISBCS:  BCS ISCLC   ;  Return with Carry Clear
-        BCC ISSEC   ;Else Return with Carry Set
+ISBCS:  BCS .ISCLC  ;  Return with Carry Clear
+        BCC .ISSEC  ;Else Return with Carry Set
 
-ISSEC:  SEC         ;Set Carry
-        BCS ISRTS   ;  and Return
+.ISSEC  SEC         ;Set Carry
+        BCS .ISRTS  ;  and Return
 
-ISCLC:  CLC         ;Clear Carry
-ISRTS:  CLV         ;Clear Overflow - for C02 calls
+.ISCLC  CLC         ;Clear Carry
+.ISRTS  CLV         ;Clear Overflow - for C02 calls
         RTS         ;Return from Subroutine
 
 ISCTL:  CMP #$7F    ;If Char = DEL
-        BEQ ISSEC   ;  Return Carry Set
+        BEQ .ISSEC  ;  Return Carry Set
         CMP #$20    ;Else If Char < ' '
         JMP ISBCS   ;  Return Carry Set Else Return Carry Clear
 
 ISBIN:  CMP #$32    ;If Char >= '2'
-        BCS ISCLC   ;  Return Carry Set
+        BCS .ISCLC  ;  Return Carry Set
                     ;Else
 ISDGT:  CMP #$30    ;If Char < '0'
-        BCC ISRTS   ;  Return Carry Clear
+        BCC .ISRTS  ;  Return Carry Clear
         CMP #$3A    ;Else If Char >= ':'
         JMP ISBCS   ;  Return FALSE Else Return TRUE
 
 ISPNC:  JSR ISALN  ;If Char IS Alphanumeric
-        BCS ISCLC   ;  Return Carry Clear
+        BCS .ISCLC  ;  Return Carry Clear
                     ;Else
 ISGRP:  CMP #$20    ;If Char IS Space
-        BEQ ISCLC   ;  Return Carry Clear
+        BEQ .ISCLC  ;  Return Carry Clear
                     ;Else
 ISPRT:  CMP #$80    ;If Char IS High ASCII
-        BCS ISCLC   ;  Return Carry Clear 
+        BCS .ISCLC  ;  Return Carry Clear 
         JSR ISCTL   ;If Char IS Not Control
         JMP ISBCS   ;  Return Carry Clear Else Return Carry Set
 
 ISSPC:  CMP #$20    ;If Char IS ' '
-        BEQ ISSEC   ;  Return Carry Set
+        BEQ .ISSEC  ;  Return Carry Set
         CMP #$09    ;If Char < '\t'
-        BCC ISRTS   ;  Return Carry Clear
+        BCC .ISRTS  ;  Return Carry Clear
         CMP #$0E    ;Else If Char > '\r'
         JMP ISBCS   ;  Return Carry Clear Else Return Carry Set
 
 ISHEX:  CMP #$41    ;If Char < 'A'
         BCC ISDGT   ;  Check for Digit
         CMP #$47    ;Else If Char < 'G'
-        BCC ISSEC   ;  Return Carry Set
+        BCC .ISSEC  ;  Return Carry Set
         CMP #$61    ;Else If Char < 'a'
-        BCC ISRTS  ;   Return Carry Clear
+        BCC .ISRTS ;   Return Carry Clear
         CMP #$67    ;Else If Char >= 'g'
         JMP ISBCS   ;  Return Carry Clear Else Return Carry Set
 
+        ENDSUBROUTINE

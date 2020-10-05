@@ -1,0 +1,56 @@
+/*************************************
+ * CTYPETST - Test Library ctype.h02 *
+ *************************************/
+ 
+//Specify System Header using -H option
+#include <ctype.h02>
+
+char c, i;
+
+main:
+  i = 0; 
+
+head:
+  putstr("     ");
+  putchr('C'); //Control
+  putchr('S'); //White Space
+  putchr('P'); //Punctuation
+  putchr('D'); //Digit
+  putchr('H'); //Hex Digit
+  putchr('U'); //Upper Case
+  putchr('L'); //Lower Case  
+  putchr('A'); //Alphabetic
+  putchr('N'); //Alphanumeric
+  putchr('G'); //Graphic
+  putchr('R'); //Printable
+  putchr('B'); //Binary
+  newlin();
+
+loop:
+  prbyte(i);
+  putchr(' ');
+  c = i;
+  if (c < $20) c = $20;
+  if (c >= $7F) c = $20;
+  putchr(c);   
+  putchr(' ');
+  c = isctrl(i) & $0A | $20; putchr(c);
+  c = isspce(i) & $0A | $20; putchr(c);
+  c = ispnct(i) & $0A | $20; putchr(c);
+  c = isdigt(i) & $0A | $20; putchr(c);
+  c = ishdgt(i) & $0A | $20; putchr(c);
+  c = isuppr(i) & $0A | $20; putchr(c);
+  c = islowr(i) & $0A | $20; putchr(c);
+  c = isalph(i) & $0A | $20; putchr(c);
+  c = isalnm(i) & $0A | $20; putchr(c);
+  c = isgrph(i) & $0A | $20; putchr(c);
+  c = isprnt(i) & $0A | $20; putchr(c);
+  c = isbdgt(i) & $0A | $20; putchr(c);
+  newlin();
+  i++;
+  if (i == 0) goto exit;
+  if (i & $0F <> 0) goto loop;
+  newlin();
+  c = getkey(); 
+  if (c == $1B) goto exit;
+  goto head;
