@@ -1,0 +1,103 @@
+; C02 Module bitlib.h02 Assembly Language Subroutines
+; Requires external location TEMP0 (system header)
+
+        SUBROUTINE BITLIB
+
+;dupl(nybble) - Duplicate Low Order Nybble
+;Args: A = Left Nybble
+;Destroys: TEMP0
+;Affects: Y
+;Returns: A = Byte Containing Byte
+DUPL:   TAY         ;Copy Left Nybble to Right
+        BEQ PACK    ;If Zero, Return
+
+;pack(nybble,nybble) - Pack Two Low Order Nybbles into Single Byte
+;Args: A = Left Nybble
+;      Y = Right Nybble
+;Destroys: TEMP0
+;Returns: A = Packed Byte
+PACK:   ASL         ;Shift Right Nybble to High Order   
+        ASL
+        ASL
+        ASL
+        STA TEMP0   ;and Save It
+        TYA         ;Get Right Nybble
+        AND #$0F    ;Isolate Right Nybble
+        ORA TEMP0   ;Copy in Left Nybble
+        RTS
+
+;unpack(byte) - Unpack Byte into Two Low Order Nybbles
+;Args: A = Byte to Unpack
+;Returns: A = Left Nybble
+;         Y = Right Nybble
+UNPACK: PHA         ;Save Byte
+        AND #$0F    ;Isolate Right Nybble
+        TAY         ;and Copy to Y Register
+        PLA         ;Retrieve Byte
+        LSR         ;and Shift Left Nybble to Low Order
+        LSR
+        LSR
+        LSR
+        RTS
+
+;swap(byte) - Swap Low and High Nybbles in Byte
+;Args: A = Byte to Swap
+;Affects Y,N,Z,C
+;Returns: A = Swapped Byte
+SWAP:   LDY #4          ;Set Count to 4 and Rotate Left
+
+;rotl(byte,count) - Rotate byte by count Bits to the Left
+;Args = Byte to Rotate
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Rotated Byte
+ROTL:   CPY #0          ;If Number of Bits is 0
+        BEQ .RETURN     ;  Return
+.LOOPRL CLC             ;Bit 0 will be 0
+        ROL             ;Rotate Left
+        ADC #0          ;  Copy Carry to Bit 0
+        DEY             ;Decrement Counter
+        BNE .LOOPRL     ;  and Loop if Not 0
+.RETURN RTS
+
+;rotr(byte,count) - Shift byte by count Bits to the Right
+;Args = Byte to Rotate
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Rotated Byte
+ROTR:   CPY #0          ;If Number of Bits is 0
+        BEQ .RETURN     ;  Return
+.LOOPRR CLC             ;Bit 7 will be 0
+        ROR             ;Rotate Right
+        BCC .SKIPRR     ;If Bit 0 was Set
+        ORA #$80        ;  Set Bit 8
+.SKIPRR DEY             ;Decrement Counter
+        BNE .LOOPRR     ;  and Loop if Not 0
+        RTS
+
+;shiftl(byte,count) - Shift byte by Count bits to the Left
+;Args = Byte to Shift
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Shifted Byte
+SHIFTL: CPY #0          ;If Number of Bits is 0
+        BEQ .RETURN     ;  Return
+.LOOPSL ASL             ;Shift Byte to Left
+        DEY             ;Decrement Counter
+        BNE .LOOPSL     ;  and Loop if Not 0
+        RTS
+
+
+;shiftr(byte,count) - Shift byte by Count bits to the Right
+;Args = Byte to Shift
+;Y = Number of Bits to Rotate
+;Affects Y,N,Z,C
+;Returns: A = Shifted Byte
+SHIFTR: CPY #0          ;If Number of Bits is 0
+        BEQ .RETURN     ;  Return
+.LOOPSR LSR             ;Shift Byte to Right
+        DEY             ;Decrement Counter
+        BNE .LOOPSR     ;  and Loop if Not 0
+        RTS
+
+        ENDSUBROUTINE

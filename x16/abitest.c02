@@ -8,11 +8,19 @@
 
 char aa,xx,yy;  //Function Arguments
 char i;         //Loop Index
+char r,h,l;     //Register#, MSB, LSB
+int  v;         //Register Contents
 
 const char rvals = {$0F,$F0, $1E,$E1, $2D,$D2, $3C,$C3, $4B,$B4, $5A,$A5, $69,$96, $78,$87,
                     $80,$08, $91,$19, $A2,$2A, $B3,$B3, $C4,$4C, $D5,$5D, $E6,$6E, $F7,$7F};
 char rcomp[32];
 
+void clrabi() {for (i=0; i<=@rvals; i++) abi[i] = 0;}
+void prword() {putchr('$'); prbyte(y); prbyte(x); putchr(' ');}
+void putlin() {putstr(); newlin();}
+void error() {putlin(); goto exit;}
+void passed() {putlin("PASSED");}
+  
 void prtadr(aa,yy,xx) {
   putchr('$');
   if (yy) prbyte(yy);
@@ -22,32 +30,55 @@ void prtadr(aa,yy,xx) {
 main:
 
   //Print Register Addresses
-  putstr("R0  "); prtadr(&R0);  putstr("  R0L  "); prtadr(&R0L);  putstr("  R0H  "); prtadr(&R0H);  newlin();
-  putstr("R1  "); prtadr(&R1);  putstr("  R1L  "); prtadr(&R1L);  putstr("  R1H  "); prtadr(&R1H);  newlin();
-  putstr("R2  "); prtadr(&R2);  putstr("  R2L  "); prtadr(&R2L);  putstr("  R2H  "); prtadr(&R2H);  newlin();
-  putstr("R3  "); prtadr(&R3);  putstr("  R3L  "); prtadr(&R3L);  putstr("  R3H  "); prtadr(&R3H);  newlin();
-  putstr("R4  "); prtadr(&R4);  putstr("  R4L  "); prtadr(&R4L);  putstr("  R4H  "); prtadr(&R4H);  newlin();
-  putstr("R5  "); prtadr(&R5);  putstr("  R5L  "); prtadr(&R5L);  putstr("  R5H  "); prtadr(&R5H);  newlin();
-  putstr("R6  "); prtadr(&R6);  putstr("  R6L  "); prtadr(&R6L);  putstr("  R6H  "); prtadr(&R6H);  newlin();
-  putstr("R7  "); prtadr(&R7);  putstr("  R7L  "); prtadr(&R7L);  putstr("  R7H  "); prtadr(&R7H);  newlin();
-  putstr("R8  "); prtadr(&R8);  putstr("  R8L  "); prtadr(&R8L);  putstr("  R8H  "); prtadr(&R8H);  newlin();
-  putstr("R9  "); prtadr(&R9);  putstr("  R9L  "); prtadr(&R9L);  putstr("  R9H  "); prtadr(&R9H);  newlin();
-  putstr("R10 "); prtadr(&R10); putstr("  R10L "); prtadr(&R10L); putstr("  R10H "); prtadr(&R10H); newlin();
-  putstr("R11 "); prtadr(&R11); putstr("  R11L "); prtadr(&R11L); putstr("  R11H "); prtadr(&R11H); newlin();
-  putstr("R12 "); prtadr(&R12); putstr("  R12L "); prtadr(&R12L); putstr("  R12H "); prtadr(&R12H); newlin();
-  putstr("R13 "); prtadr(&R13); putstr("  R13L "); prtadr(&R13L); putstr("  R13H "); prtadr(&R13H); newlin();
-  putstr("R14 "); prtadr(&R14); putstr("  R14L "); prtadr(&R14L); putstr("  R14H "); prtadr(&R14H); newlin();
-  putstr("R15 "); prtadr(&R15); putstr("  R15L "); prtadr(&R15L); putstr("  R15H "); prtadr(&R15H); newlin();
+  putstr("R0  "); prtadr(&abi.r0);  putstr("  R0L  "); prtadr(&abi.r0.lo);  putstr("  R0H  "); prtadr(&abi.r0.hi);  newlin();
+  putstr("R1  "); prtadr(&abi.r1);  putstr("  R1L  "); prtadr(&abi.r1.lo);  putstr("  R1H  "); prtadr(&abi.r1.hi);  newlin();
+  putstr("R2  "); prtadr(&abi.r2);  putstr("  R2L  "); prtadr(&abi.r2.lo);  putstr("  R2H  "); prtadr(&abi.r2.hi);  newlin();
+  putstr("R3  "); prtadr(&abi.r3);  putstr("  R3L  "); prtadr(&abi.r3.lo);  putstr("  R3H  "); prtadr(&abi.r3.hi);  newlin();
+  putstr("R4  "); prtadr(&abi.r4);  putstr("  R4L  "); prtadr(&abi.r4.lo);  putstr("  R4H  "); prtadr(&abi.r4.hi);  newlin();
+  putstr("R5  "); prtadr(&abi.r5);  putstr("  R5L  "); prtadr(&abi.r5.lo);  putstr("  R5H  "); prtadr(&abi.r5.hi);  newlin();
+  putstr("R6  "); prtadr(&abi.r6);  putstr("  R6L  "); prtadr(&abi.r6.lo);  putstr("  R6H  "); prtadr(&abi.r6.hi);  newlin();
+  putstr("R7  "); prtadr(&abi.r7);  putstr("  R7L  "); prtadr(&abi.r7.lo);  putstr("  R7H  "); prtadr(&abi.r7.hi);  newlin();
+  putstr("R8  "); prtadr(&abi.r8);  putstr("  R8L  "); prtadr(&abi.r8.lo);  putstr("  R8H  "); prtadr(&abi.r8.hi);  newlin();
+  putstr("R9  "); prtadr(&abi.r9);  putstr("  R9L  "); prtadr(&abi.r9.lo);  putstr("  R9H  "); prtadr(&abi.r9.hi);  newlin();
+  putstr("R10 "); prtadr(&abi.r10); putstr("  R10L "); prtadr(&abi.r10.lo); putstr("  R10H "); prtadr(&abi.r10.hi); newlin();
+  putstr("R11 "); prtadr(&abi.r11); putstr("  R11L "); prtadr(&abi.r11.lo); putstr("  R11H "); prtadr(&abi.r11.hi); newlin();
+  putstr("R12 "); prtadr(&abi.r12); putstr("  R12L "); prtadr(&abi.r12.lo); putstr("  R12H "); prtadr(&abi.r12.hi); newlin();
+  putstr("R13 "); prtadr(&abi.r13); putstr("  R13L "); prtadr(&abi.r13.lo); putstr("  R13H "); prtadr(&abi.r13.hi); newlin();
+  putstr("R14 "); prtadr(&abi.r14); putstr("  R14L "); prtadr(&abi.r14.lo); putstr("  R14H "); prtadr(&abi.r14.hi); newlin();
+  putstr("R15 "); prtadr(&abi.r15); putstr("  R15L "); prtadr(&abi.r15.lo); putstr("  R15H "); prtadr(&abi.r15.hi); newlin();
 
   //Test setabi() and getabi()
-  for (i=0; i<=@rvals; i++) r0l[i] = 0; //Clear ABI Registers
-  //inline $ff;
-  setabi(@rvals, rvals);        //Write to ABI Registers
-  for (i=0; i<@rvals; i++) {
-    if (!i&7) newlin();
-    if (!i&1) putstr(" $");
-    prbyte(R0l[i]);
-    if (R0l[i] <> rvals[i]) {putstr("ERROR!"); goto exit;}
+  putstr("SETABI(), GETABI() "); 
+  clrabi(); //Clear Registers
+  i = 0;
+  for (r=0; r<16; r++) {
+    l = r | 16; h = r | 32;
+    setabi(r, h, l);
+    xx = abi[i]; i++;
+    yy = abi[i]; i++;
+    v = getabi(r);
+    //newlin(); prhex(r); putchr(':'); prword(.,h,l); prword(.,yy,xx); prword(v);
+    if (xx<>l or yy<>h) error("SETABI: WRITE ERROR");
+    if (<v<>l or >v<>h) error("GETABI: READ ERROR");
   }
+  passed();
+
+  //Test setabi() and getabi()
+  putstr("SETABR(), GETABR() "); 
+  for (i=0; i<=@rvals; i++) {
+    abi[i] = 0;   //Clear ABI Registers
+    rcomp[i] = 0; //Clear Compare Array
+  }
+  //inline $ff;
+  setabr(@rvals, rvals);      //Write to ABI Registers
+  getabr(@rcomp, rcomp); //Read from ABI Registers
+  for (i=0; i<@rvals; i++) {
+    //if (!i&7) newlin(); if (!i&1) putstr(" $"); prbyte(abi[i]);
+    if (abi[i] <> rvals[i]) error("SETABR() WRITE ERROR");
+    if (rcomp[i] <> rvals[i]) error("GETABR() READ ERROR");
+  }
+  if (abi[@rvals] <> 0) error("SETABR() OVERFLOW");
+  if (rcomp[@rvals] <> 0) error("GETABR() OVERFLOW");
+  passed();
 
 goto exit;

@@ -1,0 +1,70 @@
+Bit Manipulation Functions for C02 Programs
+
+This module contains functions to shift and rotate the bits in a byte,
+and to extract, combine, swap and duplicate nybbles in a byte.  
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <bitlib.h02>
+
+The following functions are defined:
+
+  r = shiftl(b,n)       Shifts byte b by n bits to the left and returns 
+                        the result in r. If n is 0, the byte is not 
+                        shifted, and if n greater than 8, the returned
+                        value will be 0.
+
+  r = shiftr(b,n)       Shifts byte b by n bits to the right and returns 
+                        the result in r. If n is 0, the byte is not 
+                        shifted, and if n greater than 8, the returned
+                        value will be 0.
+
+  r = rotl(b,n)         Rotate byte b by n bits to the left and returns 
+                        the result in r, with the high bit rotated into
+                        the low bit on each rotation. If n is 0, the 
+                        byte is not rotated, and any value of n greater 
+                        than 8, will return the same result as n modulo 8.
+
+  r = rotr(b,n)         Rotate byte b by n bits to the right and returns 
+                        the result in r, with the high bit rotated into
+                        the low bit on each rotation. If n is 0, the 
+                        byte is not rotated, and any value of n greater 
+                        than 8, will return the same result as n modulo 8.
+
+  b = pack(l,r);        Packs the low nybbles of bytes l and r into a 
+                        single byte, with l becoming the left (or high) 
+                        nybble and r becoming the right (or low) nybble.
+                        and returns the packed byte in b.
+
+  l,r = unpack(b);      Unpacks byte b, returning the left (or high) 
+                        nybble in l, and the right (or low) nybble in r.
+
+  d = dupl(b);          Duplicates the low nybble of byte b into the
+                        high nybble and returns the new byte in d.
+
+                        Note: Executes function pack() with b as both
+                        arguments.
+
+  d = swap(b);          Swaps the left (or high) and right (or low) 
+                        nybbles of byte b and returns the new byte in d.
+
+                        Note: Executes function rotl() with the arguments
+                        b and 4.
+
+
+
+
+  c,d,e = func(a,&d);   Stores the input value a and the address of d 
+                        in memory.
+
+                        Returns three bytes read from memory.
+
+                        Note: Writes argument a to variable arg0,
+                        the address of d to variables adr0 and adr1,
+                        and returns the values of variables var0,
+                        var1, and var2.
+
+Note: This library expects the following external variables to be defined:
+
+  temp0:                Temporary Variable

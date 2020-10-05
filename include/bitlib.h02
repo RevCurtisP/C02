@@ -1,0 +1,50 @@
+/**********************************************
+ * bitlib - Bit Manipulation Routines for C02 *
+ **********************************************/
+
+/* Duplicate Low Order Nybble in Byte  *
+ * Args: char b - Byte to Duplicate    *
+ * Returns: char d - Duplicated Byte   */
+char dupl();
+
+/* Pack Nybbles into Single Byte *
+ * Args: char l - Left Nybble    *
+ *       char r - Right Nybble   *
+ * Returns: char b - Packed Byte */
+char pack();
+
+/* Rotate Byte Left               *
+ * Args: char b - Byte to Rotate  *
+ *       char n - Number of Bits  *
+ * Returns: char r - Rotated Byte */
+char rotl();
+
+/* Rotate Byte Right              *
+ * Args: char b - Byte to Rotate  *
+ *       char n - Number of Bits  *
+ * Returns: char r - Rotated Byte */
+char rotr();
+
+/* Shift Byte Left                *
+ * Args: char b - Byte to Shift   *
+ *       char n - Number of Bits  *
+ * Returns: char r - Shifted Byte */
+char shiftl();
+
+/* Shift Byte Right               *
+ * Args: char b - Byte to Shift   *
+ *       char n - Number of Bits  *
+ * Returns: char r - Shifted Byte */
+char shiftr();
+
+/* Swap Nybbles in Byte           *
+ * Args: char b - Byte to Swap    *
+ * Returns: char d - Swapped Byte */
+char swap();
+
+/* Unpack Byte into Separate Nybbles *
+ * Args: char b - Byte to Unpack     *
+ * Returns: char l - Left Nybble     *
+ *          char r - Right Nybble    */
+char unpack();
+

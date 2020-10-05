@@ -1,0 +1,128 @@
+/*********************************
+ * BITTEST - Test Module bitlib *
+ *********************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <bitlib.h02>
+
+const char detail = #FALSE;
+
+char argone,argtwo,expone,exptwo,resone,restwo;
+char high,low,left,right;
+
+void pr1arg() {putchr(' ');prbyte(argone);putchr('=');prbyte(resone);}
+void pr2arg() {putchr(' ');prbyte(argone);putchr(',');prbyte(argtwo);
+               putchr('=');prbyte(resone);}
+void pr2res() {putchr(' ');prbyte(argone);putchr('=');
+               prbyte(resone);putchr(',');prbyte(restwo);}
+void prtok() {putstr(" OK"); newlin();}
+
+main:
+
+  putstr("DUPL():");
+  high = 0; low = 0;
+  for (argone = 0; argone < $10; argone++) {
+    expone = high | low; high = high + 16; low++;
+    resone = dupl(argone); if (detail) pr1arg();
+    if (resone <> expone) goto er1arg;
+  }
+  prtok();
+  
+  putstr("PACK():");
+  high = 0;
+  for (argone = 0; argone < $10; argone++) {
+    low = 0;
+    for (argtwo = 0; argtwo < $10; argtwo++) {
+      expone = high | low; low++;
+      resone = pack(argone,argtwo); if (detail) pr2arg();
+      if (resone <> expone) goto er2arg;
+    }
+    high = high + 16;
+  }
+  prtok();
+  
+  putstr("UNPACK():");
+  high = 0;
+  for (expone = 0; expone < $10; expone++) {
+    low = 0;
+    for (exptwo = 0; exptwo < $10; exptwo++) {
+      argone = high | low; low++;
+      resone, restwo = unpack(argone); if (detail) pr2res();
+      if (resone <> expone or restwo <> exptwo) goto er2arg;
+    }
+    high = high + 16;
+  }
+  prtok();
+  
+  putstr("SWAP():");
+  high = 0;
+  for (right = 0; right < $10; right++) {
+    low = 0; left = 0;
+    do {
+      argone = high | low; low++;
+      expone = left | right; left = left + 16;
+      resone = swap(argone); if (detail) pr1arg();
+      if (resone <> expone) goto er1arg;
+    } while (left);
+    high = high + 16;
+  }
+  prtok();
+
+  putstr("ROTL():");
+  argone = %10101010; expone = argone;
+  for (argtwo = 0; argtwo < 9; argtwo++) {
+    resone = rotl(argone, argtwo); if (detail) pr2arg();
+    if (resone <> expone) goto er2arg;
+    high = expone & $80; expone<<; if (high) expone++;
+  }    
+  prtok();
+  
+  putstr("ROTR():");
+  argone = %10101010; expone = argone;
+  for (argtwo = 0; argtwo < 9; argtwo++) {
+    resone = rotr(argone, argtwo); if (detail) pr2arg();
+    if (resone <> expone) goto er2arg;
+    low = expone & $01; expone>>; if (low) expone = expone | $80;
+  }    
+  prtok();
+
+  putstr("SHIFTL():");
+  argone = %10101010; expone = argone;
+  for (argtwo = 0; argtwo < 9; argtwo++) {
+    resone = shiftl(argone, argtwo); if (detail) pr2arg();
+    if (resone <> expone) goto er2arg;
+    expone<<;
+  }    
+  prtok();
+  
+  putstr("SHIFTR():");
+  argone = %10101010; expone = argone;
+  for (argtwo = 0; argtwo < 9; argtwo++) {
+    resone = shiftr(argone, argtwo); if (detail) pr2arg();
+    if (resone <> expone) goto er2arg;
+    expone>>;
+  }    
+  prtok();
+  
+  goto exit;
+  
+er1arg:
+  if (detail) newlin();
+  putstr(" ARG $"); prbyte(argone); putstr(" RESULT $"); prbyte(resone); 
+  putstr(" EXPECTED $"); prbyte(expone); newlin();
+  goto exit;
+  
+er2arg:
+  if (detail) newlin();
+  putstr(" ARGS $"); prbyte(argone); putstr(",$"); prbyte(argtwo);
+  putstr(" RESULT $"); prbyte(resone); 
+  putstr(" EXPECTED $"); prbyte(expone); newlin();
+  goto exit;
+
+er2res:
+  if (detail) newlin();
+  putstr(" ARG $"); prbyte(argone); putstr(" RESULT $"); prbyte(resone); 
+  putstr(" EXPECTED $"); prbyte(expone); putstr(",$"); prbyte(exptwo);
+  newlin();
+  goto exit;
