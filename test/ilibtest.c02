@@ -14,9 +14,10 @@
 char size;
 char s[128]; //Test String
 
-int ivar,ival;      //Integer Variables
-int icmp,itot,ires; //Function Variables
-int less, more;     //Test Values for imin() and imax()
+char cval,cnum,ctot;  //Character Function Variables
+int ivar,ival;        //Integer Variables
+int icmp,itot,ires;   //Function Variables
+int less, more;       //Test Values for imin() and imax()
 
 int yx, dd; //Function Arguments and Variables
 
@@ -53,28 +54,62 @@ void itaati(ivar) {
   setdst(s); size = itoa(ivar); puts(s); putln("\"");
   puts("ATOI(\""); puts(s); puts("\")=$");
   ival = atoi(s); putwrd(ival); newlin();
-  //cpival(ivar);
+  cpival(ivar);
 }
 
 /* Test iadd() and isub() */
+//**needs iaddc() 
 void addsub(ivar) {
   newlin();
-  putint(ival); putchr('+'); putint(ivar); putchr('=');
-  setsrc(ival); itot = iadd(ivar); putint(itot); newlin();
-  putint(itot); putchr('-'); putint(ivar); putchr('=');
-  setsrc(itot); ires = isub(ivar); putint(ires); newlin();
+  putint(ival); putc('+'); putint(ivar); putc('=');
+  setsrc(ival); ctot, itot = iadd(ivar); 
+  putint(itot); puts(" carry=$"); puthex(ctot); newlin();
+  putint(itot); putc('-'); putint(ivar); putc('=');
+  setsrc(itot); ires = isub(ivar);
+  putint(itot); puts(" carry=$"); puthex(ctot); newlin();
   cpival(ires);
 }
 
 /* Test imult() and idiv() */
 void mltdiv(ivar) {
   newlin();
-  putint(ival); putchr('X'); putint(ivar); putchr('=');
-  setsrc(ival); itot = imult(ivar); putint(itot); newlin();
-  putint(itot); putchr('/'); putint(ivar); putchr('=');
-  setsrc(itot); ires = idiv(ivar); putint(ires); newlin();
+  putint(ival); putc('*'); putint(ivar); putc('=');
+  setdst(ival); cval,itot = imult(ivar); putint(itot); 
+  if (cval) puts(" OVERFLOW!"); newlin();
+  putint(itot); putc('/'); putint(ivar); putc('=');
+  setdst(itot); ires = idiv(ivar); putint(ires); newlin();
+  cpival(ires);
+  ival>>; setsrc(ival); cval,itot = iadd(itot); 
+  if (cval) return; //Number to Large to Modulo
+  putint(itot); putc('%'); putint(ivar); putc('=');
+  setdst(itot); ires = imod(ivar); putint(ires); newlin();
   cpival(ires);
 }
+
+void prshft() {
+  puts(); putc('('); putdec(cval); puts(",%"); 
+  cnum = >ivar; putbin(cnum); putspc();
+  cnum = <ivar; putbin(cnum); puts(")=");
+}
+
+void prctot() {putc('%'); putbin(ctot); putspc();}
+
+void pritot() {
+  putc('%'); cnum = >itot; putbin(cnum); 
+  putspc(); cnum = <itot; putbin(cnum); putspc();
+}
+
+/* Test ishftl() and ishiftr() */
+void shftlr(cval, ivar) {
+  newlin();
+  ival = ivar; for (cnum = 0; cnum < cval; cnum++) ival<<; prshft("ISHFTL"); 
+  ctot, itot = ishftl(cval, ivar); prctot(); pritot(); newlin();
+  cpival(itot);
+  ival = ivar; for (cnum = 0; cnum < cval; cnum++) ival>>; prshft("ISHFTR");
+  ctot, itot = ishftr(cval, ivar); pritot(); prctot(); newlin();
+  cpival(itot);
+}
+
 
 main:
 
@@ -82,6 +117,7 @@ less = $009A; more = $00DE; minmax();
 less = $789A; more = $78DE; minmax();
 less = $7800; more = $BC00; minmax();
 less = $789A; more = $BCDE; minmax();
+less = $F18F; more = $F18F; minmax();
 anykey();
 
 itaati(&0);
@@ -97,9 +133,27 @@ ival = &1234; addsub(&5678);
 ival = &23456; addsub(&34567); 
 ival = &$7700; addsub(&$6600); 
 ival = &$7FFF; addsub(&$8000); 
+ival = &$FDEC; addsub(&$CDEF); 
 anykey();
 
-//ival = &123; mltdiv(&234);
+ival = &23; mltdiv(&34);
+ival = &123; mltdiv(&234);
+ival = &255; mltdiv(&257); 
+anykey();
+
+shftlr(0,&$AA55);
+shftlr(1,&$A55A);
+shftlr(2,&$F00F);
+shftlr(3,&$0FF0);
+shftlr(4,&$AA55);
+shftlr(7,&$A55A);
+anykey();
+shftlr(8,&$AA55);
+shftlr(9,&$A55A);
+shftlr(11,&$0FF0);
+shftlr(12,&$AA55);
+shftlr(15,&$A55A);
+shftlr(16,&$F00F);
 
 
 goto exit;

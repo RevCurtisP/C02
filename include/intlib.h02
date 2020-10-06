@@ -2,69 +2,77 @@
  * intlib - Standard Library Routines for Integer Values *
  *********************************************************/
 
-/* Absolute Value                          *
- * Args: w - Word to get absolute value of *
- * Returns: (int) Absolute value of w      */
+/* Integer Absolute Value              *
+ * Args: int w - Integer to test       *
+ * Returns: int v -Absolute value of w */
 char iabs();
 
-/* Add Integers                 *
- * Requires: setsrc(g) - Augend *
- * Args: d - Addend             *
- * Returns: (int) Sum           */
+/* Integer Add               *
+ * Setup: setsrc(g) - Augend *
+ * Args: int d - Addend      *
+ * Returns: char c - Carry   *
+ *          int r - Sum      */
 char iadd();
  
-/* Convert ASCII String to Unsigned Integer *
- * Args: &s - String to Convert             *
- * Returns: (char) Number of digits parsed  *
- *          (int) Numeric value of string   */
+/* ASCII to Integer                           *
+ *   Convert ASCII string to Unsigned Integer *
+ * Args: &s - String to Convert               *
+ * Returns: char n - Number of digits parsed  *
+ *          int v - Numeric value of string   */
 char atoi();
 
-/* Convert Unsigned Integer to ASCII String *
- * Requires: setdst(s) - Destination String *
- * Args: w  - Unsigned Byte to Convert      *
- * Returns: Length of string                */
+/* Integer to ASCII                       *
+ *   Convert Unsigned Integer to String   *
+ * Setup: setdst(s) - Destination String  *
+ * Args: int w  - Unsigned Int to Convert *
+ * Returns: char n - Length of string     */
 void itoa();
 
-/* Divide Unsigned Integers        *
- * Requires: setsrc(n) - Numerator *
- * Args: d - Denominator           *
- * Returns: (int) Quotient         */
+/* Integer Divide               *
+ *   Divide Unsigned Integers   *
+ * Aetup: setdst(n) - Numerator *
+ * Args: int d - Denominator    *
+ * Returns: int q - Quotient    */
 char idiv();
  
-/* Maximum of Two Integers             *
+/* Integer Maximum                     *
+ *   Return Largest of Two Integers    *
  * Requires: setsrc(i) - First Integer *
- * Args: j - Second Integer            *
- * Returns: (int) Greater of the Two   */
-char max();
+ * Args: int j - Second Integer        *
+ * Returns: int m - Greater of the Two */
+char imax();
 
-/* Minimum of Two Integers       *
+/* Integer Minimum                     *
+ *   Return smallest of Two Integers   *
  * Requires: setsrc(i) - First Integer *
- * Args: j - Second Integer            *
- * Returns: (int) Lesser of the Two */
-char min();
+ * Args: int j - Second Integer        *
+ * Returns: int m - Lesser of the Two  */
+char imin();
 
-/* Multiply Unsigned Integers           *
- * Requires: setsrc(m) - Muliplicand    *
- * Args: r - Multiplier                 *
- * Returns: (char) Product (Bits 16-23) *
- *          (int) Product (Bits 0-15)   */
-char mult();
+/* Integer Multiply                  *
+ *  Multiply Unsigned Integers       *
+ * Requires: setdst(m) - Muliplicand *
+ * Args: int r - Multiplier          *
+ * Returns: long p - Product         */
+char imult();
 
-/* Shift Integer Left                *
- * Args: n - Number of Bits to Shift *
- *       w - Integer Value to Shift  *  
- * Returns: Shifted Integer          */
+/* Integer Left Shift               *
+ * Args: char n - Number of Bits    *
+ *       int w - Value to Shift     *  
+ * Returns: char v - Overflow Bits  *
+            int r - Shifted Integer */
 char ishftl();
 
-/* Shift Byte Right                  *
- * Args: n - Number of Bits to Shift *
- *       w - Integer Value to Shift  *  
- * Returns: Shifted Integer          */
+/* Integer Shift Right                  *
+ * Args: char n - Number of Bits    *
+ *       int w - Value to Shift     *  
+ * Returns: char v - Overflow Bits  *
+            int r - Shifted Integer */
 char ishftr();
 
-/* Subtract Integers              *
+/* Integer Subtract               *
  * Requires: setsrc(m) - Minuend  *
- * Args: s - Subtrahend           *
- * Returns: (int) Difference      */
+ * Args: int s - Subtrahend       *
+ * Returns: char c - Carry        *
+ *          int d - Difference    */
 char isub();
- 
