@@ -17,10 +17,14 @@ extern "C"
 #endif
 
 typedef struct DIR DIR;
+typedef struct tm tm;
 
 struct dirent
 {
-    char *d_name;
+    int d_attr;  //Attributes
+    unsigned d_size;  //Size in Bytes
+    struct tm *d_time;    //Timestamp
+    char *d_name;     //Filename
 };
 
 DIR           *opendir(const char *);

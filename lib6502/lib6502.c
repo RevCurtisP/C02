@@ -583,7 +583,7 @@ enum {
   fetch();                                                              \
   tick(ticks);                                                          \
   fflush(stdout);                                                       \
-  fprintf(stderr, "\nundefined instruction %02X\n", memory[PC-1]);      \
+  fprintf(stderr, "\nundefined instruction %02X at address %04x\n", memory[PC-1], PC-1);      \
   return;
 
 #define phR(ticks, adrmode, R)                  \

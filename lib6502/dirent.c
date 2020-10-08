@@ -13,11 +13,15 @@
 #include <io.h> /* _findfirst and _findnext set errno iff they return -1 */
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+#define EPOCH 116444736000000000  //January 1, 1970 as MS file time
+#define RATIO 10000000            //Conversion Factor - Hundreds of Nanoseconds
 
 typedef ptrdiff_t handle_type; /* C99's intptr_t not sufficiently portable */
 
@@ -103,6 +107,9 @@ struct dirent *readdir(DIR *dir)
         if(!dir->result.d_name || _findnext(dir->handle, &dir->info) != -1)
         {
             result         = &dir->result;
+            result->d_attr = dir->info.attrib;
+            result->d_size = dir->info.size;
+            result->d_time = localtime(&dir->info.time_write);
             result->d_name = dir->info.name;
         }
     }

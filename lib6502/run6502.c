@@ -259,6 +259,7 @@ static void usage(int status)
   fprintf(stream, "  -N addr           -- set NMI vector\n");
   fprintf(stream, "  -P addr           -- emulate putchar(3) at addr\n");
   fprintf(stream, "  -R addr           -- set RST vector\n");
+  fprintf(stream, "  -S addr           -- emulate system commands at addr\n");
   fprintf(stream, "  -s addr last file -- save memory from addr to last in file\n");
   fprintf(stream, "  -v                -- print version number then exit\n");
   fprintf(stream, "  -X addr           -- terminate emulation if PC reaches addr\n");
@@ -407,6 +408,18 @@ static int doFtrap(int argc, char **argv, M6502 *mpu)
   return 1;
 }
 
+static int STrap(M6502 *mpu, word addr, byte data)	{ 
+	syscmd(mpu, addr, data);
+	rts; 
+}
+static int doStrap(int argc, char **argv, M6502 *mpu)
+{
+  unsigned addr;
+  if (argc < 2) usage(1);
+  addr= htol(argv[1]);
+  M6502_setCallback(mpu, call, addr, STrap);
+  return 1;
+}
 
 /* Emulate getchar(3) at addr */
 static int gTrap(M6502 *mpu, word addr, byte data)	{ mpu->registers->a= getchar();  rts; }
@@ -532,6 +545,7 @@ int main(int argc, char **argv)
 	else if (!strcmp(*argv, "-N"))	n= doNMI(argc, argv, mpu);
 	else if (!strcmp(*argv, "-P"))	n= doPtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-R"))	n= doRST(argc, argv, mpu);
+	else if (!strcmp(*argv, "-S"))	n= doStrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-s"))	n= doSave(argc, argv, mpu);
 	else if (!strcmp(*argv, "-v"))	n= doVersion(argc, argv, mpu);
 	else if (!strcmp(*argv, "-X"))	n= doXtrap(argc, argv, mpu);
