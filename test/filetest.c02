@@ -1,4 +1,4 @@
-/***********(((************************
+/************************************
  * FILETEST - Test/Demo Module fileio *
  **************************************/
  
@@ -21,9 +21,12 @@ char c;         //Character Read from File
 char i;         //Loop Index Variable
 char n;         //Number of Characters to Write
 int addr;       //End Address for load()
+int filpos;     //Position in File
 char l[255];    //Array for load()
 char r[255];    //Array for fread()
 char s[128];    //String for fgets()
+const char str1 = "THE QUICK BROWN FOX ";
+const char str2 = "JUMPED OVER THE LAZY DOG";
 const char save = "ZYXWVUTSRQPONMLKJIHGFEDCBA9876543210";
 const char bnry = "ZYW1XVU2TS3RQ4PO5NM6LKJI7HG8FED9CBA0";
 char aa,xx,yy,zz;  //Function Arguments
@@ -33,101 +36,143 @@ main:
   fsinit(); //Initialize File System
   fp = opnfil(#MWRITE, &txtfil);
   if (fp) {
-    printf(fp, "WRITING TO CHANNEL %d%n");
     wstrng(fp); //Test fputs()
+    flshfl(fp); //Test fflush()
     wbnry(fp);  //Test fwrite()
-    wchars(fp); //Test fputc()
+    prtpos(fp); //Print Position in File 
   }
-  sfile(0, &savfil);
   clsfil(fp);
+  fp = opnfil(#MAPPND, &txtfil);
+  if (fp) wchars(fp); //Test fputc()
+  clsfil(fp);
+  sfile(0, &savfil);
 
   fp = opnfil(#MREAD, &txtfil);
+  else printf(n, "  READ $%x CHARACTERS%n");
   if (fp) {
-    printf(fp, "READING CHANNEL %d%n");
     rstrng(fp);
     rbnry(fp);
+  }
+  clsfil(fp);
+  fp = opnfil(#MREAD, &txtfil);
+  if (fp) {
+    posfil(fp);
     rchars(fp);
+    rwdfil(fp);
+    rstrng(fp);
   }
   clsfil(fp);
   lfile(#MABSLT, &savfil); //Test fload()
 
   goto exit;
 
-void error(aa, yy, xx) {
-  printf();
-  goto exit;
-}
-
-void opnfil(aa,yy,xx) {
-  puts("OPENING "); puts(.,yy,xx); 
-  printf(aa, " WITH OPTIONS $%h%n");
-  aa, yy = fopen(aa,yy,xx);
-  if (aa) printf(aa,"OPENED ON CHANNEL %d%n");
-  else error(yy, "ERROR %d OPENING FILE%n");
-  return aa;
-}
-
-void wbnry(aa) {
-  fsaddr(&bnry);
-  n, err = fwrite(@bnry, aa);
-  if (err) printf(err, "ERROR %d%n");
-}
-
-void wchars(aa) {
-  for (i='0'; i<='Z'; i++) {fputc(i, aa);}
-}
-
-void wstrng(aa) {
-  fputs(aa, "THE QUICK BROWN FOX ");
-  fputln(aa, "JUMPED OVER THE LAZY DOG");
-}
-
-void sfile(aa, yy, xx) {
-  setdst(); printf("SAVING FILE %s%n");
-  setdst(&save); printf("START ADDRESS %w%n");
-  setdst(&bnry); printf("END ADDRESS %w%n");
-  fsname(.,yy,xx); //Set Filename
-  fsaddr(&save);   //Set Start Address
-  err, addr = fsave(aa, &bnry);
-  if (err) printf(err, "ERROR %d%n");
-  else putln("FILE SAVED");
-}
-
-void rbnry(aa) {
-  fsaddr(&r);
-  n, err = fread(@bnry, aa);
-  if (err) printf(err, "ERROR %d%n");
-  else putln(&r);
-}
-
-void lfile(aa, yy, xx) {
-  setdst(); printf("LOADING FILE %s%n");
-  memclr(255, &l); printf("START ADDRESS %w%n");
-  fsname(.,yy,xx); //Set Filename
-  fsaddr(&l);      //Set Load Address  
-  err, addr = fload(aa);
-  if (err) printf(err, "ERROR %d%n");
-  else {
-    setdst(addr); printf("END ADDRESS %w%n");
-    putln(&l);
+void chkerr() {
+  if (err) {
+    printf(err, " ERROR $%x%n");
+    goto exit;
   }
 }
 
+void flshfl(aa) {
+  printf(aa, "FFLUSH($%x): ");
+  zz, err = fflush(aa); chkerr();
+  puts("FLUSHED, "); anykey(0);
+}
+
+void opnfil(aa,yy,xx) {
+  setdst();printf("FOPEN($%x,\"%s\"): "); 
+  zz, err = fopen(aa,yy,xx); chkerr();
+  printf(zz,"CHANNEL=$%x%n");
+  return zz;
+}
+
+void prtpos(aa) {
+  printf("FTELL($%x): ");
+  err, filpos = ftell(aa); chkerr();
+  setdst(filpos); printf("POSITION=$%w%n");
+  return aa;
+}
+
+void posfil(aa) {
+  setdst(filpos); printf(aa, "FSEEK($%x,$%w): ");
+  err = fseek(aa, filpos); chkerr();
+  putln("POSITIONED");
+}
+
+void rwdfil(aa) {
+  printf(aa, "REWIND($%x): ");
+  err = rewind(aa, filpos); chkerr();
+  putln("REWOUND");
+}
+
+void wbnry(aa) {
+  setdst(&bnry); printf("FWRITE($%x,\"%s\"): ");
+  fsaddr(&bnry);
+  n, err = fwrite(@bnry, aa); chkerr();
+  printf(n, "WROTE $%x BYTES%n");
+}
+
+void wchars(aa) {
+  puts("FPUTC '");
+  for (i='0'; i<='Z'; i++) {zz, err = fputc(i, aa); chkerr(); putc(zz);}
+  putln("'");
+}
+
+void wstrng(aa) {
+  setdst(str1); printf(aa, "FPUTS($%x,\"%s\"): ");
+  n, err = fputs(aa, str1); chkerr();
+  printf(n, "WROTE $%x CHARACTERS%n");
+
+  setdst(str2); printf(aa, "FPUTLN(%s,\"%s\"): ");
+  n, err = fputln(aa, str2); chkerr();
+  printf(n, "WROTE $%x CHARACTERS%n");
+}
+void sfile(aa, yy, xx) {
+  setdst(); printf("FSNAME(\"%s\"); ");
+  fsname(.,yy,xx); //Set Filename
+  setdst(&save); printf("FSADDR($%w); ");
+  fsaddr(&save);   //Set Start Address
+  setdst(&bnry); printf(aa, "FSAVE($%x,$%w): ");
+  err, addr = fsave(aa, &bnry); chkerr();
+  putln("FILE SAVED");
+}
+
+void rbnry(aa) {
+  setdst(&r); printf("FSADDR($%w); ");
+  fsaddr(&r); 
+  printf(@bnry, "FREAD($%x,"); printf(aa,"$%x): ");
+  n, err = fread(@bnry, aa); chkerr();
+  puts(&r); printf(n, ", READ $%x BYTES%n");
+}
+
+void lfile(aa, yy, xx) {
+  setdst(); printf("FSNAME(\"%s\"); ");
+  fsname(.,yy,xx); //Set Filename
+  memclr(255, &l); printf("FSADDR($%w); ");
+  fsaddr(&l);      //Set Load Address  
+  printf(aa, "FLOAD($%x): ");
+  err, addr = fload(aa); chkerr();
+  setdst(addr); printf("END=$%w, "); putln(&l);
+}
+
 void rchars(aa) {
+  printf("FGETC(A): ");
   while(!feof(aa)) {
-    c, err = fgetc(aa); if (err) break;
+    c, err = fgetc(aa); 
+    if (err == $ff) break; else chkerr();
     putc(c);
   }
   newlin();
 }
 
 void rstrng(aa) {
-  n, err = fgets(aa, &s);
-  if (err) printf(err, "ERROR %d%n");
-  else puts(&s);
+  printf("FGETS($%x, &S): ");
+  n, err = fgets(aa, &s); chkerr();
+  puts(&s); printf(n, "  READ $%x CHARACTERS%n");
 }
 
 void clsfil(aa) {
-  printf(aa, "CLOSING CHANNEL %d%n");
-  fclose(aa);
+  printf(aa, "FCLOSE($%x): ");
+  err = fclose(aa); chkerr();
+  putln("CLOSED");
 }

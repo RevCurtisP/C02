@@ -11,29 +11,23 @@
 #include <stdiox.h02>
 #include <string.h02>
 #include <memory.h02>
+#include <error.h02>
 #include <fileio.h02>
+#include <filesys.h02>
 
-
-struct txtrec {
-  char name[23]; 
-  char start[3], dash, end[3];
-  char cr; char lf; char null;};
-
-struct binrec {
+struct rec {
+  int start, end;
   char name[24];
-  char start[4], end[4];
 };
 
-char f;          //File Channel
-char text[128]; //Input Text
-struct txtrec tr;
+const char filnam = "RECFILE.BIN";
+char f, err, ferr, mode; 
+char n;
+char s[128];
+int dptr, recnum;
+char aa,yy,xx; int yx;
 
-main:
-  f = fopen(#MREAD, "RECTEXT.TXT");
-  while (fgets(f, tr)) 
-    puts(tr);
-  fclose(f);
-  goto exit;
+struct rec record;
 
 data: inline
   "TEX AVERY",&1935,&1942, "TED BONNICKSEN",&1963,&1963, "BERNARD B. BROWN",&1934,&1934,
@@ -44,6 +38,60 @@ data: inline
   "ABE LEVITOW",&1959,&1962, "ALEX LOVY",&1967,&1968, "NORMAN MCCABE",&1940,&1943,
   "ROBERT MCKIMSON",&1946,&1969, "PHIL MONROE",&1963,&1964, "MAURICE NOBLE",&1961,&1964,
   "TOM PALMER",&1933,&1933, "HAWLEY PRATT",&1961,&1964, "FRANK TASHLIN",&1936,&1946,
-  "RICHARD THOMPSON",&1963,&1963, "BILL TYTLA",&1964,&1964;
+  "RICHARD THOMPSON",&1963,&1963, "BILL TYTLA",&1964,&1964, "";
+
+int rdint() {
+  srcptr = dptr; 
+  xx = *srcptr; srcptr++;
+  yy = *srcptr; srcptr++;
+  dptr = srcptr;
+  return 0, yy, xx;
+}
+
+void prtrec() {
+  setdst(recnum); printf("%j: ");
+  setdst(record.start); printf("%j ");
+  setdst(record.end); printf("%j ");
+  setdst(record.name); printf("%s%n");
+}
+
+
+main:
+  puts("REMOVING FILE "); putln(filnam);
+  err = remove(0, filnam); if (err and err <> #ENOENT) goto error;
+
+  puts("CREATING FILE "); putln(filnam);
+  fsrecs(@record);
+  f, err = fopen(#MRECRD|#TBNRY, filnam); if (err) goto error;
+
+  puts("WRITING RECORDS "); 
+  dptr = &data; recnum = 0;
+  while() {
+    memclr(@record, record);
+    setdst(record.name); n = strcpy(dptr); if (n<2) break;
+    setsrc(dptr); dptr = iadd(.,0,n); dptr++;
+    record.start = rdint();
+    record.end = rdint();
+    fsaddr(&record); 
+    putint(recnum); putspc();
+    err, recnum = fputr(f, recnum); if (err) goto error;
+  }
+  newlin();
+
+  putln("READING RECORDS "); 
+  do {
+    recnum--; 
+    fsaddr(&record); 
+    err = fgetr(f, recnum); if (err) goto error;
+    prtrec();
+  } while (<recnum);
+
+  fclose(f);
+
+  goto exit;
   
-  
+error:
+  ferr = ferror(f, s);
+  if (err <> ferr) printf(err, "errno=%d, ");
+  setdst(s); printf(ferr, "Error %d: %s%n");
+  goto exit;
