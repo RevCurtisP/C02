@@ -4,6 +4,7 @@
 #define DELKEY $08 //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key
 #define RTNKEY $0D //Return/Enter Key
+#define SYSBFL 255 //System Buffer Length
 
 /* Standard Library Pointers */
 char srclo,srchi;   //Source String Pointer for Library Functions
@@ -20,6 +21,7 @@ char stkslo, stkshi; //Stack Start Address
 char stkelo, stkehi; //Stsck End Address
 char random, rdseed; //Pseudo-Random Number Generation
 char temp0, temp1, temp2, temp3;  //Temporary Variables
+char sysbfr[], sysbfp; //System String Buffer and Position
 
 /* Platform Specific Variables */
 char invflg;  //Video Invert Mask

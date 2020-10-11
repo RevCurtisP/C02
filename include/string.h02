@@ -2,7 +2,7 @@
  * string - String Handling Routines for C02 *
  *********************************************/
 
-/* Find Charaacter in String    *
+/* Find Character in String    *
  * Args: c -  Character to find *
  *       &s - String to search  *
  * Returns: c in s              *

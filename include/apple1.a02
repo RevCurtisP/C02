@@ -16,11 +16,13 @@ RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 .HEXH    EQU $29     ;
 .YSAVE   EQU $2A     ;Y Register Storage
 .MODE    EQU $2B     ;Mode: Store, Examine, Block Examine
-.BUFFER  EQU $200    ;Input Buffer
+.IN      EQU $200    ;Input Buffer
 
 ;Standard Library Variables
+SRCPTR  EQU $30     ;Source String Pointer (stdio.a02)
 SRCLO   EQU $30     ;Source String Pointer (stdio.a02)
 SRCHI   EQU $31
+DSTPTR  EQU $32     ;Destination String Pointer (string.a02)
 DSTLO   EQU $32     ;Destination String Pointer (string.a02)
 DSTHI   EQU $33
 BFRLO   EQU $34     ;Work Buffer Pointer
@@ -47,6 +49,11 @@ STKSLO  EQU $4C     ;Stack Start Address
 STKSHI  EQU $4D
 STKELO  EQU $4E     ;Stack End Address
 STKEHI  EQU $4F
+
+SYSBFP  EQU $50     ;Position in System Buffer
+  
+SYSBFL  EQU 128     ;System Buffer Size (128 Bytes)
+SYSBFR  EQU .IN     ;System Buffer (Input Buffer
 
 ;PIA 6820 Registers
 .KBD     EQU $D010   ;Keyboard Data
@@ -100,3 +107,5 @@ NEWLIN: LDA #$0D    ;Load C/R into Accumulator
         JMP PUTCHR  ;  and Print it
 
         INCLUDE "../include/putstr.a02" ;PUTSTR routine
+
+        ENDSUBROUTINE

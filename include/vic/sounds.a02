@@ -1,0 +1,41 @@
+; C02 sounds library assembly routines for VIC-20
+
+;beep() - Produce System Beep Sound
+;Affects: A,Y
+BEEP    NOP             ;Sound Bell
+
+        ;Uses VIA Timer 2...
+BEEPD:  JSR $EF96       ;Delay YX Milliseconds
+        DEX
+        BPL BEEPD
+        DEY
+        BPL BEEPD
+        RTS
+
+BEEPX:  LDX #3          ;Turn off all Sound
+BEEPXL: LDA #0          ;Store 0 in all four
+        STA $900A,X     ;  VIC Sound Registers
+        DEX
+        BPL BEEPXL      
+        RTS
+        
+;bomb() - Produce System Explosion Sound
+;Affects: None
+BOMB:   RTS         ;Function Not Available
+
+;shoot() - Produce Shooting Sound
+;Affects: None
+SHOT:   RTS         ;Function Not Available
+
+;tick() - Produce System Tick Sound
+;Affects: None
+TICK:   LDA $C030   ;Click Speaker Once
+        RTS
+
+;tock() - Produce System Tock Sound
+;Affects: None
+TOCK:   RTS         ;Function Not Available
+
+;zap() - Produce System Zap Sound
+;Affects: None
+ZAP:   RTS          ;Function Not Available

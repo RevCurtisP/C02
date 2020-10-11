@@ -1,0 +1,82 @@
+; C02 Interrupt Vector Assembly Language Routines for VIC-20
+
+;getirq() - Return IRQ Interrupt Handler Address
+;Returns: A = $00 - Software Definable Address
+;         Y = Address MSB
+;         X = Address LSB
+GETIRQ: LDA #$00    ;Return software definable
+        LDX $0314   ;and Address in CINV
+        LDY $0315
+        RTS
+
+;getbrk() - Return BRK Interrupt Handler Address
+;Returns: A = $00 - Software Definable Address
+;         Y = Address MSB
+;         X = Address LSB
+GETBRK: LDA #$00    ;Return software definable
+        LDX $0316   ;and Address in CBINV
+        LDY $0317
+        RTS
+
+;getnmi() - Return NMI Interrupt Handler Address
+;Returns: A = $00 - Software Definable Address
+;         Y = Address MSB
+;         X = Address LSB
+GETNMI: LDA #$00    ;Return software definable
+        LDX $0318   ;and Address in CBINV
+        LDY $0319
+        RTS
+
+;getrst() - Return RESET Interrupt Handler Address
+;Returns: A = $7F - Firmware Defined Address
+;         Y = Address MSB
+;         X = Address LSB
+GETRST: LDX $FFFC   ;Load 6502 Interrupt Vector
+        LDY $FFFD   ;and Fall into SETRST
+
+;setrst() - Set RESET Interrupt Handler Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $7F - Failure - Can't be Changed
+SETRST: LDA #$7F    ;Return "Hard Coded"
+        RTS
+
+;setirq() - Set IRQ Interrupt Handler Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 - Successfully Set
+SETIRQ: SEI         ;Disable Interrupts
+        STX $0314   ;Store Address in CINV
+        STY $0315
+        CLI         ;Enable Interrupts
+        LDA #$00    ;Return "Modified"
+        RTS
+
+;setrst() - Set BRK Interrupt Handler Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 - Successfully Set
+SETBRK: SEI         ;Disable Interrupts
+        STX $0316   ;Store Address in CBINV
+        STY $0317
+        CLI         ;Enable Interrupts
+        LDA #$00    Return "Modified"
+        RTS
+
+;setnmi() - Set NMI Interrupt Handler Address
+;Args: Y = Address MSB
+;      X = Address LSB
+;Returns: A = $00 - Successfully Set
+SETNMI: STX $0318   ;Store Address in NMINV
+        STY $0319
+        LDA #$00    ;Return "Modified"
+        RTS
+
+;xitirq - Exit from IRQ Interrupt
+;Exit IRQ if not Executing System IRQ Routine
+XITIRQ: PLA     ;Restore Y Register
+        TAY
+        PLA     ;Restore Y Register
+        TAX
+        PLA     ;Restore Accumulator
+        RTI     ;Return from Interrupt

@@ -4,6 +4,7 @@
 #define DELKEY $08 //Delete/Backspace Key
 #define ESCKEY $18 //Escape/Stop Key
 #define RTNKEY $0D //Return/Enter Key
+#define SYSBFL 128 //System Buffer Length
 
 //Library Pointer Variables
 zeropage int srcptr, dstptr, bfrptr, blkptr;
@@ -12,7 +13,6 @@ char dstlo,dsthi; //Destination String Pointer for Library Functions
 char bfrlo,bfrhi; //Buffer Pointer for Library Functions
 char blklo,blkhi; //Block Segment Pointer
 char stklo,stkhi; //Stack Pointer
-
 //Library Variables
 char blkslo, blkshi; //Block Start Address
 char blkelo, blkehi; //Block End Address
@@ -21,6 +21,7 @@ char stkslo, stkshi; //Stack Start Address
 char stkelo, stkehi; //Stsck End Address
 char random, rdseed; //Pseudo-Random Number Generation
 char temp0, temp1, temp2, temp3; //Temporary Storage
+char sysbfr[], sysbfp; //System String Buffer and Position
 
 //Memory Mapped I/O
 char putcon;  //Write Character to Console

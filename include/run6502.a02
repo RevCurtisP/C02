@@ -40,11 +40,17 @@ STKSHI  EQU $4D
 STKELO  EQU $4E     ;Stack End Address
 STKEHI  EQU $4F
 
+SYSBFP  EQU $50     ;Position in System Buffer
+
+SYSBFL  EQU 128     ;System Buffer Size (Max String Size)
+SYSBFR  EQU $0200   ;System Buffer
+
+
 ;Memory Mapped I/O 
 _KBHIT  EQU $FFF0   ;Is a Key Pressed
 _GETCH  EQU $FFF1   ;Read Keyboard (Blocking)
 
-        ORG $0200   ;START at RAM midpoint
+        ORG $0400   ;START at RAM midpoint
 
 START:  JMP MAIN    ;Execute Program
 
@@ -79,6 +85,8 @@ NEWLIN: LDA #RTNKEY ;Load Line Feed into Accumulater
 PUTCHR  EQU $FFE3   ;Emulator CHROUT Routine
 
 EXIT    EQU $FFEC   ;Emulator SHUTDN Routine
+
+FSCMD   EQU $FFE6   ;run6502 File System Command Routine
 
         INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
         INCLUDE "../include/putstr.a02" ;PUTSTR routine

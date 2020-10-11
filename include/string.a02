@@ -47,7 +47,7 @@ STRCMR: RTS             ;
 ;         A = $FF, C=0 if not found
 ;         Y = Position of last character scanned
 STRCHR: JSR SETSRC      ;Initialize Source String
-STRCHA: STA TEMP3;      ;Save Search Character (alternate entry point)
+STRCHA: STA TEMP3       ;Save Search Character (alternate entry point)
 STRCHL: LDA (SRCLO),Y   ;Get Next Character
         BEQ STRCLC      ;If NUL, Return $FF and Carry Clear 
         CMP TEMP3       ;Compare Character
@@ -82,6 +82,11 @@ STRLEX: TYA             ;Transfer Index to Accumulator
 ;Sets: SRCLO,SRCHI = Pointer to destination string
 ;Affects: N,Z
 STRDST  EQU SETDST      ;Aliased to System Header function
+
+;strcpb(&s) - Copy String to System Buffer
+STRCPB: JSR SETSRC      ;Set Source Pointer to String Address
+        JSR SETDSB      ;Set Destination Pointer to System Buffer
+        BVC STRCPA      ;Execute String Copy
 
 ;strcat(&s) Concatenate String (to Destination String)
 ;Requires: DSTLO, DSTHI - Pointer to destination string

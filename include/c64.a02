@@ -9,8 +9,10 @@ RTNKEY  EQU $0D ;Return/Enter Key     (RETURN)
 XMBANK  EQU $0A ;Extended Memory Bank (Load/Verify Flag)
 XADRLO  EQU $0B ;Ext Memory Address LSB (Text Index/Array Size)
 XADRHI  EQU $0C ;Ext Memory Address MSB (Array Dimension Fkags)
+SRCPTR  EQU $22 ;Source Pointer [Temporary Pointers]
 SRCLO   EQU $22 ;Source Pointer LSB [Temporary Pointers]
 SRCHI   EQU $23 ;Source Pointer MSB [Temporary Pointers]
+DSTPTR  EQU $24 ;Destination Pointer [Temporary Pointers]
 DSTLO   EQU $24 ;Destination Pointer LSB [Temporary Pointers]
 DSTHI   EQU $25 ;Destination Pointer MSB [Temporary Pointers]
 BLKLO   EQU $26 ;Block Pointer LSB [Floating Point Work Area]
@@ -26,7 +28,9 @@ TEMP2   EQU $FD ;Temporary Variable [Unused Byte]
 TEMP3   EQU $FE ;Temporary Variable [Unused Byte]
 
 ;System Variables
-USER3   EQU $0313 ;Free Byte for User Programs
+SYSBFL  EQU 88    ;System Buffer Size [88 Bytes]
+SYSBFR  EQU $0200 ;System Buffer [Keyboard Buffer]
+SYSBFP  EQU $0313 ;Position in System Buffer [Free Byte]
 
 BLKSLO  EQU $0334 ;Block Start LSB [Unused Byte]
 BLKSHI  EQU $0335 ;Block Start MSB [Unused Byte]

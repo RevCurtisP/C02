@@ -6,9 +6,9 @@ DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
 ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
 RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
 
-;Zero Page System Variables - x16emu Release 34 Memory Map
-;UNUSED $00-$01   ;Available to User
-;       $02-$52   ;Used by Basic graphics commands
+;       $00-$01   ;Miscellaneous Pointer
+;       $02-$21   ;ABI Registers
+;       $22-$52   ;Used by Basic graphics commands
 XMBANK  EQU $53   ;Extended Memory Bank 
 XADRLO  EQU $54   ;Ext Memory Address LSB 
 XADRHI  EQU $55   ;Ext Memory Address MSB 
@@ -30,12 +30,16 @@ TEMP0   EQU $64   ;Temporary Variable
 TEMP1   EQU $65   ;Temporary Variable 
 TEMP2   EQU $66   ;Temporary Variable 
 TEMP3   EQU $67   ;Temporary Variable 
-;       $68-7F    ;Available to User
+SYSBFP  EQU $68   ;Position in System Buffer [Free Byte]
+;       $69-7F    ;Available to User
 ;       $80-$83   ;Used by Kernal and DOS
 ;       $A4-$A8   ;Reserved for KERNAL/DOS/BASIC
 ;       $A9-$FF   ;Used by BASIC
-  
-;Other Variables - Top of Extended System RAM Area
+
+;Other Constants
+SYSBFL  EQU 128   ;System Buffer Length
+;Other Variables - User Storage Area
+SYSBFR  EQU $0700 ;System Buffer 
 BLKSLO  EQU $07F4 ;Block Start LSB 
 BLKSHI  EQU $07F5 ;Block Start MSB 
 BLKELO  EQU $07F6 ;Block End LSB 
@@ -92,5 +96,5 @@ DELCHR: LDA #DELKEY ;Load Delete Character
 NEWLIN: LDA #RTNKEY ;Load Return Character
         JMP PUTCHR  ;Print and Return
 
-        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routine
-        INCLUDE "../include/putstr.a02" ;PUTSTR routine
+        INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routine
+        INCLUDE "putstr.a02" ;PUTSTR routine

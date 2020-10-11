@@ -1,0 +1,75 @@
+/*********************************************************
+ * vector - 6502 Interrupt Vector Manipulation Functions *
+ *********************************************************/
+
+/* Get BRK Handler Address      *
+ * Returns: Status              *
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+ *          Address MSB         *
+ *          Address LSB         */
+char getbrk();
+
+/* Get IRQ Handler Address      *
+ * Returns: Status              *
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+ *          Address MSB         *
+ *          Address LSB         */
+char getirq();
+
+/* Get NMI Handler Address      *
+ * Returns: Status              *
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+ *          Address MSB         *
+ *          Address LSB         */
+char getnmi();
+
+/* Get RESET Handler Address    *
+ * Returns: Status              *
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+ *          Address MSB         *
+ *          Address LSB         */
+char getrst();
+
+/* Set BRK Handler Address      */
+ * Args: &d - New Address       *
+ * Returns: Result              * 
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+char setbrk();
+
+/* Set IRQ Handler Address      */
+ * Args: &d - New Address       *
+ * Returns: Result              * 
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+char setirq();
+
+/* Set NMI Handler Address      */
+ * Args: &d - New Address       *
+ * Returns: Result              * 
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+char setnmi();
+
+/* Set RESET Handler Address    */
+ * Args: &d - New Address       *
+ * Returns: Result              * 
+ *            $00 = modifiable  *
+ *            $7F = hard coded  *
+ *            $FF = unavailable *
+char setrst();
+
+/* Exit from IRQ Interrupt */
+xitirq:
+

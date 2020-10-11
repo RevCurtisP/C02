@@ -1,6 +1,8 @@
 ; C02 library stringx.h02 assembly language subroutines
 ; Requires the subroutines and definitions from string.asm
 
+        SUBROUTINE STRINGX
+
 ;Common Code - Initialize Variables
 STRXSI: JSR SETSRC      ;Initialize Source String
         STY TEMP1       ;Save Destination Pointer
@@ -73,3 +75,56 @@ STRSPL: JSR STRXSL      ;and Search for Character in Source String
         BPL STRSPL      ;  and Loop if < 128 
         BMI STRXSP      ;Else Return Position
 
+;strtok(c, &s) - Split String by Specified Character
+;Args: A = Delimiter, 0 = Set String to Tokenize
+;      X,Y = Address of Argument String
+;Sets: DSTPTR = Address of Argument String 
+;               or Address of System Buffer (A=0)
+;      SRCPTR = Address of System Buffer Location 
+;               or Address of Argument String (A=0)
+;      TEMP0 = Delimiter Character
+;Populates: SYSBFR - String to Tokenize
+;Returns: A = Length of Token
+;         Y = New Buffer Position, $FF = End of String
+;         X = End of String Flag, $00 or $FF
+STRTOK: ORA #0          
+        BNE .STRTOK     ;If Delimiter is NUL 
+        STA SYSBFP      ;  Initialize System Buffer Position
+        JMP STRCPB      ;  Copy String to System Buffer and Return
+.STRTOK STA TEMP0       ;Save Delimiter Character
+        JSR SETDST      ;Set Destination to String Address
+        JSR SETSBP      ;Set Source to Current Buffer Position
+        BPL .STCOPY     ;If at End of Buffer
+        LDA #0          
+        TAY             ;Set Destination String to ""
+        STA (DSTPTR),Y  ;and Return String Length 0
+        RTS             
+.STCOPY LDY #0          ;Initialize Index
+        LDX #0          ;Clear End of String Flag
+.STLOOP LDA (SRCPTR),Y  ;Get Character from Source String
+        BNE .STSKIP     ;If End of String 
+        DEX             ;  Set End of Buffer Flag
+        BMI .STDONE     ;  and Finish Up
+.STSKIP CMP TEMP0       ;
+        BEQ .STDONE     ;If Not Delimiter Character
+        STA (DSTPTR),Y  ;  Copy to Destination String
+        INY             ;  Increment Index
+        CPY #SYSBFL     ;  If Less Than Buffer Size
+        BCC .STLOOP     ;    Loop
+        DEX             ;Else Set End of Buffer Flag
+.STDONE LDA #0          ;Terminate String
+        STA (DSTLO),Y   ;
+.STRTN  STY TEMP0       ;Save String Length
+        INY             ;Increment Past Delimiter
+        TYA             ;  and Add to Buffer Position
+        CLC
+        ADC SYSBFP
+        STA SYSBFP      ;Save New Buffer Position
+        CPX #0          ;If End of Buffer Flag is Set
+        BPL .STRTRN     
+        STX SYSBFP      ;  Set Buffer Position to 255
+.STRTRN LDA TEMP0       ;Return String Length
+        RTS             
+
+
+        ENDSUBROUTINE

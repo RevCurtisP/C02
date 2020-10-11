@@ -1,17 +1,18 @@
 /* C02 System Header file for Commander X16 */
 
 /* Platform Specific Settings */
-#pragma zeropage $68  //Unused Zero Page - $68-$7F 
+#pragma zeropage $69  //Unused Zero Page - $69-$7F 
 
 /* Platform Specific Constants */
 #define DELKEY $14 //Delete/Backspace Key (DEL)
 #define ESCKEY $03 //Escape/Break Key (STOP)
 #define RTNKEY $0D //Return/Enter Key (RETURN)
+#define SYSBFL 128 //System Buffer Length
 
 /* Standard Library Pointers */
 zeropage char srclo,srchi;   //Source Pointer for Library Functions
 zeropage char dstlo,dsthi;   //String Pointer for Library Functions
-zeropage int srcptr,dstptr;  //Source, Destination Pointers      
+zeropage int  srcptr,dstptr; //Source, Destination Pointers      
 zeropage char bfrlo,bfrhi;   //Buffer Pointer for Library Functions
 zeropage char blklo,blkhi;   //Block Segment Pointer
 zeropage char stklo,stkhi;   //Stack Pointer
@@ -24,22 +25,22 @@ char blklen;        //Block Segment Length
 char stkslo,stkshi; //Stack Start Address
 char stkelo,stkehi; //Stsck End Address
 char random,rdseed; //Pseudo-Random Number Generation
-char temp0,temp1,temp2,temp3; //Temporary Storage
 char xmbank;        //Physical Bank
+char temp0,temp1,temp2,temp3; //Temporary Storage
+char sysbfr[], sysbfp; //System String Buffer and Position
 
 /* System Subroutines */
 void delchr(); //Delete previous character
 char getkey(); //Read ASCII character from Keyboard
-char getpos(); //Get Cursor Position
-char getsiz(); //Get Screen Size
 void newlin(); //Advance cursor to beginning of next line
 char polkey(); //Poll Keyboard for character
-char putchr(); //Print ASCII character to Keyboard
+char putchr(); //Print ASCII character to Screen
 void prbyte(); //Print Accumulator as Hexadadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
 char getchr(); //Wait for character from Keyboard
-void setpos(); //Set Cursor Position
+void putstr(); //Print String to Screen
 
 //System Labels
 start:  //Start of Code
 exit:   //Return to Operating System
+

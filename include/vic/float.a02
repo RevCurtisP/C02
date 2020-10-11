@@ -1,0 +1,60 @@
+;VIC20 BASIC Floating Point Functions
+
+;pival - PI Expressed as a Five-Byte Floating Point Number
+PIVAL   EQU $CEA8
+
+maxint  EQU $D1A5 ;The Constant -32768 in Five-Byte Floating Point Format
+ayint   EQU $D1AA ;Convert Floating Point to Signed Integer in A and Y
+intidx  EQU $D1B2 ;Convert Floating Point Subscript to a Positive Integer
+fpint   EQU $D1BF ;Convert Floating Point Number to Signed Integer
+
+makfp   EQU $D391 ;Convert 16-Bit Signed Integer to Floating Pointers
+fpadr   EQU $D7F7 ;Convert Floating Point to Unsigned Two-Byte Integer
+
+fpsubm  EQU $D850 ;Subtract FAC1 from a Number in Memory
+fpsub   EQU $D853 ;Subtract FAC2 from FAC1
+fpaddm  EQU $D867 ;Add FAC1 to a Number in Memory
+fpaddh  EQU $D86A ;Add FAC1 to FAC2
+
+normlz  EQU $D8FE ;Normalize Floating Point Accumulator #1
+comfac  EQU $D947 ;Replace FAC1 with Its 2's Complement
+
+denorm  EQU $D983 ;Denormalize Exponents of FAC1 and FAC2
+fpcone  EQU $D9BC ;Floating Point Constant with a Value of 1
+
+dolog   EQU $D9EA ;Perform LOG
+fpmult  EQU $DA28 ;Multiply FAC1 with FAC2
+fpmltb  EQU $DA59 ;Multiply Byte Subroutine
+lodarg  EQU $DA8C ;Move Floating Point Number from Memory into FAC2
+
+multen  EQU $DAE2 ;Multiply FAC1 by 10
+fpcten  EQU $BAF9 ;The Constant 10 in Five-Byte Floating Format
+divten  EQU $DAFE ;Divide FAC1 by 10
+fpdivm  EQU $DB0F ;Divide a Number in Memory by FAC1
+fpdivm  EQU $DB12 ;Divide FAC2 by FAC1
+lodfac  EQU $DBA2 ;Move Floating Point Number from Memory to FAC1
+
+strfac  EQU $DBD4 ;Move Floating Point Number from FAC1 to Memory
+argfac  EQU $DBFC ;Move Floating Point Number from FAC2 to FAC1
+rndmov  EQU $DC0C ;Round and Move Floating Point Number from FAC1 to FAC2
+facarg  EQU $DC0F ;Move Floating Point Number from FAC1 to FAC2
+round   EQU $DC1B ;Round FAC1 by Adjusting Rounding Byte
+sgnfac  EQU $DC2B ;Put Sign of FAC1 into A Register
+dosgn   EQU $DC39 ;Perform SGN
+bytfp   EQU $DC3C ;Convert Signed Byte in A Register to Floating Point
+doabs   EQU $DC58 ;Perform ABS
+cmpfac  EQU $DC5B ;Compare FAC1 to Memory
+fpint   EQU $DC9B ;Convert FAC1 to 32-bit Signed Integer in $62-$65
+doint   EQU $DCCC ;Perform INT
+
+ascfp   EQU $DCF3 ;Convert ASCII String to Floating Point Number
+addbyt  EQU $DD7E ;Add Signed Byte in A Register to FAC1
+fpasc   EQU $DDDD ;Convert Contents of FAC1 to ASCII String
+dosqr   EQU $DF71 ;Perform SQR
+expont  EQU $DF7B ;Perform ^
+negfac  EQU $DFB4 ;Perform - (Unary Minus) 
+doexp   EQU $DFED ;Perform EXP
+dorrnd  EQU $E094 ;Perform RND
+docos   EQU $E261 ;Perform COS
+dosin   EQU $E268 ;Perform SIN
+dotan   EQU $E2B1 ;Perform TAN

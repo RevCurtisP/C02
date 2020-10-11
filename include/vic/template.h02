@@ -1,0 +1,42 @@
+/*********************************************************
+ * vector - 6502 Interrupt Vector Manipulation Functions *
+ *********************************************************/
+
+/* Get Maskable Interrupt Address       *
+ * Returns: $00 If Address can be       *
+ *              modified, otherwise $FF *
+ *          Address MSB                 *
+ *          Address LSB                 */
+char getirq();
+
+/* Get Non-Maskable Interrupt Address   *
+ * Returns: $00 If Address can be       *
+ *              modified, otherwise $FF *
+ *          Address MSB                 *
+ *          Address LSB                 */
+char getnmi();
+
+/* Get "Reset" Interrupt Address        *
+ * Returns: $00 If Address can be       *
+ *              modified, otherwise $FF *
+ *          Address MSB                 *
+ *          Address LSB                 */
+char getrst();
+
+/* Set Maskable Interrupt Address   */
+ * Args: &d - New Interrupt Address *
+ * Returns: $00 If Successful,      * 
+ *              otherwise $FF       */
+char setirq();
+
+/* Set Non-Maskable Interrupt Address   */
+ * Args: &d - New Interrupt Address     *
+ * Returns: $00 If Successful,          * 
+ *              otherwise $FF           */
+char setnmi();
+
+/* Set "Reset" Interrupt Address    */
+ * Args: &d - New Interrupt Address *
+ * Returns: $00 If Successful,      * 
+ *              otherwise $FF       */
+char setrst();
