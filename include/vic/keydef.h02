@@ -41,3 +41,7 @@ struct keydef {
 
 /* Actual Key Definitions */
 const struct keydef keys;
+
+/* Structure for Key Names */
+struct kname {char delete[3], escape[4], return[6];};
+const struct kname knames;

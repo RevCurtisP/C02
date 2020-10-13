@@ -1,14 +1,14 @@
-;Standard ASCII Key Code Definitions
+;Apple II Key Code Definitions
 ;Undefined Keys hae value $00
 
 ;Key Definitions (Struct Key Codes)
 ;            Chr  NAME    Description
 KEYS:   BYTE $08 ;BCKSPC  Backspace
-        BYTE $03 ;BREAK   Break
+        BYTE $00 ;BREAK   Break
         BYTE $00 ;CLEAR   Clear
-        BYTE $00 ;COPY    Copy [Acorn Atom]
+        BYTE $00 ;COPY    Copy 
         BYTE $7F ;DELETE  Delete
-        BYTE $00 ;DOWN    Cursor Down
+        BYTE $0S ;DOWN    Cursor Down (Line Feed)
         BYTE $1B ;ESCAPE  Escape
         BYTE $00 ;FN1     F1
         BYTE $00 ;FN2     F2
@@ -22,21 +22,21 @@ KEYS:   BYTE $08 ;BCKSPC  Backspace
         BYTE $00 ;FN10    F10
         BYTE $00 ;FN11    F11
         BYTE $00 ;FN12    F12
-        BYTE $00 ;HELP    Help [C128/C65]
+        BYTE $00 ;HELP    Help 
         BYTE $00 ;HOME    Home
         BYTE $00 ;INSERT  Insert
-        BYTE $00 ;LEFT    Cursor Left 
-        BYTE $0A ;LNFD    ;Line Feed [C128]
-        BYTE $00 ;RIGHT   Cursor Right
+        BYTE $08 ;LEFT    Cursor Left (Backspace) 
+        BYTE $00 ;LNFD    Line Feed
+        BYTE $15 ;RIGHT   Cursor Right
         BYTE $0D ;RETURN  Return
-        BYTE $80 ;SHFRTN  Shift-Return
-        BYTE $00 ;RUN     Run [PET/CBM]
-        BYTE $92 ;RVSOFF  Reverse OffCtrl-0
-        BYTE $12 ;RVSON   Reverse On Ctrl-9
+        BYTE $00 ;SHFRTN  Shift-Return
+        BYTE $00 ;RUN     Run 
+        BYTE $00 ;RVSOFF  Reverse Off
+        BYTE $00 ;RVSON   Reverse On 
         BYTE $00 ;SHFSPC  Shifted Space
         BYTE $09 ;TAB     Tab
         BYTE $00 ;SHFTAB  Shift-Tab
-        BYTE $00 ;UP      Cursor Up 
+        BYTE $0B ;UP      Cursor Up 
 
 ;System Key Names
-KNAMES  BYTE "DELETE",0,"ESCAPE",0,"RETURN",0
+KNAMES  BYTE "<-",0,"ESC",0,"RETURN",0

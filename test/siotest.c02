@@ -1,10 +1,11 @@
-/**********************************************
- * TESTIO - Test Library stdio.h for py65mon *
- **********************************************/
+/**************************************
+ * SIOTEST - Test/Demo module stdio.h *
+ **************************************/
  
 //Specify System Header using -H option
 #include <stddef.h02>
 #include <stdio.h02>
+#include <keydef.h02>
 
 char key;      //Key read from keyboard
 char len;      //Length of input output string
@@ -16,8 +17,9 @@ main:
   key = getc();       //Wait for key press
   newlin();           //Advance cursor to next line
 
-  putln("TYPE LINES, END WITH RETURN");
-  putln("PRESS ESCAPE KEY TO END");
+  puts("TYPE LINES, END WITH "); putln(knames.return);
+  puts("PRESS "); puts(knames.delete); puts(" TO DELETE, ");
+  puts(knames.escape); putln(" TO END");
 
   while () {
     putc('>');

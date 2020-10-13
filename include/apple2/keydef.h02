@@ -1,4 +1,4 @@
-/* Standard ASCII Key Code Definitions *
+/* Apple II Key Code Definitions *
  * Undefined Keys have value $00       *
    
 /* Structure for Key Definitions */
@@ -43,6 +43,6 @@ struct keydef {
 const struct keydef keys;
 
 /* Structure for Key Names */
-struct kname {char delete[6], escape[6], return[6];};
+struct kname {char delete[2], escape[3], return[6];};
 const struct kname knames;
 

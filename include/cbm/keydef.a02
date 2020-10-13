@@ -1,39 +1,42 @@
 ;PETSCII Key Code Definitions
 ;Common to All PET/CBM Computers
 
-KEYS:   ;Key Definitions (Struct Key Codes)
-;NAME         Chr  Description
-.BCKSPC  BYTE $00 ;Backspace [N/A]
-.BREAK   BYTE $03 ;Break (RUN/STOP)
-.CLEAR   BYTE $93 ;Clear (Shift-CLR/HOME)
-.COPY    BYTE $00 ;Copy [N/A]
-.DELETE  BYTE $14 ;Delete
-.DOWN    BYTE $11 ;Cursor Down
-.ESCAPE  BYTE $00 ;Escape [C128/C65]
-.FN1     BYTE $85 ;F1 [VIC20/C64/C16/C128/C65]
-.FN2     BYTE $89 ;F2 [VIC20/C64/C16/C128/C65]
-.FN3     BYTE $86 ;F3 [VIC20/C64/C16/C128/C65]
-.FN4     BYTE $8A ;F4 [VIC20/C64/C16/C128/C65]
-.FN5     BYTE $87 ;F5 [VIC20/C64/C16/C128/C65]
-.FN6     BYTE $8B ;F6 [VIC20/C64/C16/C128/C65]
-.FN7     BYTE $88 ;F7 [VIC20/C64/C16/C128/C65]
-.FN8     BYTE $8C ;F8 [VIC20/C64/C128/C65] [HELP on C16]
-.FN9     BYTE $00 ;F9  [C65]
-.FN10    BYTE $00 ;F10 [C65]
-.FN11    BYTE $00 ;F11 [C65]
-.FN12    BYTE $00 ;F12 [C65]
-.HELP    BYTE $84 ;Help [C128/xC65]
-.HOME    BYTE $13 ;Home (CLR/HOME)
-.INSERT  BYTE $94 ;Insert (Shift-INS/DEL)
-.LEFT    BYTE $9D ;Cursor Left
-.LNFD    BYTE $00 ;Line Feed [C128]
-.RIGHT   BYTE $1D ;Cursor Right
-.RETURN  BYTE $0D ;Return
-.SHFRTN  BYTE $8D ;Shift-Return
-.RUN     BYTE $00 ;Run (Shift-RUN/STOP)
-.RVSOFF  BYTE $92 ;Reverse Off
-.RVSON   BYTE $12 ;Reverse On
-.SHFSPC  BYTE $A0 ;Shifted Space
-.TAB     BYTE $09 ;Tab
-.SHFTAB  BYTE $00 ;Shift-Tab [C128/C65]
-.UP      BYTE $91 ;Cursor Up
+;Key Definitions (Struct Key Codes)
+;            Chr  Name    Description
+KEYS:   BYTE $00 ;BCKSPC  Backspace [N/A]
+        BYTE $03 ;BREAK   Break (RUN/STOP)
+        BYTE $93 ;CLEAR   Clear (Shift-CLR/HOME)
+        BYTE $00 ;COPY    Copy [N/A]
+        BYTE $14 ;DELETE  Delete
+        BYTE $11 ;DOWN    Cursor Down
+        BYTE $00 ;ESCAPE  Escape [C128/C65]
+        BYTE $85 ;FN1     F1 [VIC20/C64/C16/C128/C65]
+        BYTE $89 ;FN2     F2 [VIC20/C64/C16/C128/C65]
+        BYTE $86 ;FN3     F3 [VIC20/C64/C16/C128/C65]
+        BYTE $8A ;FN4     F4 [VIC20/C64/C16/C128/C65]
+        BYTE $87 ;FN5     F5 [VIC20/C64/C16/C128/C65]
+        BYTE $8B ;FN6     F6 [VIC20/C64/C16/C128/C65]
+        BYTE $88 ;FN7     F7 [VIC20/C64/C16/C128/C65]
+        BYTE $8C ;FN8     F8 [VIC20/C64/C128/C65] [HELP on C16]
+        BYTE $00 ;FN9     F9  [C65]
+        BYTE $00 ;FN10    F10 [C65]
+        BYTE $00 ;FN11    F11 [C65]
+        BYTE $00 ;FN12    F12 [C65]
+        BYTE $84 ;HELP    Help [C128/xC65]
+        BYTE $13 ;HOME    Home (CLR/HOME)
+        BYTE $94 ;INSERT  Insert (Shift-INS/DEL)
+        BYTE $9D ;LEFT    Cursor Left
+        BYTE $00 ;LNFD    Line Feed [C128]
+        BYTE $1D ;RIGHT   Cursor Right
+        BYTE $0D ;RETURN  Return
+        BYTE $8D ;SHFRTN  Shift-Return
+        BYTE $00 ;RUN     Run (Shift-RUN/STOP)
+        BYTE $92 ;RVSOFF  Reverse Off
+        BYTE $12 ;RVSON   Reverse On
+        BYTE $A0 ;SHFSPC  Shifted Space
+        BYTE $09 ;TAB     Tab
+        BYTE $00 ;SHFTAB  Shift-Tab [C128/C65]
+        BYTE $91 ;UP      Cursor Up
+
+;System Key Names
+KNAMES  BYTE "DEL",0,"STOP",0,"RETURN",0
