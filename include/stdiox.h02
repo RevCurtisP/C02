@@ -2,78 +2,113 @@
  * stdiox - Extended I/O Routines for C02 *
  ******************************************/
 
-/* Display "Press any key to continue" *
- *   prompt and wait fo keypress       *
- * Returns: ASCII value of key pressed */
+/* Any Key                                 *
+ *   Displays "Press any key to continue"  *
+ *   prompt and wait for key to be pressed *
+ * Returns: char c - ASCII Value of Key    */
 void anykey();
 
-/* Display prompt and wait for keypress *
- * Args: &s - string to display         *
- * Returns: ASCII value of key pressed  */
+/* Get Character with Prompt            *
+ *   Displays prompt and waits for key  * 
+ *   to be pressed                      *
+ * Args: int &s - Prompt                *
+ * Returns: char c - ASCII Value of Key */
 void getcpr();
 
-/* Print Formatted Byte to Screen *
- * Args: b  - byte to format      *
- *       &s - formatting string   */
+/* Print Formatted                      *
+ *   Prints char value, and/or contents *
+ *   of dstptr on screen formatted by   *
+ * Args: char c  - Character to Format  *
+ *       int &s - Formatting String     */
 void printf();
 
-/* Print Byte as Binary Number *
- * Args: b - Number to print   */
+/* Put Binary                     *
+ *   Prints byte as binary number *
+ * Args: char b - Number to Print */
 void putbin(); 
 
-/* Print Byte as Decimal Number *
- * Args: b - Number to print    */
+/* Put Decimal                     *
+ *   Prints byte as decimal number *
+ * Args: char b - Number to Print  */
 void putdec(); 
 
-/* Print Byte Zero Filled Modulo 100 *
- * Args: b - Number to print         */
+/* Put Decimal Hundred                *
+ *   Prints Byte Modulo 100 as two    *
+ *   digit zero-filled decimal number *
+ * Args: char b - Number to Print     */
 void putdeh(); 
 
-/* Print Byte as Left Justified Decimal *
- * Args: b - Number to print            */
+/* Put Decimal Left Justified        *
+ *   Prints byte as decimal number,  *
+ *   right-padded with spaces, for a *
+ *   total of three charcaters       *
+ * Args: char b - Number to Print    */
 void putdel(); 
 
-/* Print Byte as Right Justified Decimal *
- * Args: b - Number to print             */
+/* Put Decimal Right Justified      *
+ *   Prints byte as decimal number, *
+ *   left-padded with spaces, for a *
+ *   total of three charcaters      *
+ * Args: char b - Number to Print   */
 void putder(); 
 
-/* Print Byte as Zero Filled Decimal Number *
- * Args: b - Number to print                */
+/* Put Decimal Zero-Filled           *
+ *   Prints byte as decimal number,  *
+ *   left-padded with zeroes,  for a *
+ *   total of three charcaters       *
+ * Args: char b - Number to Print    */
 void putdez(); 
 
-/* Print Destination String */
+/* Print Destination String           *        
+ *   Prints string with               *
+ *   address in dstptr                *      
+ * Return: char n: Characters Printed */
 void putdst(); 
 
-/* Print Extended Hexadecimal Number   *
+/* Put Extended Hexadecimal            *
+ *   Prints 24-bit value as six digit  *
+ *   hexadecimal number                *
  * Args: char n - High Byte            *
  *        int w - Middle and Low Bytes */
 void putexh(); 
 
-/* Print Byte as Hexadecimal Number *
- * Args: b - Number to print        */
+/* Put Hexadecimal              *
+ *   Prints byte as two digit   *
+ *   hexadecimal number         *
+ * Args: char b - Byte to Print */
 void puthex(); 
 
-/* Print Word as Decimal Number *
- * Args: int w - Number to print    */
+/* Put Integer                    *
+ *  Prints word as decimal number *
+ * Args: int w - Word to Print */
 void putint();
 
-void putwrd(); 
-/* Print Byte as Masked Bits *
- * Args: b - Byte to print   *
- *       m - Bitmask         */
+/* Put Mask                       *
+ *   Prints byte as binary number *
+ *   with bits specified by mask  *
+ * Args: char b - Byte to Print   *
+ *       char m - Bit Mask        */
 void putmsk(); 
 
-/* Print Nybble as Hexadecimal Number *
- * Args: b - Number to print        */
+/* Put Nybble                   *
+ *   Prints low nybble of byte  *
+ *   as hexadecimal digit       *
+ * Args: char b - Byte to Print */
 void putnyb(); 
 
-/* Print a Space Character */
+/* Put Space                 *
+ *  Prints a space character */
 void putspc(); 
 
-/* Print Word as Three Hex Digits *
- * Args: int w - Number to print    */
+/* Put Sesquibyte                     *
+ *   Prints low three nybbles of word *
+ *   as three hexadecimal digits      *
+ * Args: int w - Word to Print        */
 void putsqb(); 
 
-/* Print Word as Hexadecimal Number *
- * Args: int w - Number to print    */
+/* Put Word                    *
+ *   Prints word as four-digit *
+ *   hexadecimal number        *
+ * Args: int w - Word to Print */
 void putwrd(); 
+

@@ -2,34 +2,45 @@
  * stdio - Standard I/O Routines for C02 *
  *****************************************/
 
-/* Read Character from Keyboard          *
- *   Waits for Keypress                  *
- * Returns: ASCII value of Key           */
+/* Get Character
+ *   Waits for key to be pressed *
+ *   and Returns ASCII key value *
+ * Returns: char c = Key Value   */
 char getc();
 
-/* Write Character to Screen             *
- * Args: c - ASCII character to write    */
+/* Put Character                     *
+ *   Prints Character on Screen      *
+ * Args: char c - Character to Print */
 void putc(); 
 
-/* Read String from Keyboard             *
- *   Buffers string until C/R is pressed *
- * Args: &s - string read from keyboard  *
- * Returns: length of string             */
+/* Get String
+ *  Reads String from Keyboard, up     *
+ *  to 128 characters until the Return *
+ *  key is pressed. If the Escape key  *
+ *  is pressed, input is aborted and   *
+ *  the string is set to ""           *
+ * Args: int &s - string to read       *
+ * Returns: char n - Length of String  *      
+ *               $FF = Escape Pressed  */
 char gets(); 
 
-/* Write String to Screen                *
- * Args: &s - string to print from       *
- * Returns: ending position in string    */
+/* Put String
+ *   Prints String on Screen            *
+ * Args: int &s - String to Print       *
+ * Returns: char n - Characters Printed */
 char puts();
 
-/* Write Partial String to Screen         *
- * Args: n  - starting position in string *
- *       &s - string to print from        *
- * Returns: ending position in string     */
+/* Put Substring                      *
+ *   Prints String to Screen starting *
+ *   at specified position            *
+ * Args: char p  - Starting Position  *
+ *       int &s - String to Print     *
+ * Returns: char e - Ending Position  */
 char putsub();
 
-/* Write String to Screen and Move        *
- *   Cursor to Beginning of Next Line     *
- * Args: &s - string to print to screen   *
- * Returns: number of characters printed  */
+/* Put Line                             *
+ *   Prints String on Screen and moves  *
+ *   cursor to beginning of next line   *
+ * Args: int &s - String to Print       *
+ * Returns: char n - Characters Printed */
 char putln();

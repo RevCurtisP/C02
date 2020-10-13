@@ -1,7 +1,8 @@
 ; C02 library stdiox.h02 assembly language subroutines
 
-ANYKEP: DC  "PRESS ANY KEY...",0
+        SUBROUTINE STDIOX
 
+.ANYKEY BYTE "PRESS ANY KEY...",0
 ;
 ;char anykey(nls) - wait for character with ANY KEY prompt
 ;Args: A = Print Newlines (0 = No, otherwise Yes)
@@ -9,8 +10,8 @@ ANYKEP: DC  "PRESS ANY KEY...",0
 ;Affects: C,N,Z
 ;Returns: A = Character code of keypress
 ANYKEY: JSR NEWLIN      ;Start at Beginning of Next Line
-.NONL   LDY #>ANYKEP    ;Load Prompt High Byte
-        LDX #<ANYKEP    ;Load Prompt Low Byte
+.NONL   LDY #>.ANYKEY   ;Load Prompt High Byte
+        LDX #<.ANYKEY   ;Load Prompt Low Byte
                         ;Drop into GETCPR
 
 ;char getcpr(nls, &s) - GET Character with PRompt
@@ -35,15 +36,15 @@ GETCPR: JSR PUTS        ;Print Prompt
 ;Args: A = number to print
 ;Destroys: TEMP0, TEMP1
 ;Affects: A,Y,C,N,X
-PUTBIN: LDY #$FF        ;Set Bitmask to All 1's
+PUTBIN: LDY #$FF        ;Set Bit Mask to All 1's
 
-;void putmsk(b) - PUT bitMaSK
+;void putmsk(b) - PUT Bit Mask
 ;Args: A = byte to print
-;      Y = Bitmask
+;      Y = Bit Mask
 ;Destroys: TEMP0, TEMP1
 ;Affects: A,Y,C,N,X
 PUTMSK: STA TEMP2       ;Save Byte
-        STY TEMP1       ;Save Bitmask
+        STY TEMP1       ;Save Bit Mask
         LDX #8          ;Print 8 Binary Digits
 .MASKL  LDA #0          ;Clear Accumulator
         ASL TEMP2       ;Shift Top Bit Out of Byte
@@ -128,11 +129,11 @@ PUTDGT: ORA #$30        ;Convert to ASCII digit
 ;puthex(b) - PUT HEXadecimal
 PUTHEX  EQU PRBYTE      ;Print Byte as Hexadecimal
 
-;putinr(&.HEXW) - PUT INteger Right justified
+;putinr(i) - PUT INteger Right justified
 PUTINR: SEC             ;Mode = Justified
         BCS .PUTINT     ;Print Integer
 
-;putint(&.HEXW) - PUT INTeger
+;putint(i) - PUT INTeger
 PUTINT: CLC             ;Mode =  Not Justified
 .PUTINT JSR CVIBCD      ;Convert Integer to Packed BCD
         LDY #4          ;Set Initial Digit Number
@@ -170,20 +171,20 @@ PUTSQB: JSR SAVRXY      ;Save Address
 ;      X = Value Low Byte
 ;Calls: PUTHEX = Print Byte
 ;       SAVRXY = Save X and Y Registers
-;       .PUTWRD = Put .HEXW (Alternate Entry Point)
+;       PUTWRT = Put .HEXW (Alternate Entry Point)
 ;Affects: A,Y,X,N,Z,C
 PUTEXH: JSR SAVRXY      ;Save High and Low Bytes
         JSR PUTHEX      ;Print Extended Byte
-        JMP .PUTWRD      ;Print High and Low Bytes
+        JMP PUTWRT      ;Print TEMP2, TEMP1 as HEX word
 
-;putwrd(&.HEXW) - PUT .HEXW
+;putwrd(&HEXW) - PUT WORD
 ;Args: Y = .HEXW MSB
 ;      X = .HEXW LSB
 ;Calls: PUTHEX = Print Byte
 ;       SAVRXY = Save X and Y Registers
 ;Affects: A,Y,X,N,Z,C
 PUTWRD: JSR SAVRXY      ;Save .HEXW
-.PUTWRD LDA TEMP2       ;Load .HEXW MSB
+PUTWRT: LDA TEMP2       ;Load .HEXW MSB
         JSR PUTHEX      ;Print as Hexadecimal
         LDA TEMP1       ;Load .HEXW LSB
         JMP PUTHEX      ;Print and Return`
@@ -205,14 +206,14 @@ PUTRPT: JSR PUTCHR      ;Print Space Character
 ;void printf(b, &s) - PRINT Formatted byte and/or string
 ;Args: A = byte to format
 ;      Y,X = address of formatting string
-;Uses: DSTLO,DSTHI = Address of %S string
-;Sets: SRCLO,SRCHI = Address of formatting string
+;Uses: DSTPTR = Address of %S string
+;Sets: SRCPTR = Address of formatting string
 ;      TEMP3 - number to format
 ;Destroys: TEMP0,TEMP1,TEMP2
 ;Returns: A,Y = Total number of characters printed
 PRINTF: STA TEMP3       ;Save Byte to Format
         JSR SETSRC      ;Initialize Source String
-.FLOOP  LDA (SRCLO),Y   ;Read next character in string
+.FLOOP  LDA (SRCPTR),Y  ;Read next character in string
         BEQ .FDONE      ;If Not 0
         CMP #'%'        ;  If Format Specified 
         BEQ .FEVAL      ;    Jump to Formatter
@@ -223,7 +224,7 @@ PRINTF: STA TEMP3       ;Save Byte to Format
         RTS             ;  characters printed
 ;Process Format Specifier
 .FEVAL: INY             ;Increment Offset
-        LDA (SRCLO),Y   ;Get Formatting Character
+        LDA (SRCPTR),Y  ;Get Formatting Character
         BEQ .FDONE      ;If NUL, then Exit
         CMP #'%'        ;If Percent Sign 
         BEQ .FPUTC      ;  Print it and Continue
@@ -325,3 +326,5 @@ PUTDST  LDY #0         ;Initialize character offset
         BPL .DLOOP     ;  loop if less than 128
 .DRETY  TYA            ;Return number of
         RTS            ;  characters printed
+
+        ENDSUBROUTINE

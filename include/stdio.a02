@@ -1,7 +1,9 @@
 ; C02 library stdio.h02 assembly language subroutines
 ; Requires external routines GETKEY, PRCHR, DELCHR, NEWLIN, and SETSRC
-; external zero page locations SRCLO and SRCHI
+; external zero page location SRCPTR
 ; and external constants DELKEY, ESCKEY, and RTNKEY
+
+        SUBROUTINE STDIO
 
 ;char getc() - GET Character from keyborad
 ;Sets: System Dependent
@@ -20,36 +22,36 @@ PUTC    EQU PUTCHR     ;Alias to external PUTCHR Routine
 
 ;char gets(&s) - GET String input from keyboard
 ;Args: Y,X = Address of String
-;Sets: SRCLO,SRCLHI = Address of String
+;Sets: SRCPTR = Address of String
 ;Uses: TEMP3
 ;Affects: X,N,Z,C
 ;Returns: A,Y = Number of Characters in String
 GETS:   JSR SETSRC      ;Initialize Source String
-GETSL:  STY TEMP3       ;Save Y Index
+.GSLOOP STY TEMP3       ;Save Y Index
         JSR GETC        ;Get Keypress
         CMP #DELKEY     ;If Delete
-        BNE GETSE       ;Then  
+        BNE .GSESC      ;Then  
         TYA             ;  If Offset is Zero
-        BEQ GETSL       ;    Get Next Character
+        BEQ .GSLOOP     ;    Get Next Character
         DEY             ;  Else Decrement Offset
         JSR DELCHR      ;    Delete Previous Character
-        JMP GETSL       ;    and Get Next Character
-GETSE:  CMP #ESCKEY     ;Else If Escape
-        BNE GETSC       ;Then  
+        JMP .GSLOOP     ;    and Get Next Character
+.GSESC  CMP #ESCKEY     ;Else If Escape
+        BNE .GSCR       ;Then  
         LDY #$FF        ;  Return -1
-        BNE GETSY     
-GETSC:  CMP #RTNKEY     ;Else If Not Carriage Return 
-        BEQ GETSX
+        BNE .GSRTNY     
+.GSCR   CMP #RTNKEY     ;Else If Not Carriage Return 
+        BEQ .GSDONE
         JSR PUTC        ;  Echo Character
         LDY TEMP3       ;Restore Y Index
-        STA (SRCLO),Y   ;  Store Character at offset
+        STA (SRCPTR),Y  ;  Store Character at offset
         INY             ;  increment offset and
-        BPL GETSL       ;  loop if less than 128
-GETSX:  JSR NEWLIN      ;Else Advance Cursor to Next Line
+        BPL .GSLOOP     ;  loop if less than 128
+.GSDONE JSR NEWLIN      ;Else Advance Cursor to Next Line
         LDY TEMP3       ;Restore Y Index
         LDA #$00        ;  Terminate String        
-        STA (SRCLO),Y   ;  and 
-GETSY:  TYA             ;  Return String Length
+        STA (SRCPTR),Y  ;  and 
+.GSRTNY TYA             ;  Return String Length
         RTS
 
 ;char puts(&s) - PUT String to screen
@@ -63,18 +65,18 @@ PUTS:   LDA #$00       ;Set Start Position to 0
 ;char putsub(n, &s) - PUT SUBstring to screen
 ;Args: A = Starting Position in String
 ;      Y,X = Address of String
-;Sets: SRCLO,SRCLHI = Address of String
+;Sets: SRCPTR = Address of String
 ;Calls: PUTC
 ;Affects: N,Z,C
 ;Returns: A,Y = Number of Characters in String
 PUTSUB: JSR SETSRC     ;Initialize Source String
         TAY            ;Initialize character offset
-PUTSUL: LDA (SRCLO),Y  ;Read next character in string
-        BEQ PUTSUX     ;If Not 0
+.PSLOOP LDA (SRCPTR),Y ;Read next character in string
+        BEQ .PSDONE    ;If Not 0
         JSR PUTC       ;  Print character at offset,
         INY            ;  increment offset, and
-        BPL PUTSUL     ;  loop if less than 128
-PUTSUX: TYA            ;Return number of
+        BPL .PSLOOP    ;  loop if less than 128
+.PSDONE TYA           ;Return number of
         RTS            ;  characters printed
 
 ;char putln(&s) - PUT LiNe to screen
@@ -82,3 +84,5 @@ PUTSUX: TYA            ;Return number of
 ;Calls: PUTS and NEWLIN
 PUTLN:  JSR PUTS       ;Write string to screen
         JMP NEWLIN     ;Execute external NEWLINe routine and return
+
+        ENDSUBROUTINE

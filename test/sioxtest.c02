@@ -1,6 +1,6 @@
-/***********************************************
- * TESTIOX - Test Library stdiox.h for py65mon *
- ***********************************************/
+/************************************
+ * SIOXTEST - Test module stdiox.h  *
+ ************************************/
  
 //Specify System Header using -H option
 #include <screen.h02>

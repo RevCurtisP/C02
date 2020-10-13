@@ -1,0 +1,34 @@
+/**********************************************
+ * TESTIO - Test Library stdio.h for py65mon *
+ **********************************************/
+ 
+//Specify System Header using -H option
+#include <stddef.h02>
+#include <stdio.h02>
+
+char key;      //Key read from keyboard
+char len;      //Length of input output string
+char str[128]; //String to read/write
+
+main:
+  putsub(17, "ERROR IN PUTSUB! PRESS ANY KEY");
+  newlin();
+  key = getc();       //Wait for key press
+  newlin();           //Advance cursor to next line
+
+  putln("TYPE LINES, END WITH RETURN");
+  putln("PRESS ESCAPE KEY TO END");
+
+  while () {
+    putc('>');
+    len = gets(&str);     //Read string from keybaord     
+    if (len == $FF)       //If entry was aborted
+      break  ;            //  return to monitor
+    puts("YOU TYPED: ");  //Print without newline
+    putln(str);          //print with newline
+  }
+
+  putln("TEST COMPLETE");
+
+done:
+  goto exit;
