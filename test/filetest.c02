@@ -48,7 +48,7 @@ main:
   sfile(0, &savfil);
 
   fp = opnfil(#MREAD, &txtfil);
-  else printf(n, "  READ $%x CHARACTERS%n");
+  else printf(n, "  READ %d CHARACTERS%n");
   if (fp) {
     rstrng(fp);
     rbnry(fp);
@@ -68,13 +68,13 @@ main:
 
 void chkerr() {
   if (err) {
-    printf(err, " ERROR $%x%n");
+    printf(err, " ERROR %d%n");
     goto exit;
   }
 }
 
 void flshfl(aa) {
-  printf(aa, "FFLUSH($%x): ");
+  printf(aa, "FFLUSH(%d): ");
   zz, err = fflush(aa); chkerr();
   puts("FLUSHED, "); anykey(0);
 }
@@ -82,34 +82,34 @@ void flshfl(aa) {
 void opnfil(aa,yy,xx) {
   setdst();printf("FOPEN($%x,\"%s\"): "); 
   zz, err = fopen(aa,yy,xx); chkerr();
-  printf(zz,"CHANNEL=$%x%n");
+  printf(zz,"CHANNEL=%d%n");
   return zz;
 }
 
 void prtpos(aa) {
-  printf("FTELL($%x): ");
+  printf("FTELL(%d): ");
   err, filpos = ftell(aa); chkerr();
   setdst(filpos); printf("POSITION=$%w%n");
   return aa;
 }
 
 void posfil(aa) {
-  setdst(filpos); printf(aa, "FSEEK($%x,$%w): ");
+  setdst(filpos); printf(aa, "FSEEK(%d,$%w): ");
   err = fseek(aa, filpos); chkerr();
   putln("POSITIONED");
 }
 
 void rwdfil(aa) {
-  printf(aa, "REWIND($%x): ");
+  printf(aa, "REWIND(%d): ");
   err = rewind(aa, filpos); chkerr();
   putln("REWOUND");
 }
 
 void wbnry(aa) {
-  setdst(&bnry); printf("FWRITE($%x,\"%s\"): ");
+  setdst(&bnry); printf("FWRITE(%d,\"%s\"): ");
   fsaddr(&bnry);
   n, err = fwrite(@bnry, aa); chkerr();
-  printf(n, "WROTE $%x BYTES%n");
+  printf(n, "WROTE %d BYTES%n");
 }
 
 void wchars(aa) {
@@ -119,20 +119,20 @@ void wchars(aa) {
 }
 
 void wstrng(aa) {
-  setdst(str1); printf(aa, "FPUTS($%x,\"%s\"): ");
+  setdst(str1); printf(aa, "FPUTS(%d,\"%s\"): ");
   n, err = fputs(aa, str1); chkerr();
-  printf(n, "WROTE $%x CHARACTERS%n");
+  printf(n, "WROTE %d CHARACTERS%n");
 
   setdst(str2); printf(aa, "FPUTLN(%s,\"%s\"): ");
   n, err = fputln(aa, str2); chkerr();
-  printf(n, "WROTE $%x CHARACTERS%n");
+  printf(n, "WROTE %d CHARACTERS%n");
 }
 void sfile(aa, yy, xx) {
   setdst(); printf("FSNAME(\"%s\"); ");
   fsname(.,yy,xx); //Set Filename
   setdst(&save); printf("FSADDR($%w); ");
   fsaddr(&save);   //Set Start Address
-  setdst(&bnry); printf(aa, "FSAVE($%x,$%w): ");
+  setdst(&bnry); printf(aa, "FSAVE(%d,$%w): ");
   err, addr = fsave(aa, &bnry); chkerr();
   putln("FILE SAVED");
 }
@@ -140,9 +140,9 @@ void sfile(aa, yy, xx) {
 void rbnry(aa) {
   setdst(&r); printf("FSADDR($%w); ");
   fsaddr(&r); 
-  printf(@bnry, "FREAD($%x,"); printf(aa,"$%x): ");
+  printf(@bnry, "FREAD(%d,"); printf(aa,"%d): ");
   n, err = fread(@bnry, aa); chkerr();
-  puts(&r); printf(n, ", READ $%x BYTES%n");
+  puts(&r); printf(n, ", READ %d BYTES%n");
 }
 
 void lfile(aa, yy, xx) {
@@ -150,7 +150,7 @@ void lfile(aa, yy, xx) {
   fsname(.,yy,xx); //Set Filename
   memclr(255, &l); printf("FSADDR($%w); ");
   fsaddr(&l);      //Set Load Address  
-  printf(aa, "FLOAD($%x): ");
+  printf(aa, "FLOAD(%d): ");
   err, addr = fload(aa); chkerr();
   setdst(addr); printf("END=$%w, "); putln(&l);
 }
@@ -166,13 +166,13 @@ void rchars(aa) {
 }
 
 void rstrng(aa) {
-  printf("FGETS($%x, &S): ");
+  printf("FGETS(%d, &S): ");
   n, err = fgets(aa, &s); chkerr();
-  puts(&s); printf(n, "  READ $%x CHARACTERS%n");
+  puts(&s); printf(n, "  READ %d CHARACTERS%n");
 }
 
 void clsfil(aa) {
-  printf(aa, "FCLOSE($%x): ");
+  printf(aa, "FCLOSE(%d): ");
   err = fclose(aa); chkerr();
   putln("CLOSED");
 }

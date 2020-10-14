@@ -2,9 +2,20 @@
  * dirent - Directory Entries Module for run6502 emulator *
  **********************************************************/
 
+/* File Attributes */
+struct attrs {char arch, hidden, rdonly, subdir, system;};
+const char attrd[]; //Single Character Descriptions
+
+/* Timestamp - Matches module time.h02 structure tm */
+struct ts {char year, month, day, hour, minute, second;};
+
+
 /* Directory Entry */
 struct dirent {
-  char name[128]; //Entry Filename
+  struct attrs attr;  //File Attributes
+  struct ts time;     //Timestamp
+  int size;           //Size in Bytes
+  char name[128];     //Entry Filename
 };
 
 /* Directory Header    */

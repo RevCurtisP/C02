@@ -9,23 +9,23 @@
 ;Args: A = Drive Identifier
 ;      Y,X = Address of Directory Name String
 ;Returns: A = Error Code (0 = None)
-REMOVE: JSR FSDRVN        ;Validate Drive Number
-        BCS .RETURN       ;If Invalid Return Error
+REMOVE: JSR FSNAME        ;Set File Buffer to New Name
+        TAY               ;Set Drive ID
         LDA #'K'          ;Set Command to KILL (REMOVE)
-.FSCMDX JSR FSCMD         ;Execute Command
-        TXA               ;Return Result
+.FEXECY JSR FSCMD         ;Execute Command
+        TYA               ;Return Errno
         RTS
         
-;rename(drv, &filnam) - Rename File to filnam
+;rename(drv, &new) - Rename File to filnam
 ;Setup: Call FSNAME with Address of Old Name
 ;Args: A = Drive Identifier
-;      Y,X = Address of Directory Name String
+;      Y,X = Address of New Name
 ;Returns: A = Error Code (0 = None)
-RENAME: JSR FSDRVN        ;Convert Drive Letter to Drive Number
-        BCS .RETURN       ;If Invalid Return Error
+RENAME: JSR FSBUFF        ;Set File Buffer to New Name
+        TAY               ;Set Drive ID
         LDA #'M'          ;Set Command to KILL (REMOVE)
-        BNE .FSCMDX       ;Execute Command and Return Result
-
+        BNE .FEXECY       ;Execute Command and Return Errno
+        
 ;inidrv(drv) - Initialize Disk Drive
 ;Args: A = Drive Identifier
 ;Returns: A = Error Code (0 = None)
@@ -34,14 +34,13 @@ INIDRV: LDA #$FF            ;Return Error - Not Implemented
 
 ;chdrv() - Set Current Drive/Disk
 ;Args: A = Drive# | Disk#
-;Returns: A = Result (0 - Success)
-;         Y = Error Code (0 = None)
+;Returns: Y = Error Code (0 = None)
 CHDRV:  JSR FSDRVN        ;Validate Drive Number
         BCS .RETURN       ;If Invalid Return Error
         TAY               ;Set Drive Number
         SEC               ;Set Mode to Change
         LDA #'V'          ;Set Command to DRIVE
-        BNE .FSCMDX       ;Execute Command and Return Result
+        BNE .FEXECY       ;Execute Command and Return Errno
         
 ;getdrv() - Get Current Drive/Disk
 ;Returns: A = Drive# | Disk# (0=Failure)

@@ -10,7 +10,13 @@ const char disk[];
 
 /* File Open Modes */
 #define MREAD  $00 //Open File for Read
-#define MWRITE $80 //Open File for Write
+#define MWRITE $40 //Open File for Write
+#define MAPPND $80 //Open File for Append
+#define MRECRD $C0 //Open File to Read/Write Records
+
+/* File Open Types */
+#define TTEXT  $00 //Text File
+#define TBNRY  $20 //Binary File
 
 /* File Load Modes */
 #define MRELCT $00 //Relocate (Load at Specified Address)
@@ -42,12 +48,13 @@ char ferror();
 /* File Flush                       *
  *   Flush File Output Buffer       *
  * Args: char f - File Channel      *
- * Returns: char e - Error (0=None) */
+ * Returns: char status (0=Succes)  *
+ *          char e - Error (0=None) */
 char fflush();
 
 /* File Get Character               *
  * Args: char f - File Channel      *
- *   Read Character from Fie        *
+ *   Read Character from File       *
  * Returns: char c - Character      *
  *          char e - Error (0=None) */
 char fgetc();
@@ -60,6 +67,13 @@ char fgetc();
  * Returns: char n - Characters Read *
  *          char e - Error (0=None)  */
 char fgets(); 
+
+/* File Get Word                    *
+ * Args: char f - File Channel      *
+ *   Read Integer from File         *
+ * Returns: char e - Error (0=None) *
+ *          int w - Word            */
+char fgetc();
 
 /* File Load                        *
  *   Loads File into Memory         *
@@ -78,11 +92,12 @@ char fload();
             char e - Error  (0=None)   */
 char fopen();
 
-/* File Put Character               *
- *   Write Character to File        *
- * Args: char c - Character         *
- *       char f - File Channel      *
- * Returns: char e - Error (0=None) */
+/* File Put Character                  *
+ *   Write Character to File           *
+ * Args: char c - Character            *
+ *       char f - File Channel         *
+ * Returns: char w - Character Written *
+ *          char e - Error (0=None)    */
 char fputc(); 
 
 /* File Put Line                        *
@@ -102,6 +117,15 @@ char fputln();
  * Returns: char n - Characters Written *
  *          char e - Error (0=None)     */
 char fputs();
+
+/* File Put Word                        *
+ *   Writes up to 128 characters        *
+ *   of string to file                  *
+ * Args: char f - File Channel          *
+ *       int w - Word to Write          *
+ * Returns: char e - Error (255=EOF)    *
+ *          int r - Word Written        */
+char fputw();
 
 /* File Read                        *
  *   Read up to n bytes from file   *
@@ -135,6 +159,13 @@ char fsave();
  *          char res - Result    */
 char fscmd();  
 
+/* File Seek                        *
+ *   Move to Position in File       *
+ * Args: char f - File Channel      *
+ *       int p - Position in File   *
+ * Returns: char e - Error (0=None) */
+char fseek(); 
+
 /* File System Init             *
  *   Initialize File System     */
 char fsinit();
@@ -144,6 +175,14 @@ char fsinit();
  * Args: int &name - Filename */
  char fsname();
 
+/* File Tell                        *
+ *   Get Position in File           *
+ * Args: char f - File Channel      *
+ * Returns: char e - Error (0=None) *
+ *          int r - Position        *
+ *                  $FFFF = Failure */
+char ftell(); 
+
 /* File Write                       *
  *   Write n nytes to file          *
  * Setup: fsaddr(&array)            *
@@ -152,3 +191,9 @@ char fsinit();
  * Returns: char n - Bytes Written  *
  *          char e - Error (0=None) */
 char fwrite();
+
+/* Rewind file                      *
+ *   Move to Beginning of File      *
+ * Args: char f - File Channel      *
+ * Returns: char e - Error (0=None) */
+char rewind(); 

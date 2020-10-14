@@ -13,41 +13,60 @@
 #include <string.h02>
 #include <fileio.h02>
 #include <dirent.h02>
+#include <time.h02>
 
 struct dirent entry;
 struct dirhdr header;
+struct tm time;
 
-const char dir = "";
-char dp;        //Directory File Pointer
-char err;       //Error Code
-char c;         //Character read from Struct
-char i;         //Loop Index Variable
-char n;         //Number of Characters Read
-char m[128], s[128];
-char wrdlo,wrdhi;
+const char drv = 0;           //Drive ID (Current Drive)
+const char dir = "";          //Directory Name (Current Directory)
+char dp;                      //Directory File Pointer
+char err;                     //Error Code
+char c;                       //Character read from Struct
+char i;                       //Loop Index Variable
+char n;                       //Number of Characters Read
+char m[128], s[128], t[128];  //String Buffers
+int dircnt,filcnt;            //Directories and File Count
 char aa,ff,xx,yy,zz;  //Function Arguments
 
+/* Print Entry Time Stamp */
+void prtts() {setdst(t); asctm(#FLONG|#FAMPM, entry.time); puts(t);}
+
+/* Print Directory Entry */
+void prtent() {
+  if (entry.attr.subdir) dircnt++; else filcnt++;
+  if (@entry.time > 1) {prtts(); puts("  ");}
+  for (i=0; i<@entry.attr; i++) {if (entry.attr[i]) putc(attrd[i]); else putspc();}
+  setdst(entry.size); printf("  %j  "); putln(entry.name);
+}
+
+/* Print Directory Summary */
+void prtsum() {
+  setdst(filcnt); printf("  %j FILES(S)%n");
+  setdst(dircnt); printf("  %j DIR(S)%n");
+}
+
 main:
+  filcnt = &0; dircnt = &0;
   setdst(dir); printf("OPENING DIRECTORY '%s'%n");
-  dp, err = opndir(0, dir);
-  if (err) goto error;
+  dp, err = opndir(drv, dir); if (err) goto error;
   printf(dp, "CHANNEL=%d%n");
 
   putln("READING HEADER");
-  n, err = rdhdr(dp, header);
-  if (err) goto error;
-  if (n) putln(header.name);
-  else putln("NO HEADER");
+  n, err = rdhdr(dp, header); if (err) goto error;
+  if (n) putln(header.name); else putln("NO HEADER");
 
   putln("READING ENTRIES");
   do {
     n, err = rddir(dp, entry);
-    if (n) putln(entry.name);
+    if (n) prtent();
   } while (n);
   if (err) goto error;
-  putln("END OF DIRECTORY");
+  prtsum();
+  //putln("END OF DIRECTORY");
 
-  clsdir(dp);
+  err = clsdir(dp); if (err) goto err;
   goto exit;
 
 error:

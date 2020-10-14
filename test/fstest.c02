@@ -55,22 +55,21 @@ void newfil() {
 }
 
 void renfil() {
-  puts("RENAMING "); puts(oldnam);
-  puts(" TO "); puts(newnam);
+  puts("RENAMING "); puts(oldnam); puts(" TO "); puts(newnam);
   fsname(oldnam);
-  r, err = rename(newnam); chkerr(r);
+  err = rename(0, newnam); chkerr(r);
 }
 
 void delfil() {
   puts("REMOVING "); puts(newnam);
-  r, err = remove(newnam); chkerr(r);
+  err = remove(0, newnam); chkerr(r);
 }
 
 void chgdrv() {
   for (i=0; i<#DRIVES; i++) {
     d = drive[i];
     printf(d, "CHDRV('%c') ");
-    r, err = chdrv(d); chkerr(r);
+    err = chdrv(d); chkerr(r);
   }
 }
 

@@ -4,27 +4,33 @@
 
         SUBROUTINE DIRECT
 
+TOPDIR  BYTE "/",0        ;Root Directory
+UPDIR   BYTE "..",0       ;Parent Directory
+
 ;getcwd(drv, &dir) - Get Current Directory
 ;Args: A = Drive Identifier
 ;      Y,X = Pointer to String
-;Returns: A = Result (0 = Success, $FF = Failure)
+;Returns: A = Length of Directory Name
 ;         Y = Error Code (0 = None)
-GETCWD: JSR FSDRVN        ;Convert Drive Letter to Drive Number
-        BCS .DRVERR       ;If Invalid Return Error
-        LDA #'T'          ;Set Command to GETCWD
+GETCWD: JSR FSADDR        ;Set String Buffer Address
+        TAY               ;Set Drive ID
+        CLC               ;Set Mode to GETCWD
+        LDA #'U'          ;Set Command to GETSETDIR
 .FSCMDX JSR FSCMD         ;Execute Command
         TXA               ;Return Length of Name
-.DRVERR RTS
+        RTS
 
-;chdir(drv, &dir) - Get Current Directory
+;chdir(drv, &dir) - Set Current Directory
 ;Args: A = Drive Identifier
 ;      Y,X = Pointer to String
-;Returns: A = Result (0 = Succes, $FF = Failure)
-;         Y = Error Code (0 = None)
-CHDIR:  JSR FSDRVN        ;Convert Drive Letter to Drive Number
-        BCS .DRVERR       ;If Invalid Return Error
-        LDA #'U'          ;Set Command to GETCWD
-        BNE .FSCMDX       ;Execute Command and Return Result
+;Returns: A = Error Code (0 = None)
+CHDIR:  JSR FSNAME        ;Set Directory Name
+        TAY               ;Set Drive ID
+        SEC               ;Set Mode to CHDIR
+        LDA #'U'          ;Set Command to GETSETDIR
+.FSCMDY JSR FSCMD         ;Execute Command
+        TYA               ;Return Length of Name
+        RTS
 
 ;rmdir(drv, &dir) - Create Directory
 ;Args: A = Drive Identifier
@@ -38,12 +44,7 @@ RMDIR:  SEC               ;Set Mode to RMDIR
 ;      Y,X = Address of Directory Name String
 ;Returns: A = Error Code (0 = None)
 MKDIR:  CLC               ;Set Mode to MKDIR
-.MRDIR  PHP               ;Save Status Register
-        JSR FSDRVN        ;Convert Drive Letter to Drive Number
-        BCS .DRVERR       ;If Invalid Return Error
-        PLP               ;Restore Status Register
+.MRDIR  JSR FSNAME        ;Set Directory Name
+        TAY               ;Set Drive ID
         LDA #'X'          ;Set Command to MKRMDIR
-        BNE .FSCMDX       ;Execute Command and Return Result
-
-.PLAERR PLP               ;Restore Status Register
-        RTS               ;and Return
+        BNE .FSCMDY       ;Execute Command and Return Result

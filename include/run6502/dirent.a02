@@ -2,6 +2,8 @@
 ; This is the reference implementation of the dirent module 
 ; Requires external functions FSADDR, FSCMD, and FSDRVN (fileio.h02)
 
+ATTRD   BYTE "AHRDS"      ;File Attribute Descriptions
+
         SUBROUTINE DIRENT
 
 ;opndir() - Open Directory for Reading
@@ -9,9 +11,10 @@
 ;      Y,X = Pointer to Directory Name
 ;Returns: A = File Pointer (0 = Not Opened)
 ;         Y = Error Code (0 = None)
-OPNDIR: JSR FSDRVN        ;Convert Drive Letter to Drive Number
-        BCS .OPNERR       ;If Invalid Return Error
-        LDA #'D'          ;Set Command to OPENDIR
+OPNDIR: JSR FSNAME				;Set File Name
+				TAY								;Set Drive Letter
+				SEC								;Set Mode to OPENDIR
+        LDA #'O'          ;Set Command to OPEN
 .FSCMDX JSR FSCMD         ;Execute Command
         TXA               ;Return Channel
         RTS
@@ -36,14 +39,15 @@ RDHDR:  SEC         ;Set Mode to HEADER
 RDDIR:  CLC         ;Set Mode to ENTRY
 .RDDIR  JSR FSADDR  ;Save Address
         TAY         ;Set Channel
-        LDA #'J'    ;Set Command to READDIR
+        LDA #'D'    ;Set Command to READDIR
         BNE .FSCMDX ;Execute and Return Result
 
 ;clsdir() - Close Directory File
 ;Args: A = Directory File Pointer
 ;Returns: A = Error Code (0 = Success)
 CLSDIR: TAY         ;Set Channel
-        LDA #'B'    ;Set Command to CLOSEDIR
+        SEC         ;Set Mode to CLOSEDIR
+        LDA #'C'    ;Set Command to CLOSE
         JSR FSCMD   ;Execute Command
         TYA         ;and Return Error Code
         RTS

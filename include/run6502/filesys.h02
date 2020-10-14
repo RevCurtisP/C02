@@ -22,9 +22,8 @@ char getdrv();
 char remove();
 
 /* Rename File                         *
- * Setup: fsname(&o) - Old File Name   *
- * Args: char d - Drive ID | Disk #    *
- *       int &n - New File Name        *
- * Returns: char r - Result, 0=Success *
- *          char e - Error, 0=None     */
+ * Setup: fsname(&old) - Old File Name *
+ * Args: char drv - Drive ID | Disk #  *
+ *       int &new - New File Name      *
+ * Returns: char e - Error, 0=None     */
 char rename();

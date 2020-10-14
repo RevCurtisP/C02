@@ -13,7 +13,6 @@
 #include <fileio.h02>
 #include <direct.h02>
 
-
 const char dir = "TEMPDIR";
 char d, err, i, n, r;
 char m[128], s[128];
@@ -30,29 +29,30 @@ void prtcwd() {
   putln(&s);
 }
 
-void chkerr() {
+void chkerr(aa) {
   if (err) {
     printf(err, "ERROR %d - ");
     ferror(0, m); putln(m);
+    if (aa and aa<>err) goto exit;
   }
   else if (r) putln("FAILED");
   else putln("SUCCESS");
 }
 
 void chgdir(aa, yy, xx) {
-  setdst(); printf("CHDIR '%s': ");
-  n, err = chdir(0,yy,xx); chkerr();
+  setdst(); printf("CHDIR(0,\"%s\"): ");
+  err = chdir(0,yy,xx); chkerr(0);
   prtcwd();
 }
 
 void mrdir() {
-  setdst(&dir); printf("MKDIR(\"%s\"): ");
-  r,err = mkdir(&dir); chkerr();
+  setdst(&dir); printf("MKDIR(0, \"%s\"): ");
+  err = mkdir(0, &dir); chkerr(17);
   chgdir(&dir);
   anykey();
-  chgdir("..");
+  chgdir(updir);
   setdst(&dir); printf("RMDIR(\"%s\"): ");
-  r,err = rmdir(&dir); chkerr();
+  err = rmdir(0, &dir); chkerr(0);
 }
 
 error:
