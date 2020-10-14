@@ -1,5 +1,5 @@
 ;Standard ASCII Key Code Definitions
-;Undefined Keys hae value $00
+;Undefined Keys have value $00
 
 ;Key Definitions (Struct Key Codes)
 ;            Chr  NAME    Description
@@ -9,6 +9,7 @@ KEYS:   BYTE $08 ;BCKSPC  Backspace
         BYTE $00 ;COPY    Copy [Acorn Atom]
         BYTE $7F ;DELETE  Delete
         BYTE $00 ;DOWN    Cursor Down
+        BYTE $00 ;END     End [X16]
         BYTE $1B ;ESCAPE  Escape
         BYTE $00 ;FN1     F1
         BYTE $00 ;FN2     F2
@@ -26,16 +27,19 @@ KEYS:   BYTE $08 ;BCKSPC  Backspace
         BYTE $00 ;HOME    Home
         BYTE $00 ;INSERT  Insert
         BYTE $00 ;LEFT    Cursor Left 
-        BYTE $0A ;LNFD    ;Line Feed [C128]
-        BYTE $00 ;RIGHT   Cursor Right
+        BYTE $0A ;LNFD    Line Feed [C128]
+        BYTE $00 ;MENU    Menu [X16]
+        BYTE $00 ;PAGEDN  Page Down [X16]
+        BYTE $00 ;PAGEUP  Page Up [X16]
         BYTE $0D ;RETURN  Return
-        BYTE $80 ;SHFRTN  Shift-Return
+        BYTE $00 ;RIGHT   Cursor Right
         BYTE $00 ;RUN     Run [PET/CBM]
-        BYTE $92 ;RVSOFF  Reverse OffCtrl-0
-        BYTE $12 ;RVSON   Reverse On Ctrl-9
+        BYTE $00 ;RVSOFF  Reverse Off
+        BYTE $00 ;RVSON   Reverse On 
+        BYTE $00 ;SHFRTN  Shift-Return
         BYTE $00 ;SHFSPC  Shifted Space
-        BYTE $09 ;TAB     Tab
         BYTE $00 ;SHFTAB  Shift-Tab
+        BYTE $09 ;TAB     Tab
         BYTE $00 ;UP      Cursor Up 
 
 ;System Key Names

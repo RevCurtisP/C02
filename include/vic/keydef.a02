@@ -1,14 +1,15 @@
 ;PETSCII Key Code Definitions
-;for Commmodore 64 Computer
+;for Commodore VIC-20 Computer
 
-KEYS:   ;Key Definitions (Struct Key Codes)
+;Key Definitions (Struct Key Codes)
             ;Chr  Name    Description              VICE xvic
-        BYTE $00 ;BCKSPC  Backspace [N/A]          
+KEYS:   BYTE $00 ;BCKSPC  Backspace [N/A]          
         BYTE $03 ;BREAK   Break (RUN/STOP)         Escape or Caps Lock
         BYTE $93 ;CLEAR   Clear (Shift-CLR/HOME)   Shift-Home
         BYTE $00 ;COPY    Copy [N/A]
         BYTE $14 ;DELETE  Delete                   Backspace
         BYTE $11 ;DOWN    Cursor Down              Cursor Down
+        BYTE $00 ;END     End [N/A]
         BYTE $00 ;ESCAPE  Escape [N/A]             
         BYTE $85 ;FN1     F1 (F1/F2)               F1
         BYTE $89 ;FN2     F2 (Shift-F1/F2)         F2 or Shift-F1
@@ -27,15 +28,18 @@ KEYS:   ;Key Definitions (Struct Key Codes)
         BYTE $94 ;INSERT  Insert (Shift-INS/DEL)   Shift-Backspace
         BYTE $9D ;LEFT    Cursor Left              Cursor Left
         BYTE $00 ;LNFD    Line Feed [N/A]          
-        BYTE $1D ;RIGHT   Cursor Right             Cursor Right
+        BYTE $00 ;MENU    Menu [N/A]
+        BYTE $00 ;PAGEDN  Page Down [N/A]
+        BYTE $00 ;PAGEUP  Page Up [N/A]
         BYTE $0D ;RETURN  Return                   Enter
-        BYTE $8D ;SHFRTN  Shift-Return             Shift-Enter
+        BYTE $1D ;RIGHT   Cursor Right             Cursor Right
         BYTE $83 ;RUN     Run (Shift-RUN/STOP)     Shift-Escape
         BYTE $92 ;RVSOFF  Reverse Off              Tab-0
         BYTE $12 ;RVSON   Reverse On               Tab-9
+        BYTE $8D ;SHFRTN  Shift-Return             Shift-Enter
         BYTE $A0 ;SHFSPC  Shifted Space            Shift-Space
-        BYTE $00 ;TAB     Tab                      
         BYTE $00 ;SHFTAB  Shift-Tab [N/A]          
+        BYTE $00 ;TAB     Tab                      
         BYTE $91 ;UP      Cursor Up                Cursor Up
 
 ;System Key Names

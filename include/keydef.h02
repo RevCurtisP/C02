@@ -9,6 +9,7 @@ struct keydef {
   char copy;    //Copy 
   char delete;  //Delete
   char down;    //Cursor Down
+  char end;     //End
   char escape;  //Escape
   char fn1;     //F1 
   char fn2;     //F2 
@@ -27,15 +28,18 @@ struct keydef {
   char insert;  //Insert 
   char left;    //Cursor Left
   char lnfd;    //Line Feed 
-  char right;   //Cursor Right
+  char menu;    //Menu
+  char pagedn;  //Page Down
+  char pageup;  //Page Up
   char return;  //Return
-  char shfrtn;  //Shift-Return
+  char right;   //Cursor Right
   char run;     //Run 
   char rvsoff;  //Reverse Off
   char rvson;   //Reverse On
+  char shfrtn;  //Shift-Return
   char shfspc;  //Shifted Space
-  char tab;     //Tab
   char shftab;  //Shift-Tab 
+  char tab;     //Tab\
   char up;      //Cursor Up
 };
 
@@ -45,4 +49,3 @@ const struct keydef keys;
 /* Structure for Key Names */
 struct kname {char delete[6], escape[6], return[6];};
 const struct kname knames;
-
