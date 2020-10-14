@@ -78,6 +78,13 @@ void putexh();
  * Args: char b - Byte to Print */
 void puthex(); 
 
+/* Put Integer Right Justified    *
+ *  Prints word as decimal number *
+ *  left-padded with spaces for   *
+ *  a total of five charcaters    *
+ * Args: int w - Word to Print    */
+void putinr();
+
 /* Put Integer                    *
  *  Prints word as decimal number *
  * Args: int w - Word to Print */
@@ -96,6 +103,17 @@ void putmsk();
  * Args: char b - Byte to Print */
 void putnyb(); 
 
+/* Put Repeated Spaces               *
+ *  Prints multiple space characters *
+ * Args: char n - Number of Spaces   */
+void putrps(); 
+
+/* Put Repeated Character            *
+ *  Prints character multiple times  *
+ * Args: char c - Character to Print *
+ *       char n - Repeat Count       */
+void putrpt(); 
+
 /* Put Space                 *
  *  Prints a space character */
 void putspc(); 
@@ -111,4 +129,3 @@ void putsqb();
  *   hexadecimal number        *
  * Args: int w - Word to Print */
 void putwrd(); 
-

@@ -4,32 +4,42 @@ At the beginning of the program use the directives
 
   #include <stddef.h02>
   #include <stdlib.h02>
+  #include <intlib.h02>
   #include <stdiox.h02>
 
 The following functions are defined:
 
-  c = getprc(&s);       Writes the string s, waits for a key to be pressed.
-                        then writes  blank line
+  c = getcpr(s);        Writes the string s to the screen, waits for a key
+                        to be pressed, then writes a blank line line.
 
                         Returns the ASCII value of the key that was
                         pressed.
 
-                        Note: Calls the puts function, the newlin
+                        Note: Calls the puts() function, the newlin()
                         function twice, then the getc function.
 
   c = anykey();         Writes the string "Press any key to continue...",
-                        followed by a blank line, to the screen, then waits
+                        followed by a blank line to the screen, then waits
                         for a key to be pressed.
 
                         Returns the ASCII value of the key that was
                         pressed.
 
-                        Note: Calls the getprc function, with a hard
+                        Note: Calls the getprc() function, with a hard
                         coded string.
 
   putspc(b);            Writes a space character to the screen.
 
-                        Note: Used by the putdel and putder functions.
+                        Note: Used by the putdel(), putder(), and putinj()
+                        functions.
+
+  putrpt(c,n);          Writes character c to the screen n times.
+
+                        Note: Repeatedly calls putc().
+
+  putrps(n);            Writes a space to the screen n times.
+  
+                        Note: Calls putrpt() with a space character.
 
   putdec(b);            Writes the decimal representation of byte b to the
                         screen. The output will be between one and three
@@ -38,38 +48,122 @@ The following functions are defined:
                         Note: Calls part of the ctoa routine from stdlib
                         which leaves the binary values of the ones, tens,
                         and hundreds digits in variables temp0, temp1, and
-                        temp2, respectively.
+                        temp2, respectively. Called by printf() when 
+                        processing the %D formatting tag.
 
   putdel(b);            Writes the decimal representation of byte b to the
                         screen. The output is left justified by appending it
                         with 1 space if b is between 10 and 99, or two spaces
                         if b is less than 10.
 
-                        Note: Calls putdec and putspc. Leaves the value
-                        of b in varible temp3.
+                        Note: Calls putdec() and putspc(). Leaves the value
+                        of b in variable temp3. Called by printf() when 
+                        processing the %L formatting tag.
 
-  putder(b);            Writes the decimal representation of byte b to the
-                        screen. The output is right justified by prepending it
-                        with 1 space if b is between 10 and 99, or two spaces
-                        if b is less than 10.
+  putder(b);            Writes the decimal representation of byte b to 
+                        the screen. The output is right justified by left 
+                        padding it with 1 space if b is between 10 and 99, 
+                        or two spaces if b is less than 10.
 
-                        Note: Calls putdec and putspc. Leaves the value
-                        of b in varible temp3.
+                        Note: Calls putdec() and putspc(). Leaves the value
+                        of b in variable temp3. Called by printf() when 
+                        processing the %R formatting tag.
+
+  putdez(b);            Writes the decimal representation of byte b to the
+                        screen. The output is always three digits, including
+                        leading zeros.
+
+                        Note: Calls part of the ctoa() routine from stdlib
+                        which leaves the binary values of the ones, tens,
+                        and hundreds digits in variables temp0, temp1, and
+                        temp2, respectively. Called by printf() when 
+                        processing the %Z formatting tag.
+
+  putdeh(b);            Writes the decimal representation of byte b, modulo 
+                        100, to the screen. The output is always two digits, 
+                        the ten's digit and the one's digit.
+
+                        Note: Calls part of the ctoa routine from stdlib
+                        which leaves the binary values of the ones, tens,
+                        and hundreds digits in variables temp0, temp1, and
+                        temp2, respectively. Called by printf() when 
+                        processing the %H formatting tag.
+
+  putbin(b);            Writes the binary representation of byte b to the
+                        screen. The output is always eight binary digits
+                        (0 or 1).
+
+                        Note: Calls putmsk() with a mask of $FF. Called 
+                        by printf() when processing the %B formatting tag.
+
+  putexh(b,i);          Writes the hexadecimal representation of a 24-bit
+                        number to the screen, where b is the high byte and
+                        i is the middle and low bytes. The output is always 
+                        six hex digits, with leading zeros if b is less than 
+                        $10.
+
+                        Note: Calls savrxy(), saving the X and Y registers 
+                        to temp1 and temp2, respectively, then calls puthex()
+                        to print the highest byte and putwrd() to print the 
+                        middle and low bytes. 
 
   puthex(b);            Writes the hexadecimal representation of byte b to the
                         screen. The output is always two hex digits, the first
-                        being a leading 0 if b is less than 16.
+                        being a leading 0 if b is less than 16. Called by 
+                        printf() when processing the %X formatting tag.
 
-                        Note: Aliased to the prbyte routine.
+                        Note: Aliased to the prbyte() routine.
 
-  putwrd(&d);           Writes the hexadecimal representation of address &d to
+  putint(i);            Writes the decimal representation of integer i to the
+                        screen. The output will be one to five decimal digits, 
+                        with no leading zeros or padding.
+
+                        Note: Calls cvibcd, then calls upbcdi for each digit
+                        to be printed. Called by printf() when processing 
+                        the %I formatting tag.
+
+  putinr(i);            Writes the decimal representation of integer i to the
+                        screen. The output is always five charactes. right 
+                        justified by left padding it with spaces.
+
+                        Note: Calls putint(). Called by printf() when 
+                        processing the %J formatting tag.
+
+  putnyb(b);            Writes the hexadecimal representation of the low 
+                        nybble of byte b to the screen. The output is always 
+                        one hex digit (0-F).
+
+                        Note: Aliased to the prhex() routine. Called by
+                        printf() when processing the %W formatting tag.
+
+  putmsk(b,m);          Writes the binary representation of each of the bits
+                        in byte b for which the corresponding bit of m is set.
+                        The output will be between 0 and 8 binary digits,
+                        depending on how many bits of m are set.
+                        
+                        putmsk(b,$0F); //Print Low Nybble as Binary Number
+                        putmsk(b,$81); //Print Highest and Lowest Bits
+
+  putsqb(i);            Writes the hexadecimal representation of the twelve
+                        lowest bits of i (a sesquibyte) to the screen. The 
+                        output is always three hex digits, with leading 
+                        zeros if i is less than $0100.
+
+                        Note: Calls savrxy(), saving the X and Y registers to
+                        temp1 and temp2, respectively, then calls putnyb for 
+                        the most significant byte and puthex() for the least
+                        significant byte. Called by printf() when processing 
+                        the %Q formatting tag.
+
+  putwrd(i);            Writes the hexadecimal representation of integer i to
                         the screen. The output is always four hex digits, with
-                        leading zeros if b is less than $1000.
+                        leading zeros if i is less than $1000.
 
-                        Note: Calls savrxy, saving the X and Y registers to
+                        Note: Calls savrxy(), saving the X and Y registers to
                         temp1 and temp2, respectively, then calls puthex, once
                         for the most significant byte and again for the least
-                        significant byte.
+                        significant byte. Called by printf() when processing 
+                        the %W formatting tag.
 
   putdst();             Prints the destination string set by the setdst or
                         setstr functions.
@@ -78,36 +172,51 @@ The following functions are defined:
                         call that stores it's result in the destination string,
                         such as strcat, strcpy, and strcut in string,
 
-                        Note: calls putc and is called by printf when
-                        processing a %S formatting tag.
+                        Note: calls putc. Called by printf() when processing 
+                        the %S formatting tag.
 
   r = printf(b, &s):    Writes the value of byte b to screen, formatting
                         the output according the contents of string s.
 
-                        The output consists of the characters in s, but with
-                        any formatting tags replaced with an ASCII
-                        representation of the value of b.
+                        The output consists of the characters in s, but 
+                        with any formatting tags (which may be upper or 
+                        lower case) replaced with an ASCII representation 
+                        of the value of b.
 
                         The recognized formatting tags are:
+                        %B - output b as an eight-digit binary number
                         %C - output the ASCII character represented by b
                         %D - output b as a an unjustified decimal number
-                        %H - output b as a two-digit hexadecimal number
+                        %H - output b as a modulo-100 decimal number
                         %L - output b as a left justified decimal number
                         %R - output b as a right justified decimal number
-                        %% - output a single % character
-
-                        Unlike the printf function in standard C, only
+                        %X - output b as a two-digit hexadecimal number
+                        %Y - output low nybble of b as a hexadecimal digit
+                        %Z - output b as a zero-filled decimal number
+                        
+                        Unlike the printf() function in standard C, only
                         one value argument may be passed and that value is
                         used for each formatting tag in the format string.
 
-                        Two additional formatting tag are supported:
+                        Two special function tags are supported:
+                        %% - output a single % character
+                        %N - generate a newline
+
+                        Four additional formatting tags operate on the 
+                        destination pointer:
                         %S - output the destination string
+                        %I - output the destination address as a 
+                             as a one to five digit decimal number
+                        %J - output the destination address as a 
+                             right justified decimal number
+                        %Q - output the destination address as a 
+                             as a three-digit hexadecimal number
                         %W - output the destination address as a 
                              as a four-digit hexadecimal number
 
                         The destination string and/or address is set using 
                         the setdst or strdst function (from the "string" 
-                        library) before calling printf. Multiple occurances 
+                        library) before calling printf. Multiple occurrences 
                         of the %S or %w tag will cause the destination string 
                         and/or address to be repeated.
 
@@ -121,21 +230,24 @@ The following functions are defined:
                         lower case with either a 0 or 1 in the high bit.
                         Unrecognized formatting tags are interpreted as %C.
 
-                        Note: Calls putdec, putdel, putder, puthex, putwrd,
-                        or putdst depending on which formatting tags are 
-                        used. The value of b is left in variable temp3.
+                        Note: Calls putdec, putdel, putder, puthex, putint, 
+                        putwrd, or putdst depending on which formatting tags 
+                        are used. The value of b is left in variable temp3.
 
 Note: This library expects the following functions to be defined:
 
   cubcd();          Convert byte to BCD and unpack into three bytes
+  cvibcd();         Convert Integer to Binary Coded Decimal
   prbyte();         Print byte to screen as hexadecimal number
-  prchr(c);         Print ASCII character to screen
-  savrxy();         Save X and Y registers.
-  setsrc(&s);       Set source string pointer and initialize index
+  prchr();          Print ASCII character to screen
+  savrxy()();         Save X and Y registers.
+  setsrc();         Set source string pointer and initialize index
+  upbcdi();         Unpack digit from Binary Coded Decimal Integer
 
 along with the zero page variable pairs:
 
-  srclo,srchi:      Source string pointer
+  srclo,srchi:      Source Pointer
+  dstlo,dsthi:      Destination Pointer
 
 and the temporary variables
 

@@ -14,15 +14,21 @@ char getc();
 void putc(); 
 
 /* Get String
- *  Reads String from Keyboard, up     *
- *  to 128 characters until the Return *
- *  key is pressed. If the Escape key  *
- *  is pressed, input is aborted and   *
- *  the string is set to ""           *
- * Args: int &s - string to read       *
- * Returns: char n - Length of String  *      
- *               $FF = Escape Pressed  */
+ *   Reads String from Keyboard, up     *
+ *   to 128 characters until the Return *
+ *   key is pressed. If the Escape key  *
+ *   is pressed, input is aborted.      *
+ * Args: int &s - string to read        *
+ * Returns: char n - Length of String   *      
+ *             $FF = Escape Pressed     */
 char gets(); 
+
+/* Put Line                             *
+ *   Prints String on Screen and moves  *
+ *   cursor to beginning of next line   *
+ * Args: int &s - String to Print       *
+ * Returns: char n - Characters Printed */
+char putln();
 
 /* Put String
  *   Prints String on Screen            *
@@ -37,10 +43,3 @@ char puts();
  *       int &s - String to Print     *
  * Returns: char e - Ending Position  */
 char putsub();
-
-/* Put Line                             *
- *   Prints String on Screen and moves  *
- *   cursor to beginning of next line   *
- * Args: int &s - String to Print       *
- * Returns: char n - Characters Printed */
-char putln();

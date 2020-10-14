@@ -10,11 +10,11 @@ The following functions are defined:
   c = getc();         Waits for a keypress and returns the cleaned 
                       ASCII value corresponding to the pressed key.
                       
-                      Note: Aliased to getkey() from system library.
+                      Note: Aliased to getchr() from system library.
 
   putc(c);            Writes character c to the screen.
                       
-                      Note: Aliased to prchr() from system library.
+                      Note: Aliased to putchr() from system library.
 
   r = gets(&s);       Reads a maximum of 128 characters from keyboard 
                       until the Return/Enter key is pressed, storing the 
@@ -28,7 +28,7 @@ The following functions are defined:
                       Returns number of characters entered, or 255
                       if entry was aborted.
 
-                      Note: Calls getchr() in a loop and uses constants 
+                      Note: Calls getc() in a loop and uses constants 
                       DELKEY, RTNKEY, and ESCKEY from the system library.
 
   r = puts(&s):       Writes up to 128 characters of null-terminated 
@@ -36,14 +36,14 @@ The following functions are defined:
                       
                       Returns position of null terminator in string.
                       
-                      Note: Calls outsub(0, &s).
+                      Note: Calls putsub(0, &s).
 
   r = putsub(n, &s):  Writes up to 128 characters of null-terminated 
                       string s to the screen, starting at position n.
                       
                       Returns position of null terminator in string.
                       
-                      Note: Calls putchr() in a loop.
+                      Note: Calls putc() in a loop.
 
   r = putln(&s):      Writes up to 128 characters of null-terminated 
                       string s to the screen and advances the cursor to 
@@ -51,7 +51,7 @@ The following functions are defined:
                     
                       Returns number of characters printed.
                     
-                      Note: Calls outstr(&s) followed by newlin().
+                      Note: Calls puts(&s) followed by newlin().
 
 Note: This library expects the following functions to be defined:
 
@@ -61,9 +61,9 @@ Note: This library expects the following functions to be defined:
   newlin();         Advance cursor to beginning of next line
   setsrc(&s);       Set source string pointer and initialize index
 
-along with the zero page variable pairs
+along with the zero page word
   
-  srclo,srchi:      Source string pointer
+  srcptr            Source string pointer
 
 and the assembler constants
   
