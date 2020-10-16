@@ -3,16 +3,12 @@
 /* Monitor Variables */
 
 /* Standard Library Variables */
-char srclo,srchi;   //Source String Pointer for Library Functions
-char dstlo,dsthi;   //Destination String Pointer for Library Functions
+zeropage int srcptr, dstptr, bfrptr, blkptr;
 char bfrlo,bfrhi; //Buffer Pointer for Library Functions
-char blklo,blkhi;   //Block Segment Pointer
 char ptrlo,ptrhi;   //System Pointer
 
-char blkslo, blkshi;    //Block Start Address
-char blkelo, blkehi;    //Block End Address
-char blklen;            //Block Segment Length
-
+int blkbgn, blkend; //Block Start and End Address
+char blklen;        //Block Segment Length
 char temp0, temp1, temp2, temp3;  //Temporary Variables
 
 //System Variables

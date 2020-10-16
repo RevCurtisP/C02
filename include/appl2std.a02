@@ -6,24 +6,20 @@ ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Return)
 
 ;Zero Page Variables (*=System Variable)
-DSTLO   EQU $06     ;Destination String/Array Pointer
-DSTHI   EQU $07
-BLKLO   EQU $08     ;Block Segment Pointer (block.a02)
-BLKHI   EQU $09
+DSTPTR  EQU $06     ;Destination String/Array Pointer
+BLKPTR  EQU $08     ;Block Segment Pointer (block.a02)
 PTRLO   EQU $1D     ;System Pointer (pointer.a02)
 PTRHI   EQU $1E
 RANDOM  EQU $1F     ;Random Number
 INVFLG  EQU $32     ;*Inverse Flag: $3F=Blinking, $7F=Inverse, $FF=Normal 
 RDSEED  EQU $4E     ;O/S Random Number Low Byte
 ;       EQU $4F     ;O/S Random Number High Byte
-SRCLO   EQU $71     ;Source String/Array Pointer
-SRCHI   EQU $72
+SRCPTR  EQU $71     ;Source String/Array Pointer
 ;           $E3     ;Unused
-BLKSLO  EQU $EB     ;Block Start Address
-BLKSHI  EQU $EC
-BLKELO  EQU $ED     ;Block End Address
-BLKEHI  EQU $EE
+BLKBGN  EQU $EB     ;Block Start Address
+BLKEND  EQU $ED     ;Block End Address
 BLKLEN  EQU $EF     ;Block Segment Length    
+BFRPTR  EQU $FA     ;Work Buffer Pointer
 BFRLO   EQU $FA     ;Work Buffer Pointer
 BFRHI   EQU $FB
 TEMP0   EQU $FC     ;Temporary Storage

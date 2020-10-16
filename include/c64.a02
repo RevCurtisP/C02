@@ -10,13 +10,8 @@ XMBANK  EQU $0A ;Extended Memory Bank (Load/Verify Flag)
 XADRLO  EQU $0B ;Ext Memory Address LSB (Text Index/Array Size)
 XADRHI  EQU $0C ;Ext Memory Address MSB (Array Dimension Fkags)
 SRCPTR  EQU $22 ;Source Pointer [Temporary Pointers]
-SRCLO   EQU $22 ;Source Pointer LSB [Temporary Pointers]
-SRCHI   EQU $23 ;Source Pointer MSB [Temporary Pointers]
 DSTPTR  EQU $24 ;Destination Pointer [Temporary Pointers]
-DSTLO   EQU $24 ;Destination Pointer LSB [Temporary Pointers]
-DSTHI   EQU $25 ;Destination Pointer MSB [Temporary Pointers]
-BLKLO   EQU $26 ;Block Pointer LSB [Floating Point Work Area]
-BLKHI   EQU $27 ;Block Pointer MSB [Floating Point Work Area]
+BLKPTR   EQU $26 ;Block Pointer [Floating Point Work Area]
 STKLO   EQU $28 ;Stack Pointer LSB [Floating Point Work Area]
 STKHI   EQU $29 ;Stack Pointer MSB [Floating Point Work Area]
 BFRLO   EQU $35 ;Buffer Pointer LSB [Temporary String Pointer]
@@ -32,10 +27,8 @@ SYSBFL  EQU 88    ;System Buffer Size [88 Bytes]
 SYSBFR  EQU $0200 ;System Buffer [Keyboard Buffer]
 SYSBFP  EQU $0313 ;Position in System Buffer [Free Byte]
 
-BLKSLO  EQU $0334 ;Block Start LSB [Unused Byte]
-BLKSHI  EQU $0335 ;Block Start MSB [Unused Byte]
-BLKELO  EQU $0336 ;Block Start MSB [Unused Byte]
-BLKEHI  EQU $0337 ;Block End MSB [Unused Byte]
+BLKBGN  EQU $0334 ;Block Start [Unused Byte]
+BLKEND  EQU $0336 ;Block Start [Unused Byte]
 BLKLEN  EQU $0338 ;Block Length [Unused Byte]
 
 RANDOM  EQU $0339 ;Random Number Storage [Unused Byte]
@@ -102,4 +95,5 @@ NEWLIN: LDX #0      ;Store 0
 PUTSTR: TXA         ;Copy LSB to Accumulator
         JMP $AB1E   ;Execute STROUT
 
-        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routine
+        INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routine
+

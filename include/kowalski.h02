@@ -8,7 +8,7 @@
 #define DELKEY $7F //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key
 #define RTNKEY $0D //Return/Enter Key
-#define SYSBFL 128 //System Buffer Length
+#define NULKEY $00 //No Key was Pressed
 
 /* Zero Page Variables used as Pointers         */
 zeropage int srcptr, dstptr, bfrptr, blkptr;
@@ -29,17 +29,16 @@ char stkslo, stkshi; //Stack Start Address
 char stkelo, stkehi; //Stsck End Address
 char random;         //Last Result of Pseudo-Random Number Generator
 char rdseed;         //System Seed for Pseudo-Random Number Generator 
-char sysbfr[], sysbfp; //System String Buffer and Position
 
 //System Subroutines
 void delchr(); //Delete previous character
-char getchr(); //Wait for character from Console
 char getkey(); //Read ASCII character from Console
 void newlin(); //Advance cursor to beginning of next line
 char polkey(); //Poll Console for character
 char putchr(); //Print ASCII character to Console
 void prbyte(); //Print Accumulator as Hexadadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
+char getchr(); //Wait for character from Console
 
 //System Labels
 start:  //Start of Code

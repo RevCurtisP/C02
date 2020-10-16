@@ -1,0 +1,113 @@
+; C02 Program Initialization Code for BBC Micro
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $7F     ;Delete/Backspace Key ($08=Backspace, $7F=Delete)
+ESCKEY  EQU $1B     ;Escape/Stop Key      ($03=Ctrl-C, $1B=Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
+NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
+
+;Zero Page Locations
+SRCPTR  EQU $70     ;Source Pointer
+DSTPTR  EQU $72     ;Destination String Pointer (string.asm)
+BFRLO   EQU $74     ;Buffer Pointer LSB [Temporary String Pointer]
+BFRHI   EQU $75     ;Buffer Pointer MSB [Temporary String Pointer]
+BLKPTR  EQU $76     ;Block Pointer
+STKLO   EQU $78     ;Stack Pointer
+STKHI   EQU $79     ;  Unused by OS
+
+TEMP0   EQU $80     ;Temporary Storage
+TEMP1   EQU $81
+TEMP2   EQU $82
+TEMP3   EQU $83
+
+BLKBGN  EQU $84     ;Block Start Address
+BLKEND  EQU $86     ;Block End Address
+
+STKSLO  EQU $88     ;Stack Start Address
+STKSHI  EQU $89
+STKELO  EQU $8A     ;Stack End Address
+STKEHI  EQU $8B
+
+;       EQU $8C     ;Unused
+;       EQU $8D     ;Unused
+;       EQU $8E     ;Unused
+RANDOM  EQU $8F     ;Pseudo-RANDOM Number Storage
+RDSEED  EQU $0296   ;System Clock Low Byte
+
+        ORG $1900   ;Program Start Address
+
+START:  JMP MAIN    ;Execute Program
+
+;Exit Program and Return to Operating System or Monitor
+EXIT:   JMP ($FFFC) ;Execute Warm Start
+
+;Poll Character from Keyboard
+PLKEY:  LDA #$81    ;Set Command to Read Key
+        LDY #0      ;Set Time Limit to 0
+        LDX #0
+        JSR #FFF4   ;Call OSBYTE
+        TYA         ;Check Status Code
+        BNE GETCHE  ;If Error, Check for Escape
+        TXA         ;Else Return Character
+        RTS
+
+;Read Character from Console
+GETKEY;             ;Usually Drops into RDKEY, but may need to call RDKEY
+                    ;  then clean/convert returned value (e.g. Apple-1) 
+
+;Wait for Character from Keyboard
+GETCHR: JSR $FFE0   ;Call System Routine OSRDCH
+        BCC GETCHX  ;If Error
+GETCHE: CMP #$1B    ;
+        BNE GETCHZ  ;  If Escape Pressed
+        LDA #$7E    ;    Acknowledge It
+        JSR $FFF4   ;    with OSBYTE Call
+        LDA #$1B    ;    and Return ESC
+        BNE GETCHX  ;  Else 
+GETCHZ: LDA #0      ;    Return 0
+GETCHX: RTS         
+
+;Delete Previous Character
+DELCHR: LDA #$7F    ;Print DEL Character
+        JMP PUTCHR
+
+;Advance Cursor to Next line
+NEWLIN  EQU $FFE7   ;Aliased to System Routine OSNEWL
+
+;Print Character to Screen
+PUTCHR: EQU $FFE3   ;Aliased to OSASCI System Routine
+
+;Clear the Screen
+CLRSCR: LDA #$0C    ;Print FF Character
+        JMP PUTCHR
+
+;Move Cursor to Specified Coordinates
+SETPOS: TAX         ;Save Column in X
+        LDA #$1F    ;Issue Move Cursor Command
+        JSR PUTCHR
+        TXA         ;Send X Coordinate
+        JSR PUTCHR
+        TYA         ;Send Y Coordinate
+        JMP PUTCHR
+
+;Get Cursor Position
+GETPOS: LDA $0318   ;Load Text Cursor X Coordinate
+        LDY #0319   ;Load Text Cursor Y Coordinate
+        RTS
+
+;Get Screen Size
+GETSIZ: LDA $030A   ;Get Right Side of Text Window
+        SEC
+        SBC $0308   ;Subtract Left Side of Text Window
+        TAX         ;Copy to X Register
+        INX         ;and Add 1
+        LDA $0309   ;Get Bottom of Text Window
+        SEC
+        SBC $030B   ;Subtract Top of Text Window
+        TAY         ;Copy to Y Register
+        INY         ;and Add 1
+        TXA         ;Copy Width to Accumulator
+        RTS         ;Return Screen Width in A, Height in Y
+
+        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routine
+        INCLUDE "../include/putstr.a02" ;PUTSTR routine

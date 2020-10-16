@@ -13,13 +13,8 @@ XMBANK  EQU $53   ;Extended Memory Bank
 XADRLO  EQU $54   ;Ext Memory Address LSB 
 XADRHI  EQU $55   ;Ext Memory Address MSB 
 SRCPTR  EQU $56   ;Source Pointer 
-SRCLO   EQU $57   ;Source Pointer LSB 
-SRCHI   EQU $58   ;Source Pointer MSB 
 DSTPTR  EQU $59   ;Destination Pointer 
-DSTLO   EQU $5A   ;Destination Pointer LSB 
-DSTHI   EQU $5B   ;Destination Pointer MSB 
-BLKLO   EQU $5C   ;Block Pointer LSB 
-BLKHI   EQU $5D   ;Block Pointer MSB 
+BLKPTR  EQU $5C   ;Block Pointer
 STKLO   EQU $5E   ;Stack Pointer LSB 
 STKHI   EQU $5F   ;Stack Pointer MSB 
 BFRLO   EQU $60   ;Buffer Pointer LSB 
@@ -40,10 +35,8 @@ SYSBFP  EQU $68   ;Position in System Buffer [Free Byte]
 SYSBFL  EQU 128   ;System Buffer Length
 ;Other Variables - User Storage Area
 SYSBFR  EQU $0700 ;System Buffer 
-BLKSLO  EQU $07F4 ;Block Start LSB 
-BLKSHI  EQU $07F5 ;Block Start MSB 
-BLKELO  EQU $07F6 ;Block End LSB 
-BLKEHI  EQU $07F7 ;Block End MSB 
+BLKBGN  EQU $07F4 ;Block Start Address
+BLKEND  EQU $07F6 ;Block End Address
 BLKLEN  EQU $07F8 ;Block Length 
 
 STKSAV  EQU $07FA ;Machine Stack Storage 

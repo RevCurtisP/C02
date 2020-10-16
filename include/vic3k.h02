@@ -8,16 +8,14 @@
 #define RTNKEY $0D //Return/Enter Key (RETURN)
 #define SYSBFL  88 //System Buffer Length
 
-//Library Pointer Variables
-char srclo,srchi; //Source String Pointer for Library Functions
-char dstlo,dsthi; //Destination String Pointer for Library Functions
-char blklo,blkhi; //Block Segment Pointer
+/* Standard Library Pointers */
+zeropage int srcptr, dstptr, bfrptr, blkptr;
+char bfrlo,bfrhi; //Buffer Pointer for Library Functions
 char stklo,stkhi; //Stack Pointer
 
-//Library Variables
-char blkslo, blkshi; //Block Start Address
-char blkelo, blkehi; //Block End Address
-char blklen;         //Block Segment Length
+/* Standard Library Variables */
+int blkbgn, blkend; //Block Start and End Address
+char blklen;        //Block Segment Length
 char stkslo, stkshi; //Stack Start Address
 char stkelo, stkehi; //Stsck End Address
 char random, rdseed; //Pseudo-Random Number Generation

@@ -1,0 +1,78 @@
+; Orao Program Initialization Code for C02 programs
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $1F     ;Left Arrow
+ESCKEY  EQU $03     ;Ctrl-C
+RTNKEY  EQU $0D     ;Carriage Return
+NULKEY  EQU $00     ;Null
+
+;Zero Page Locations
+SRCLO   EQU $30     ;Source String/Array Pointer
+SRCHI   EQU $31
+DSTLO   EQU $32     ;Destination String/Array Pointer
+DSTHI   EQU $33
+BFRLO   EQU $34     ;Work Buffer Pointer
+BFRHI   EQU $35
+
+STKSAV  EQU $36     ;Stack Pointer Storage
+RDSEED  EQU $37     ;Pseudo-RANDOM Seed
+RANDOM  EQU $38     ;Pseudo-RANDOM Number Storage
+TEMP0   EQU $3A     ;Temporary Storage
+TEMP1   EQU $3B
+TEMP2   EQU $3C
+TEMP3   EQU $3D
+
+BLKBGN  EQU $40     ;Block Start Address
+BLKEND  EQU $42     ;Block End Address
+BLKPTR  EQU $44     ;Block Pointer
+BLKLEN  EQU $46     ;Block Segment Length     
+
+STKSLO  EQU $48     ;Stack Start Address
+STKSHI  EQU $49
+STKELO  EQU $4A     ;Stack End Address
+STKEHI  EQU $4B
+STKLO   EQU $4C     ;Stack Pointer
+STKHI   EQU $4D
+
+        ORG $1000   ;Program Start Address
+
+START:  TSX         ;Save Stack Pointer
+        STX STKSAV
+        JMP MAIN    ;Execute Program
+
+
+;Exit Program and Return to Operating System or Monitor
+EXIT    LDX STKSAV  ;Restore Stack Pointer
+        TXS 
+        RTS         ;and Return to Caller
+        
+RESET   EQU $FFA3   ;Alias to WARMST (Monitor)
+
+;Poll Character from Keyboard
+POLKEY: JSR $E5B0   ;Scan Keyboard
+        BCC POLKEX  ;If No Key Pressed
+        LDA #NULKEY ;Return NUL
+POLKEX: RTS
+
+;Read Character from Console
+GETKEY  EQU $E500   ;Alias to INCHR function
+
+;Wait for Character from Console
+GETCHR  EQU GETKEY  ;Alias to GETKEY
+
+;Print Character to Screen
+PUTCHR  EQU $E762   ;Alias to OUTCH Routine
+
+;Delete Previous Character
+DELCHR  EQU $F1F2   ;Alias to BCKSPC Routine
+
+;Advance Cursor to Next line
+NEWLIN  EQU $E7F6   ;Aliased to CRLF Routine
+
+;Print Byte as Two-Digit Hex Number to Console
+PRBYTE  EQU $E803
+
+;Print Low Nybble as Hex Digit to Console
+PRHEX   EQU $E80F
+
+        INCLUDE "../include/putstr.a02" ;PUTSTR Routine

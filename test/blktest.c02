@@ -16,8 +16,7 @@
 #include <block.h02>
 
 char c, i, n, r, z;
-char savlo,savhi,tmplo,tmphi; //Address Pointer
-char chkhi,chklo; //Address Check
+int chkint, savptr;
 char number[5];
 const char numbrs = "zero one  two  threefour five six  seveneightnine ten";
 const char sorted = {8,5,4,9,1,7,6,3,2,0};
@@ -25,48 +24,44 @@ const char name1 = "Dick", name2 = "Jane";
 char block[255]; //Array to Use as Block
 char temp[127];
 char seglo[9],seghi[9];
-char aa,xx,yy;
+char aa,xx,yy,zz;
+int yx;
 
-struct ssgmt {
-   char key[6];
-   char flag;
-   char value;
-};
-
+struct ssgmt {char key[6]; char flag; char value;};
 struct ssgmt sgmt;
 struct ssgmt seg1;
 struct ssgmt seg2;
 struct ssgmt tseg;
 
+char cmpptr(chkint) {putadr(blkptr); return cmpadr(blkptr);}
+void chkadr(yx) {putadr(yx);cmpadr(yx);psflln(<yx & >yx);}
+char equals(aa,zz) {A = (aa == zz) ? #TRUE : #FALSE;}
+char cmpadr(yx) {xx = equals(<chkint, <yx); yy = equals(>chkint, <yx); return xx & yy;}
+void clrseg() {setdst(); memset(0, @sgmt);}
+char chkmem() {A = equals(memcmp(), 0);}  
+void prtadr() {putwrd(); putspc();}
+void prbadr() {putadr(blkptr); prtadr(blkend); putwrd(blkptr);newlin();}
+
 main:
 
-puts("blkbgn(&4321);  ");
-blkbgn(&$4321); //Set Block Start
-setchk(&$4321); chkadr(blkshi,blkslo);
-
-puts("blkend(&$4567); ");
-blkend(&$4567); //Set Block End
-setchk(&$4567); chkadr(blkehi,blkelo);
-
-puts("blkseg(@sgmt);  ");
-blkseg(@sgmt);
-printf(blklen,"blklen=%d:");
-if (blklen == @sgmt) passln(); else failln();
+puts("blkbgn = &$4321; "); blkbgn = &$4321;
+puts("blkend = &$4567; "); blkend = &$4567; 
+putln("blklen = @sgmt;"); blklen = @sgmt;
 
 puts("blkrst();       ");
 blkrst();
-setchk(&$4321); chkadr(blkhi,blklo);
+chkint = &$4321; chkadr(blkptr);
 
 puts("blknxt();       ");
 blknxt();
-setchk(&$432A); chkadr(blkhi,blklo);
+chkint = &$432A; chkadr(blkptr);
 
 puts("blkprv();       ");
 blkprv();
-setchk(&$4321); chkadr(blkhi,blklo);
+chkint = &$4321; chkadr(blkptr);
 
 puts("blkset('@');    ");
-blkset('@'); r=chkptr(&$4321);
+blkset('@'); r=cmpptr(&$4321);
 while (blkget(1,&sgmt)) {if (sgmt[0]<>'@') r=#FALSE;} psflln(r);
 
 newlin();//if (anykey()==#ESCKEY) goto exit;
@@ -80,14 +75,14 @@ puts("sgmt=");prtseg(&sgmt);
 newlin();
 
 puts("blkput(@seg1,&seg1); ");
-blkrst(); blkput(@seg1,&seg1); r=chkptr(&$432A);
+blkrst(); blkput(@seg1,&seg1); r=cmpptr(&$432A);
 memdst(&$4321); r = chkmem(@seg1,&seg1) & r; 
 psflln(r);
 puts(" _blk=");prtseg(&$4321);
 newlin();
 
 puts("blkswp(@sgmt,&sgmt); ");
-blkrst(); blkswp(@sgmt,&sgmt); r = chkptr(&$4321);
+blkrst(); blkswp(@sgmt,&sgmt); r = cmpptr(&$4321);
 memdst(&$4321); r = chkmem(@seg2,&seg2) & r; 
 memdst(&sgmt);  r = chkmem(@seg1,&seg1) & r; 
 psflln(r);
@@ -98,17 +93,17 @@ anykey();
 
 puts("blkput(@sgmt, &sgmt);\n"); blkset(0); blkrst(); r = #TRUE;
 for (i=0; i<10; i++) {
-  printf(i,"%d: "); nsgmt(i,&sgmt); savlo=blklo;savhi=blkhi;  
-  blkput(@sgmt,&sgmt); seglo[i]=savlo; seghi[i]=savhi;
-  putadr(.,savhi,savlo); puts(" _blk="); prtseg(.,savhi,savlo);
-  setdst(.,savhi,savlo); if (memcmp(@sgmt,&sgmt)) r = #FALSE;
+  printf(i,"%d: "); nsgmt(i,&sgmt); savptr=blkptr;
+  blkput(@sgmt,&sgmt); seglo[i]=<savptr; seghi[i]=>savptr;
+  putadr(savptr); puts(" _blk="); prtseg(savptr);
+  setdst(savptr); if (memcmp(@sgmt,&sgmt)) r = #FALSE;
 }
 puts("blkput:"); psflln(r); newlin();
 
 puts("blkget(@temp, &temp);\n"); blkrst(); r = #TRUE;
 for (i=0; i<10; i++) {
   printf(i,"%d: "); nsgmt(i,&sgmt); memclr(@temp, &temp); 
-  putadr(.,blkhi,blklo); r = blkget(@temp, &temp);
+  putadr(blkptr); r = blkget(@temp, &temp);
   setdst(&temp); if (memcmp(@sgmt, &sgmt)) r = #FALSE;
   puts(" temp="); prtseg(&temp);
 }
@@ -118,20 +113,19 @@ puts("blkmem(@sgmt, &sgmt);\n"); r = #TRUE;
 for (i=9; i:+; i--) {
   printf(i,"%d: "); nsgmt(i,&sgmt);
   blkmem(@sgmt,&sgmt);  
-  if (dstlo<>seglo[i]) r = #FALSE; 
-  if (dsthi<>seghi[i]) r = #FALSE; 
-  putadr(.,dsthi,dstlo); puts(" _blk="); prtseg(.,dsthi,dstlo);
+  if (<dstptr<>seglo[i]) r = #FALSE; 
+  if (>dstptr<>seghi[i]) r = #FALSE; 
+  putadr(dstptr); puts(" _blk="); prtseg(dstptr);
 }
 puts("blkmem:"); psflln(r); newlin();
-
 
 puts("blkstr(@sgmt, &sgmnt);\n"); r = #TRUE;
 for (i=0; i<10; i++) {
   printf(i,"%d: "); nsgmt(i,&sgmt); memclr(@temp, &temp);
   setdst(&temp); blkstr(&sgmt.key);
-  if (srclo<>seglo[i]) r = #FALSE; 
-  if (srchi<>seghi[i]) r = #FALSE; 
-  putadr(.,srchi,srclo); puts(" temp="); prtseg(&temp);
+  if (<srcptr<>seglo[i]) r = #FALSE; 
+  if (>srcptr<>seghi[i]) r = #FALSE; 
+  putadr(srcptr); puts(" temp="); prtseg(&temp);
   if (memcmp(@sgmt, &sgmt)) r = #FALSE;
   i++; if (i=9) i=0; //evens then odds
 }
@@ -140,7 +134,7 @@ puts("blkstr:"); psflln(r); anykey();
 puts("blksrt(&temp);\n"); r = #TRUE; blksrt(&temp);blkrst();
 for (i=0; i<10; i++) {
   printf(i,"%d: "); nsgmt(sorted[i],&sgmt); memclr(@temp, &temp); 
-  putadr(.,blkhi,blklo); r = blkget(@temp, &temp);
+  putadr(blkptr); r = blkget(@temp, &temp);
   setdst(&temp); if (memcmp(@sgmt, &sgmt)) r = #FALSE;
   puts(" temp="); prtseg(&temp);
 }
@@ -150,31 +144,6 @@ putln("Tests complete.");
 
 goto exit;
 
-char chkptr() {
-  setchk(); //pass through args
-  putadr(.,blkhi,blklo); 
-  return cmpadr(.,blkhi,blklo);
-}
-void setchk() {
-  chklo=X; chkhi=Y;
-}
-
-void chkadr(tmphi,tmplo) {
-  putadr(.,tmphi,tmplo);
-  cmpadr(.,tmphi,tmplo);
-  psflln(tmplo & tmphi);
-}
-
-char cmpadr(aa,yy,xx) {
-  xx = (chklo == xx) ? #TRUE : #FALSE;
-  yy = (chkhi == yy) ? #TRUE : #FALSE;
-  return xx & yy;
-}
-
-void clrseg() {
-  setdst(); memset(0, @sgmt);
-}
-
 void prtseg(aa,yy,xx) {
   setdst(&tseg); memcpy(@tseg,yy,xx);
   setdst(&tseg.key); printf("key=\"%s\",");
@@ -182,11 +151,6 @@ void prtseg(aa,yy,xx) {
   printf(tseg.value,",value=%d\n");
 }
 
-char chkmem() {
-  aa = memcmp(); //pass through args
-  aa = (aa==0) ? #TRUE : #FALSE;
-  return aa;
-}  
 
 //Copy Textual Representation of n to temp
 void numstr(n,yy,xx) {
@@ -197,27 +161,20 @@ void numstr(n,yy,xx) {
 }
 
 //Build String Segment in Temp
-void nsgmt(n,tmphi,tmplo) {
+void nsgmt(n,yx) {
   memclr(@tseg,&tseg);
   numstr(n,&tseg.key); 
   tseg.flag = trufls(n);
   tseg.value = n;
-  setdst(.,tmphi,tmplo); memcpy(@tseg,&tseg);  
+  setdst(yx); memcpy(@tseg,&tseg);  
 }
 
 //Print Addresses
 void pradrs() {
-  tmplo=srclo;tmphi=srchi;
-  puts(" SRC: $");prbyte(tmphi);prbyte(tmplo);
-  puts(" DST: $");prbyte(dsthi);prbyte(dstlo);
-  puts(" BLK: $");prbyte(blkhi);prbyte(blklo);
+  puts(" SRC: $");putwrd(srcptr);
+  puts(" DST: $");putwrd(dstptr);
+  puts(" BLK: $");putwrd(blkptr);
   newlin();
 }
 
-//Print Block Addresses
-void prbadr() {
-  prbyte(blkshi);prbyte(blkslo);putc(' ');
-  prbyte(blkehi);prbyte(blkelo);putc(' ');
-  prbyte(blkhi);prbyte(blklo);newlin();
-}
 

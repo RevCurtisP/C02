@@ -7,16 +7,13 @@
 #define SYSBFL 255 //System Buffer Length
 
 /* Standard Library Pointers */
-char srclo,srchi;   //Source String Pointer for Library Functions
-char dstlo,dsthi;   //Destination String Pointer for Library Functions
+zeropage int srcptr, dstptr, bfrptr, blkptr;
 char bfrlo,bfrhi; //Buffer Pointer for Library Functions
-char blklo,blkhi;   //Block Segment Pointer
 char stklo,stkhi;   //System Pointer
 
 /* Standard Library Variables */
-char blkslo, blkshi; //Block Start Address
-char blkelo, blkehi; //Block End Address
-char blklen;         //Block Segment Length
+int blkbgn, blkend; //Block Start and End Address
+char blklen;        //Block Segment Length
 char stkslo, stkshi; //Stack Start Address
 char stkelo, stkehi; //Stsck End Address
 char random, rdseed; //Pseudo-Random Number Generation

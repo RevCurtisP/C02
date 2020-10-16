@@ -6,14 +6,9 @@ ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
 RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
 
 ;Zero Page Locations
-SRCPTR  EQU $22   ;Source Pointer LSB [Temporary Pointers]
-SRCLO   EQU $22   ;Source Pointer LSB [Temporary Pointers]
-SRCHI   EQU $23   ;Source Pointer MSB [Temporary Pointers]
-DSTPTR  EQU $24   ;Destination Pointer LSB [Temporary Pointers]
-DSTLO   EQU $24   ;Destination Pointer LSB [Temporary Pointers]
-DSTHI   EQU $25   ;Destination Pointer MSB [Temporary Pointers]
-BLKLO   EQU $26   ;Block Pointer LSB [Floating Point Work Area]
-BLKHI   EQU $27   ;Block Pointer MSB [Floating Point Work Area]
+SRCPTR  EQU $22   ;Source Pointer [Temporary Pointers]
+DSTPTR  EQU $24   ;Destination Pointer [Temporary Pointers]
+BLKPTR  EQU $26   ;Block Pointer [Floating Point Work Area]
 STKLO   EQU $28   ;Stack Pointer LSB [Floating Point Work Area]
 STKHI   EQU $29   ;Stack Pointer MSB [Floating Point Work Area]
 BFRLO   EQU $35   ;Buffer Pointer LSB [Temporary String Pointer]
@@ -32,10 +27,8 @@ USER1   EQU $0311 ;Free Byte for User Programs
 USER2   EQU $0312 ;Free Byte for User Programs
 SYSBFP  EQU $0313 ;Position in System Buffer [Free Byte]
 
-BLKSLO  EQU $0334 ;Block Start LSB [Unused Byte]
-BLKSHI  EQU $0335 ;Block Start MSB [Unused Byte]
-BLKELO  EQU $0336 ;Block Start MSB [Unused Byte]
-BLKEHI  EQU $0337 ;Block End MSB [Unused Byte]
+BLKBGN  EQU $0334 ;Block Start [Unused Byte]
+BLKEND  EQU $0336 ;Block Start [Unused Byte]
 BLKLEN  EQU $0338 ;Block Length [Unused Byte]
 
 RANDOM  EQU $0339 ;Random Number Storage [Unused Byte]

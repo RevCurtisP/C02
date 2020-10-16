@@ -1,0 +1,95 @@
+; Program initialization code for C02 programs
+; Template for System Specific Code
+
+        ORG $0400   ;Program Start Address
+
+;System Specific ASCII Key Mappings
+DELKEY  EQU $08     ;Delete/Backspace Key (Backspace)
+ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
+RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
+NULKEY  EQU $00     ;No Key was Pressed   (Null)
+
+;Zero Page Locations
+SRCPTR  EQU $10
+DSTPTR  EQU $12
+BFRLO   EQU $14     ;Work Buffer Pointer
+BFRHI   EQU $15
+
+STKSAV  EQU $1D     ;Stack Pointer Storage
+RDSEED  EQU $1E     ;Pseudo-RANDOM Seed
+RANDOM  EQU $1F     ;Pseudo-RANDOM Number Storage
+
+TEMP0   EQU $20     ;Temporary Storage
+TEMP1   EQU $21
+TEMP2   EQU $22
+TEMP3   EQU $22
+
+BLKBGN  EQU $30     ;Block Start Address
+BLKEND  EQU $32     ;Block End Address
+BLKPTR  EQU $34     ;Block Pointer
+BLKLEN  EQU $36     ;Block Segment Length     
+
+STKSLO  EQU $48     ;Stack Start Address
+STKSHI  EQU $49
+STKELO  EQU $4A     ;Stack End Address
+STKEHI  EQU $4B
+STKLO   EQU $4C     ;Stack Pointer
+STKHI   EQU $4D
+
+;Memory Mapped I/O
+IOBASE  EQU $E000
+IOINIT  EQU IOBASE+0 ;Clear Terminal Window
+IOPUTC  EQU IOBASE+1 ;Put Character
+IOPUTR  EQU IOBASE+2 ;Put Raw Character
+IOPUTH  EQU IOBASE+3 ;Put as Hexadecimal Number
+IOGETC  EQU IOBASE+4 ;Get Character
+IOPOSX  EQU IOBASE+5 ;Set Cursor X Position 
+IOPOSY  EQU IOBASE+6 ;Set Cursor Y Position
+
+START:  LDX #$FF    ;Initialize Stack Pointer
+        TXS         ;
+        STX IOINIT  ;Clear Screen
+        JMP MAIN    ;Execute Program
+
+;Exit Program and Return to Monitor
+EXIT:   BRK         ;Halt Debugger
+
+;Read Character from Console
+GETKEY  EQU $FFE0   ;Emulator CHRIN Routine
+
+;Poll Character from Keyboard
+POLKEY: INC RDSEED  ;Cycle the Random Seed 
+        LDA IOGETC  ;Code Read from Keyboard         
+        RTS
+
+;Wait for Character from Console
+GETCHR: JSR POLKEY  ;Usually calls PLKEY 
+        BEQ GETCHR   ;  until a non-zero is returned
+        RTS         
+
+;Delete Previous Character
+DELCHR: LDA #$08    ;Load Backspace into Accumulator
+        JMP PUTCHR  ;  and Print it
+
+;Advance Character to Next line
+NEWLIN: LDA #$0D    ;Load Carriage Return
+        JSR PUTCHR  ;And Print It
+        LDA #$0A    ;Load Line Feed
+
+;Print Character to Console
+PUTCHR: STA IOPUTC  ;Write Character to Screen
+        RTS
+
+;Print Hexadecimal Digit
+PRHEX:  AND #$0F
+        ORA #'0'
+        BNE PUTCHR
+
+;Print Hexadecimal Byte
+PRBYTE: STA IOPUTH  ;Put as Hexadecimal Number
+        RTS
+
+        INCLUDE "putstr.a02" ;PUTSTR routine
+
+
+

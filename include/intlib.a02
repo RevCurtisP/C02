@@ -1,7 +1,7 @@
-; C02 library stdlib.h02 assembly language subroutines
+; C02 module intlib.h02 assembly language subroutines
 ; Requires 
-; external zero page locations SRCLO and SRCHI
-; and external locations RANDOM, RDSEED, TEMP0, TEMP1, and TEMP2. 
+; external zero page words DSTPTR and SRCPTR 
+; and external locations TEMP0, TEMP1, TEMP2, and TEMP3 
 
         SUBROUTINE INTLIB
 
@@ -23,25 +23,25 @@ IABS:   CPY #$80        ;If Negative (High Bit Set)
 
 ;imax(i) - Get MAXimum of Two Integers
 ;Args: Y,X = Second Integer
-;Uses: SRCHI,SRCLO = First Integer
+;Uses: SRCPTR = First Integer
 ;Affects: N,Z,C
 ;Returns: Y,X = Larger of the Two Arguments
-IMAX:   CPY SRCHI       ;If Y < SRCHI
-        BCC .GETSRC     ;  Return SRCLO, SRCHI
-        CPX SRCLO       ;IF X >= SRCLO
+IMAX:   CPY SRCPTR+1    ;If Y < SRCPTR MSB
+        BCC .GETSRC     ;  Return SRCPTR
+        CPX SRCPTR       ;IF X >= SRCPTR LSB
         BCS .RETURN     ;  Return Argument
-.GETSRC JMP GETSRC      ;Return Integer in SRCLO, SRCHI
+.GETSRC JMP GETSRC      ;Return Integer in SRCPTR
 
 ;imin(i) - Get MINimum of Two Integers
 ;Args: Y,X = Second Integer
-;Uses: SRCHI,SRCLO = First Integer
+;Uses: SRCPTR = First Integer
 ;Affects: N,Z,C
 ;Returns: Y,X = Larger of the Two Arguments
-IMIN:   CPY SRCHI       ;If Y < SRCHI
+IMIN:   CPY SRCPTR+1       ;If Y < SRCPTR+1
         BCC .RETURN     ;  Return Argument
-        BNE .GETSRC     ;If Y > SRCHI Return SRCHI,SRCLO
-        CPX SRCLO       ;If X >= SRCLO
-        BCS .GETSRC     ; Return SRCHI,SRCLO 
+        BNE .GETSRC     ;If Y > SRCPTR+1 Return SRCPTR
+        CPX SRCPTR       ;If X >= SRCPTR
+        BCS .GETSRC     ; Return SRCPTR 
         RTS             ;Return Argument
 
 ;iaddc(c,i) - Add Byte c to Integer i
@@ -58,10 +58,10 @@ IADDC:  JSR SETSRC      ;Save Integer and Clear Y
 ;         N = Sign of Result
 IADD:   CLC         ;Clear Carry for Addition
         TXA         ;Add Addend LSB
-        ADC SRCLO   ;to Augend LSB
+        ADC SRCPTR   ;to Augend LSB
         TAX         ;and Copy to X
         TYA         ;Add Addend MSB
-        ADC SRCHI   ;to Augebd MSB
+        ADC SRCPTR+1   ;to Augebd MSB
         TAY         ;and Copy to Y
         LDA #0      ;Set Overflow to 0
         ROL         ;  Rotate Carry (Same as Adding it)
@@ -77,10 +77,10 @@ IADD:   CLC         ;Clear Carry for Addition
 ;         N = Sign of Result
 ISUB:   JSR SAVRXY  ;Store Subtrahend in TEMP1,TEMP2
         SEC         ;Set Carry for Subtraction
-        LDA SRCLO   ;Load Minuend LSB 
+        LDA SRCPTR   ;Load Minuend LSB 
         SBC TEMP1   ;Subtract Subtrahend LSB
         TAX         ;Copy Difference LSB to X
-        LDA SRCHI   ;Load Minuend MSB 
+        LDA SRCPTR+1   ;Load Minuend MSB 
         SBC TEMP2   ;Subtract Subtrahend MSB
         TAY         ;Copy Difference MSB to Y
         LDA #0      ;Set Overflow Byte to 0
@@ -204,7 +204,7 @@ ISHFTR: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
 ATOI:   JSR SETSRC      ;Initialize Source String
         STY TEMP1       ;Initialize Result
         STY TEMP2
-.AILOOP LDA (SRCLO),Y   ;Get Next Character
+.AILOOP LDA (SRCPTR),Y   ;Get Next Character
         CMP #$30        ;If Less Than '0'
         BCC .AIDONE     ;  Exit
         CMP #$3A        ;If Greater Than '9'
@@ -239,7 +239,7 @@ ATOI:   JSR SETSRC      ;Initialize Source String
 
 ;itoa(n) - Integer TO ASCII string
 ;Args: Y,X = Integer Value to Convert
-;Uses: DSTHI,DSTLO = Destination String
+;Uses: DSTPTR = Destination String
 ;Affects: X
 ;Returns: A,Y = Length of String
 ITOA:   JSR CVIBCD      ;Convert Integer to Packed BCD
@@ -258,14 +258,14 @@ ITOA:   JSR CVIBCD      ;Convert Integer to Packed BCD
         TXA             ;and Restore Digit
         LDY TEMP3       ;Get Index into String
         ORA #$30        ;Convert Digit to ASCII
-        STA (DSTLO),Y   ;and Store in String
+        STA (DSTPTR),Y  ;and Store in String
         INC TEMP3       ;Increment Index into String
         PLA             ;Pull Digit Number off Stack
         TAY
         DEY             ;Decrement Digit Number
         BPL .IALOOP       ;Loop if >= Zero
         LDA #0          ;Terminate String
-        STA (DSTLO),Y
+        STA (DSTPTR),Y
         TYA             ;Return String Length
         RTS
 

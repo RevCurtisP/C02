@@ -9,10 +9,7 @@ RTNKEY  EQU $0D     ;Return/Enter Key     (Return)
 
 ;Zero Page Variables (*=System Variable)
 DSTPTR  EQU $06     ;Destination Pointer [Unused]
-DSTLO   EQU $06     
-DSTHI   EQU $07
-BLKLO   EQU $08     ;Block Segment Pointer [Unused]
-BLKHI   EQU $09
+BLKPTR  EQU $08     ;Block Segment Pointer [Unused]
 SYSBFP  EQU $1D     ;Stack Pointer [Unused]
 ;           $1E     ;Unused
 STKLO   EQU $2E     ;Stack Pointer [Tape Read Work Area]
@@ -20,13 +17,9 @@ STKHI   EQU $2F
 RANDOM  EQU $1F     ;Random Number
 .INVFLG EQU $32     ;*Inverse Flag: $3F=Blinking, $7F=Inverse, $FF=Normal 
 SRCPTR  EQU $71     ;Source Pointer [Temporary Register]
-SRCLO   EQU $71
-SRCHI   EQU $72
 RDSEED  EQU $E3     ;Random Seed
-BLKSLO  EQU $EB     ;Block Start Address [Unused]
-BLKSHI  EQU $EC
-BLKELO  EQU $ED     ;Block End Address [Unused]
-BLKEHI  EQU $EE
+BLKBGN  EQU $EB     ;Block Start Address [Unused]
+BLKEND  EQU $ED     ;Block End Address [Unused]
 BLKLEN  EQU $EF     ;Block Segment Length [Unused]
 BFRLO   EQU $FA     ;Work Buffer Pointer [Unused]
 BFRHI   EQU $FB

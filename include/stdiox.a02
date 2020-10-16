@@ -295,7 +295,7 @@ PRINTF: STA TEMP3       ;Save Byte to Format
         TYA             ;Save Index
         PHA
         TXA             ;Restore Specifier
-        JSR GETDST      ;Get Integer in DSTLO, DSTHI
+        JSR GETDST      ;Get Integer in DSTPTR
         CMP #'I'        ;If 'i' or 'I'
         BNE .FDESTJ
         JSR PUTINT      ;  Print Integer Right Justified
@@ -319,7 +319,7 @@ PRINTF: STA TEMP3       ;Save Byte to Format
 
                        ;char putdst()
 PUTDST  LDY #0         ;Initialize character offset
-.DLOOP  LDA (DSTLO),Y  ;Read next character in string
+.DLOOP  LDA (DSTPTR),Y ;Read next character in string
         BEQ .DRETY     ;If Not 0
         JSR PUTC       ;  Print character at offset,
         INY            ;  increment offset, and

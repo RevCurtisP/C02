@@ -6,14 +6,11 @@ ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
 ;Zero Page Locations
-SRCLO   EQU $30     ;Source String Pointer (stdio.a02)
-SRCHI   EQU $31
-DSTLO   EQU $32     ;Destination String Pointer (string.a02)
-DSTHI   EQU $33
+SRCPTR  EQU $30     ;Source Pointer 
+DSTPTR  EQU $32     ;Destination Pointer
 BFRLO   EQU $34     ;Work Buffer Pointer
 BFRHI   EQU $35
-BLKLO   EQU $36     ;Block Segment Pointer (block.a02)
-BLKHI   EQU $37
+BLKPTR  EQU $36     ;Block Segment Pointer (block.a02)
 STKLO   EQU $38     ;Stack Pointer (stack.a02)
 STKHI   EQU $39
 
@@ -25,10 +22,8 @@ TEMP1   EQU $41
 TEMP2   EQU $42
 TEMP3   EQU $43
 
-BLKSLO  EQU $46     ;Block Start Address
-BLKSHI  EQU $47
-BLKELO  EQU $48     ;Block End Address
-BLKEHI  EQU $49
+BLKBGN  EQU $46     ;Block Start Address
+BLKEND  EQU $48     ;Block End Address
 BLKLEN  EQU $4A     ;Block Segment Length     
 
 STKSLO  EQU $4C     ;Stack Start Address

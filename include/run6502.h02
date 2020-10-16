@@ -3,19 +3,20 @@
 //Platform Specific Constants
 #define DELKEY $08 //Delete/Backspace Key
 #define ESCKEY $18 //Escape/Stop Key
-#define RTNKEY $0D //Return/Enter Key
+#define RTNKEY $0A //Return/Enter Key
 #define SYSBFL 128 //System Buffer Length
+
+const char delnam; //Delete/Backspace Key Name
+const char escnam; //Escape/Stop Key Name
+const char rtnnam; //Return/Enter Key Name
 
 //Library Pointer Variables
 zeropage int srcptr, dstptr, bfrptr, blkptr;
-char srclo,srchi; //Source String Pointer for Library Functions
-char dstlo,dsthi; //Destination String Pointer for Library Functions
 char bfrlo,bfrhi; //Buffer Pointer for Library Functions
-char blklo,blkhi; //Block Segment Pointer
 char stklo,stkhi; //Stack Pointer
+
 //Library Variables
-char blkslo, blkshi; //Block Start Address
-char blkelo, blkehi; //Block End Address
+int blkbgn, blkend;
 char blklen;         //Block Segment Length
 char stkslo, stkshi; //Stack Start Address
 char stkelo, stkehi; //Stsck End Address
@@ -28,11 +29,11 @@ char putcon;  //Write Character to Console
 char getcon;  //Read Character from Console
 
 //System Subroutines
-char polkey(); //Poll Console for character (Exits Emulator)
+void delchr(); //Delete previous character
 char getchr(); //Wait for character from Console
 char getkey(); //Read ASCII character from Console (Exits Emulator)
 void newlin(); //Advance cursor to beginning of next line
-void delchr(); //Delete previous character
+char polkey(); //Poll Console for character (Exits Emulator)
 char putchr(); //Print ASCII character to Console
 void prbyte(); //Print Accumulator as Hexadadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
@@ -40,4 +41,3 @@ void prhex();  //Print Low Nybble of Accumulator as Hex Digit
 //System Labels
 start:  //Start of Code
 exit:   //Return to Operating System
-

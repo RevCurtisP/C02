@@ -10,17 +10,13 @@
 #define SYSBFL 128 //System Buffer Length
 
 /* Standard Library Pointers */
-zeropage char srclo,srchi;   //Source Pointer for Library Functions
-zeropage char dstlo,dsthi;   //String Pointer for Library Functions
-zeropage int  srcptr,dstptr; //Source, Destination Pointers      
+zeropage int srcptr, dstptr, bfrptr, blkptr;
 zeropage char bfrlo,bfrhi;   //Buffer Pointer for Library Functions
-zeropage char blklo,blkhi;   //Block Segment Pointer
 zeropage char stklo,stkhi;   //Stack Pointer
 zeropage char xadrlo,xadrhi; //Physical Address LSB, MSB  
 
 /* Standard Library Variables */
-char blkslo,blkshi; //Block Start Address
-char blkelo,blkehi; //Block End Address
+int blkbgn, blkend; //Block Start and End Address
 char blklen;        //Block Segment Length
 char stkslo,stkshi; //Stack Start Address
 char stkelo,stkehi; //Stsck End Address

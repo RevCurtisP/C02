@@ -8,10 +8,8 @@ RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
 NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
 
 ;Zero Page Locations
-SRCLO   EQU $00     ;Source String/Array Pointer
-SRCHI   EQU $01
-DSTLO   EQU $02     ;Destination String/Array Pointer
-DSTHI   EQU $03
+SRCPTR  EQU $00     ;Source Pointer
+DSTPTR  EQU $02     ;Destination Pointer
 BFRLO   EQU $04     ;Work Buffer Pointer
 BFRHI   EQU $05
 
@@ -23,12 +21,10 @@ TEMP1   EQU $11
 TEMP2   EQU $12
 TEMP3   EQU $12
 
-BLKSLO  EQU $20     ;Block Start Address
-BLKSHI  EQU $21
-BLKELO  EQU $22     ;Block End Address
-BLKEHI  EQU $23
-BLKLO   EQU $24     ;Block Pointer
-BLKHI   EQU $25
+BLKBGN  EQU $20     ;Block Start Address
+BLKEND  EQU $22     ;Block End Address
+BLKPTR  EQU $24     ;Block Pointer
+BLKLEN  EQY $26     ;Block Segment Length
 
 STKSLO  EQU $28     ;Stack Start Address
 STKSHI  EQU $29
@@ -81,5 +77,8 @@ NEWLIN: RTS         ;Code to move Cursor to beginning of next line
 ;Print Character to Screen
 PUTCHR RTS         ;Code to write ASCII character to Screen
 
-        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
+        INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routines
+        INCLUDE "putstr.a02" ;PUTSTR routine
  
+;System Key Names
+KNAMES  BYTE "DELETE",0,"ESCAPE",0,"RETURN",0

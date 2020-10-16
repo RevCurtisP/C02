@@ -3,21 +3,15 @@
 ;System Specific ASCII Key Mappings
 DELKEY  EQU $08     ;Delete/Backspace Key (Backspace)
 ESCKEY  EQU $18     ;Escape/Stop Key      (Control-X)
-RTNKEY  EQU $0A     ;Return/Enter Key     (Line Feed)
+RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
 ;Zero Page Locations
 SRCPTR  EQU $30     ;Source String Pointer (stdio.a02)
-SRCLO   EQU $30
-SRCHI   EQU $31
 DSTPTR  EQU $32     ;Destination String Pointer (string.a02)
-DSTLO   EQU $32
-DSTHI   EQU $33
 BFRPTR  EQU $34     ;Work Buffer Pointer
 BFRLO   EQU $34
 BFRHI   EQU $35
 BLKPTR  EQU $36     ;Block Segment Pointer (block.a02)
-BLKLO   EQU $36
-BLKHI   EQU $37
 STKLO   EQU $38     ;Stack Pointer (stack.a02)
 STKHI   EQU $39
 
@@ -29,10 +23,8 @@ TEMP1   EQU $41
 TEMP2   EQU $42
 TEMP3   EQU $43
 
-BLKSLO  EQU $46     ;Block Start Address
-BLKSHI  EQU $47
-BLKELO  EQU $48     ;Block End Address
-BLKEHI  EQU $49
+BLKBGN  EQU $46
+BLKEND  EQU $48
 BLKLEN  EQU $4A     ;Block Segment Length     
 
 STKSLO  EQU $4C     ;Stack Start Address
@@ -55,38 +47,50 @@ _GETCH  EQU $FFF1   ;Read Keyboard (Blocking)
 START:  JMP MAIN    ;Execute Program
 
 ;Read Character from Console
-GETKEY  EQU $FFE0   ;Emulator CHRIN Routine
+GETKEY  EQU $FFE0   ;Emulator _GETCH Routine
 
 ;Poll Character from Keyboard
 POLKEY: BRK         ;Exit Emulator
         
 
 ;Wait for Character from Console
-GETCHR: JSR GETKEY  ;Read Character from STDIN
+GETCHR: JSR GETKEY  ;Get Key from Console
+        BEQ GETCHR  ;If None Pressed, Loop
+        RTS
+
+;Read Character from stdin
+RDCHAR: LDA $FFEA   ;Read Character from STDIN
         CMP #$FF    ;If EOF
-        BNE GETCHX
-        LDA #ESCKEY ;  Set to Escape Character
-GETCHX: ORA 0       ;Set Zero Flag
+        BNE RDCHAX
+        LDA #0      ;  Set to ASCII NUL
+RDCHAX  ORA #0      ;Set Flags
         RTS
 
 ;Delete Previous Character
 DELCHR: LDA #$08    ;Load Backspace into Accumulator
         JSR PUTCHR  ;  and Print it
-        LDA #$20    ;Load Space into Accumulater
+        LDA #$20    ;Load Space into Accumulator
         JSR PUTCHR  ;  and Print it
         LDA #$08    ;Load Backspace into Accumulator
         JMP PUTCHR  ;  and Print it
 
 ;Advance Character to Next line
-NEWLIN: LDA #RTNKEY ;Load Line Feed into Accumulater
+NEWLIN: LDA #$0D    ;Load Carriage Return into Accumulator
+        JSR PUTCHR  ;  and Print it
+        LDA #$0A    ;Load Line Feed into Accumulator
         JMP PUTCHR  ;  and Print it
 
 ;Print Character to Console
 PUTCHR  EQU $FFE3   ;Emulator CHROUT Routine
 
+;Write Character to stdout
+PRCHAR: STA $FFEA   ;Read Character from STDIN
+        RTS
+
 EXIT    EQU $FFEC   ;Emulator SHUTDN Routine
 
 FSCMD   EQU $FFE6   ;run6502 File System Command Routine
 
-        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
-        INCLUDE "../include/putstr.a02" ;PUTSTR routine
+        INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routines
+        INCLUDE "putstr.a02" ;PUTSTR routine
+
