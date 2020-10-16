@@ -1,12 +1,13 @@
-/*******************************************
- * TESTBLK - Test Array Handling Functions *
- *******************************************/
+/*****************************************
+ * TESTBLK - Test Module block Functions *
+ *****************************************/
 
 //todo: Test blknxt() and blkprv()
 
-#include <py65.h02>
+//Specify System Header using -H option
 #include <stddef.h02>
 #include <stdlib.h02>
+#include <intlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
 #include <string.h02>
@@ -66,7 +67,7 @@ setchk(&$4321); chkadr(blkhi,blklo);
 
 puts("blkset('@');    ");
 blkset('@'); r=chkptr(&$4321);
-while (blkget(1,&sgmt)) {if (sgmt<>'@') r=#FALSE;} psflln(r);
+while (blkget(1,&sgmt)) {if (sgmt[0]<>'@') r=#FALSE;} psflln(r);
 
 newlin();//if (anykey()==#ESCKEY) goto exit;
 
@@ -99,15 +100,15 @@ puts("blkput(@sgmt, &sgmt);\n"); blkset(0); blkrst(); r = #TRUE;
 for (i=0; i<10; i++) {
   printf(i,"%d: "); nsgmt(i,&sgmt); savlo=blklo;savhi=blkhi;  
   blkput(@sgmt,&sgmt); seglo[i]=savlo; seghi[i]=savhi;
-  putadr(*,savhi,savlo); puts(" _blk="); prtseg(*,savhi,savlo);
-  setdst(*,savhi,savlo); if (memcmp(@sgmt,&sgmt)) r = #FALSE;
+  putadr(.,savhi,savlo); puts(" _blk="); prtseg(.,savhi,savlo);
+  setdst(.,savhi,savlo); if (memcmp(@sgmt,&sgmt)) r = #FALSE;
 }
 puts("blkput:"); psflln(r); newlin();
 
 puts("blkget(@temp, &temp);\n"); blkrst(); r = #TRUE;
 for (i=0; i<10; i++) {
   printf(i,"%d: "); nsgmt(i,&sgmt); memclr(@temp, &temp); 
-  putadr(*,blkhi,blklo); r = blkget(@temp, &temp);
+  putadr(.,blkhi,blklo); r = blkget(@temp, &temp);
   setdst(&temp); if (memcmp(@sgmt, &sgmt)) r = #FALSE;
   puts(" temp="); prtseg(&temp);
 }
@@ -119,7 +120,7 @@ for (i=9; i:+; i--) {
   blkmem(@sgmt,&sgmt);  
   if (dstlo<>seglo[i]) r = #FALSE; 
   if (dsthi<>seghi[i]) r = #FALSE; 
-  putadr(*,dsthi,dstlo); puts(" _blk="); prtseg(*,dsthi,dstlo);
+  putadr(.,dsthi,dstlo); puts(" _blk="); prtseg(.,dsthi,dstlo);
 }
 puts("blkmem:"); psflln(r); newlin();
 
@@ -130,7 +131,7 @@ for (i=0; i<10; i++) {
   setdst(&temp); blkstr(&sgmt.key);
   if (srclo<>seglo[i]) r = #FALSE; 
   if (srchi<>seghi[i]) r = #FALSE; 
-  putadr(*,srchi,srclo); puts(" temp="); prtseg(&temp);
+  putadr(.,srchi,srclo); puts(" temp="); prtseg(&temp);
   if (memcmp(@sgmt, &sgmt)) r = #FALSE;
   i++; if (i=9) i=0; //evens then odds
 }
@@ -139,7 +140,7 @@ puts("blkstr:"); psflln(r); anykey();
 puts("blksrt(&temp);\n"); r = #TRUE; blksrt(&temp);blkrst();
 for (i=0; i<10; i++) {
   printf(i,"%d: "); nsgmt(sorted[i],&sgmt); memclr(@temp, &temp); 
-  putadr(*,blkhi,blklo); r = blkget(@temp, &temp);
+  putadr(.,blkhi,blklo); r = blkget(@temp, &temp);
   setdst(&temp); if (memcmp(@sgmt, &sgmt)) r = #FALSE;
   puts(" temp="); prtseg(&temp);
 }
@@ -151,16 +152,16 @@ goto exit;
 
 char chkptr() {
   setchk(); //pass through args
-  putadr(*,blkhi,blklo); 
-  return cmpadr(*,blkhi,blklo);
+  putadr(.,blkhi,blklo); 
+  return cmpadr(.,blkhi,blklo);
 }
 void setchk() {
   chklo=X; chkhi=Y;
 }
 
 void chkadr(tmphi,tmplo) {
-  putadr(*,tmphi,tmplo);
-  cmpadr(*,tmphi,tmplo);
+  putadr(.,tmphi,tmplo);
+  cmpadr(.,tmphi,tmplo);
   psflln(tmplo & tmphi);
 }
 
@@ -192,7 +193,7 @@ void numstr(n,yy,xx) {
   strdst(&temp); strcut(mult(n,5),&numbrs); //Copy Representation
   temp[5] = 0; //Cut off remainder of String
   z=strchr(' ', &temp); if (z:+) temp[z]=0; //and terminate at space
-  setdst(*,yy,xx); strcpy(&temp);
+  setdst(.,yy,xx); strcpy(&temp);
 }
 
 //Build String Segment in Temp
@@ -201,7 +202,7 @@ void nsgmt(n,tmphi,tmplo) {
   numstr(n,&tseg.key); 
   tseg.flag = trufls(n);
   tseg.value = n;
-  setdst(*,tmphi,tmplo); memcpy(@tseg,&tseg);  
+  setdst(.,tmphi,tmplo); memcpy(@tseg,&tseg);  
 }
 
 //Print Addresses

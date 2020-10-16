@@ -2,11 +2,13 @@
 
 ;C02 library block.h02 assembly language subroutines
 ;Requires External Zero Page Variables 
-;BLKLO, BLKHI, DSTLO, DSTHI, SRCLO, SRCHI
+;BLKLO, BLKHI, DSTPTR, SRCPTR
 ;External Variables 
 ;BLKSLO, BLKSHI, BLKELO, BLKEHI, BLKLEN, TEMP0, TEMP1, TEMP2
 ;External Routines 
 ;MEMCMP, MEMCPY, MEMSRC, RESDST, SAVDST, SETDST, SETSRC, SETSRD
+
+        SUBROUTINE  BLOCK
 
 ;blkbgn(&b) - Set Block Start Address
 ;Args: X,Y = Address
@@ -80,8 +82,8 @@ BLKSEX: JMP BLKRST      ;Reset Block Pointer and Return
 ;Args: n = Number of Bytes to Append
 ;      m = Array of Bytes to Append
 ;Uses: BLKELO, BLKEHI - Block End Address
-;Sets: DSTLO, DSTHI = Pointer to Bytes in Block
-;      SRCHI, SRCLO = Pointer to m
+;Sets: DSTPTR = Pointer to Bytes in Block
+;      SRCPTR = Pointer to m
 ;      TEMP0 = Number of Bytes to Append
 ;Updates: BLKLO, BLKHI = Block Pointer
 ;Returns: A=$FF - Append Successful
@@ -94,8 +96,8 @@ BLKPUT: JSR MEMSRC    ;Set Source Address & Number of Bytes
 ;Args: A = Number of Bytes to Read 
 ;      Y,X = Address of Array
 ;Uses: BLKELO, BLKEHI = Block End Address
-;Sets: DSTLO, DSTHI = Address of Array
-;      SRCHI, SRCLO = Current Pointer in Block
+;Sets: DSTPTR = Address of Array
+;      SRCPTR = Current Pointer in Block
 ;      TEMP0 = Number of Bytes to Append
 ;Updates: BLKLO, BLKHI = Next Segment in Block
 ;Returns: A=$FF - Append Successful
@@ -113,14 +115,14 @@ BLKCPY: LDY #0          ;Copy Source To Destination
 ;blkmem(n, &m) - Search for n Bytes of m in Block
 ;Args: n = Number of Bytes to Compare
 ;      m = Array of Bytes to Search For
-;Sets: DSTLO, DSTHI = Pointer to Segment in Block
-;      SRCHI, SRCLO = Pointer to m
+;Sets: DSTPTR = Pointer to Segment in Block
+;      SRCPTR = Pointer to m
 ;      TEMP0 = Number of Bytes to Compare
 ;Returns: A=$FF - Bytes found
 ;         A=$00 - Bytes not found
 BLKMEM: JSR MEMSRC      ;Initialize Source, Index, and Count
         JSR BLKDSS      ;Set Destination Pointer To Block Start
-        LDX #DSTLO      ;Set BLKNXX Pointer to SRCLO,SRCHI
+        LDX #DSTPTR     ;Set BLKNXX Pointer to DSTPTR
 BLKMEL: LDY #0          ;Initialize Index
         JSR MEMCML      ;Compare Source to Destination
         BEQ BLKTRU      ;If Equal, Exit TRUE
@@ -142,17 +144,17 @@ BLKRTS: RTS
 
 ;BLKNXD() - Move Destination Pointer to Next Segment
 ;Uses: BLKLEN - Block Segment Length
-;Updates: DSTLO, DSTHI = Block Pointer
+;Updates: DSTPTR, DSTPTR+1 = Block Pointer
 ;Affects: C,N,Z
 ;Returns: A=$FF - Destination Pointer Moved
 ;         A=$00 - Error: Pointer Overflow or Length 0 
-BLKNXD: LDX #DSTLO      ;Set X to Destination Pointer
+BLKNXD: LDX #DSTPTR      ;Set X to Destination Pointer
         JMP BLKNXX      ;and Move to Next Segment
  
 ;blknxx() - Move Pointer to Next Segment
 ;Args: X = Zero Page Address of Pointer
 ;Uses: BLKLEN - Block Segment Length
-;Updates: DSTLO, DSTHI = Block Pointer
+;Updates: DSTPTR, DSTPTR+1 = Block Pointer
 ;Affects: C,N,Z
 ;Returns: A=$FF - Destination Pointer Moved
 ;         A=$00 - Error: Pointer Overflow or Length 0 
@@ -218,8 +220,8 @@ BLKPRL: CMP BLKELO      ;  >= Block End LSB
 ;      BLKSLO, BLKSHI = Block Start Address
 ;      BLKELO, BLKEHI = Block End Address
 ;      BLKLEN = Block Segment Size
-;      DSTLO, DSTHI = Pointer to Segment in Block
-;      SRCHI, SRCLO = Pointer to Segment in Block
+;      DSTPTR = Pointer to Segment in Block
+;      SRCPTR = Pointer to Segment in Block
 ;Affects: A,Y,C,N,Z
 BLKSRT: LDA BLKLEN      ;Get Segment Length
         BEQ BLKRTS      ;If 0 Return
@@ -233,16 +235,16 @@ BLKSRP: LDY #0          ;If First Byte of
 BLKSRD: JSR BLKNXD      ;Move Destination Pointer
         BCS BLKSRE      ;If Not Past Block End
         LDY #0          ;
-        LDA (DSTLO),Y   ;and Destination String Populated
+        LDA (DSTPTR),Y   ;and Destination String Populated
         BEQ BLKSRE      ;    
         JSR STRCML      ;  Compare Destination String with Source String
         BPL BLKSRD      ;  If Destination < Source
         JSR SETSRD      ;    Set Source Pointer to Destination Pointer
         JMP BLKSRD      ;  Check Next Destination Segment
-BLKSRE: LDA SRCHI       ;If Source Pointer
+BLKSRE: LDA SRCPTR+1    ;If Source Pointer
         CMP BLKHI       ;  <> Block Pointer
         BNE BLKSRS
-        LDA SRCLO
+        LDA SRCPTR
         CMP BLKLO
         BEQ BLKSRN 
 BLKSRS: JSR BLKSWL      ;  Swap Source and Pointer
@@ -253,8 +255,8 @@ BLKSRN: JSR BLKNXT      ;Move Block Pointer
 ;blkstr(&s) - Search for String s in Block and
 ;             Copy Segment to Destination Array if Found
 ;Args: Y,X = Address of Search String
-;Uses: DSTLO.DSTHI = Address of Destination Array
-;Sets: SRCLO,SRCHI = Pointer to Segment in Block (if found)
+;Uses: DSTPTR = Address of Destination Array
+;Sets: SRCPTR = Pointer to Segment in Block (if found)
 ;      TEMP0 = Index within segment
 ;      TEMP1,TEMP2 = Destination String Pointer
 ;Affects: Y,C
@@ -269,7 +271,7 @@ BLKSTR: JSR SETSRC      ;Set Source Pointer to Search String
         LDX BLKSLO      ;Set Source Pointer To Block Start
         LDY BLKSHI
         JSR SETSRC
-        LDX #SRCLO      ;Set BLKNXX Pointer to SRCLO,SRCHI
+        LDX #SRCPTR      ;Set BLKNXX Pointer to SRCPTR
 BLKSTL: LDY #0          ;Initialize Index
         JSR STRCML      ;Compare Source to Destination
         BEQ BLKSTS      ;If Not Equal
@@ -286,7 +288,7 @@ BLKSTS: JSR RESDST      ;  Restore Destination Pointer
 ;      m = Array to swap bytes from
 ;Sets: TEMP0 = Number of Bytes to Swap
 ;Uses: BLKLO, BLKHI = Block Pointer
-;      DSTLO, DSTHI = Pointer to Temporary Storage Array
+;      DSTPTR, DSTPTR+1 = Pointer to Temporary Storage Array
 ;Affects: A,Y,C,N,Z
 BLKSWP: JSR MEMSRC      ;Set Source Address and Index
 BLKSWL: JSR BLKDST      ;Set Destination Pointer to Block Pointer
@@ -295,7 +297,7 @@ BLKSWL: JSR BLKDST      ;Set Destination Pointer to Block Pointer
 
 ;blksrc() - Set Source Pointer to Block Pointer
 ;Uses: BLKLO,BLKHI = Block Segment Pointer
-;Sets: SRCLO,SRCHI = Source Array Pointer
+;Sets: SRCPTR = Source Array Pointer
 ;Affects: X,N,Z
 ;Returns: Y = 0
 BLKSRC: LDX BLKLO
@@ -304,7 +306,7 @@ BLKSRC: LDX BLKLO
 
 ;blkdst() - Set Destination Pointer to Block Pointer
 ;Uses: BLKLO,BLKHI = Block Segment Pointer
-;Sets: DSTLO,DSTHI = Destination Array Pointer
+;Sets: DSTPTR,DSTPTR+1 = Destination Array Pointer
 ;Affects: N,Z
 ;Returns: X = Block Pointer LSB
 ;         Y = Block Pointer MSB
@@ -314,7 +316,7 @@ BLKDST: LDX BLKLO
 
 ;blkdst() - Set Destination Pointer to Block Start
 ;Uses: BLKSLO,BLKSHI = Block Start Address
-;Sets: DSTLO,DSTHI = Destination Array Pointer
+;Sets: DSTPTR,DSTPTR+1 = Destination Array Pointer
 ;Affects: N,Z
 ;Returns: X = Block Start LSB
 ;         Y = Block Start MSB
@@ -323,25 +325,27 @@ BLKDSS: LDX BLKSLO
         JMP SETDST      ;Set Destination and Return
 
 ;Block Debug Routine
-BLKDBG: LDA DSTHI
+BLKDBG: LDA DSTPTR+1
         CMP #$43
         BNE BLKDBX      
-        LDA DSTLO
+        LDA DSTPTR
         CMP #$57
         BNE BLKDBX      
         NOP             ;Break Point
 BLKDBX: RTS
 
 ;Print Destination Address
-BLKPDA  LDA DSTHI       ;Print Destination MSB
+BLKPDA  LDA DSTPTR+1    ;Print Destination MSB
         JSR PRBYTE
-        LDA DSTLO       ;Print Destination LSB
+        LDA DSTPTR      ;Print Destination LSB
         JSR PRBYTE
         JMP PUTSPC      ;Print Space
 
 ;Print Destination Address
-BLKPSA  LDA SRCHI       ;Print Source MSB
+BLKPSA  LDA SRCPTR+1    ;Print Source MSB
         JSR PRBYTE
-        LDA SRCLO       ;Print Source LSB
+        LDA SRCPTR      ;Print Source LSB
         JSR PRBYTE
         JMP PUTSPC      ;Print Space
+
+        ENDSUBROUTINE
