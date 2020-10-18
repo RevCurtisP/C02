@@ -9,9 +9,10 @@
 char aa, yy, xx;
 
 void prtcma(aa) {putchr(','); prbyte(aa);}
+void prtexp(aa) {putstr(", EXPECTED "); prbyte(aa);}
 void prtlin() {putstr(); newlin();}
 void prtok() {prtlin(" OK");}
-void prtopr(aa,yy,xx) {prbyte(aa); putchr(yy); prbyte(xx); putchr("=");}
+void prtopr(aa,yy,xx) {prbyte(aa); putchr(yy); prbyte(xx); putchr('=');}
 
 main:
 
@@ -82,12 +83,10 @@ mltplr = 255;
 maxmpd = 1;
 drloop:
   mltpnd = 1;
-  acmlsb = 0;
   ddloop:
-    acmlsb = acmlsb + mltplr;
     prodct = mult(mltplr, mltpnd);
     quotnt = div(prodct, mltpnd);
-    if (quotnt <> mltplr) goto derror;
+    if (quotnt <> mltplr) goto diverr;
     mltpnd++;
     if (mltpnd < maxmpd) goto ddloop;
   mltplr>>;
@@ -149,8 +148,9 @@ mlterr:
   newlin(); prtopr(mltplr,'*',mltpnd); prbyte(prodct); prtcma(acmlsb); newlin();
   goto exit;
 
-derror:
-  newlin(); prtopr(divdnd,'/',divisr); prbyte(quotnt); prtcma(mltplr); newlin();
+diverr:
+  newlin(); prtopr(quotnt,'/',mltplr); prbyte(quotnt); 
+  prtexp(mltplr); newlin();
   goto exit;
 
 rnderr:
