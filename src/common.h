@@ -26,7 +26,7 @@
 #define LOCPFX "."        //Local Variable Prefix
 
 #define CPUOP  "PROCESSOR"  //Target CPU Pseudo-Operator 
-#define CPUARG "6502"       //Target CPU Operand
+#define CPUARG ""           //Target CPU Operand
 #define ORGOP  "ORG"        //Origin Pseudo-Op
 #define EQUOP  "EQU"        //Equate Pseudo-Op
 #define BYTEOP "BYTE"       //Define Byte Pseudo-Op

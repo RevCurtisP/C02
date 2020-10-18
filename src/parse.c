@@ -38,7 +38,7 @@ int isspc(void)  {return isspace(nxtchr);}
 int isszop(void) {return match('@');}
 int isvpre(void) {return TF(isalph() || islpre());}
 int isxfop(void) {return match('?');}
-int isxpre(void) {return TF(isvpre() || match('-') || match('*'));}
+int isxpre(void) {return TF(isvpre() || isbtop() || match('-') || match('*'));}
 
 /* Process ASCII Character */
 char prcchr(char c) {
@@ -375,7 +375,7 @@ void poperr(char* name) {
 
 /* Process Post Operator */
 void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
-  DEBUG("parse.prcpst: Processing post operation '%c'\n", oper)
+  DEBUG("parse.prcpst: Processing post operation '%c\n'", oper)
   if (ispntr) ERROR("Post Operation on dereferenced pointer %s not supported\n", name, EXIT_FAILURE)
 		//sprintf(word,"(%s),Y", name); strcpy(name, word); }
   char name1[VARLEN+3];
@@ -429,8 +429,8 @@ void prcpst(int isint, char* name, char *index, char indtyp, char ispntr) {
       else if (strcmp(name, "Y")==0) poperr(name); //Index Register Shift not Supported
       else if (strcmp(name, "A")==0) asmlin("LSR", "");
       else {
-		asmlin("LSR", name);
-	    if (isint) asmlin("ROR", name1);
+	    if (isint) {asmlin("LSR", name1); asmlin("ROR", name);}
+		else asmlin("LSR", name);
       }
       break;
     default:

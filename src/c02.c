@@ -89,7 +89,7 @@ void pdrctv(void) {
 
 void prolog(void) {
   DEBUG("c02.prolog: Writing Assembly Prolog\n", 0)
-  asmlin(CPUOP,cputyp);
+  if (strlen(cputyp)) asmlin(CPUOP,cputyp);
   setcmt("Program ");
   addcmt(srcnam);
   cmtlin();
@@ -193,9 +193,8 @@ void pargs(int argc, char *argv[]) {
  * Uses: cputype     *
  * Sets: cmos        */
 void chkcpu(void) {
-  if (strcmp(cputyp, "6502") == 0) cmos = FALSE;
-  else if (strcmp(cputyp, "65C02") == 0) cmos = TRUE;
-  else ERROR("Invalid CPU Type %s\n", cputyp, EXIT_FAILURE)
+  if (strcmp(cputyp, "65C02") == 0) cmos = TRUE;
+  else cmos = FALSE;
 }
 
 
