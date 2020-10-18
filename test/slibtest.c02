@@ -81,18 +81,16 @@ char maxmpd, divdnd, divisr, quotnt;
 putstr("DIV()");
 mltplr = 255;
 maxmpd = 1;
-drloop:
-  mltpnd = 1;
-  ddloop:
+while (mltplr) {
+  for (mltpnd=1; mltpnd < maxmpd; mltpnd++) {
     prodct = mult(mltplr, mltpnd);
     quotnt = div(prodct, mltpnd);
     if (quotnt <> mltplr) goto diverr;
-    mltpnd++;
-    if (mltpnd < maxmpd) goto ddloop;
+  }
   mltplr>>;
   maxmpd<<;
-  if (mltplr <> 0) goto drloop; 
-  prtok();
+}
+prtok();
 
 tstrnd: //Test rand() and rands()
 char countr, rndnum, rndtbl[255];
@@ -100,20 +98,16 @@ char countr, rndnum, rndtbl[255];
   putstr("RAND()");
   rands(1); //Seed Random Number Generator;
 
-  countr = 0;
-  
-  riloop:
-    rndtbl[countr] = 0;
-    countr++;
-    if (countr <> 0) goto riloop;
-  
-  rnloop:
+  countr = 0; 
+  do {rndtbl[countr] = 0; countr++;} while (countr);
+
+  do {
     rndnum = rand();
     if (rndtbl[rndnum] > 0) goto rnderr;
     rndtbl[rndnum] = $FF;
     countr++;
-    if (countr < 255) goto rnloop;
-    prtok();
+  } while (countr < 255);
+  prtok();
 
 tstros: //Test rotatl(), rotatr(), swap()
 char lbyte, rbyte, obyte, sbyte, tbyte, scount;
@@ -183,5 +177,5 @@ swperr:
   goto exit;
 
 c2aerr:
-  putstr("CTOA("); prbyte(srcchr); putstr(")="); prbyte(dstchr); newlin();
+  newlin(); putstr("CTOA("); prbyte(srcchr); putstr(")="); putstr(tststr); newlin();
   goto exit;
