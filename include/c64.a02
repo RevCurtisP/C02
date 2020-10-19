@@ -6,24 +6,27 @@ ESCKEY  EQU $03 ;Escape/Stop Key      (RUN/STOP)
 RTNKEY  EQU $0D ;Return/Enter Key     (RETURN)
 
 ;Zero Page Variables
-XMBANK  EQU $0A ;Extended Memory Bank (Load/Verify Flag)
-XADRLO  EQU $0B ;Ext Memory Address LSB (Text Index/Array Size)
-XADRHI  EQU $0C ;Ext Memory Address MSB (Array Dimension Fkags)
-SRCPTR  EQU $22 ;Source Pointer [Temporary Pointers]
-DSTPTR  EQU $24 ;Destination Pointer [Temporary Pointers]
-BLKPTR   EQU $26 ;Block Pointer [Floating Point Work Area]
-STKLO   EQU $28 ;Stack Pointer LSB [Floating Point Work Area]
-STKHI   EQU $29 ;Stack Pointer MSB [Floating Point Work Area]
-BFRLO   EQU $35 ;Buffer Pointer LSB [Temporary String Pointer]
-BFRHI   EQU $36 ;Buffer Pointer MSB [Temporary String Pointer]
+XMBANK  EQU $0A ;Extended Memory Bank [Load/Verify Flag]
+XMADDR  EQU $0B ;Extended Memory Address [Array Index/Flags]
+;           $16 ;[Temporary String Stack Pointer]
+SRCPTR  EQU $17 ;Source Pointer [Temporary String Space Pointer]
+DSTPTR  EQU $19 ;Destination Pointer [Temporary String Stack]
+;           $21 ;[Temporary String Stack]
+BLKPTR  EQU $22 ;Block Pointer [Temporary Pointers]
+STKPTR  EQU $24 ;Stack Pointer [Temporary Pointers]
+;       $26-$29 ;[Floating Point Work Area]
+USRPTR  EQU $35 ;[Temporary String Pointer]
+TEMP0   EQU $61 ;Temporary Variable [Floating Point Accumulator]
+TEMP1   EQU $63 ;Temporary Variable [Floating Point Accumulator]
+TEMP2   EQU $65 ;Temporary Variable [Floating Point Accumulator]
+TEMP3   EQU $67 ;Temporary Variable [Floating Point Accumulator]
+TMPPTR  EQU $69 ;Temporary Pointer [Floating Point Argument]
+;       $6A-$70 ;[Floating Point Argument]
 RDSEED  EQU $A2 ;Random Seed [Software Jiffy Clock (Low Byte)]
-TEMP0   EQU $FB ;Temporary Variable [Unused Byte]
-TEMP1   EQU $FC ;Temporary Variable [Unused Byte]
-TEMP2   EQU $FD ;Temporary Variable [Unused Byte]
-TEMP3   EQU $FE ;Temporary Variable [Unused Byte]
+;       $FB-$FE ;Unused Zero Page for Applications
 
 ;System Variables
-SYSBFL  EQU 88    ;System Buffer Size [88 Bytes]
+SYSBFL  EQU 88    ;System Buffer Size (88 Bytes)
 SYSBFR  EQU $0200 ;System Buffer [Keyboard Buffer]
 SYSBFP  EQU $0313 ;Position in System Buffer [Free Byte]
 
@@ -33,13 +36,11 @@ BLKLEN  EQU $0338 ;Block Length [Unused Byte]
 
 RANDOM  EQU $0339 ;Random Number Storage [Unused Byte]
 STKSAV  EQU $033A ;Machine Stack Storage [Unused Byte]
-USER11  EQU $033B ;Free Byte for User Programs
+;           $033B ;Free Byte for User Programs
 TBFFR   EQU $033C ;Cassette I/O Buffer
 
-STKSLO  EQU $03FC ;Stack Start LSB [Unused Byte]
-STKSHI  EQU $03FD ;Stack Start MSB [Unused Byte]
-STKELO  EQU $03FE ;Stack End LSB   [Unused Byte]
-STKEHI  EQU $03FF ;Stack End MSB   [Unused Byte]
+STKBGN  EQU $03FC ;Stack Start     [Unused Byte]
+STKEND  EQU $03FE ;Stack End       [Unused Byte]
 
 ;Video RAM and ROM 
 VICSCN  EQU $0400 ;Video Screen Memory Area (Unexpanded)
@@ -65,7 +66,7 @@ START:  TSX         ;Get Stack Pointer
 
 EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
         TXS         ;and Restore It
-        RTS         ;Return to BASIC
+        RTS
 
 ;Poll Keyboard for Character
 POLKEY  EQU $FFE4   ;Aliased to Kernal GETIN Routine

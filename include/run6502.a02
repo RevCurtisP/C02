@@ -2,18 +2,19 @@
 
 ;System Specific ASCII Key Mappings
 DELKEY  EQU $08     ;Delete/Backspace Key (Backspace)
-ESCKEY  EQU $18     ;Escape/Stop Key      (Control-X)
+ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
 ;Zero Page Locations
-SRCPTR  EQU $30     ;Source String Pointer (stdio.a02)
-DSTPTR  EQU $32     ;Destination String Pointer (string.a02)
-BFRPTR  EQU $34     ;Work Buffer Pointer
-BFRLO   EQU $34
-BFRHI   EQU $35
-BLKPTR  EQU $36     ;Block Segment Pointer (block.a02)
-STKLO   EQU $38     ;Stack Pointer (stack.a02)
-STKHI   EQU $39
+SRCPTR  EQU $30     ;Source String Pointer 
+DSTPTR  EQU $32     ;Destination String Pointer 
+BLKPTR  EQU $34     ;Block Segment Pointer
+STKPTR  EQU $36     ;Stack Pointer
+USRPTR  EQU $38     ;User Pointer
+
+XMADDR  EQU $3A     ;Extended Memory Address
+XMBANK  EQU $3C     ;Extended Memory Bank
+;           $3D     ;Unused
 
 RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
 RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
@@ -22,21 +23,19 @@ TEMP0   EQU $40     ;Temporary Storage
 TEMP1   EQU $41
 TEMP2   EQU $42
 TEMP3   EQU $43
+TMPPTR  EQU $44     ;Temporary Pointer
 
 BLKBGN  EQU $46
 BLKEND  EQU $48
 BLKLEN  EQU $4A     ;Block Segment Length     
-
-STKSLO  EQU $4C     ;Stack Start Address
-STKSHI  EQU $4D
-STKELO  EQU $4E     ;Stack End Address
-STKEHI  EQU $4F
-
-SYSBFP  EQU $50     ;Position in System Buffer
+SYSBFP  EQU $4B     ;Position in System Buffer
+STKBGN  EQU $4C     ;Stack Start Address
+STKEND  EQU $4E     ;Stack End Address
+;       $50-$FF     ;Free Zero Page for Applications
 
 SYSBFL  EQU 128     ;System Buffer Size (Max String Size)
 SYSBFR  EQU $0200   ;System Buffer
-
+;     $0281-$03FF   ;Unused
 
 ;Memory Mapped I/O 
 _KBHIT  EQU $FFF0   ;Is a Key Pressed

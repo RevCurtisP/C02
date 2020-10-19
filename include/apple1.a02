@@ -19,31 +19,29 @@ RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 .IN      EQU $200    ;Input Buffer
 
 ;Standard Library Variables
-SRCPTR  EQU $30     ;Source String Pointer (stdio.a02)
-DSTPTR  EQU $32     ;Destination String Pointer (string.a02)
-BFRLO   EQU $34     ;Work Buffer Pointer
-BFRHI   EQU $35
-BLKPTR  EQU $36     ;Block Segment Pointer (block.a02)
-STKLO   EQU $38     ;System Pointer (pointer.a02)
-STKHI   EQU $39
+SRCPTR  EQU $30     ;Source String Pointer 
+DSTPTR  EQU $32     ;Destination Pointer 
+BLKPTR  EQU $34     ;Block Segment Pointer 
+STKPTR  EQU $36     ;Stack Pointer
+BLKBGN  EQU $38     ;Block Start Address
+BLKEND  EQU $3A     ;Block End Address
+STKBGN  EQU $3C     ;Stack Start Address
+STKEND  EQU $3E     ;Stack End Address
+BLKLEN  EQU $40     ;Block Segment Length    
+SYSBFP  EQU $41     ;Position in System Buffer
+RDSEED  EQU $42     ;Pseudo-RANDOM Seed
+RANDOM  EQU $43     ;Pseudo-RANDOM Number Storage
+TEMP0   EQU $44     ;Temporary Storage
+TEMP1   EQU $45
+TEMP2   EQU $46
+TEMP3   EQU $47
+TMPPTR  EQU $48     ;Temporary Pointer
+USRPTR  EQU $4A     ;User Pointer
+;       $4C-$4F     ;Unused
+;       $50-$FF     ;Free Zero Page for Applications
 
-RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
-RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
 
-TEMP0   EQU $40     ;Temporary Storage
-TEMP1   EQU $41
-TEMP2   EQU $42
-TEMP3   EQU $43
 
-BLKLEN  EQU $47     ;Block Segment Length    
-BLKBGN  EQU $48     ;Block Start Address
-BLKEND  EQU $4A     ;Block End Address
-STKSLO  EQU $4C     ;Stack Start Address
-STKSHI  EQU $4D
-STKELO  EQU $4E     ;Stack End Address
-STKEHI  EQU $4F
-
-SYSBFP  EQU $50     ;Position in System Buffer
   
 SYSBFL  EQU 128     ;System Buffer Size (128 Bytes)
 SYSBFR  EQU .IN     ;System Buffer (Input Buffer
@@ -56,7 +54,7 @@ SYSBFR  EQU .IN     ;System Buffer (Input Buffer
 
 EXIT    EQU $FF00   ;Monitor Entry Point
 .ECHO   EQU $FFEF   ;Subroutine - Print Character in Accumulator
-PRBYTE  EQU $FFDC   ;Subroutine - Print Accumulator as Hexadadecimal number
+PRBYTE  EQU $FFDC   ;Subroutine - Print Accumulator as Hexadecimal Number
 PRHEX   EQU $FFE5   ;Subroutine - Print Low Nybble of Accumulator as Hex Digit
 
         ORG $0300   ;Start one page above Monitor input buffer
@@ -99,6 +97,6 @@ DELCHR: LDA #DELKEY ;Load Underscore Character
 NEWLIN: LDA #$0D    ;Load C/R into Accumulator
         JMP PUTCHR  ;  and Print it
 
-        INCLUDE "../include/putstr.a02" ;PUTSTR routine
+        INCLUDE "putstr.a02" ;PUTSTR routine
 
         ENDSUBROUTINE

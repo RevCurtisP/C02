@@ -9,33 +9,34 @@ RTNKEY  EQU $0D     ;Return/Enter Key     (Return)
 
 ;Zero Page Variables (*=System Variable)
 DSTPTR  EQU $06     ;Destination Pointer [Unused]
-BLKPTR  EQU $08     ;Block Segment Pointer [Unused]
-SYSBFP  EQU $1D     ;Stack Pointer [Unused]
-;           $1E     ;Unused
-STKLO   EQU $2E     ;Stack Pointer [Tape Read Work Area]
-STKHI   EQU $2F
-RANDOM  EQU $1F     ;Random Number
+SRCPTR  EQU $08     ;Source Pointer [Unused]
+STKPTR  EQU $1D     ;Stack Pointer [Unused]
+RANDOM  EQU $1F     ;Random Number [Unused]
 .INVFLG EQU $32     ;*Inverse Flag: $3F=Blinking, $7F=Inverse, $FF=Normal 
-SRCPTR  EQU $71     ;Source Pointer [Temporary Register]
-RDSEED  EQU $E3     ;Random Seed
-BLKBGN  EQU $EB     ;Block Start Address [Unused]
-BLKEND  EQU $ED     ;Block End Address [Unused]
-BLKLEN  EQU $EF     ;Block Segment Length [Unused]
-BFRLO   EQU $FA     ;Work Buffer Pointer [Unused]
-BFRHI   EQU $FB
-TEMP0   EQU $FC     ;Temporary Variables [Unused]
-TEMP1   EQU $FD
-TEMP2   EQU $FE
-TEMP3   EQU $FF
+BLKPTR  EQU $3C     ;Block Segment Pointer [A1]
+TEMP0   EQU $3E     ;Temporary Variables [A2-A3]
+TEMP1   EQU $3F
+TEMP2   EQU $40
+TEMP3   EQU $41
+TMPPTR  EQU $42     ;Temporary Pointer [A4]
+USRPTR  EQU $44     ;User Pointer[A5]
+RDSEED  EQU $4E     ;Random Number Seed
+;           $71     ;[Temporary Register]
+;           $FA-$FF ;Free Zero Page for Applications
 
 ;System Variables
-SYSBFL  EQU 255    ;System Buffer Size [88 Bytes]
-SYSBFR  EQU $0300 ;System Buffer [Keyboard Buffer]
-
+SYSBFL  EQU 128     ;System Buffer Size [Max String Length]
+SYSBFR  EQU $0300   ;System Buffer [Keyboard Buffer through $0380]
+SYSBFP  EQU $03F6   ;System Buffer Position 
+BLKLEN  EQU $03F7   ;Block Segment Length 
+BLKBGN  EQU $03F8   ;Block Start Address 
+BLKEND  EQU $03FA   ;Block End Address 
+STKBGN  EQU $03FC   ;Stack Start Address 
+STKEND  EQU $03FE   ;Stack End Address 
 
 ;I/O Locations
-.KBD     EQU $C000   ;Keyboard Data
-.AKD     EQU $C010   ;Keyboard Strobe Register
+.KBD     EQU $C000  ;Keyboard Data
+.AKD     EQU $C010  ;Keyboard Strobe Register
 
 ;Monitor Routines
 PRBYTE  EQU $FDDA   ;Print Accumulator as Hexadecimal Number
@@ -83,4 +84,4 @@ PRCHRX: JMP $FDF0   ;Execute Monitor Routine COUT1
 ;Advance Character to Next line
 NEWLIN   EQU $FD8E  ;Monitor Routine CROUT
 
-        INCLUDE "../include/putstr.a02" ;PUTSTR routine
+        INCLUDE "putstr.a02" ;PUTSTR routine

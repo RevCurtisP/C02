@@ -1,38 +1,37 @@
 /* Unexpanded VIC 20 Header File */
 
+/* Platform Specific Settings */
+#pragma zeropage $FB $FE //Zero Page Free Space
+
 /* Platform Specific Constants */
 #define DELKEY $14 //Delete/Backspace Key (DEL)
-#define ESCKEY $03 //Escape/Break Key (STOP)
+#define ESCKEY $03 //Escape/Stop Key (STOP)
 #define RTNKEY $0D //Return/Enter Key (RETURN)
 #define SYSBFL  88 //System Buffer Length
 
-/* Standard Library Pointers */
-zeropage int srcptr, dstptr, bfrptr, blkptr;
-char bfrlo,bfrhi; //Buffer Pointer for Library Functions
-char stklo,stkhi; //Stack Pointer
-
 /* Standard Library Variables */
-int blkbgn, blkend; //Block Start and End Address
-char blklen;        //Block Segment Length
-char stkslo, stkshi; //Stack Start Address
-char stkelo, stkehi; //Stsck End Address
-char random, rdseed; //Pseudo-Random Number Generation
+zeropage int srcptr, dstptr;  //Source and Destination Pointer
+zeropage int blkptr, stkptr;  //Block and Stack Pointers
+zeropage int tmpptr, usrptr;  //Temporary and User Pointer
+int stkbgn, stkend;   //Stack Begin and End Address
+int blkbgn, blkend;   //Block Begin and End Address
+char blklen, xmbank;  //Block Segment Length, Ext Memory Bank
+int xmaddr;           //Extended Memory Address
+char random, rdseed;  //Pseudo-Random Number and Seed
 char temp0, temp1, temp2, temp3; //Temporary Storage
 char sysbfr[], sysbfp; //System String Buffer and Position
 
 /* System Subroutines */
 void delchr(); //Delete previous character
-char getkey(); //Read ASCII character from Keyboard
-char getpos(); //Get Cursor Position
-char getsiz(); //Get Screen Size
+char getchr(); //Wait for character from Console
+char getkey(); //Read ASCII character from Console
 void newlin(); //Advance cursor to beginning of next line
-char polkey(); //Poll Keyboard for character
-char putchr(); //Print ASCII character to Keyboard
-void prbyte(); //Print Accumulator as Hexadadecimal number
+char polkey(); //Poll Console for character
+void prbyte(); //Print Accumulator as Hexadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
-char getchr(); //Wait for character from Keyboard
-void setpos(); //Set Cursor Position
+char putchr(); //Print ASCII character to Console
+char putstr(); //Print ASCII string to Console
 
-//System Labels
+/* System Labels */
 start:  //Start of Code
 exit:   //Return to Operating System

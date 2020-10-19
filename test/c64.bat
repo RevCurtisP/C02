@@ -11,7 +11,7 @@ ECHO Compiling File %1.c02 for Commodore 64
 IF %ERRORLEVEL% NEQ 0 GOTO EOF
 
 ECHO Assembling File %1.asm
-..\a02.exe -p %1.asm %1.prg %1.lst >%1.out
+..\a02.exe -d -p -i "../include ../include/c64" %1.asm %1.prg %1.lst >%1.out
 IF %ERRORLEVEL% NEQ 0 GOTO EOF
 
 ECHO Starting Emulator

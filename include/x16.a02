@@ -10,41 +10,37 @@ RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
 ;       $02-$21   ;ABI Registers
 ;       $22-$52   ;Used by Basic graphics commands
 XMBANK  EQU $53   ;Extended Memory Bank 
-XADRLO  EQU $54   ;Ext Memory Address LSB 
-XADRHI  EQU $55   ;Ext Memory Address MSB 
+XMADDR  EQU $54   ;Ext Memory Address
 SRCPTR  EQU $56   ;Source Pointer 
-DSTPTR  EQU $59   ;Destination Pointer 
-BLKPTR  EQU $5C   ;Block Pointer
-STKLO   EQU $5E   ;Stack Pointer LSB 
-STKHI   EQU $5F   ;Stack Pointer MSB 
-BFRLO   EQU $60   ;Buffer Pointer LSB 
-BFRHI   EQU $61   ;Buffer Pointer MSB 
+DSTPTR  EQU $58   ;Destination Pointer 
+BLKPTR  EQU $5A   ;Block Pointer
+STKPTR  EQU $5C   ;Stack Pointer
+USRPTR  EQU $5E   ;User Pointer
 RANDOM  EQU $62   ;Random Number Storage 
 RDSEED  EQU $63   ;Random Seed 
-TEMP0   EQU $64   ;Temporary Variable 
-TEMP1   EQU $65   ;Temporary Variable 
-TEMP2   EQU $66   ;Temporary Variable 
-TEMP3   EQU $67   ;Temporary Variable 
-SYSBFP  EQU $68   ;Position in System Buffer [Free Byte]
-;       $69-7F    ;Available to User
+TEMP0   EQU $64   ;Temporary Variables 
+TEMP1   EQU $65   
+TEMP2   EQU $66   
+TEMP3   EQU $67
+TMPPTR  EQU $68   ;Temporary Pointer   
+SYSBFP  EQU $6A   ;Position in System Buffr
+;       $6B-$6F   ;Unused
+;       $70-7F    ;Free Zero-Page for Applications
 ;       $80-$83   ;Used by Kernal and DOS
 ;       $A4-$A8   ;Reserved for KERNAL/DOS/BASIC
 ;       $A9-$FF   ;Used by BASIC
 
 ;Other Constants
-SYSBFL  EQU 128   ;System Buffer Length
+SYSBFL  EQU 128   ;System Buffer Length [Max String Length]
 ;Other Variables - User Storage Area
 SYSBFR  EQU $0700 ;System Buffer 
-BLKBGN  EQU $07F4 ;Block Start Address
-BLKEND  EQU $07F6 ;Block End Address
-BLKLEN  EQU $07F8 ;Block Length 
-
-STKSAV  EQU $07FA ;Machine Stack Storage 
-
-STKSLO  EQU $07FC ;Stack Start LSB 
-STKSHI  EQU $07FD ;Stack Start MSB 
-STKELO  EQU $07FE ;Stack End LSB   
-STKEHI  EQU $07FF ;Stack End MSB   
+;     $0781-$07F5 ;Unused
+BLKBGN  EQU $07F6 ;Block Start Address
+BLKEND  EQU $07F8 ;Block End Address
+BLKLEN  EQU $07FA ;Block Length 
+STKSAV  EQU $07FB ;Machine Stack Storage 
+STKBGN  EQU $07FC ;Stack Start
+STKEND  EQU $07FE ;Stack End 
 
 ;Machine Language Basic Stub - Same as Commodore 64
         ORG $0801              ;Start of Basic Program 

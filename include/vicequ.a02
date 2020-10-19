@@ -1,0 +1,50 @@
+;c02 Program Initialization Code for Vic-20 - Common Equates
+
+;PETSCII Key Mappings
+DELKEY  EQU $14   ;Delete/Backspace Key (Delete)
+ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
+RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
+
+;Zero Page Locations
+XMBANK  EQU $0A ;Extended Memory Bank [Load/Verify Flag]
+XMADDR  EQU $0B ;Extended Memory Address [Array Index/Flags]
+;           $16 ;[Temporary String Stack Pointer]
+SRCPTR  EQU $17 ;Source Pointer [Temporary String Space Pointer]
+DSTPTR  EQU $19 ;Destination Pointer [Temporary String Stack]
+;           $21 ;[Temporary String Stack]
+BLKPTR  EQU $22 ;Block Pointer [Temporary Pointers]
+STKPTR  EQU $24 ;Stack Pointer [Pointer to TO Variable]
+;       $26-$29 ;[Floating Point Work Area]
+USRPTR  EQU $35 ;[Temporary String Pointer]
+TEMP0   EQU $61 ;Temporary Variable [Floating Point Accumulator]
+TEMP1   EQU $63 ;Temporary Variable [Floating Point Accumulator]
+TEMP2   EQU $65 ;Temporary Variable [Floating Point Accumulator]
+TEMP3   EQU $67 ;Temporary Variable [Floating Point Accumulator]
+TMPPTR  EQU $69 ;Temporary Pointer [Floating Point Argument]
+;       $6A-$70 ;[Floating Point Argument]
+RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)
+;       $FB-$FE ;Unused Zero Page for Applications
+
+;System Variables
+SYSBFL  EQU 88    ;System Buffer Size [88 Bytes]
+SYSBFR  EQU $0200 ;System Buffer [Keyboard Buffer]
+USER0   EQU $0310 ;Free Byte for User Programs
+USER1   EQU $0311 ;Free Byte for User Programs
+USER2   EQU $0312 ;Free Byte for User Programs
+SYSBFP  EQU $0313 ;Position in System Buffer [Free Byte]
+
+BLKBGN  EQU $0334 ;Block Start [Unused Byte]
+BLKEND  EQU $0336 ;Block Start [Unused Byte]
+BLKLEN  EQU $0338 ;Block Length [Unused Byte]
+
+RANDOM  EQU $0339 ;Random Number Storage [Unused Byte]
+STKSAV  EQU $033A ;Machine Stack Storage [Unused Byte]
+USER11  EQU $033B ;Free Byte for User Programs
+TBFFR   EQU $033C ;Cassette I/O Buffer
+
+STKBGN  EQU $03FC ;Stack Start [Unused Byte]
+STKEND  EQU $03FE ;Stack End   [Unused Byte]
+
+;ROM Routines
+FSFLFA  EQU $F3D4 ;Find Logical File A
+

@@ -1,43 +1,37 @@
 /* run6502 Header File */
 
-//Platform Specific Constants
+/* Platform Specific Settings */
+#pragma zeropage $50 $FF //Zero Page Free Space
+
+/* Platform Specific Constants */
 #define DELKEY $08 //Delete/Backspace Key
-#define ESCKEY $18 //Escape/Stop Key
-#define RTNKEY $0A //Return/Enter Key
+#define ESCKEY $1B //Escape/Stop Key
+#define RTNKEY $0D //Return/Enter Key
 #define SYSBFL 128 //System Buffer Length
 
-const char delnam; //Delete/Backspace Key Name
-const char escnam; //Escape/Stop Key Name
-const char rtnnam; //Return/Enter Key Name
-
-//Library Pointer Variables
-zeropage int srcptr, dstptr, bfrptr, blkptr;
-char bfrlo,bfrhi; //Buffer Pointer for Library Functions
-char stklo,stkhi; //Stack Pointer
-
-//Library Variables
-int blkbgn, blkend;
-char blklen;         //Block Segment Length
-char stkslo, stkshi; //Stack Start Address
-char stkelo, stkehi; //Stsck End Address
-char random, rdseed; //Pseudo-Random Number Generation
+/* Standard Library Variables */
+zeropage int srcptr, dstptr;  //Source and Destination Pointer
+zeropage int blkptr, stkptr;  //Block and Stack Pointers
+zeropage int tmpptr, usrptr;  //Temporary and User Pointer
+int stkbgn, stkend;   //Stack Begin and End Address
+int blkbgn, blkend;   //Block Begin and End Address
+char blklen, xmbank;  //Block Segment Length, Ext Memory Bank
+int xmaddr;           //Extended Memory Address
+char random, rdseed;  //Pseudo-Random Number and Seed
 char temp0, temp1, temp2, temp3; //Temporary Storage
 char sysbfr[], sysbfp; //System String Buffer and Position
 
-//Memory Mapped I/O
-char putcon;  //Write Character to Console
-char getcon;  //Read Character from Console
-
-//System Subroutines
+/* System Subroutines */
 void delchr(); //Delete previous character
 char getchr(); //Wait for character from Console
-char getkey(); //Read ASCII character from Console (Exits Emulator)
+char getkey(); //Read ASCII character from Console
 void newlin(); //Advance cursor to beginning of next line
-char polkey(); //Poll Console for character (Exits Emulator)
-char putchr(); //Print ASCII character to Console
-void prbyte(); //Print Accumulator as Hexadadecimal number
+char polkey(); //Poll Console for character
+void prbyte(); //Print Accumulator as Hexadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
+char putchr(); //Print ASCII character to Console
+char putstr(); //Print ASCII string to Console
 
-//System Labels
+/* System Labels */
 start:  //Start of Code
 exit:   //Return to Operating System

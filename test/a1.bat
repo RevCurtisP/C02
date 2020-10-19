@@ -10,7 +10,7 @@ ECHO Compiling File %1.c02
 IF ERRORLEVEL 1 EXIT /B
 
 ECHO Assembling File %1.asm
-..\a02 -p %1.asm %1.obj %1.lst
+..\a02 -d -p -i "../include ../include/apple1" %1.asm %1.obj %1.lst >%1.out
 IF ERRORLEVEL 1 EXIT /B
 
 ECHO Converting Object File

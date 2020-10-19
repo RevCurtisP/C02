@@ -1,5 +1,7 @@
 ; c02 Program Initialization Code for Unexpanded VIC-20
 
+        INCLUDE "vicequ.a02" ;Include VIC 20 Common Code
+
 ;Video RAM and ROM 
 VICSCN  EQU $1E00 ;Video Screen Memory Area (Unexpanded)
 CHRROM  EQU $8000 ;Character Generator ROM
@@ -15,5 +17,5 @@ BASIC:  DC  $0C, $10        ;Pointer to Next Line
         DC  $00             ;End of Line Marker
         DC  $00, $00        ;End of Basic Program
 
-        INCLUDE "../include/vic.a02" ;Include VIC 20 Common Code
-        INCLUDE "../include/prbyte.a02" ;PRBYTE and PRHEX routines
+        INCLUDE "vicasm.a02" ;Include VIC 20 Common Code
+        INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routines

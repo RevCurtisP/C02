@@ -1,43 +1,47 @@
-; Program initialization code for C02 programs
-; Template for System Specific Code
+;Template Program Initialization code for C02 programs
 
 ;System Specific ASCII Key Mappings
 DELKEY  EQU $7F     ;Delete/Backspace Key ($08=Backspace, $7F=Delete)
 ESCKEY  EQU $1B     ;Escape/Stop Key      ($03=Ctrl-C, $1B=Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     ($0D=Carriage Return)
-NULKEY  EQU $00     ;No Key was Pressed   ($00=Null)
 
 ;Zero Page Locations
 SRCPTR  EQU $00     ;Source Pointer
 DSTPTR  EQU $02     ;Destination Pointer
-BFRLO   EQU $04     ;Work Buffer Pointer
-BFRHI   EQU $05
+BLKPTR  EQU $34     ;Block Segment Pointer
+STKPTR  EQU $06     ;Stack Pointer
+USRPTR  EQU $08     ;User Pointer
 
+XMADDR  EQU $0A     ;Extended Memory Address
+XMBANK  EQU $0C     ;Extended Memory Bank
 STKSAV  EQU $0D     ;Stack Pointer Storage
+
 RDSEED  EQU $0E     ;Pseudo-RANDOM Seed
 RANDOM  EQU $0F     ;Pseudo-RANDOM Number Storage
+
 TEMP0   EQU $10     ;Temporary Storage
 TEMP1   EQU $11
 TEMP2   EQU $12
-TEMP3   EQU $12
+TEMP3   EQU $13
+TMPPTR  EQU $14     ;Temporary Pointer
 
-BLKBGN  EQU $20     ;Block Start Address
-BLKEND  EQU $22     ;Block End Address
-BLKPTR  EQU $24     ;Block Pointer
-BLKLEN  EQY $26     ;Block Segment Length
+BLKBGN  EQU $16     ;Block Start Address
+BLKEND  EQU $18     ;Block End Address
+BLKLEN  EQU $1A     ;Block Segment Length
+SYSBFP  EQU $1B     ;Position in System Buffer
+STKBGN  EQU $1C     ;Stack Start Address
+STKEND  EQU $1E     ;Stack End Address
+;       $20-$FF     ;Free Zero Page for Applications
 
-STKSLO  EQU $28     ;Stack Start Address
-STKSHI  EQU $29
-STKELO  EQU $2A     ;Stack End Address
-STKEHI  EQU $2B
-STKLO   EQU $2C     ;Stack Pointer
-STKHI   EQU $2D
+SYSBFL  EQU 128     ;System Buffer Size (Max String Size)
+SYSBFR  EQU $0200   ;System Buffer
+;     $0281-$02FF   ;Unused
 
 ;Placeholders Labels for the Example Code Below
 POLKEY  EQU $FFFE   ;ROM Read Key Routine
 WSTART  EQU $FFFF   ;BASIC Warm Start Routine
 
-        ORG $0200   ;Program Start Address
+        ORG $0300   ;Program Start Address
 
 START:  NOP         ;System specific initialization code
         TXS         ;If an RTS is used to return to the Operating System,
@@ -75,10 +79,8 @@ NEWLIN: RTS         ;Code to move Cursor to beginning of next line
                     ;May emit Carriage Return, Line Feed, or both
 
 ;Print Character to Screen
-PUTCHR RTS         ;Code to write ASCII character to Screen
+PUTCHR: RTS         ;Code to write ASCII character to Screen
 
         INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routines
         INCLUDE "putstr.a02" ;PUTSTR routine
  
-;System Key Names
-KNAMES  BYTE "DELETE",0,"ESCAPE",0,"RETURN",0

@@ -1,49 +1,37 @@
 /* Apple ][ Header File */
 
+/* Platform Specific Settings */
+#pragma zeropage $FA $FF //Zero Page Free Space
+
 /* Platform Specific Constants */
 #define DELKEY $08 //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key
 #define RTNKEY $0D //Return/Enter Key
 #define SYSBFL 255 //System Buffer Length
 
-/* Standard Library Pointers */
-zeropage int srcptr, dstptr, bfrptr, blkptr;
-char bfrlo,bfrhi; //Buffer Pointer for Library Functions
-char stklo,stkhi;   //System Pointer
-
 /* Standard Library Variables */
-int blkbgn, blkend; //Block Start and End Address
-char blklen;        //Block Segment Length
-char stkslo, stkshi; //Stack Start Address
-char stkelo, stkehi; //Stsck End Address
-char random, rdseed; //Pseudo-Random Number Generation
-char temp0, temp1, temp2, temp3;  //Temporary Variables
+zeropage int srcptr, dstptr;  //Source and Destination Pointer
+zeropage int blkptr, stkptr;  //Block and Stack Pointers
+zeropage int tmpptr, usrptr;  //Temporary and User Pointer
+int stkbgn, stkend;   //Stack Begin and End Address
+int blkbgn, blkend;   //Block Begin and End Address
+char blklen, xmbank;  //Block Segment Length, Ext Memory Bank
+int xmaddr;           //Extended Memory Address
+char random, rdseed;  //Pseudo-Random Number and Seed
+char temp0, temp1, temp2, temp3; //Temporary Storage
 char sysbfr[], sysbfp; //System String Buffer and Position
 
-/* Platform Specific Variables */
-char invflg;  //Video Invert Mask
-
-/* Keyboard I/O */
-char kbd; //Keyboard Data Register
-char akd; //Keyboard Strobe Register
-
-/* Monitor Subroutines */
-void prbyte(); //Print Accumulator as Hexadecimal number
-void prhex();  //Print Low Nybble of Accumulator as Hex Digit
-
 /* System Subroutines */
-void clrscr(); //Clear the Screen
 void delchr(); //Delete previous character
 char getchr(); //Wait for character from Console
 char getkey(); //Read ASCII character from Console
-char getpos(); //Get Cursor Position
-char getsiz(); //Get Screen Size
 void newlin(); //Advance cursor to beginning of next line
 char polkey(); //Poll Console for character
+void prbyte(); //Print Accumulator as Hexadecimal number
+void prhex();  //Print Low Nybble of Accumulator as Hex Digit
 char putchr(); //Print ASCII character to Console
 char putstr(); //Print ASCII string to Console
-void setpos(); //Set Cursor Position
 
-//System Labels
+/* System Labels */
 start:  //Start of Code
 exit:   //Return to Operating System

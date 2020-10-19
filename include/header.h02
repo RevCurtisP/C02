@@ -1,46 +1,37 @@
 /* System Specific C02 Header File Template */
 
-/* This header contains standardized Constants, *
- * Variables, and Function Calls tailored to a  *
- * a specific platform.                         */
+/* Platform Specific Settings */
+#pragma zeropage $50 $FF //Zero Page Free Space
 
-/* System Specific ASCII Key Codes              */
+/* Platform Specific Constants */
 #define DELKEY $7F //Delete/Backspace Key
 #define ESCKEY $1B //Escape/Stop Key
 #define RTNKEY $0D //Return/Enter Key
 #define SYSBFL 128 //System Buffer Length
 
-/* Zero Page Variables used as Pointers         */
-zeropage int srcptr, dstptr, bfrptr, blkptr;
-char stklo,stkhi; //Stack Pointer
-
-/* Ephemeral Library Variables                  *
- * Available for use in program code, but may   *
- * be obliterated by Function Calls.            *
- * May be Zero Page, but not required           */
-char temp0,temp1,temp2,temp3;  //Temporary variables 
-
-/* Static Library Variables                     *
- * Must be preserved between function calls     *
- * May be Zero Page, but not required           */
-int blkbgn, blkend; //Block Start and End Address
-char blklen;        //Block Segment Length
-char stkslo, stkshi; //Stack Start Address
-char stkelo, stkehi; //Stsck End Address
-char random;         //Last Result of Pseudo-Random Number Generator
-char rdseed;         //System Seed for Pseudo-Random Number Generator 
+/* Standard Library Variables */
+zeropage int srcptr, dstptr;  //Source and Destination Pointer
+zeropage int blkptr, stkptr;  //Block and Stack Pointers
+zeropage int tmpptr, usrptr;  //Temporary and User Pointer
+int stkbgn, stkend;   //Stack Begin and End Address
+int blkbgn, blkend;   //Block Begin and End Address
+char blklen, xmbank;  //Block Segment Length, Ext Memory Bank
+int xmaddr;           //Extended Memory Address
+char random, rdseed;  //Pseudo-Random Number and Seed
+char temp0, temp1, temp2, temp3; //Temporary Storage
 char sysbfr[], sysbfp; //System String Buffer and Position
 
-//System Subroutines
+/* System Subroutines */
 void delchr(); //Delete previous character
 char getchr(); //Wait for character from Console
 char getkey(); //Read ASCII character from Console
 void newlin(); //Advance cursor to beginning of next line
 char polkey(); //Poll Console for character
-char putchr(); //Print ASCII character to Console
-void prbyte(); //Print Accumulator as Hexadadecimal number
+void prbyte(); //Print Accumulator as Hexadecimal number
 void prhex();  //Print Low Nybble of Accumulator as Hex Digit
+char putchr(); //Print ASCII character to Console
+char putstr(); //Print ASCII string to Console
 
-//System Labels
+/* System Labels */
 start:  //Start of Code
 exit:   //Return to Operating System

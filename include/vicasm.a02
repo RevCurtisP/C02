@@ -1,0 +1,58 @@
+;c02 Program Initialization Code for Vic-20 - Common Code
+
+START:  TSX         ;Get Stack Pointer
+        STX STKSAV  ;and Save for Exit
+        JMP MAIN    ;Execute Program
+
+EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
+        TXS         ;and Restore It
+        RTS         ;Return to BASIC
+
+;Poll Keyboard for Character
+POLKEY  EQU $FFE4   ;Aliased to Kernal GETIN Routine
+
+;Get Character from Keyboard
+GETKEY  EQU POLKEY  ;Get Key From Keybord
+
+;Get Character from Keyboard
+;GETKEY: JSR POLKEY  ;Get Key From Keybord
+;        ;The below is not working...
+;        LDY $9005   ;Get Character Memory Offset
+;        CPY #242    ;If Upper/Lower
+;        BNE GETKEX
+;        BIT $FF     ;  Bit 7 -> C, Bit 6 -> V
+;        BVC GETKEX  ;  If Bit 6 Set (Alpha)
+;        BCC GETKEL  ;    If Bit 7 Set (PETSCII Upper)
+;        AND #$7F    ;      Clear Bit 7 (ASCII Upper)
+;        BNE GETKEX  ;    Else
+;GETKEL: ORA #$20    ;      Set Bit 5 (ASCII Lower)
+;GETKEX: ORA #$00    ;Set Flags
+;        RTS
+
+;A = $41 %0100 0001
+;a = $C1 %1100 0001 PETSCII
+;a = $61 %0110 0001 PETSCII
+;$9005 = 240 UPR/GFX
+;        242 UPR/LWR
+
+;Wait for Character from Keyboard
+GETCHR: JSR GETKEY  ;Poll Keyboard
+        BEQ GETCHR  ;If No Key, Loop
+        RTS
+
+;Print Character to Console
+;uses direct call to SCRNOUT instead of CHROUT 
+PUTCHR  EQU $E742   ;Aliased to SRCOUT Routine
+
+;Delete Previous Character
+DELCHR: LDA #DELKEY ;Load Delete Character
+        JMP PUTCHR  ;Print and Return
+
+;Advance Character to Next line
+NEWLIN: LDX #0      ;Store 0
+        STX $D3     ;in Cursor Column and
+        JMP $E8C3   ;Execute NXTLINE Routine
+
+;Print Zero-Terminated String
+PUTSTR: TXA         ;Copy LSB to Accumulator
+        JMP $CB1E   ;Execute STROUT Routine
