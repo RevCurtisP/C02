@@ -1,244 +1,286 @@
 ;C02 stack module assembly language subroutines
-;Requires external zero page variables 
-;STKLO, STKHI, DSTLO, DSTHI, SRCLO, SRCHI
-;external variables 
-;STKSLO, STKSHI, STKELO, STKEHI, TEMP0, TEMP1, TEMP2
-;external routines 
-;MEMCPL, SETDST, SETSRC
+;Requires external zero page words DSTPTR, SRCPTR, STKPTR, 
+;words STKBGN, STKEND, and bytes TEMP0, TEMP1, TEMP2 (header)
+;and external routines RESRXY, SAVRXY, SETDST, SETSRC (stddef),  
+;MEMCPL (memory), and STRLEN (string) 
 
 ;Implementation Notes:
-;Stack starts at STKSLO,STKSHI and builds upward tp STKELO, STKEHI
+;Stack starts at STKBGN and builds upward to STKEND
 ;Each entry on the stack consists of the entry data followed 
 ;by a single byte containing the length of the entry data
 
-;stkbgn(&b) - Set Stack Start Address
-;Args: X,Y = Address
-;Sets: STKSLO, STKSHI = Stack Start Address
-;Affects: Z, N
-STKBGN: STX STKSLO  ;Save Stack Start LSB
-        STY STKSHI  ;Save Stack Start MSB
-        RTS
+        SUBROUTINE STACK
 
-;stkend(&b) - Set Stack End Address (+1)
-;Args: X,Y = Address
-;Sets: STKELO, STKEHI = Stack End Address
-;Affects: Z, N
-STKEND: STX STKELO  ;Save Stack End LSB
-        STY STKEHI  ;Save Stack End MSB
-        RTS
-
-;stkptr() - Get Stack Pointer
-;Uses: STKLO,STKHI = Stack Pointer
+;Get Stack Pointer
 ;Affects: N,Z
 ;Returns: X = Stack Pointer LSB
 ;         Y = Stack Pointer MSB
-STKPTR: LDX STKLO     ;Load Stack Pointer LSB
-        LDY STKHI     ;Load Stack Pointer MSB
+.GETPTR LDX STKPTR      ;Load Stack Pointer LSB
+        LDY STKPTR+1    ;Load Stack Pointer MSB
         RTS
 
-;stkssp() - Save Stack Pointer 
-;Uses: STKLO,STKHI = Stack Pointer
-;Sets: TEMP1.TEMP2 = Stack Pointer
+;Save Stack Pointer 
+;Sets: TEMP1,TEMP2 = STKPTR
 ;Affects: N,Z
 ;Returns: X = Stack Pointer LSB
 ;         Y = Stack Pointer MSB
-STKSSP: JSR STKPTR    ;Get Stack Pointer
-        JMP SAVRXY    ;Save in TEMP1, TEMP2 
+.SAVPTR JSR .GETPTR     ;Get Stack Pointer
+        JMP SAVRXY      ;Save in TEMP1, TEMP2 
 
-;stksrc() - Set Source Pointer to Stack Pointer
-;Uses: STKLO,STKHI = Stack Pointer
-;Sets: SRCLO,SRCHI = Source Array Pointer
+;.STKSRC() - Set Source Pointer to Stack Pointer
+;Sets: SRCPTR = STKPTR
 ;Affects: X,N,Z
 ;Returns: Y = 0
-STKSRC: JSR STKPTR    ;Get Stack Pointer Address
-        JMP SETSRC    ;Set Source/ an/d Return
+.STKSRC JSR .GETPTR     ;Get Stack Pointer Address
+        JMP SETSRC      ;Set Source/ an/d Return
 
-;stkdst() - Set Destination Pointer to Stack Pointer
-;Uses: STKLO,STKHI = Stack Pointer
-;Sets: DSTLO,DSTHI = Destination Array Pointer
+;.STKDST() - Set Destination Pointer to Stack Pointer
+;Uses: STKPTR = Stack Pointer
+;Sets: DSTPTR = Destination Array Pointer
 ;Affects: N,Z
 ;Returns: X = Stack Pointer LSB
 ;         Y = Stack Pointer MSB
-STKDST: JSR STKPTR    ;Get Stack Pointer Address
-        JMP SETDST    ;Set Destination and Return
+.STKDST JSR .GETPTR     ;Get Stack Pointer Address
+        JMP SETDST      ;Set Destination and Return
 
 ;stkrst() - Reset Stack Pointer to Start Address
-;Uses: STKSLO, STKSHI = Stack Start Address
-;Sets: STKLO, STKHI = Stack Pointer
+;Uses: STKBGN = Stack Start Address
+;Sets: STKPTR = Stack Pointer
 ;Affects: Z, N
 ;Returns: X = Stack Pointer LSB
 ;         Y = Stack Pointer MSB
-STKRST: LDX STKSLO    ;Load X with Stack Start LSB
-        LDY STKSHI    ;Load X with Stack Start MSB
-        JMP STKSET    ;Store in Stack Pointer 
+STKRST: LDX STKBGN      ;Load X with Stack Start LSB
+        LDY STKBGN+1    ;Load X with Stack Start MSB
+        JMP .SETPTR     ;Store in Stack Pointer 
 
-;stkrsp() - Restore Stack Pointer 
+;.RESPTR() - Restore Stack Pointer 
 ;Uses: TEMP1.TEMP2 = Stack Pointer
-;Sets: STKLO,STKHI = Stack Pointer
+;Sets: STKPTR = Stack Pointer
 ;Affects: N,Z
 ;Returns: X = Stack Pointer LSB
 ;         Y = Stack Pointer MSB
-STKRSP: JSR RESRXY    ;Get TEMP1, TEMP2
-                      ;and fall into STKSET
+.RESPTR JSR RESRXY      ;Get TEMP1, TEMP2
+                        ;and fall into .SETPTR
 
-;stkset() - Set Stack Pointer Address
-;Args: X,Y = Address
-;Sets: STKLO, STKHI = Stack Pointer Address
-;Affects: Z, N
-;Returns: X = Stack Pointer LSB
-;         Y = Stack Pointer MSB
-STKSET: STX STKLO     ;Store X in Stack Pointer LSB
-        STY STKHI     ;Store Y in Stack Pointer MSB
-        RTS           ;Exit Routine
+;Set STKPTR to Y,X
+.SETPTR STX STKPTR      ;Store X in Stack Pointer LSB
+        STY STKPTR+1    ;Store Y in Stack Pointer MSB
+        RTS             ;Exit Routine
 
 ;stkpsh(n, &m) - Push n Bytes of m onto Stack
 ;Args: A = Number of Bytes to Append
 ;      Y,X = Address of Source Array
-;Uses: STKELO, STKEHI = Stack End Address
-;Sets: DSTLO, DSTHI = Pointer to Stack Entry
-;      SRCHI, SRCLO = Pointer to Source Array
+;Uses: STKEND = Stack End Address
+;Sets: DSTPTR = Pointer to Stack Entry
+;      SRCPTR = Pointer to Source Array
 ;      TEMP0 = Number of Bytes to Append
-;Updates: STKLO, STKHI = Stack Pointer
+;Updates: STKPTR = Stack Pointer
 ;Returns: A=Number of Bytes Pushed
 ;           0 = Error: Stack Underflow
-STKPSH: JSR SETSRC    ;Set Source Address
-STKPSA: STA TEMP0     ;Save Number of Bytes
-        JSR STKDST    ;Set Destination to Stack Pointer
-        JSR STKALC    ;Allocate Space on Stack
-        JMP MEMCPL    ;Copy Bytes and Return
+STKPSH: JSR SETSRC      ;Set Source Address
+.STKPSH STA TEMP0       ;Save Number of Bytes
+        JSR .STKDST     ;Set Destination to Stack Pointer
+        JSR .ALLOC      ;Allocate Space on Stack
+        JMP MEMCPL      ;Copy Bytes and Return
 
-;stkadd(n) - Add N Bytes to Stack Pointer
-;Args: A=Number of Bytes to Allocate
-;Updates: STKLO, STKHI = Stack Pointer
-;Affects: A,C,N,Z
-STKADD: CLC 
-STKADC: ADC STKLO       ;Add to Stack Pointer LSB
-        STA STKLO       ;and Save
-        LDA STKHI       ;Add Carry
+;Add A to STKPTR
+.ADDPTR CLC 
+.ADCPTR ADC STKPTR      ;Add to Stack Pointer LSB
+        STA STKPTR      ;and Save
+        LDA STKPTR+1    ;Add Carry
         ADC #0          ;to Stack Pointer MSB
-        STA STKHI       ;and Save
+        STA STKPTR+1    ;and Save
         RTS
 
-;stkalc(n) - Allocate Space on Stack
+;Allocate Space on Stack
 ;Args: A=Number of Bytes to Allocate
-;Updates: STKLO, STKHI = Stack Pointer
+;Updates: STKPTR = Stack Pointer
 ;Affects: C,N,Z
 ;Returns: A = Number of Bytes Allocated
 ;             0 if Error: Pointer Overflow or Length 0 
-;         Y=0
-STKALC: JSR STKSSP     ;Save Stack Pointer
+.ALLOC  JSR .SAVPTR     ;Save Stack Pointer
         LDA TEMP0       ;If No Bytes
-        BEQ STKABT      ;  Abort Calling Routine
-        JSR STKADD      ;Add to Stack Pointer
-        LDA STKEHI      ;If Stack End MSB
-        CMP STKHI       ;  < Stack Pointer MSB
-        BCC STKRPA      ;  Abort Calling Routine
-        BNE STKALX      ;Else if Not Equal
-        LDA STKELO      ;and Stack End LSB
-        CMP STKLO       ;  < Stack Pointer LSB
-        BCC STKRPA      ;  Abort Calling Routine
-STKALX: LDA TEMP0       ;Get Number of Bytes from X Register
+        BEQ .POPRET     ;  Abort Calling Routine
+        JSR .ADDPTR     ;Add to Stack Pointer
+        LDA STKEND+1    ;If Stack End MSB
+        CMP STKPTR+1    ;  < Stack Pointer MSB
+        BCC .ABORT      ;  Abort Calling Routine
+        BNE .ALSKIP     ;Else if Not Equal
+        LDA STKEND      ;and Stack End LSB
+        CMP STKPTR      ;  < Stack Pointer LSB
+        BCC .ABORT      ;  Abort Calling Routine
+.ALSKIP LDA TEMP0       ;Get Number of Bytes from X Register
         LDY #0          ;Initialize Index
-        STA (STKLO),Y   ;Store after Allocated Area
-                        ;and fall inro STKINC
+        STA (STKPTR),Y  ;Store after Allocated Area
+                        ;and fall into .INCPTR
 
-;stkinc(n) - Increment Stack Pointer
-;Sets: STKLO, STKHI = Stack Pointer Address
-;Affects: Y,Z,N
-STKINC: INC STKLO       ;Increment LSB 
-        BNE STKINX      ;If Zero
-        INC STKHI       ;  Increment MSB
-STKINX: RTS
+;Increment Stack Pointer
+.INCPTR INC STKPTR      ;Increment LSB 
+        BNE .RETURN     ;If Zero
+        INC STKPTR+1    ;  Increment MSB
+        RTS
 
-;stkcmp - Compare Stack Pointer to Stack Start Address
-;Uses: STKLO, STKHI = Stack Pointer Address
-;      STKSLO, STKSHI = Stack Start Address
-;Returns: C=1,Z=1 if Stack Pointer = Stack Start 
-;         C=1,Z=0 if Stack Pointer > Stack Start
-;         C=0,Z=0 if Stack Pointer < Stack Start
-STKCMP: LDA STKHI       ;Compare MSB
-        CMP STKSHI
-        BCC STKRTS      ;If Pointer<Start Return C=0, Z=1
-        BNE STKRTS      ;If Pointer>Start Return C=1. Z=0
-        LDA STKLO       ;If MSB Equal
-        CMP STKSLO      ;Compare LSB
-STKRTS: RTS
+;STKPTR to STKBGN
+;Returns: C=1,Z=1 if STKPTR = STKBGN 
+;         C=1,Z=0 if STKPTR > STKBGN
+;         C=0,Z=0 if STKPTR < STKBGN
+.CMPPTR LDA STKPTR+1    ;Compare MSB
+        CMP STKBGN+1
+        BCC .RETURN     ;If Pointer<Start Return C=0, Z=1
+        BNE .RETURN     ;If Pointer>Start Return C=1. Z=0
+        LDA STKPTR      ;If MSB Equal
+        CMP STKBGN      ;Compare LSB
+        RTS
 
-;stkdec(n) - Decrement Stack Pointer
-;Sets: STKLO, STKHI = Stack Pointer Address
+;.DECPTR(n) - Decrement Stack Pointer
+;Sets: STKPTR = Stack Pointer Address
 ;Affects: X,Z,N
-STKDEC: LDX STKLO       ;If LSB
-        BNE STKDEL      ;  is Zero
-        DEC STKHI       ;  Decrement MSB
-STKDEL: DEC STKLO       ;  Decrement LSB
-STKDER: RTS
+.DECPTR LDX STKPTR      ;If LSB
+        BNE .DECLSB     ;  is Zero
+        DEC STKPTR+1    ;  Decrement MSB
+.DECLSB DEC STKPTR      ;  Decrement LSB
+        RTS
 
 ;stksiz() - Get Stack Size in Bytes
-;Uses: STKLO,STKHI = Stack Pointer
-;Sets: STKSLO, STKSHI = Stack Start Address
+;Uses: STKPTR = Stack Pointer
+;Sets: STKBGN = Stack Start Address
 ;Returns: A = $FF if Stack Size is Non-Zero
 ;             $00 if Stack is Empty
 ;         Y,X = Stack Size (MSB, LSB)
-STKSIZ: LDA STKLO   ;Subtract 
-        SEC         ;Start Address LSB
-        SBC STKSLO  ;from Pointer LSB
-        TAX         ;and Copy to X
-        LDA STKHI   ;Subtract Start MSB
-        SBC STKSHI  ;from Pointer MSB
-        TAY         ;and Copy to Y
-        BCC STKZRO  ;Return FALSE if <=0
-        BNE STKTRU  ;Return TRUE if MSB <> 0
-        TXA         ;Else
-        BEQ STKRTS  ;Return FALSE if LSB = 0 
-STKTRU: LDA #$FF    ;Else Return TRUE
-        RTS
+STKSIZ: LDA STKPTR      ;Subtract 
+        SEC             ;Start Address LSB
+        SBC STKBGN      ;from Pointer LSB
+        TAX             ;and Copy to X
+        LDA STKPTR+1    ;Subtract Start MSB
+        SBC STKBGN+1      ;from Pointer MSB
+        TAY             ;and Copy to Y
+        BCC .RETZRO     ;Return FALSE if <=0
+        BNE .RETTRU     ;Return TRUE if MSB <> 0
+        TXA             ;Else
+        BEQ .RETURN     ;Return FALSE if LSB = 0 
+.RETTRU LDA #$FF        ;Else Return TRUE
+.RETURN RTS
 
 ;stkdrp(&m) - Drop Top Entry from Stack
 ;Note: Aborts Calling Routine if Error
-;Uses: STKSLO, STKSHI = Stack Start Address
+;Uses: STKBGN = Stack Start Address
 ;Sets: TEMP1, TEMP2 = Original Stack Pointer
-;Updates: STKLO, STKHI = Stack Pointer
+;Updates: STKPTR = Stack Pointer
 ;Affects: Y,C,N,Z
 ;Returns: A=Number of Bytes in Entry
 ;           0=Error: Stack Underflow
 ;         Y=0
-STKDRP: JSR STKSSP      ;Save Stack Pointer
-STKDRN: JSR STKCMP      ;If Stack Pointer
-        BCC STKRPA      ;  <= Stack Start
-        BEQ STKRPA      ;  Return 0
-        JSR STKDEC      ;Decrement Stack Pointer
+STKDRP: JSR .SAVPTR     ;Save Stack Pointer
+.STKDRP JSR .CMPPTR     ;If Stack Pointer
+        BCC .ABORT      ;  <= Stack Start
+        BEQ .ABORT      ;  Return 0
+        JSR .DECPTR     ;Decrement Stack Pointer
         LDY #0          ;Initialize Index
-        LDA (STKLO),Y   ;Get Number of Bytes in Entry
-                        ;and fall into STKSUB
+        LDA (STKPTR),Y  ;Get Number of Bytes in Entry
+                        ;and fall into .SUBPTR
 
-;stksub(n) - Reduce Stack Pointer by A
-STKSUB: STA TEMP0       ;Save Number in TEMP0
-        LDA STKLO
+;Subtract A from STKPTR
+.SUBPTR STA TEMP0       ;Save Number in TEMP0
+        LDA STKPTR
         SEC             ;Subtract A from LSB
         SBC TEMP0
-        STA STKLO
-        LDA STKHI       ;Subtract 0 from LSB
+        STA STKPTR
+        LDA STKPTR+1    ;Subtract 0 from LSB
         SBC #0          ;For Borrow
-        STA STKHI
-        JSR STKCMP      ;If Stack Pointer < Start 
-        BCC STKRPA      ;  Restore Pointer and Return 0
-STKSUE: LDA TEMP0       ;Retrieve Number of Bytes
+        STA STKPTR+1
+        JSR .CMPPTR     ;If Stack Pointer < Start 
+        BCC .ABORT      ;  Restore Pointer and Return 0
+        LDA TEMP0       ;Retrieve Number of Bytes
         RTS
-STKRPA: JSR STKRSP      ;Restore Stack Pointer
-STKABT: PLA             ;Drop Return Address from Stack
+.ABORT  JSR .RESPTR     ;Restore Stack Pointer
+.POPRET PLA             ;Drop Return Address from Stack
         PLA             ;  Aborting Calling Routine
-STKZRO: LDA #0          ;Set A to 0
+.RETZRO LDA #0          ;Set A to 0
         RTS
 
 ;stkpop(&m) - Pop Top Entry off Stack
 ;Args: Y,X = Address of Source Array
-;Uses: STKSLO, STKSHI = Stack Start Address
-;Updates: STKLO, STKHI = Stack Pointer
+;Uses: STKBGN = Stack Start Address
+;Updates: STKPTR = Stack Pointer
 ;Affects: C,N,Z
 ;Returns: A,Y = Number of Bytes in Entry
 ;           0 = Error: Stack Underflow
 STKPOP: JSR SETDST      ;Set Destination Address
         JSR STKDRP      ;Deallocate Stack Entry
-STKPOS: JSR STKSRC      ;Set Source Address to Stack Pointer
+        JSR .STKSRC     ;Set Source Address to Stack Pointer
         JMP MEMCPL      ;Copy Bytes and Return
 
+;stkstr(n, &m) - Push String onto Stack
+;Args: Y,X = Address of Source Array
+STKSTR: JSR STRLEN      ;Get Length of String
+        BEQ .PSHSRC     ;If Length > 0
+        BMI .PSHSRC     ;  and < 128
+        INY             ;  Increment Length to
+        TYA             ;  include null terminator
+.PSHSRC LDY #0          ;Clear Y Index
+        JMP .STKPSH     ;Push Bytes onto Stack 
+
+;stktop(&m) - Copy Top Entry off Stack
+;Args: Y,X = Address of Source Array
+;Uses: STKBGN = Stack Start Address
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Underflow
+STKTOP: JSR STKPOP      ;Pop Top Entry Off Stack
+        BEQ .RETURN     ;If Underflow, Return 0
+        JMP .RESPTR     ;Else Restore Stack Pointer and Return
+
+;stkdup(&m) - Duplicate Top Entry on Stack
+;Uses: STKBGN = Stack Start Address
+;      STKEND = Stack End Address
+;Updates: STKPTR = Stack Pointer
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Overflow or Underflow
+STKDUP: JSR STKDRP      ;Deallocate Top Entry
+.STKDUP JSR .STKSRC     ;Set Source Pointer to Stack Pointer
+        JSR .RESPTR     ;Restore Stack Pointer
+        JMP .PSHSRC     ;Push Top Entry onto Stack
+
+;stkovr(&m) - Duplicate Second Entry on Stack
+;Uses: STKBGN = Stack Start Address
+;      STKEND = Stack End Address
+;Updates: STKPTR = Stack Pointer
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Overflow or Underflow
+STKOVR: JSR STKDRP      ;Deallocate Top Entry
+        JSR .STKDRP     ;Deallocate Second Entry
+        JMP .STKDUP     ;Restore Pointer and Duplicate
+
+;stkswp() - Swap Top Entry with Entry Below it
+;Uses: STKBGN = Stack Start Address
+;      STKEND = Stack End Address
+;Destroys: DSTPTR,TEMP0,TEMP0,TEMP1,TEMP2,TEMP3
+;Affects: C,N,Z
+;Returns: A,Y = Number of Bytes in Entry
+;           0 = Error: Stack Overflow or Underflow
+STKSWP: JSR STKOVR      ;Duplicate Second Entry
+        BEQ .RETURN     ;Exit if Error
+        JSR .STKDRP     ;Deallocate Duplicate
+        STA TEMP3       ;Save Size of Duplicate
+        JSR .SAVPTR     ;Save Pointer to Duplicate
+        JSR .STKDRP     ;Deallocate Top Entry
+        JSR .STKSRC     ;Set Source to Top Entry
+        STA DSTPTR      ;Save Top Entry Size
+        JSR .STKDRP     ;Deallocate Second Entry
+        LDA DSTPTR      ;Retrieve Top Entry Size
+        JSR .COPY       ;Copy Top Entry Down
+        JSR RESSRC      ;Set Duplicate as Source
+        LDA TEMP3       ;Get Duplicate Length
+.COPY   STA TEMP0       ;Save Number of Bytes
+        JSR .STKDST     ;Set Destination to Stack Pointer
+        LDY #0          ;Clear Index Register
+        JSR MEMCPL      ;Copy Bytes and Return
+        STA (DSTPTR),Y  ;Store Number of Bytes after Entry
+        SEC             ;Add Number of Bytes plus 1  
+        JSR .ADCPTR     ;to Stack Pointer
+        TYA             ;Return Number of Bytes
+        RTS
+
+        ENDSUBROUTINE

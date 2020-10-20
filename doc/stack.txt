@@ -1,141 +1,172 @@
 Sta Functions
 
-This module contains functions to access and manipulate a stack structure. 
-The entries on a stack are stored in contiguous bytes of memory.
+This module contains functions to access and manipulate a stack 
+of multi-byte entries stored in a contiguous section of memory.
 
-Each element of the stack can vary in size from 1 to 255 bytes. Both
-arrays and strings may be pushed onto and pulled off the stack.  
+Each entry of the stack consists of  1 to 255 bytes of data
+followed by a single byte containing the number of data bytes,
+allowing entries to be of different sizes. Entries may be
+arrays, strings, or structs.
 
 Usage: at the beginning of the program use the directives
 
   #include <stddef.h02>
   #include <memory.h02>
+  #include <string.h02>
   #include <stack.h02>
 
+The following application variables are defined:
+  
+  int stkbgn            Stack Begin: Address of the start of the stack.
+
+  int stkend            Stack End: Address of the end of the stack.
+
+  zeropage int stkptr   Stack Pointer: Current position in the stack.
+
+                        The variables stkbgn and stkend must be set 
+                        before calling any functions. A program can
+                        use multiple stacks by saving and restoring
+                        stkbgn, stkend, and stkptr.
+
 The following application functions are defined:
-
-  stkbgn(&b);           Stack Begin: Sets the beginning of the stack 
-                        to address b. 
-
-                        The beginning of a stack is the first byte 
-                        of memory in the stack space.
-
-                        Although stack space usually begins on a 256 
-                        byte boundary, this is not required.
-                      
-                        Note: Sets variables stkslo and stkshi.
-
-  stkend(&e);           Stack End: Sets the end of the stack to address
-                        e. The end of a stack is the byte after the last 
-                        byte of memory in the stack space.
-
-                        Although stack space usually ends on a 256 
-                        byte boundary, this is not required.
-
-                        Note: Sets variables stkelo and steshi.
 
   stkrst();             Stack Reset: Set stack pointer to stack begin 
                         address.
 
-                        This routine is called before populating a 
-                        stack with calls to the stkpsh function.
+                        The first time s stack is used, this routine 
+                        must be called after setting the variables 
+                        stkbgn and stkend and before calling any other 
+                        stack functions.
 
-  r = stkpsh(n ,&m);    Stack Push: Creates a new entry at the end of
-                        the stack consisting of n bytes of array m.
+                        This routine can also be called to deallocate
+                        all entries, effectively clearing the stack.
 
-                        If n is 0 or the new entry would overflow the 
-                        end of the stack space, no entry is created and 
-                        a value of 0 is returned. Otherwise, the number 
-                        of bytes in the new entry is returned.
+                        Note: Sets stkptr to stkbgn.
 
-                        Note: Sets dstlo and dsthi to stkslo and stkhi 
-                        prior to the copy, updates stkslo and stkshi, 
-                        then calls the memcpy function.
-
-  r = stkpop(&m);       Stack Pop: Copies the bytes from the last entry of
-                        the stack into array m and removes the entry from
-                        the stack.
-
-                        If the stack is empty, the value 0 is returned.
-                        Otherwise, the number of bytes in the popped entry
-                        is returned.
-
-                        Note: Sets dstlo and dsthi to the address of m, 
-                        updates stklo and stkhi to point to the beginning 
-                        of the last entry, sets srclo and srchi to stklo
-                        and stkhi, then calls the memcpy function.
-
-  r,m,l = stksiz();     Stack Size: Calculates and returns the current size
+  r,i = stksiz();       Stack Size: Calculates and returns the current size
                         of the stack along with a flag indicating whether
                         the stack is populated or empty.
                         
-                        The first byte returned will be 255 (True) if the 
+                        Returns a char, which will be 255 (True) if the 
                         stack contains at least one entry, or 0 (False) if
-                        the stack is empty. The second and third returned
-                        bytes are the size of the stack as a sixteen bit 
-                        number, most-significant and least-significant byte,
-                        respectively.
+                        the stack is empty, and int which is the size of
+                        the stack.
 
-                        Note: Subtracts the sixteen bit value contained in 
-                        stkslo and stkhi from the value in stklo and stkhi.
+                        Note: Subtracts stkbgn from stkptr.
+
+  r = stkpsh(n,m);      Stack Push: Creates a new entry at the end of
+                        the stack consisting of n bytes of array m.
+
+                        Returns zero if n is 0 or an overflow would
+                        occur. Otherwise, returns the the size of the
+                        new entry.
+
+                        Note: Sets srcptr to &m, dstptr to stkptr, 
+                        updates stkptr, then calls memcpy().
+
+  r = stkstr(s);        Stack String: Creates a new entry at the end of
+                        the stack consisting the characters in string 
+                        s, including the terminating ASCII null. This 
+                        ensures that when the entry is popped off the
+                        stack, the destination string will be properly
+                        terminated.
+
+                        Returns zero if s is empty or an overflow would
+                        occur. Otherwise, returns the the size of the
+                        new entry.
+
+                        Note: Calls strlen(), then calls stkpsh().
+
+  r = stkdup();         Stack Duplicate: Creates a new entry at the end 
+                        of the stack consisting of the bytes in the last 
+                        entry of the stack.
+
+                        Returns zero if the stack is empty or an overflow 
+                        would occur. Otherwise, returns the the size of 
+                        the new entry.
+
+                        Note: Sets dstptr to stkptr, sets srcptr to the 
+                        beginning of the last entry, updates stkptr, 
+                        then calls memcpy(). 
+
+  r = stkovr();         Stack Over: Creates a new entry at the end of
+                        the stack consisting of the bytes in the second 
+                        to last entry of the stack.
+
+                        Returns zero if the stack has less than two 
+                        entries or an overflow would occur. Otherwise, 
+                        returns the the size of the new entry.
+
+                        Note: Sets dstptr to the stkptr and srcptr to 
+                        the beginning of the second to last entry, 
+                        updates stkptr then calls the memcpy().
+
+  r = stkswp();         Stack Swap: Moves the last entry in the stack to
+                        the second to last position and the second to 
+                        last entry to the last position.
+
+                        Returns zero if the stack has less than two 
+                        entries or an overflow would occur. Otherwise, 
+                        returns the the size of the new last entry.
+
+                        Note: Saves stkptr, calls stkovr(), restores 
+                        stkptr, then calls memcpy() twice.
+
+  r = stktop(m);        Stack Top: Copies the bytes from the last entry 
+                        of the stack into array m and leaves the entry 
+                        on the stack.
+
+                        Returns zero if the stack is empty. Otherwise, 
+                        returns the the size of the new entry.
+
+                        Note: Saves stkptr, calls stkpop(), then restores
+                        stkptr.
+
+  r = stkpop(m);        Stack Pop: Copies the bytes from the last entry 
+                        of the stack into array m and deallocates the 
+                        entry from the stack.
+
+                        If the stack is empty, the value 0 is returned.
+                        Otherwise, the number of bytes in the popped 
+                        entry is returned.
+
+                        Note: Sets dstptr to &m, sets stkptr to the 
+                        beginning of the last entry, sets srcptr to 
+                        stkptr, then calls the memcpy().
+
+  r = stkdrp();         Stack Drop: Deallocates the last entry from the 
+                        stack.
+
+                        If the stack is empty, the value 0 is returned.
+                        Otherwise, the number of bytes in the dropped 
+                        entry is returned.
+
+                        Note: Sets dstptr to &m, sets stkptr to the 
+                        beginning of the last entry, sets srcptr to 
+                        stkptr, then calls the memcpy().
 
 The following utility functions are not normally used in applications:
 
-  *,m,l = stkptr();     Stack Pointer: Returns the address contained in
-                        the stack pointer as the most significant byte
-                        and the least significant byte.
-
-                        Note: Reads variables stklo and stkhi.
-
-  stkset(&d);           Stack Set: Sets stack pointer to address d.
-
-                        Note: Sets variables stklo and stshi.
-
-  stkadd(b);            Stack Add: Increases the stack pointer by b.
-
-                        Note: Updates variables stklo and stshi.
-
-  stksub(b);            Stack Subtract: Decreases the stack pointer by b.
-
-                        Note: Updates variables stslo and stshi.
-
-  stkinc(b);            Stack Increment: Increases the stack pointer by 1.
-
-                        Note: Updates variables stklo and stshi.
-
-  stkdec(b);            Stack Decrement: Secreases the stack pointer by 1.
-
-                        Note: Updates variables stslo and stshi.
-
-  stkssp();             Save Stack Pointer: Copies contents of the stack 
-                        pointer to variables temp1 and temp2. 
-
-                        Note: Calls stkptr() then savrxy(). 
-
-  stkrsp();             Restore Stack Pointer: Copies contents of variables 
-                        temp1 and temp2 to the stack pointer.
-
-                        Note: Calls resrxy() then stkset(). 
-
 Note: This module expects the following functions to be defined
 
-  memcpl                Copy memory (alternate entry point) 
+  memcpy                Copy memory
   ressrc                Restore source pointer
   resrxy                Restore X and Y registers
   savrxy                Save X and Y registers
   setdst                Set destination pointer
-  setsrc                Set source pointer and initialize index
+  setsrc                Set source pointer
+  strlen                Get string Length
 
-along with the zero page variable pairs
+along with the zero page integer variables
   
-  srclo, srchi          Source String Pointer 
-  dstlo, dsthi          Destination String Pointer
-  stklo, stkhi          stack Pointer
+  srcptr                Source String Pointer 
+  dstptr                Destination String Pointer
+  stkptr                stack Pointer
 
-the static variables
+the static integer variables
 
-  stkslo, stkshi        Stack Start Address
-  stkelo, stkehi        Stack End Address
+  stkbgn                Stack Start Address
+  stkend                Stack End Address
 
 and the transient variables 
 

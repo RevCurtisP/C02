@@ -1,207 +1,132 @@
 /***********************************************
- * TESTSTK - Test Stack Manipulation Functions *
+ * STKTEST - Test Stack Manipulation Functions *
  * Assumes free RAM from $7FFF to $807E        *
  ***********************************************/
 
 //use -h option on command line when compiling
-
 #include <stddef.h02>
 #include <stdlib.h02>
+#include <intlib.h02>
 #include <stdio.h02>
 #include <stdiox.h02>
 #include <string.h02>
 #include <memory.h02>
 #include <stack.h02>
 
-char c,f,g,i;
-char aa,xx,yy;
-char zz,lo,hi;
+char c,f,g,i,n;
+char aa,xx,yy,zz;
+int addr,adr,cptr,csiz,nn,optr,ptr,siz,yx;
 const char r={6,7,8,9};
-const char s="Test String";
+const char s="TEST STRING";
 char t[255];
+char stackb[128], stacke;
+
+
+void pass() {putln(" PASS");}
+void fail() {putln(" FAIL"); goto exit;}
+void psorfl(aa) {if (aa) pass(); else fail();}
+void florps(aa) {if (aa) fail(); else pass();}
+void equals(aa,zz) {A = (aa == zz) ? #TRUE : #FALSE;}
+void prtadr(adr) {puts("$"); putwrd(adr);}
+void prtstk() {aa,yy,xx=stksiz(); for (zz=0; zz<xx; zz++) {if (zz) putc(','); putdec(stackb[zz]);}}
+void errstk() {newlin(); puts("STACK={"); prtstk(); putc(')'); fail();}
+void addsub(zz,yx) {if (zz:-) subayx(-zz+1,yx); else addayx(zz+1,yx);}
+void updptr(aa) {if (aa) cptr=addsub(aa,cptr); else cptr=stkptr;}
+void updsiz(aa) {if (aa) csiz=addsub(aa,csiz); else csiz=0;}
+void cmpadr(adr) {f = equals(<addr,<adr); g = equals(>addr,>adr); return f & g;}
+void chkadr(yx) {prtadr(addr); psorfl(cmpadr(yx));}
+void chkint(yx) {putint(addr); psorfl(cmpadr(yx));}
+void chkmem(aa,yx) {setdst(optr); florps(memcmp(aa, yx));}
+void chkmet(aa,yx) {setdst(t); florps(memcmp(aa, yx));}
+void chkptr(aa,ptr) {addr=stkptr; puts("  STKPTR="); chkadr(ptr); optr=stkptr;}
+void chkres(aa,zz) {printf(zz,"=%d");if (aa<>zz) fail();}
+void chksiz(siz) {puts("  STKSIZ()="); addr=stksiz(); chkint(siz);}
+void chkstr(yx) {setdst(optr); florps(strcmp(yx));}
+void chkstt(yx) {setdst(t); florps(strcmp(yx));}
+void pause() {if (anykey()==#ESCKEY) goto exit;}
 
 main:
 
-for (i=0;i<$20;i++) srclo[i]=0; //Initialize Pointers
+stkbgn = &stackb; puts("STKBGN="); prtadr(stkbgn); newlin();
+stkend = &stacke; puts("STKEND="); prtadr(stkend); newlin();
 
-puts("Setting Stack Start Address\t");
-puts("stkbgn($7FFF)\t");
-stkbgn(&$7FFF); lo=stkslo; hi=stkshi;
-setdst("stks"); cklohi(&$7FFF);
+putln("STKRST()"); 
+stkrst(); 
+updptr(0); chkptr(stkbgn); updsiz(0); chksiz(csiz);
 
-puts("Setting Stack End Address\t");
-puts("stkend($807E)\t");
-stkend(&$807E); lo=stkelo; hi=stkehi;
-setdst("stke"); cklohi(&$807E);
+//Push Array - Stack=R
+puts("STKPSH(@R,R)");
+n=stkpsh(@r,r); chkres(@r,n); chkmem(@r, &r);
+updptr(n); chkptr(cptr); updsiz(n); chksiz(csiz); 
 
-puts("Setting Stack Pointer Address\t");
-puts("stkset($7765)\t");
-stkset(&$7765); lo=stklo; hi=stkhi; 
-setdst("stk"); cklohi(0,&$7765);
-chksiz(#FALSE, &$F766);
+//Duplicate Top - Stack=R,R
+puts("STKDUP()");
+n=stkdup(); chkres(@r,n); chkmem(@r, &r);
+updptr(n); chkptr(cptr); updsiz(n); chksiz(csiz); 
 
-puts("Resetting Stack Pointer\t\t");
-puts("stkrst()\t");
-stkrst(); lo=stklo; hi=stkhi;
-setdst("stk"); cklohi(0,&$7FFF);
-chksiz(#FALSE, &0);
+//Push String - Stack=S,R,R
+puts("STKSTR(S)");
+n=stkstr(s); chkres(@s+1,n); chkstr(s);
+updptr(n); chkptr(cptr); updsiz(n); chksiz(csiz); 
 
-puts("Getting Stack Pointer Address\t");
-puts("stkptr()\t");
-aa, hi, lo = stkptr();
-setdst(""); cklohi(0,&$7FFF);
+pause();
 
-puts("Setting Source to Stack Pointer\t");
-puts("stksrc()\t");
-stksrc(); lo=srclo; hi=srchi; 
-setdst("src"); cklohi(0,&$7FFF);
+//Copy Second to Top - Stack=R,S,R,R
+puts("STKOVR()");
+n=stkovr(); chkres(@r,n); chkmem(@r, &r);
+updptr(n); chkptr(cptr); updsiz(n); chksiz(csiz); 
 
-puts("Setting Dest. to Stack Pointer\t");
-puts("stkdst()\t");
-stkdst(); lo=dstlo; hi=dsthi;
-setdst("src"); cklohi(0,&$7FFF);
+//Swap Top and Second - Stack=S,R,R,R
+puts("STKSWP()");
+n=stkswp(s); chkres(@s+1,n); chkstr(s);
+chkptr(cptr); chksiz(csiz); 
 
-puts("Incrementing Stack Pointer\t");
-puts("stkinc()\t");
-stkinc(); lo=stklo; hi=stkhi;
-setdst("stk"); cklohi(0,&$8000);
-chksiz(#TRUE, &1);
+//Read String - Stack=S,R,R,R
+puts("STKTOP(T)"); 
+n=stktop(t); chkres(@s+1,n); chkstt(s);
+chkptr(cptr); chksiz(csiz); 
 
-puts("Decrementing Stack Pointer\t");
-puts("stkdec()\t");
-stkdec(); lo=stklo; hi=stkhi;
-setdst("stk"); cklohi(0,&$7FFF);
-chksiz(#FALSE, &0);
+//Pop String - Stack=R,R,R
+puts("STKPOP(T)"); 
+n=stkpop(&t); chkres(@s+1,n); chkstt(s);
+updptr(-n); chkptr(cptr); updsiz(-n); chksiz(csiz); 
 
-c = anykey(); if (c == #esckey) goto exit;
+pause();
 
-puts("Pushing Array onto Stack\t");
-puts("stkpsh(@r,$r)\t");
-aa,hi,lo=stkptr(); //Save Stack Pointer
-f=stkpsh(@r,&r); printf(f,"bytes=%d:");
-setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
-psorfl(f & g); chksiz(#TRUE, &5); chkptr(&$8004); 
+//Drop Copy - Stack=R,R
+puts("STKDRP()");
+n=stkdrp(); chkres(@r,n); pass();
+updptr(-n); chkptr(cptr); updsiz(-n); chksiz(csiz); 
 
-puts("Duplicating Top of Stack\t");
-puts("stkdup()\t");
-aa,hi,lo=stkptr(); //Save Stack Pointer
-f=stkdup(); printf(f,"bytes=%d:");
-setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
-psorfl(f & g); chksiz(#TRUE, &10); chkptr(&$8009); 
+//Drop Duplicate - Stack=R
+puts("STKDRP()");
+n=stkdrp(); chkres(@r,n); pass();
+updptr(-n); chkptr(cptr); updsiz(-n); chksiz(csiz); 
 
-puts("Pushing String onto Stack\t");
-puts("stkstr(&s)\t");
-aa,hi,lo=stkptr(); //Save Stack Pointer
-f=stkstr(&s); printf(f,"bytes=%d:");
-setdst(?,hi,lo); g=(strcmp(&s)==0) ? #TRUE : #FALSE;
-psorfl(f & g); chksiz(#TRUE, &23); chkptr(&$8016);
+//Pop Array - Stack Empty
+puts("STKPOP(&T)"); 
+n=stkpop(&t); chkres(@r,n); chkmet(@r,t);
+updptr(-n); chkptr(cptr); updsiz(-n); chksiz(csiz); 
 
-puts("Duplicating Second Stack Entry\t");
-puts("stkovr()\t");
-aa,hi,lo=stkptr(); //Save Stack Pointer
-f=stkovr(); printf(f,"bytes=%d:");
-setdst(?,hi,lo); g=(memcmp(@r, &r)==0) ? #TRUE : #FALSE;
-psorfl(f & g); chksiz(#TRUE, &28); chkptr(&$801B);
+pause();
 
-c = anykey(); if (c == #esckey) goto exit;
+//Pop from Empty Stack
+puts("STKPOP(&T)");
+n=stkpop(&t); chkres(0,n); pass();
+chkptr(cptr); chksiz(csiz); 
 
-puts("Dropping Duplicate off Stack\t");
-puts("stkdrp()\t");
-f=stkdrp(); printf(f,"bytes=%d:");
-g=(f==4) ? #TRUE : #FALSE;
-psorfl(f & g); chksiz(#TRUE, &23); chkptr(&$8016);
+//Overflow Stack - Stack Empty
+puts("STKPSH(255,&T)");
+n=stkpsh(255,&t); chkres(0,n); pass();
+chkptr(cptr); chksiz(csiz); 
 
-puts("Copying String from Stack\t");
-puts("stktop(&t)\t"); 
-f=stktop(&t); setdst(&t); printf("\"%s\":");
-g=(strcmp(&s)==0) ? #TRUE : #FALSE;
-psorfl(f & g);
-chkptr(&$8016);
-
-puts("Popping String off Stack\t");
-puts("stkpop(&t)\t"); 
-f=stkpop(&t); setdst(&t); printf("\"%s\":");
-g=(strcmp(&s)==0) ? #TRUE : #FALSE;
-psorfl(f & g);
-chkptr(&$8009);
-
-puts("Dropping Duplicate off Stack\t");
-puts("stkdrp()\t");
-f=stkdrp(); printf(f,"bytes=%d:");
-g=(f==4) ? #TRUE : #FALSE;
-psorfl(f & g);
-chkptr(&$8004);
-
-puts("Popping Array off Stack\t\t");
-puts("stkpop(&t)\t"); 
-f=stkpop(&t); prtary(f); puts(": ");
-g=(memcmp(f,&r)==0) ? #TRUE : #FALSE;
-psorfl(f & g);
-chkptr(&$7FFF);
-
-puts("Popping off Empty Stack\t\t");
-puts("stkpop(&t)\t");
-f=stkpop(&t); printf(f,"bytes=%d:");
-if (f) fail(); else pass();
-chkptr(&$7FFF);
-
-puts("Overflowing Stack\t\t");
-puts("stkpsh(255,&t)\t");
-f=stkpsh(255,&t); printf(f,"bytes=%d:");
-if (f) fail(); else pass();
-chkptr(&$7FFF);
-
-putln("Tests Complete");
+putln("TESTS COMPLETE");
 
 goto exit;
 
-void chkptr(aa,yy,xx) {
-  puts("\tChecking Stack Pointer\t\t\t");
-  puts("address=$"); prbyte(stkhi); prbyte(stklo); putc(':');
-  xx = (stklo == xx) ? #TRUE : #FALSE;
-  yy = (stkhi == yy) ? #TRUE : #FALSE;
-  psorfl(xx & yy);
-}
 
-void prtary(aa) {
-  putc('{'); 
-  for (i=0;i<aa;i++) {
-    if (i) putc(',');
-    putdec(t[i]);
-  }
-  putc('}');
-}
-
-void cklohi(aa,yy,xx) {
-  putdst(); puts("lo=$"); prbyte(lo); putc(' ');
-  putdst(); puts("hi=$"); prbyte(hi); putc(':');
-  xx = (lo == xx) ? #TRUE : #FALSE;
-  yy = (hi == yy) ? #TRUE : #FALSE;
-  psorfl(xx & yy);
-}
-
-void chksiz(aa,yy,xx) {
-  puts("\tChecking Stack Size\t");
-  puts("stksiz()\t");
-  zz, dsthi, dstlo = stksiz();
-  printf(zz, "Sts=$%x Size=$%w:");
-  if (zz == aa and dsthi == yy and dstlo == xx ) pass(); 
-  else {fail(); goto exit;}
-}
-
-void psorfl(aa) {if (aa) pass(); else {fail(); goto exit;}}
-void pass() {putln(" Pass");}
-void fail() {putln(" Fail");}
-
-puts("Swapping Top and Second Entry\t");
-puts("stkswp()\t");
-f=stkswp(); printf(f,"bytes=%d:");
-g=(f==12) ? #TRUE : #FALSE;
-psorfl(f & g);
-chkptr(&$801B);
-
-puts("Dropping Swapped Entry off Stack\t");
-puts("stkdrp()\t");
+puts("Dropping Swapped Entry off Stack");
+puts("stkdrp()");
 f=stkdrp(); printf(f,"bytes=%d:");
 g=(f==4) ? #TRUE : #FALSE;
 psorfl(f & g);
