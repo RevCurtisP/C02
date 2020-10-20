@@ -248,11 +248,13 @@ static void usage(int status)
   fprintf(stream, "       %s [option ...] -B [image ...]\n", program);
   fprintf(stream, "  -B                -- minimal Acorn 'BBC Model B' compatibility\n");
   fprintf(stream, "  -d addr last      -- disassemble memory between addr and last\n");
+  fprintf(stream, "  -C addr           -- emulate _putch at addr\n");
   fprintf(stream, "  -D                -- print debug messages\n");
   fprintf(stream, "  -F addr           -- emulate fileio at addr\n");
   fprintf(stream, "  -G addr           -- emulate getchar(3) at addr\n");
   fprintf(stream, "  -h                -- help (print this message)\n");
   fprintf(stream, "  -I addr           -- set IRQ vector\n");
+  fprintf(stream, "  -K addr           -- emulate _getch at addr\n");
   fprintf(stream, "  -l addr file      -- load file at addr\n");
   fprintf(stream, "  -m addr last      -- dump memory between addr and last\n");
   fprintf(stream, "  -M addr           -- emulate memory-mapped stdio at addr\n");
@@ -421,6 +423,32 @@ static int doStrap(int argc, char **argv, M6502 *mpu)
   return 1;
 }
 
+
+/* Emulate _putch() at addr */
+static int cTrap(M6502 *mpu, word addr, byte data)	{ putcon(mpu, addr, data);  rts; }
+
+static int doCtrap(int argc, char **argv, M6502 *mpu)
+{
+  unsigned addr;
+  if (argc < 2) usage(1);
+  addr= htol(argv[1]);
+  M6502_setCallback(mpu, call, addr, cTrap);
+  return 1;
+}
+
+/* Emulate _getch() at addr */
+static int kTrap(M6502 *mpu, word addr, byte data)	{ getkey(mpu, addr, data);  rts; }
+
+static int doKtrap(int argc, char **argv, M6502 *mpu)
+{
+  unsigned addr;
+  if (argc < 2) usage(1);
+  addr= htol(argv[1]);
+  M6502_setCallback(mpu, call, addr, kTrap);
+  return 1;
+}
+
+
 /* Emulate getchar(3) at addr */
 static int gTrap(M6502 *mpu, word addr, byte data)	{ mpu->registers->a= getchar();  rts; }
 
@@ -533,12 +561,14 @@ int main(int argc, char **argv)
 	int n= 0;
 	if      (!strcmp(*argv, "-B"))  bTraps= 1;
 	else if (!strcmp(*argv, "-d"))	n= doDisassemble(argc, argv, mpu);
+	else if (!strcmp(*argv, "-C"))	n= doCtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-D"))	n= doDebug(argc, argv, mpu);
 	else if (!strcmp(*argv, "-F"))	n= doFtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-G"))	n= doGtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-h"))	n= doHelp(argc, argv, mpu);
 	else if (!strcmp(*argv, "-i"))	n= doLoadInterpreter(argc, argv, mpu);
 	else if (!strcmp(*argv, "-I"))	n= doIRQ(argc, argv, mpu);
+	else if (!strcmp(*argv, "-K"))	n= doKtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-l"))	n= doLoad(argc, argv, mpu);
 	else if (!strcmp(*argv, "-m"))	n= doDump(argc, argv, mpu);
 	else if (!strcmp(*argv, "-M"))	n= doMtrap(argc, argv, mpu);

@@ -196,10 +196,11 @@ static int uniocb(void) {
 }
 
 /* Validate Channel */
-static int valchan(int chan, char valtype) {
+static int valchan(int chan, char valtype, FILE *fp) {
   int errnum = 0; //Error (none)
   if (debug) fprintf(stderr, "validating channel %d\n", chan);
-  if (chan > MAXIOB) errnum = 44; //Channel number out of range
+  if (chan == 0) {if (fp) iocbs[chan].fp = fp; else errnum = 9; }
+  else if (chan > MAXIOB) errnum = 44; //Channel number out of range
   else if (iocbs[chan].opened == 0) errnum = 9; //Bad file descriptor
   else if (iocbs[chan].type != valtype) {
     if (debug) fprintf(stderr, "invalid channel type '%c'\n", iocbs[chan].type);
@@ -326,7 +327,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       chan = y;
       m = p & 1; t = (m) ? TDIR : TFILE;
       if (debug) fprintf(stderr, "closing %s channel %d\n", fdesc[m], chan);
-      y = valchan(chan, t); if (y) break;
+      y = valchan(chan, t, NULL); if (y) break;
       if (m) e = closedir(iocbs[chan].dp); else e = fclose(iocbs[chan].fp);
       if (e) y = seterror(chan, errno); else initiocb(chan);
       if (debug) fprintf(stderr, "channel closed\n");
@@ -334,7 +335,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
     case 'D': //Read Directory - Y = Channel, CC = Entry, CS = Header
       chan = y;
       x = 0; //Return Value (Read Failed)
-      y = valchan(chan, TDIR); if (y) break;
+      y = valchan(chan, TDIR, NULL); if (y) break;
       if (p & 1) {
         if (debug) fprintf(stderr, "retrieving directory name\n");
         x = writestr(mpu, iocbs[chan].name, STRLEN);
@@ -347,19 +348,19 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       break;
     case 'E': //EOF - Y = channel
       chan = y;
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, NULL); if (y) break;
       y = feof(iocbs[chan].fp);
       break;
     case 'F': //Flush File - Y = Channel
       chan = y;
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, NULL); if (y) break;
       x = fflush(iocbs[chan].fp);
       if (x) y = seterror(chan, errno);
       break;
     case 'G': //Get Character - Y = channel
       chan = y;
       x = 0; //Character read (none)
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, stdin); if (y) break;
       c = fgetc(iocbs[chan].fp);
       if (feof(iocbs[chan].fp)) {y = EOF; break;}
       if (c == EOF) {y = seterror(chan, errno); break;}
@@ -368,7 +369,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
     case 'H': //Get String - Y = channel
       chan = y;
       x = 0; //Number of Characters read
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, stdin); if (y) break;
       char *s = fgets(filebuff, STRLEN, iocbs[chan].fp);
       if (s == NULL) {y = seterror(chan, errno); break;}
       if (debug) fprintf(stderr, "read string '%s'\n", filebuff);
@@ -380,7 +381,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       break;
     case 'J': //Get/Put Word - Y = Channel, Carry Set = Put, Clear = Get
       chan = y;
-      a = valchan(chan, TFILE); if (y) break;
+      a = valchan(chan, TFILE, NULL); if (y) break;
       if (p & 1) {
         y = fileaddr >> 8; x = fileaddr & 0xFF;
         e = fputc(x, iocbs[chan].fp);
@@ -463,7 +464,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       c = x;
       if (debug) fprintf(stderr, "writing '%c' to channel %d\n", c, chan);
       x = 0xFF; //Character written (Error)
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, stdout); if (y) break;
       e = fputc(c, iocbs[chan].fp);
       if (e == EOF) {y = seterror(chan, errno); break;}
       x = e & 0xFF;
@@ -471,7 +472,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
     case 'Q': //Put String - Y = channel, Carry Set = putline
       chan = y;
       x = 0; //Number of characters written
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, stdout); if (y) break;
       for (i = 0; i<128; i++) {
         c = mpu->memory[fileaddr+i];
         if (c) filebuff[i] = c;
@@ -488,7 +489,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       m = p & 1; //Set Mode: 0 = fread, 1 = fgetr
       chan = y;
       if (m) {
-        a = valchan(chan, TFILE); if (a) break;
+        a = valchan(chan, TFILE, NULL); if (a) break;
         if (debug) fprintf(stderr, "selecting record #%d\n", fileindx);
         n = iocbs[chan].recsize;
         i = fileindx * n;
@@ -496,7 +497,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
         e = fseek(iocbs[chan].fp, i, SEEK_SET);
         if (e) {a = seterror(chan, errno); break;}
       } else {
-        y = valchan(chan, TFILE); if (y) break;
+        y = valchan(chan, TFILE, NULL); if (y) break;
         n = x;
       }
       if (debug) fprintf(stderr, "reading %d bytes\n", n);
@@ -552,7 +553,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       m = p & 1; //Set Mode: 0 = fread, 1 = fgetr
       chan = y;
       if (m) {
-        a = valchan(chan, TFILE); if (a) break;
+        a = valchan(chan, TFILE, NULL); if (a) break;
         if (debug) fprintf(stderr, "selecting record #%d\n", fileindx);
         n = iocbs[chan].recsize;
         i = fileindx * n;
@@ -562,7 +563,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
         i = ftell(iocbs[chan].fp);
         if (debug) fprintf(stderr, "position set to %d\n", i);
       } else {
-        y = valchan(chan, TFILE); if (y) break;
+        y = valchan(chan, TFILE, NULL); if (y) break;
         n = x;
       }
       for (i = 0; i<n; i++) 
@@ -598,7 +599,7 @@ extern int filecmd(M6502 *mpu, word addr, byte data)	{
       break;
     case 'Z': //File Position: Y=chan, fileaddr = position, Carry = seek/tell
       chan = y;
-      y = valchan(chan, TFILE); if (y) break;
+      y = valchan(chan, TFILE, NULL); if (y) break;
       if (p & 1) {
         e = ftell(iocbs[chan].fp);
         if (e < 0) {a = seterror(chan, errno);}
@@ -661,4 +662,35 @@ extern int syscmd(M6502 *mpu, word addr, byte data)	{
   mpu->registers->a = a;
   mpu->registers->x = x;
   mpu->registers->y = y;
+}
+
+/* Read Keys Directly from Console, Eliminating getc() buffering */
+extern int getkey(M6502 *mpu, word addr, byte data)	{ 
+  int a = 0, y=0, x=0; //Initialize Key Press to None
+  int p = mpu->registers->p;
+  if (_kbhit()) {
+    y = _getch();
+    if (y == 0 || y == 0xE0) {      
+      x = _getch(); //Get Extended Code
+      a = x | 0x80; //Convert to High ASCII
+    } else { 
+      a = y;
+    }
+  }
+  if (a) p = p & 0xFD; else p = p | 0x02; //Set Z Flag
+  if (a > 127) p = p | 0x80; else p = p & 0x7F; //Set N Flag
+  mpu->registers->a = a;
+  mpu->registers->x = x;
+  mpu->registers->y = y;
+  mpu->registers->p = p;
+}
+
+/* Write Character Directly to Console, Eliminating putc() buffering */
+extern int putcon(M6502 *mpu, word addr, byte data)	{ 
+  byte a = mpu->registers->a;
+  switch (a) {
+    case 0xD6: a = _cputs("\e[2J"); break;
+    default: a = _putch(a);
+  }
+  mpu->registers->a = a;
 }

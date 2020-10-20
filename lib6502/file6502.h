@@ -96,3 +96,18 @@ extern int filecmd(M6502 *mpu, word addr, byte data);
  *   SETTM    Set Date/Time Time (Carry Set   Y,X = tm Address    Y=Error                     *           *
  **********************************************************************************************/
 extern int syscmd(M6502 *mpu, word addr, byte data);
+
+/**********************************************************************************************
+ * Read Key Directly from Console                                                             *
+ * Bypasses getc() from stdin, eliminating input buffering                                  *
+ * Returns ASCII key value in A, extended Key Code in Y and X                                 *
+ *   Cursor Control Keys produce an ASCII value with the high bit set                         *
+ **********************************************************************************************/
+extern int getkey(M6502 *mpu, word addr, byte data);
+
+/**********************************************************************************************
+ * Write Character Directly to Console                                                        *
+ * Bypasses putc() from stdout, eliminating output buffering                                  *
+ * Character Code is passed in A                                                              *
+ **********************************************************************************************/
+extern int putcon(M6502 *mpu, word addr, byte data);
