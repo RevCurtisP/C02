@@ -44,6 +44,8 @@ void init(void) {
   rambas = 0;     //RAM Base Address
   wrtbas = 0;     //Write Base Address
   zpaddr = 0;     //Current Zero-Page Address
+  zpgbgn = 0;     //Start of Free Zero-Page
+  zpgend = 0xFF;  //End of Free Zero-Page
   invasc = FALSE; //Invert ASCII Flag
   mskasc = FALSE; //Set High Bit Flag
   fcase = FALSE;  //First Case Statement Flag

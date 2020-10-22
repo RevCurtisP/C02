@@ -219,12 +219,12 @@ void prsadr(int adract) {
 void prsstr(int adract, int alwstr) {
   if (!alwstr) ERROR("Illegal String Reference", 0, EXIT_FAILURE)
   DEBUG("expr.prsstr: Parsing anonymous string\n", 0)
-  newlbl(vrname);         //Generate Variable Name
-  value[0] = 0;           //Use Variable Size 0
-  setvar(MTNONE, VTCHAR); //Set Variable Name, Type, and Size
-  prsdts();               //Parse Data String
-  setdat();               //Set Variable Data
-  varcnt++;               //Increment Variable Counter
+  newlbl(vrname);          //Generate Variable Name
+  value[0] = 0;            //Use Variable Size 0
+  setvar(MTCONST, VTCHAR); //Set Variable Name, Type, and Size
+  prsdts();                //Parse Data String
+  setdat();                //Set Variable Data
+  varcnt++;                //Increment Variable Counter
   if (adract) prcadr(adract, vrname); //Compile Address Reference
   else strcpy(word, vrname); //Save for Calling Routine
 }

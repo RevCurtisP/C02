@@ -129,8 +129,12 @@ void pwrtbs(void) {
 
 /* Parse Zeropage Subdirective */
 void pzropg(void) {
-  zpaddr = prsnum(0xFF); //Set Zero Page Address to Literal
-  DEBUG("Set zero page address to %d\n", zpaddr)
+  zpgbgn = prsnum(0xFF); //Set Zero Page Address to Literal
+  zpgend = prsnum(0xFF); //Set Zero Page Address to Literal
+  zpaddr = zpgbgn;
+  DEBUG("Set free zero page to %d ", zpgbgn)
+  DETAIL("through %d ", zpgend)
+  DETAIL("and zero page address to %d\n", zpaddr)
 }
 
 /* Process Vartable Subdirective */

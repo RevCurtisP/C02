@@ -272,6 +272,8 @@ void addvar(int m, int t) {
   if (t == VTVOID) ERROR("Illegal Variable Type\n", 0, EXIT_FAILURE)
   if (m & MTZP) {
     if (alcvar) {
+	  int zpgmax = (t == VTINT) ? zpgend -1 : zpgend;
+	  if (zpaddr > zpgmax) ERROR("Free Zero Page Space Exceeded\n", 0, EXIT_FAILURE)
       setlbl(vrname);
       sprintf(word, "$%hhX", zpaddr++);
 	  if (t == VTINT) zpaddr++; //int uses two bytes

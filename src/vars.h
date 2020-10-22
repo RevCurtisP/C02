@@ -75,6 +75,8 @@ int symdef(char *name);         //Is Variable defined (TRUE or FALSE)
 int rambas;						//RAM Base Address (0=None)
 int wrtbas;						//Write Base Address (0=None)
 int zpaddr;                     //Current Zero-Page Address
+int zpgbgn;                     //Start of Free Zero-Page
+int zpgend;				        //End of Free Zero-Page
 char wrtofs[6];				    //Write Address Offset
 
 void addvar(int m, int t);           //Parse and Compile Variable Declaration
