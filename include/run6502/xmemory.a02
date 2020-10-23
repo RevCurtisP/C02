@@ -40,7 +40,13 @@ XGETAD: CLC             ;Set Mode to GET
         JSR  XMCMD      ;Execute Command and Return
         BCC .SETADR     ;Set Shadow Address and Return
 
-;xsetad() - Set Logical Extended Memory Address
+
+;xsetpg(xbank,xpage) - Set Extended Bank and Page
+;Args: A = Logical Bank ($00-$0F)
+;      Y = Logical Page ($00$FF)
+XSETPG  LDX #0          ;Clear Address LSB and Execute XSETAD
+
+;xsetad(xbank,xaddr) - Set Logical Extended Memory Address
 ;  For run6502, this is the same as the Physical Address
 ;Args: A = Logical Bank ($00-$0F)
 ;      YX = Logical Address ($0000-$FFFF)
@@ -155,7 +161,7 @@ XREAD:  CLC             ;Set Mode to GET
 ;Setup: XSETAD - Set Extended Memory Start Address
 ;Requires: SRCPTR = Local Memory Start Address
 ;Sets: TEMP2,TEMP1 = Local Memory Start Address
-;Affects: A,X,Y
+;Returns: AYX = New Extended Memory Address
 XSAVE:  SEC             ;Set Mode to SET
         JSR SAVRXY      ;Save Byte Count
         JSR GETSRC      ;Get Destination Address
@@ -176,7 +182,7 @@ XLOAD:  CLC             ;Set Mode to GET
 ;xchng(size) - Exchange with Extended Memory
 ;Args: YX = Number of Bytes to Swap
 ;Requires: DSTPTR = Local Memory Start Address
-;Affects: A,X,Y
+;Returns: AYX = New Extended Memory Address
 XCHNG:  JSR SAVRXY      ;Save Byte Count
         JSR GETDST      ;Get Destination Address
         JSR .SYSADR     ;Set System Address
@@ -184,27 +190,23 @@ XCHNG:  JSR SAVRXY      ;Save Byte Count
 .XSWAP  LDA #'X'        ;Set Command to SWPMBLK
         BNE .XCMDSA     ;Execute, Set Shadow Address, and Return  
 
-;xwrtpg(xbank, xpage, mpage) - Write Extended Memory Page
-XWRTP:  SEC             ;Set Mode to SET
-        BCS .XPAGE      ;and Execute Move Page
+;xwpage(count, page) - Write Extended Memory Pages
+;Args: A = Number of Pages
+;      Y = Local Memory Starting Page
+;Returns: AYX = New Extended Memory Address
+XWPAGE:  RTS
 
-;xrdpg(xbank, xpage, mpage) - Read Extended Memory Page
-XRDP:   CLC             ;Set Mode to GET
-.XPAGE  JSR .XSPAGE     ;Set System and Extended Address
-        BNE .XMBLK      ;Execute MBLCK Command and Return
+;xrpage(count, page) - Read Extended Memory Pages
+;Args: A = Number of Pages
+;      Y = Local Memory Starting Page
+;Returns: AYX = New Extended Memory Address
+XRPAGE:   RTS
 
-;Set System Page and Extended Bank and Page
-.XSPAGE STX TEMP0       ;Save System Memory Page
-        LDX #0          
-        JSR XSETAD      ;Set Extended Memory Bank and Page
-        LDY TEMP0       ;Set System Memory Address
-        JSR .SYSADR     ;to System Memory Page
-        LDY #1          ;Set Byte Count to 256
-        RTS
-
-;xswppg(xbank, xpage, mpage) - Swap with Extended Memory Page
-XSWPP:  JSR .XSPAGE     ;Set System and Extended Address
-        BNE .XSWAP      ;Execute SWPMBLK Command and Return
+;xspage(count, page) - Swap Extended Memory Pages
+;Args: A = Number of Pages
+;      Y = Local Memory Starting Page
+;Returns: AYX = New Extended Memory Address
+XSPAGE:  RTS
 
 ; The run6502 Extended Memory Command Processor simulates
 ; register based device that uses DMA for block copies

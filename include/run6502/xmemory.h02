@@ -57,11 +57,10 @@ void xputl();
  *           int addr - Extended Address */
 void xread();
 
-/* Read Extended Memory Page        *
- * Args: char xbank - Extended Bank *
- *       char xpage - Extended Page *
- *       char mpage - Memory Page   */
-void xrdp();
+/* Read Extended Memory Pages      *
+ * Args: char n - Number of Pages  *
+         char p - Local Start Page */
+void xrpage();
 
 /* Save to Extended Memory               *
  * Setup: setsrc(maddr)                  *
@@ -75,6 +74,16 @@ void xsave();
  *        int xaddr - Extended Address */
 void xsetad();
 
+/* Set Extended Memory Page         *
+ * Args: char xbank - Extended Bank *
+ *        int xpage - Extended Page */
+void xsetpg();
+
+/* Swap Extended Memory Pages      *
+ * Args: char n - Number of Pages  *
+         char p - Local Start Page */
+void xspage();
+
 /* Swap Bytes with Extended Memory       *
  * Args: char n - Number of Bytes        *       
  *       int maddr - Destination Address *
@@ -82,11 +91,10 @@ void xsetad();
  *           int addr - Extended Address */
 void xswap();
 
-/* Swap Extended Memory Page        *
- * Args: char xbank - Extended Bank *
- *       char xpage - Extended Page *
- *       char mpage - Memory Page   */
-void xswpp();
+/* Write Extended Memory Pages     *
+ * Args: char n - Number of Pages  *
+         char p - Local Start Page */
+void xwpage();
 
 /* Write Bytes to Extended Memory        *
  * Args: char n - Number of Bytes        *       
@@ -94,9 +102,3 @@ void xswpp();
  * Returns: char bank - Extended Bank    *
  *           int addr - Extended Address */
 void xwrite();
-
-/* Write Extended Memory Page       *
- * Args: char xbank - Extended Bank *
- *       char xpage - Extended Page *
- *       char mpage - Memory Page   */
-void xwrtp();
