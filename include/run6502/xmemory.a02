@@ -1,0 +1,230 @@
+;Extended Memory Assembly Language Routines for run6502 Emulator
+;Requires locations
+;and routines xmcmd (run6502.a02)
+
+        SUBROUTINE XMEMORY
+
+;Extended Memory Constants
+XLBANK  EQU $0F         ;Maximum Logical Bank
+
+;Extended Memory Address Shadow Registers - Defined in run6502.a02
+;XMBANK Bank      Address Bits 16-19
+;XMADDR Address   Address Bits  0-15
+
+;Set Shadow Extended Address
+.SETADR STX XMADDR
+        STY XMADDR+1
+        STA XMBANK
+        RTS
+
+;Triple Increment Shadow Extended Address
+.INCADT JSR .INCADR
+;Double Increment Shadow Extended Address
+.INCADD JSR .INCADR
+;Increment Shadow Extended Address
+.INCADR INC XMADDR      ;Increment Low Byte
+        BNE .RETURN     ;If Zero
+        INC XMADDR+1    ;  Increment Middle Byte
+        BNE .RETURN     ;  If Zero
+        INC XMBANK      ;    Increment High Byte
+.RETURN RTS
+        
+;xgetad() - Get Logical Extended Memory Address
+;  For run6502, this is the same as the Physical Address
+;Returns: A = Logical Bank ($00-$0F)
+;         YX = Logical Address ($0000-$FFFF)
+XGETAD: CLC             ;Set Mode to GET
+        LDA #'A'        ;Set Command to ADDR
+        JSR XMCMD       ;and Execute Command
+        LDA #'B'        ;Set Command to BANK
+        JSR  XMCMD      ;Execute Command and Return
+        BCC .SETADR     ;Set Shadow Address and Return
+
+;xsetad() - Set Logical Extended Memory Address
+;  For run6502, this is the same as the Physical Address
+;Args: A = Logical Bank ($00-$0F)
+;      YX = Logical Address ($0000-$FFFF)
+XSETAD: JSR .SETADR     ;Set Shadow Extended Address
+        SEC             ;Set Mode to SET
+        PHA             ;Save Bank
+        LDA #'A'        ;Set Command to ADDR
+        JSR XMCMD       ;and Execute Command
+        PLA             ;Restore Bank
+        TAX             ;Set as Argument
+        LDA #'B'        ;Set Command to BANK
+        JMP XMCMD       ;Execute Command and Return
+
+;xputc() - Write Byte to Extended Memory
+;Args: A =  Byte
+;Affects: A,X
+XPUTC:  SEC             ;Set Mode to SET
+        TAX             ;Set Argument to Byte
+        BCS .XCHAR      ;Execute Command CHAR and Return
+
+;xgetc() - Read Byte from Extended Memory
+;Returns: A =  Byte
+XGETC:  CLC             ;Set Mode to GET
+.XCHAR  LDA #'N'        ;Set Command to NEXT
+        JSR XMCMD       ;Execute Command
+        JSR .INCADR     ;Increment Shadow Address and Return
+        ORA #0          ;Set Flags
+        RTS
+        
+;xputi() - Write Word to Extended Memory
+;Args: YX = Word 
+;Affects: A
+XPUTI:  SEC             ;Set Mode to SET
+        LDA #'W'        ;Set Command to WORD
+        JMP XMCMD       ;Execute Command and Return
+
+;xgeti() - Read Word from Extended Memory
+;Affects: A
+;Returns: YX = Word 
+XGETI:  CLC             ;Set Mode to GET
+.XWORD  LDA #'W'        ;Set Command to WORD
+        JMP XMCMD       ;Execute Command and Return
+
+
+;xgetl() - Read Long from Extended Memory
+;Args: AYX = Long
+XGETL:  CLC             ;Set Mode to GET
+        LDA #'W'        ;Set Command to WORD
+        JSR XMCMD       ;and Execute Command
+        LDA #'N'        ;Set Command to NEXT
+        JSR XMCMD       ;Execute Command and Return
+        BCC .INCADT     ;Triple Increment Shadow Address
+        
+;xputl() - Write Long to Extended Memory
+;Args: AYX = Long
+;Affects: A
+XPUTL:  SEC             ;Set Mode to SET
+        PHA             ;Save Bank
+        LDA #'W'        ;Set Command to WORD
+        JSR XMCMD       ;and Execute Command
+        PLA             ;Restore Bank
+        TAX             ;Set as Argument
+        LDA #'N'        ;Set Command to NEXT
+        JSR XMCMD       ;Execute Command and Return
+        BCC .INCADT     ;Triple Increment Shadow Address
+
+;Update Shadow Extended Memory Address
+.UPDADR JSR XGETAD      ;Get Extended Memory Address
+        JMP .SETADR     ;Save as Shadow Extended Address
+
+;xswap(n,dest) - Swap Bytes with Extended Memory
+;Args: A = Number of Bytes to Exchange 
+;      YX = System Memory Address
+;Returns: AYX = New Extended Memory Address
+XSWAP:  JSR .XSADDR     ;Set System Address & Byte Count
+        BNE .XSWAP      ;Execute SWPMBLK and Return  
+
+;xwrite(n,source) - Write Bytes to Extended Memory
+;Args: A = Number of Bytes to Write (0=256)
+;      YX = Source Address
+;Returns: AYX = New Extended Memory Address
+XWRITE: SEC             ;Set Mode to SET
+        BCS .XREAD      ;Execute SYSADDR & MBLK and Return
+
+;xread(n,dest) - Read Bytes from Extended Memory
+;Args: A = Number of Bytes to Read (0=256)
+;      YX = Destination Address
+;Returns: AYX = New Extended Memory Address
+XREAD:  CLC             ;Set Mode to GET
+.XREAD  JSR .XSADDR     ;Set System Address & Byte Count
+.XMBLK  LDA #'M'        ;Set Command to MBLK
+.XCMDSA JSR XMCMD       ;Execute Command
+        JMP .SETADR     ;Set Shadow Address and Return
+
+;Set System Address to XY and XY to Byte Count
+.XSADDR PHA             ;Save Byte Count
+        JSR .SYSADR     ;Set System Address
+        PLA             ;Retrieve Byte Count
+        LDY #0          ;Set Length MSB to 0
+        TAX             ;Set Length LSB to Byte Count
+        BNE .XSRTS      ;and If Zero
+        INY             ;  Set MSB to 1
+.XSRTS  RTS
+
+;Set System Address 
+.SYSADR LDA #'S'        ;Set Command to SYSADDR
+        JMP XMCMD       ;and Execute Command
+
+
+;xsave(size) - Save from Extended Memory
+;Args: YX = Number of Bytes to Save
+;Setup: XSETAD - Set Extended Memory Start Address
+;Requires: SRCPTR = Local Memory Start Address
+;Sets: TEMP2,TEMP1 = Local Memory Start Address
+;Affects: A,X,Y
+XSAVE:  SEC             ;Set Mode to SET
+        JSR SAVRXY      ;Save Byte Count
+        JSR GETSRC      ;Get Destination Address
+        BCS .XLOAD      ;Execute SETMBLCK and Return
+
+;xload(size) - Load from Extended Memory
+;Args: YX = Local Memory End Address
+;Setup: XSETAD - Set Extended Memory Start Address
+;Uses: GETDST - Local Memory Start Address
+;Returns: AYX = New Extended Memory Address
+XLOAD:  CLC             ;Set Mode to GET
+        JSR SAVRXY      ;Save Byte Count
+        JSR GETDST      ;Get Destination Address
+.XLOAD  JSR .SYSADR     ;Set System Address
+        JSR RESRXY      ;Restore Byte Count
+        JMP .XMBLK      ;Execute MBLK and Return
+
+;xchng(size) - Exchange with Extended Memory
+;Args: YX = Number of Bytes to Swap
+;Requires: DSTPTR = Local Memory Start Address
+;Affects: A,X,Y
+XCHNG:  JSR SAVRXY      ;Save Byte Count
+        JSR GETDST      ;Get Destination Address
+        JSR .SYSADR     ;Set System Address
+        JSR RESRXY      ;Restore Byte Count
+.XSWAP  LDA #'X'        ;Set Command to SWPMBLK
+        BNE .XCMDSA     ;Execute, Set Shadow Address, and Return  
+
+;xwrtpg(xbank, xpage, mpage) - Write Extended Memory Page
+XWRTP:  SEC             ;Set Mode to SET
+        BCS .XPAGE      ;and Execute Move Page
+
+;xrdpg(xbank, xpage, mpage) - Read Extended Memory Page
+XRDP:   CLC             ;Set Mode to GET
+.XPAGE  JSR .XSPAGE     ;Set System and Extended Address
+        BNE .XMBLK      ;Execute MBLCK Command and Return
+
+;Set System Page and Extended Bank and Page
+.XSPAGE STX TEMP0       ;Save System Memory Page
+        LDX #0          
+        JSR XSETAD      ;Set Extended Memory Bank and Page
+        LDY TEMP0       ;Set System Memory Address
+        JSR .SYSADR     ;to System Memory Page
+        LDY #1          ;Set Byte Count to 256
+        RTS
+
+;xswppg(xbank, xpage, mpage) - Swap with Extended Memory Page
+XSWPP:  JSR .XSPAGE     ;Set System and Extended Address
+        BNE .XSWAP      ;Execute SWPMBLK Command and Return
+
+; The run6502 Extended Memory Command Processor simulates
+; register based device that uses DMA for block copies
+
+; Command   Description           Arguments                 Returns
+; GETADDR   Get Extended Address  A='A',CC                  YX=Address
+; SETADDR   Set Extended Address  A='A',YX=Address,CS                        
+; GETBANK   Get Extended Bank     A='A',CC                  A=Bank
+; SETBANK   Set Extended Bank     A='A',X=Bank,CS                        
+; GETCHAR   Read Character        A='C',CC          (1)     A=Char
+; SETCHAR   Write Character       A='C',X=Char,CS   (1)                  
+; GETMBLCK  Read Memory Block     A='A',YX=Count,CC (2)     A=Bank,YX=Address               
+; SETMBLCK  Write Memory Block    A='A',YX=Count,CS (2)     A=Bank,YX=Address               
+; GETNEXT   Read Next Character   A='N',CC          (1)     A=Char
+; SETNEXT   Write Next Character  A='N',X=Char,CS   (1)                  
+; SYSADDR   Set System Address    A='S',YX=Address  (1)
+; GETWORD   Read Word             A='E',CC          (1)     YX=Word
+; SETWORD   Write Word            A='E',YX=Word,CS  (1)                   
+                       
+; (1) Uses Extended Bank and Address
+; (2) Uses Extended Bank and Address and System Address
+
+        ENDSUBROUTINE
