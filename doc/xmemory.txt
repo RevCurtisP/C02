@@ -1,0 +1,119 @@
+Template Functions for C02 Programs
+
+This module provides functions to read from and write to extended
+memory.
+
+Extended memory is RAM that is not directly addressable by the 6502.
+Read and write operations use a 24-bit logical address, which is
+comprised of an 8-bit bank and 16-bit offset and automatically updated 
+after each operation.
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <xmemory.h02>
+
+The following functions are defined:
+
+  b,d = xgetad();       Returns the current logical extended bank b
+                        and offset d.
+
+                        Note: the physical address stored in XMBANK 
+                        and XMADDR is converted to a logical bank and
+                        offset, which are returned.
+
+  xsetad(b,d);          Sets the current logical extended bank to b
+                        and offset to d.
+
+                        This extended address is used for all read and
+                        write functions except for the page operations.
+
+                        Note: the logical address is converted to a
+                        physical address stored in XMBANK and XMADDR.
+
+  c = xgetc();          Reads a byte from the current extended address,
+                        increments the address, and returns the byte 
+                        as c.
+
+  xputc(c);             Writes byte c to the current extended address,
+                        then increments the address.
+                          
+  w = xgeti();          Reads a word starting at the current extended 
+                        address, adds 2 to the address, and returns the 
+                        word as w.
+
+  xputi(w);             Writes word w at the current extended address,
+                        then adds 2 to the address.
+  
+  c,w = xgetl();        Reads a long starting at the current extended 
+                        address, adds 3 to the address, and returns the 
+                        high byte of the long in c and the low word in w.
+
+  xputl(c,w);           Writes the long consisting of the byte c and
+                        word w at the current extended address, then
+                        adds 3 to the address.
+  
+  xread(n,r);           Reads n bytes starting at the current extended
+                        address into array r, then adds n to the address.
+
+  xwrite(n,r);          Writes n bytes of array r starting at the current
+                        extended address, then adds n to the address.
+
+  xswap(n,r);           Swaps n bytes of array r with n bytes starting at 
+                        the current extended address, then adds n to the 
+                        address.
+
+  xload(w);             Reads word w bytes into local memory starting at
+                        the address specified by a call to setdst() from
+                        extended memory starting at the current extended
+                        address, then adds w to the address.
+
+  xsave(w);             Writes word w bytes from local memory starting at
+                        the address specified by a call to setsrc() into
+                        extended memory starting at the current extended
+                        address, then adds w to the address.
+
+  xchng(w);             Swaps word w bytes in local memory starting at
+                        the address specified by a call to setdst() with
+                        extended memory starting at the current extended
+                        address, then adds w to the address.
+
+  xsetpg(b,p)           Sets the current extended address to bank b and
+                        offset p * 256. This ensures that the address is
+                        on a page boundary for subsequent page read and
+                        write operations.
+                        
+                        Note: The page operation are the fastest of the
+                        block read and write functions since the code
+                        can use indirect addressing.
+
+  xrpage(n,p);          Copies n 256 byte pages starting at the current 
+                        extended bank and page to local memory starting 
+                        at address p * 256, then updates the extended
+                        address accordingly.
+                        
+  xwpage(n,p);          Copies n 256 bytes from local memory starting 
+                        at address p * 256 to extended memory starting at
+                        current bank and page, then updates the extended
+                        address accordingly.
+
+  xspage(n,p);          Swaps n 256 bytes from local memory starting at
+                        address p * 256 with extended memory starting at
+                        current bank and page, then updates the extended
+                        address accordingly.
+
+Note: This library expects the following functions to be defined:
+
+  ext();                External function description
+
+along with the zero page variables
+  
+  zpage0,zpage1:        Zero page variable pair
+
+the external variables
+  
+  exvar0,exvar1:        External variable pair
+
+and the constants
+  
+  #CNSTNAME             Constant description

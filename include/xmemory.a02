@@ -1,0 +1,153 @@
+;Extended Memory Assembly Language Routines Non-Functional Template
+;Requires locations XMBANK and XMADDR (header.a02)
+
+        SUBROUTINE XMEMORY
+
+;Extended Memory Constants\
+XLBANK  EQU $00         ;Maximum Logical Bank - 0 = Not Implemented
+
+;Extended Memory Physical Address Registers - Defined in header.a02
+;XMBANK Bank      These contain the physical bank and address of extended memory,
+;XMADDR Address   which are usually different than the logical bank and address.
+
+;Bank Selected Memory
+;This interface is used by nearly every 6502 based 8-bit computer
+;The extended memory is exposed as a 1K, 8K, or 16K section of the
+;6502's address space. An I/O register is used to to map equally
+;sized banks of the extended memory into this section of RAM.
+;XMBANK is the bank number and XMADDR is the offset in the bank.
+;Bank      Physical Address                                  Max Ext
+;Size   XMBANK       XMADDR             Logical Address          RAM
+;  1K  BBBBBBBB 000000AA AAAAAAAA  000000BB BBBBBBAA AAAAAAAA   256K 
+;  8K  BBBBBBBB 00000AAA AAAAAAAA  00000BBB BBBBBAAA AAAAAAAA   512K
+; 16K  BBBBBBBB 0000AAAA AAAAAAAA  0000BBBB BBBBAAAA AAAAAAAA  1024K
+;Ultimem for the VIC-20 uses a two-byte bank number and 8K banks
+;giving a 27-bit wide address, but this module is limited to 24 bits. 
+;         Physical Address                                     Max Ext
+;     XMBANK            XMADDR             Logical Address         RAM
+;000BBBBB BBBBBBBB 00000AAA AAAAAAAA  BBBBBBBB BBBBBAAA AAAAAAAA  16MB 
+
+;Page Selected Memory
+;The interface is used by GeoRAM for the Commodore 64 and 128
+;The extended memory is exposed as a single page (256 bytes) of the
+;6502's address space. I/O registers are used to select a bank of
+;up to 64K of extended memory and to map a page of that bank to 
+;the page of RAM. GeoRAM uses 16K banks. 
+;XMBANK is the bank number, the high byte of XMADDR is the page of
+;the bank, and the low byte of XMADDR is the offset in the page.
+;Bank   XMBANK       XMADDR                                 Max Ext
+;Size    Bank     Page    Offset        Logical Address         RAM
+; 16K  BBBBBBBB 0000PPPP AAAAAAAA  0000BBBB BBBBPPPP AAAAAAAA   1MB 
+; 64K  BBBBBBBB PPPPPPPP AAAAAAAA  BBBBBBBB PPPPPPPP AAAAAAAA  16MB
+
+;DMA Controller`
+;This interface is used by the Commodore REUs and the run6502 emulator.
+;The expansion device suspends operation of the 6502 and directly
+;reads and writes to the system RAM. I/O registers are used to select
+;an operation (read, write, or swap), a 24-bit extended memory address,
+;a 16-bit system RAM address, and 16-bit byte count.
+;XMBANK and XMADDR contain the 24-bit extended memory address which is
+;identical to the logical address, for up to 16MB of extended memory.
+
+;xgetad() - Get Logical Extended Memory Address
+;  For run6502, this is the same as the Physical Address
+;Returns: A = Logical Bank ($00-$0F)
+;         YX = Logical Address ($0000-$FFFF)
+XGETAD: LDA #$FF        ;Return $FF,$FFFFF which would 
+        TAY             ;indicate 16MB of extended memory,
+        TAX             ;which is rare on 8-bit machines
+        RTS
+
+;xsetad() - Set Logical Extended Memory Address
+;  For run6502, this is the same as the Physical Address
+;Args: A = Logical Bank ($00-$0F)
+;      YX = Logical Address ($0000-$FFFF)
+;Returns: A=$00 - Success or $FF - Failure
+XSETAD: LDA #$FF        ;Return Failure
+ 
+;xputc() - Write Byte to Extended Memory
+;Args: A =  Byte
+;Affects: A,X
+XPUTC:  RTS
+
+;xgetc() - Read Byte from Extended Memory
+;Returns: A =  Byte
+XGETC:  LDA #0          ;Return 0
+        RTS
+        
+;xputi() - Write Word to Extended Memory
+;Args: YX = Word 
+XPUTI:  RTS
+
+;xgeti() - Read Word from Extended Memory
+;Returns: YX = Word
+XGETI:  LDY #0          ;Return Zero
+        LDX #0
+        RTS
+
+;xgetl() - Read Long from Extended Memory
+;Args: AYX = Long
+XGETL:  LDA #0          ;Return Zero
+
+;xputl() - Write Long to Extended Memory
+;Args: AYX = Long
+XPUTL:  RTS
+
+;xread(n,dest) - Read Bytes from Extended Memory
+;Args: A = Number of Bytes to Read (0=256)
+;      YX = Destination Address
+;Returns: AYX = New Extended Memory Address
+XREAD:                  ;Return $FF,$FFF
+
+;xwrite(n,source) - Write Bytes to Extended Memory
+;Args: A = Number of Bytes to Write (0=256)
+;      YX = Source Address
+;Returns: AYX = New Extended Memory Address
+XWRITE:                 ;Return $FF,$FFF
+
+;xswap(n,dest) - Swap Bytes with Extended Memory
+;Args: A = Number of Bytes to Exchange 
+;      YX = System Memory Address
+;Returns: AYX = New Extended Memory Address
+XSWAP:                  ;Return $FF,$FFF
+
+;xload(addr) - Load from Extended Memory
+;Args: YX = Local Memory End Address
+;Uses: GETDST - Local Memory Start Address
+;Returns: AYX = New Extended Memory Address
+XLOAD:                  ;Return $FF,$FFF
+
+;xsave(size) - Save from Extended Memory
+;Args: YX = Local Memory End Address
+;Requires: SRCPTR = Local Memory Start Address
+;Returns: AYX = New Extended Memory Address
+XSAVE:                  ;Return $FF,$FFF
+
+;xchng(size) - Exchange with Extended Memory
+;Args: YX = Local Memory End Address
+;Requires: DSTPTR = Local Memory Start Address
+;Returns: AYX = New Extended Memory Address
+XCHNG:                  ;Return $FF,$FFF
+
+;xrpage(count, page) - Read Extended Memory Pages
+;Args: A = Number of Pages
+;      Y = Local Memory Starting Page
+;Returns: AYX = New Extended Memory Address
+XRPAGE:                 ;Return $FF,$FFF
+
+;xwpage(count, page) - Write Extended Memory Pages
+;Args: A = Number of Pages
+;      Y = Local Memory Starting Page
+;Returns: AYX = New Extended Memory Address
+XWPAGE:                 ;Return $FF,$FFF
+
+;xspage(count, page) - Swap Extended Memory Pages
+;Args: A = Number of Pages
+;      Y = Local Memory Starting Page
+;Returns: AYX = New Extended Memory Address
+XSPAGE: LDA #$FF        ;Return $FF,$FFF
+        TAY
+        TAX
+        RTS
+
+        ENDSUBROUTINE
