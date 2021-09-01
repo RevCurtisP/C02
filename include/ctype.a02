@@ -11,6 +11,8 @@
         SUBROUTINE CTYPE
 
 ;Character Test Functions - Set Accumulator
+ISALNU: JSR ISANU   ;Is Alphanumunder
+        BVC .ISBTF
 ISALNM: JSR ISALN   ;Is Alphanumeric Character
         BVC .ISBTF
 ISALPH: JSR ISALP   ;Is Alphabetic Character
@@ -55,10 +57,13 @@ TOUPPR: JSR ISLWR   ;If Char IS Not Lower Case
         RTS         ; and Return
 
 ;Machine Language Subroutines - Set/Clear Carry, Preserve Accumulator 
-ISALN:  JSR ISDGT  ;If Char IS Digit
+ISANU:  CMP #$5F    ;If Char = '_'
+        BEQ .ISSEC  ;  Return Carry Set
+                    ;Else
+ISALN:  JSR ISDGT   ;If Char IS Digit
         BCS .ISRTS  ;  Return Carry Set
                     ;Else
-ISALP:  JSR ISUPR  ;If Char IS Upper Case
+ISALP:  JSR ISUPR   ;If Char IS Upper Case
         BCS .ISRTS  ;  Return Carry Set
                     ;Else
 ISLWR:  CMP #$61    ;If Char < 'a'

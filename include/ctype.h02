@@ -8,6 +8,12 @@
  * Returns: TRUE or FALSE           */
 char isalnm();
 
+/* Check for Alphanumunder Character *
+ *   (Alphabetic, Digit, or '_')     *
+ * Args: c - Character to Check      *
+ * Returns: TRUE or FALSE            */
+char isalnu();
+
 /* Checks for Alphabetic Character  *
  *   (Upper Case or Lower Case)     *
  * Args: c - Character to Check     *

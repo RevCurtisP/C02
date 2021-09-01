@@ -20,6 +20,14 @@ The following functions are defined:
                       Note: Calls internal routine isaln, which in turn
                       calls internal routines isdgt and isalp.
                       
+  b = isalnu(c);      Returns TRUE if c is an alphanumunder, otherwise FALSE.
+                      
+                      An alphanumunder character is a letter (A-Z or a-z), 
+                      a digit (0-9), or an underline (_). 
+                     
+                      Note: Calls internal routine isalu, which in turn
+                      calls internal routines isdgt and isalp.
+                      
   b = isalph(c);      Returns TRUE if c is alphabetic, otherwise FALSE.
                       
                       An alphabetic character is a letter (A-Z or a-z). 
@@ -116,6 +124,6 @@ Implementation: The standard method of implementing the ctype library is to
 use a bit mask table of 128 bytes (one for each standard ASCII character).
 
 This library instead uses a series of comparisons in the internal routines,
-which leave the accumulator unmodified, and occupies approximately 128 bytes 
-of memory.
+which leave the accumulator unmodified, and generates approximately 128 bytes 
+of machine code.
 
