@@ -1,46 +1,73 @@
 ; C02 library string.h02 assembly language subroutines
 ; Requires external routines SETSRC and SETDST
 ; Requires the following RAM locations be defined
-; external zero page byte pairs SRCLO,SRCHI and DSTLO,DSTHI
+; external zero page byte pairs SRCPTR and DSTPTR
 ; and external bytes TEMP0 and TEMP1
 
+        SUBROUTINE STRING
+
+;strapd(c, s) - Append charecter c to string s
+;Args: A = Character to be appended
+;      X,Y = Pointer to string
 ;Affects N,Z
 ;Returns A,Y = New String Length
 STRAPD: STA TEMP0       ;Save Character to Append
         JSR STRLEN      ;Get Length of String
-        BMI STRCLX      ;Return 255 if > 127
+        BMI .RETFLS     ;Return 255 if > 127
         LDA TEMP0       ;Restore Character to Append
-STRAPL: STA (SRCLO),Y   ;Store at End of String
-        BEQ STRLEX      ;Exit if NUL
+.APDLOP STA (SRCPTR),Y  ;Store at End of String
+        BEQ .LENEND     ;Exit if NUL
         INY             ;Increment Past New Character
         LDA #0          ;Set Character to NUL
-        BEQ STRAPL      ;and Append to String
+        BEQ .APDLOP     ;and Append to String
 
+;strppd(c, s) - Prepend Charecter to String
+;Args: A = Character to be appended
+;      X,Y = Pointer to string
+;Sets: N,Z
+;Returns A = Insterted Character
+STRPPD: STA TEMP0       ;Save Character to Append
+        JSR STRLEN      ;Get Length of String
+        BMI .RETFLS     ;Return 255 if > 127
+        INY             ;Bump up string length              
+        TYA             ;Push string length onto stack
+        PHA
+.PPDLOP DEY             ;Copy Preceding Chacter
+        LDA (SRCPTR),Y  
+        INY             ;into Currebt Position
+        STA (SRCPTR),Y  
+        DEY             ;Move to Preceding Position
+        BNE .PPDLOP     ;and Loop  
+        LDA TEMP0       ;Retrieve Character
+        STA (SRCPTR),Y  ;and Store in Position 0
+        PLA             ;Retrieve new string length
+        BEQ .RETORA     ;Set Flags and Return`
+        
 ;strcmp(&s) - Compare String (to Destination String)
-;Requires: DSTLO, DSTHI - Pointer to destination string
+;Requires: DSTPTR - Pointer to destination string
 ;Args: X,Y = Pointer to source string
-;Sets: SRCLO,SRCHI = Pointer to string 
+;Sets: SRCPTR = Pointer to string 
 ;Affects N,Z
 ;Returns A=$01 and C=1 if Destination > Source  
 ;        A=$00 and Z=1, C=1 if Destination = Source  
 ;        A=$FF and C=0 if Destination < Source
 ;        Y=Position of first character that differs
 STRCMP: JSR SETSRC      ;Initialize Source String
-STRCML: LDA (DSTLO),Y   ;Load Destination Character
-        CMP (SRCLO),Y   ;Compare Against Source Character
-        BNE STRCMX      ;If Equal
-        ORA (SRCLO),Y   ;  OR with Source Character
-        BEQ STRCMR      ;  If Both are 0, Return 0
+.CMPLOP LDA (DSTPTR),Y  ;Load Destination Character
+        CMP (SRCPTR),Y  ;Compare Against Source Character
+        BNE .CMPEND     ;If Equal
+        ORA (SRCPTR),Y  ;  OR with Source Character
+        BEQ .RETURN     ;  If Both are 0, Return 0
         INY             ;  Increment Offset
-        BPL STRCML      ;    and Loop if < 128
-STRCMX: BCC STRCLX      ;If Source < Destination, Return $FF & Carry Clear
+        BPL .CMPLOP     ;    and Loop if < 128
+.CMPEND BCC .RETFLS     ;If Source < Destination, Return $FF & Carry Clear
         LDA #$01        ;Else Return 1 and Carry Set
-STRCMR: RTS             ;  
+.RETURN RTS              
 
 ;strchr(c, &s) - Find First Occurance of Character in String
 ;Args: A = Character to look for
 ;      X,Y = Pointer to string to search in
-;Sets: SRCLO,SRCHI = Pointer to string 
+;Sets: SRCPTR = Pointer to string 
 ;      TEMP3 = Character being searched for
 ;Affects: N,Z
 ;Returns: A = Position in string, C=1 if found
@@ -48,40 +75,33 @@ STRCMR: RTS             ;
 ;         Y = Position of last character scanned
 STRCHR: JSR SETSRC      ;Initialize Source String
 STRCHA: STA TEMP3       ;Save Search Character (alternate entry point)
-STRCHL: LDA (SRCLO),Y   ;Get Next Character
-        BEQ STRCLC      ;If NUL, Return $FF and Carry Clear 
+.CHRLOP LDA (SRCPTR),Y  ;Get Next Character
+        BEQ .CLCFLS     ;If NUL, Return $FF and Carry Clear 
         CMP TEMP3       ;Compare Character
-        BEQ STRLEX      ;If Found, Return Index
+        BEQ .LENEND     ;If Found, Return Index
         INY             ;Increment Counter and Loop if < 128
-        BPL STRCHL      ;Else Return $FF and Carry Clear
-STRCLC: CLC             ;Clear Carry
-STRCLX: LDA #$FF        ;Load -1 into Accumulater
+        BPL .CHRLOP     ;Else Return $FF and Carry Clear
+.CLCFLS CLC             ;Clear Carry
+.RETFLS LDA #$FF        ;Load -1 into Accumulater
         RTS             ;and Return
 
 ;strapd(c, &s) - Append Character to String
 ;Args: A = Character to Append
 ;      X,Y = Pointer to String
-;Sets: SRCLO, SRCHI - Pointer to String
+;Sets: SRCPTR, SRCPTR+1 - Pointer to String
 ;strlen(&s) - Return Length of String
 ;Args: X,Y - Pointer to string
-;Sets: SRCLO,SRCHI = Pointer to source string
+;Sets: SRCPTR = Pointer to source string
 ;Returns: A,Y = Length of string
 ;         N,Z based on A
 STRLEN: JSR SETSRC      ;Initialize Source String
-STRLEL: LDA (SRCLO),Y   ;Get Next Character
-        BEQ STRLEX      ;If <> NUL 
+.LENLOP LDA (SRCPTR),Y   ;Get Next Character
+        BEQ .LENEND     ;If <> NUL 
         INY             ;  Increment Index
-        BPL STRLEL      ;  and Loop if < 128
-STRLEX: TYA             ;Transfer Index to Accumulator
-        ORA #0          ;Set N and Z flags
+        BPL .LENLOP     ;  and Loop if < 128
+.LENEND TYA             ;Transfer Index to Accumulator
+.RETORA ORA #0          ;Set N and Z flags
         RTS             ;and Return
-
-;strdst(&s) - Set Destination String 
-;             Called before strcat(), strcmp(), strcpy(), strstr()
-;Args: X,Y = Pointer to destination string
-;Sets: SRCLO,SRCHI = Pointer to destination string
-;Affects: N,Z
-STRDST  EQU SETDST      ;Aliased to System Header function
 
 ;strcpb(&s) - Copy String to System Buffer
 STRCPB: JSR SETSRC      ;Set Source Pointer to String Address
@@ -89,65 +109,65 @@ STRCPB: JSR SETSRC      ;Set Source Pointer to String Address
         BVC STRCPA      ;Execute String Copy
 
 ;strcat(&s) Concatenate String (to Destination String)
-;Requires: DSTLO, DSTHI - Pointer to destination string
+;Requires: DSTPTR - Pointer to destination string
 ;Args: X,Y = Pointer to source string
-;Sets: SRCLO,SRCHI = Pointer to source string
+;Sets: SRCPTR = Pointer to source string
 ;      TEMP3 = Length of source prior to concatenation
 ;Affects: C,N,Z
 ;Returns: A,Y = Total length of concatenated string
 STRCAT: JSR SETSRC      ;Initialize Source String
-STRCAL: LDA (DSTLO),Y   ;Find end of Destination String
-        BEQ STRCAX      ;
+.CATLOP LDA (DSTPTR),Y  ;Find end of Destination String
+        BEQ .CATEND     ;
         INY             ;
-        BPL STRCAL      ;
-STRCAX: STY TEMP3       ;Subtract Destination String Length
-        LDA SRCLO       ;  from Source String Pointer
+        BPL .CATLOP     ;
+.CATEND STY TEMP3       ;Subtract Destination String Length
+        LDA SRCPTR       ;  from Source String Pointer
         SEC
         SBC TEMP3
-        STA SRCLO
-        LDA SRCHI
+        STA SRCPTR
+        LDA SRCPTR+1
         SBC #$00
-        STA SRCHI
-        JMP STRCPL      ;Execute String Copy
+        STA SRCPTR+1
+        JMP .CPYLOP     ;Execute String Copy
 
 ;strcpy(&s) - Copy String (to Destination String)
-;Requires: DSTLO, DSTHI - Pointer to destination string
+;Requires: DSTPTR - Pointer to destination string
 ;Args: X,Y = Pointer to source string
-;Sets: SRCLO,SRCHI = Pointer to source string
+;Sets: SRCPTR = Pointer to source string
 ;Affects: N,Z
 ;Returns: A,Y = Number of characters copied
 STRCPA: LDY #0          ;Alternate entry point
-        BEQ STRCPL      ;for when Source already set
+        BEQ .CPYLOP     ;for when Source already set
 STRCPY: JSR SETSRC      ;Initialize Source String
-STRCPL: LDA (SRCLO),Y   ;Get Character from Source String
-        STA (DSTLO),Y   ;Copy to Destination String
-        BEQ STRCPX      ;If <> NUL 
+.CPYLOP LDA (SRCPTR),Y   ;Get Character from Source String
+        STA (DSTPTR),Y   ;Copy to Destination String
+        BEQ .CPYEND     ;If <> NUL 
         INY             ;  Increment Index
-        BPL STRCPL      ;  and Loop if < 128
-STRCPX: TYA             ;Transfer Index to Accumulator
+        BPL .CPYLOP     ;  and Loop if < 128
+.CPYEND TYA             ;Transfer Index to Accumulator
         RTS             ;and Return
 
 ;strcut(n, &s) - Copy from Position n to End of Source (into Destination)
-;Requires: DSTLO, DSTHI - Pointer to destination string
+;Requires: DSTPTR - Pointer to destination string
 ;Args: A = Starting position in start string
 ;      X,Y = Pointer to source string
-;Sets: SRCLO,SRCHI = Pointer to specified position in source string
+;Sets: SRCPTR = Pointer to specified position in source string
 ;Affects: N,Z
 ;Returns: A,Y = Length of copied string
 STRCUT: JSR SETSRC      ;Initialize Source String
         CLC
-        ADC SRCLO       ;Move Source Pointer
-        STA SRCLO       ;  to Specified Position in String
-        BCC STRCPL
-        INC SRCHI
-        JMP STRCPL      ;and Jump Into String Copy Loop
+        ADC SRCPTR      ;Move Source Pointer
+        STA SRCPTR      ;  to Specified Position in String
+        BCC .CPYLOP
+        INC SRCPTR+1
+        JMP .CPYLOP     ;and Jump Into String Copy Loop
 
 ;strstr(&s) - Search for String (in Destination String)
-;Requires: DSTLO, DSTHI - Pointer to destination string
+;Requires: DSTPTR - Pointer to destination string
 ;Args: X,Y = Pointer to search string
-;Sets: DSTLO,DSTHI = Pointer to position in source string
+;Sets: DSTPTR = Pointer to position in source string
 ;                    End of string if not found 
-;      SRCLO,SRCHI = Pointer to source string
+;      SRCPTR = Pointer to source string
 ;      TEMP3 = Last position checked in destination string
 ;Affects: N,Z
 ;Returns: A = Position, C=1 if found
@@ -155,29 +175,29 @@ STRCUT: JSR SETSRC      ;Initialize Source String
 ;         Y = Last position checked in source string      
 STRSTR: JSR SETSRC      ;Initialize Source String
         STY TEMP3       ;Initialize Position
-STRSTL: LDY #$00;       ;Initialize Compare Offset
-        LDA (DSTLO),Y   ;Get Start Character in Destination
-        BEQ STRCLC      ;If NUL return $FF and Carry Clear
-        JSR STRCML      ;Jump into Compare Loop
-        BEQ STRSTX      ;If Not Equal
-        BMI STRSTN      ;  If Source is Greater
-        LDA (SRCLO),Y   ;     If at End of Source String 
-        BEQ STRSTX      ;     Return Current Position
-STRSTN: INC TEMP3       ;  Else Increment Position
-        BMI STRCLC      ;    If > 127 return $FF and Carry Clear
-        INC DSTLO       ;    Increment Source Pointer
-        BNE STRSTL
-        INC DSTHI       ;    If not End of Memory
-        BNE STRSTL      ;      Loop
-        BEQ STRCLC      ;    Else return $FF and Carry Clear
-STRSTX: SEC             ;Else Set Carry
+.STRLOP LDY #$00;       ;Initialize Compare Offset
+        LDA (DSTPTR),Y  ;Get Start Character in Destination
+        BEQ .CLCFLS     ;If NUL return $FF and Carry Clear
+        JSR .CMPLOP     ;Jump into Compare Loop
+        BEQ .STREND     ;If Not Equal
+        BMI .STRNXT     ;  If Source is Greater
+        LDA (SRCPTR),Y  ;     If at End of Source String 
+        BEQ .STREND     ;     Return Current Position
+.STRNXT INC TEMP3       ;  Else Increment Position
+        BMI .CLCFLS     ;    If > 127 return $FF and Carry Clear
+        INC DSTPTR      ;    Increment Source Pointer
+        BNE .STRLOP
+        INC DSTPTR+1    ;    If not End of Memory
+        BNE .STRLOP     ;      Loop
+        BEQ .CLCFLS     ;    Else return $FF and Carry Clear
+.STREND SEC             ;Else Set Carry
         LDA TEMP3       ;  Load Position
         RTS             ;  and Return
 
 ;strrch(c, &s) - Find Last Occurance Character in String
 ;Args: A = Character to look for
 ;      X,Y = Pointer to string to search in
-;Sets: SRCLO,SRCHI = Pointer to string 
+;Sets: SRCPTR = Pointer to string 
 ;      TEMP3 = Character being searched for
 ;Affects: Y,C,N,Z
 ;Returns: A,X = Position of last occurance in string
@@ -186,14 +206,16 @@ STRSTX: SEC             ;Else Set Carry
 STRRCH: JSR SETSRC      ;Initialize Source String
         STA TEMP3;      ;Save Search Character (alternate entry point)
         LDX #$FF        ;Initialize Position
-STRRCL: LDA (SRCLO),Y   ;Get Next Character
-        BEQ STRRCX      ;If NUL, Exit with Position
+.RCHLOP LDA (SRCPTR),Y  ;Get Next Character
+        BEQ .RCHEND     ;If NUL, Exit with Position
         CMP TEMP3       ;Compare Character
-        BNE STRRCS      ;If Found
+        BNE .RCHNXT     ;If Found
         TYA             ;  Store Counter
         TAX
-STRRCS: INY             ;Increment Counter
-        BPL STRRCL      ;  and Loop if < 128
-STRRCX: TXA             ;Copy Position to Accumulater
+.RCHNXT INY             ;Increment Counter
+        BPL .RCHLOP     ;  and Loop if < 128
+.RCHEND TXA             ;Copy Position to Accumulater
         RTS             ;  and Return
 
+        ENDSUBROUTINE
+        
