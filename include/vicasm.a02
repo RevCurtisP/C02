@@ -1,10 +1,12 @@
 ;c02 Program Initialization Code for Vic-20 - Common Code
 
 START:  TSX         ;Get Stack Pointer
-        STX STKSAV  ;and Save for Exit
+        STX .STKSAV ;and Save for Exit
         JMP MAIN    ;Execute Program
 
-EXIT:   LDX STKSAV  ;Retrieve Saved Stack Pointer
+EXIT:   LDA #0      ;Clear Stop Key Flag
+        STA .STKEY   
+        LDX .STKSAV ;Retrieve Saved Stack Pointer
         TXS         ;and Restore It
         RTS         ;Return to BASIC
 

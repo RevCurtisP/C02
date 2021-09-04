@@ -6,8 +6,8 @@ ESCKEY  EQU $03   ;Escape/Stop Key      (RUN/STOP)
 RTNKEY  EQU $0D   ;Return/Enter Key     (RETURN)
 
 ;Zero Page Locations
-XMBANK  EQU $0A ;Extended Memory Bank [Load/Verify Flag]
-XMADDR  EQU $0B ;Extended Memory Address [Array Index/Flags]
+XMADDR  EQU $0A ;Extended Memory Address [VERCKB and COUNT]
+XMBANK  EQU $0C ;Extended Memory Bank [DIMFLG and VALTYP]
 ;           $16 ;[Temporary String Stack Pointer]
 SRCPTR  EQU $17 ;Source Pointer [Temporary String Space Pointer]
 DSTPTR  EQU $19 ;Destination Pointer [Temporary String Stack]
@@ -22,6 +22,7 @@ TEMP2   EQU $65 ;Temporary Variable [Floating Point Accumulator]
 TEMP3   EQU $67 ;Temporary Variable [Floating Point Accumulator]
 TMPPTR  EQU $69 ;Temporary Pointer [Floating Point Argument]
 ;       $6A-$70 ;[Floating Point Argument]
+.STKEY  EQU $91 ;Stop Key flag
 RDSEED  EQU $A2   ;Random Seed [Software Jiffy Clock (Low Byte)
 ;       $FB-$FE ;Unused Zero Page for Applications
 
@@ -38,7 +39,7 @@ BLKEND  EQU $0336 ;Block Start [Unused Byte]
 BLKLEN  EQU $0338 ;Block Length [Unused Byte]
 
 RANDOM  EQU $0339 ;Random Number Storage [Unused Byte]
-STKSAV  EQU $033A ;Machine Stack Storage [Unused Byte]
+.STKSAV EQU $033A ;Machine Stack Storage [Unused Byte]
 USER11  EQU $033B ;Free Byte for User Programs
 TBFFR   EQU $033C ;Cassette I/O Buffer
 
