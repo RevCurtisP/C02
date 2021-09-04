@@ -54,6 +54,7 @@ iabs     intlib   Integer Absolute      Return absolute value of integer.
 imax     intlib   Integer Maximum       Return greater of two integers.
 imin     intlib   Integer Minimum       Return lesser of two integers.
 isalnm   ctype    Is Alphanumeric       Return TRUE if character is A-Z, a-z, or 0-9.
+isalnu   ctype    Is Alphanumunder      Return TRUE if character is A-Z, a-z, 0-9, or _.
 isalph   ctype    Is Alphabetic         Return TRUE if character is A-Z or a-z.
 isbdgt   ctype    Is Binary Digit       Return TRUE if character is 0 or 1.
 isctrl   ctype    is Control            Return TRUE if ASCII code is 0-31 or 127.
@@ -71,7 +72,7 @@ itoa     intlib   Integer to ASCII      Convert Integer to String.
 joystk   joystk   Joystick              Read Atari style joystick controller status.
 lgtpen   lgtpen   Light Pen             Read light pen status.
 maddr    memio    Memory Address        Return address contained in memory file pointer.
-max      stdlib   Maximum               Return greater of two byte.
+max      stdlib   Maximum               Return greater of two bytes.
 mclose   memio    Memory Close          Close memory file.
 memdst   memory   Memory Destination    Set destination array for subsequent functions.
 memset   memory   Memory Set            File bytes in array with byte.
@@ -160,9 +161,9 @@ strcmp   string   String Compare        Compare string contents against destinat
 strcpy   string   String Copy           Copy string contents to destination string.
 strcsp   stringx  String Char Span      Return length of span in destination not in string.
 strcut   string   String Cut            Copy substring to destination string.
-strdst   string   String Destination    Set destination string for subsequent functions.
 strlen   string   String Length         Calculate length of string.
 strpbk   stringx  String Pointer Break  Find first character in destination found in string.
+strppd   string   String Prepend        Prepend character to string.
 strrch   string   String Reverse Char   Search for character from end of string.
 strspn   stringx  String Span           Return length of span in destination found in string.
 strstr   string   String String         Search for string in destination string.
