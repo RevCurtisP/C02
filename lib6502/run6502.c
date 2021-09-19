@@ -250,6 +250,7 @@ static void usage(int status)
   fprintf(stream, "  -d addr last      -- disassemble memory between addr and last\n");
   fprintf(stream, "  -C addr           -- emulate _putch at addr\n");
   fprintf(stream, "  -D                -- print debug messages\n");
+  fprintf(stream, "  -E addr maxpage   -- emulate extended memory at addr\n");
   fprintf(stream, "  -F addr           -- emulate fileio at addr\n");
   fprintf(stream, "  -G addr           -- emulate getchar(3) at addr\n");
   fprintf(stream, "  -h                -- help (print this message)\n");
@@ -265,7 +266,8 @@ static void usage(int status)
   fprintf(stream, "  -s addr last file -- save memory from addr to last in file\n");
   fprintf(stream, "  -v                -- print version number then exit\n");
   fprintf(stream, "  -X addr           -- terminate emulation if PC reaches addr\n");
-  fprintf(stream, "  -x                -- exit wihout further ado\n");
+  fprintf(stream, "  -w addr \"string\"  -- write string to memory at addr\n");
+  fprintf(stream, "  -x                -- exit without further ado\n");
   fprintf(stream, "  image             -- '-l 8000 image' in available ROM slot\n");
   fprintf(stream, "\n");
   fprintf(stream, "'last' can be an address (non-inclusive) or '+size' (in bytes)\n");
@@ -380,6 +382,26 @@ static int doSave(int argc, char **argv, M6502 *mpu)	/* -l addr size file */
   return 3;
 }
 
+static int doArgs(int argc, char **argv, M6502 *mpu)	/* -a addr */
+{
+  return 1;
+}
+
+static int doWrite(int argc, char **argv, M6502 *mpu)	/* -a addr "string" */
+{
+  int addr = htol(argv[1]);
+  int size = strlen(argv[2]);
+  char *args = malloc(size);
+  strcpy(args, argv[1]);
+  write(mpu, addr, size, args);
+  return 2;
+}
+
+static int write(M6502 *mpu, word address, int size, char *s)
+{
+  for (int i=0; i<size; i++) mpu->memory[address++] = s[i];
+  return address;
+}
 
 #define doVEC(VEC)					\
   static int do##VEC(int argc, char **argv, M6502 *mpu)	\
@@ -396,6 +418,20 @@ doVEC(NMI);
 doVEC(RST);
 
 #undef doVEC
+
+static int eTrap(M6502 *mpu, word addr, byte data)	{ 
+	xmemcmd(mpu, addr, data);
+	rts; 
+}
+static int doEtrap(int argc, char **argv, M6502 *mpu)
+{
+  unsigned addr, page;
+  if (argc < 2) usage(1);
+  addr= htol(argv[1]);
+  initxmem();
+  M6502_setCallback(mpu, call, addr, eTrap);
+  return 1;
+}
 
 static int fTrap(M6502 *mpu, word addr, byte data)	{ 
 	filecmd(mpu, addr, data);
@@ -559,10 +595,12 @@ int main(int argc, char **argv)
     while (++argv, --argc > 0)
       {
 	int n= 0;
-	if      (!strcmp(*argv, "-B"))  bTraps= 1;
+	if      (!strcmp(*argv, "-a"))  n= doArgs(argc, argv, mpu);
+	else if (!strcmp(*argv, "-B"))  bTraps= 1;
 	else if (!strcmp(*argv, "-d"))	n= doDisassemble(argc, argv, mpu);
 	else if (!strcmp(*argv, "-C"))	n= doCtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-D"))	n= doDebug(argc, argv, mpu);
+	else if (!strcmp(*argv, "-E"))	n= doEtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-F"))	n= doFtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-G"))	n= doGtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-h"))	n= doHelp(argc, argv, mpu);
@@ -578,6 +616,7 @@ int main(int argc, char **argv)
 	else if (!strcmp(*argv, "-S"))	n= doStrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-s"))	n= doSave(argc, argv, mpu);
 	else if (!strcmp(*argv, "-v"))	n= doVersion(argc, argv, mpu);
+	else if (!strcmp(*argv, "-w"))	n= doWrite(argc, argv, mpu);
 	else if (!strcmp(*argv, "-X"))	n= doXtrap(argc, argv, mpu);
 	else if (!strcmp(*argv, "-x"))	exit(0);
 	else if ('-' == **argv)		usage(1);

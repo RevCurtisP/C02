@@ -13,11 +13,15 @@
 #include "lib6502.h"
 #include "file6502.h"
 
-
 typedef uint8_t  byte;
 typedef uint16_t word;
 
 int debug;
+
+byte *xmemory[16];  //Extended Memory
+byte xmembank;  //Extended Memory Current Bank
+word xmemaddr;  //Extended Memory Current Address
+word smemaddr;  //System Memory Address
 
 #define STRLEN 128
 #define STRSIZ STRLEN+1
@@ -657,6 +661,106 @@ extern int syscmd(M6502 *mpu, word addr, byte data)	{
       break;
     default:
       y = 22; //Error - invalid argument
+  }
+  if (debug) fprintf(stderr, "returning values %02x, %02x, %02x, %02x\n", a, y, x, p);
+  mpu->registers->a = a;
+  mpu->registers->x = x;
+  mpu->registers->y = y;
+}
+
+/* Initialize Extended RAM */
+extern void initxmem(void) {
+  for (int i=0; i<16; i++) xmemory[i] = (byte *) malloc(0x10000);
+  xmembank = 0;
+  xmemaddr = 0;
+}
+
+/* Increment Ext Memory Address and Page */
+static void xmemnext() {
+  xmemaddr++; 
+  if (xmemaddr > 0xFFFF) {xmembank++; xmemaddr = 0;}
+  if (xmembank > 0x0F) xmembank = 0;
+}
+  
+/* Read/Write Extended Memory */
+static byte readxmem(int inc) {
+  byte b = xmemory[xmembank][xmemaddr];
+  //if (debug) fprintf(stderr, "read byte %d from bank %02x address %04x\n", b, xmembank, xmemaddr);
+  if (inc) xmemnext();
+  return b;
+}
+static void writexmem(byte b, int inc) {
+  //if (debug) fprintf(stderr, "writing byte %d to bank %02x address %04x\n", b, xmembank, xmemaddr);
+  xmemory[xmembank][xmemaddr] = b;
+  if (inc) xmemnext();
+}
+
+/* Emulate extended memory command dispatch at addr */
+extern int xmemcmd(M6502 *mpu, word addr, byte data)	{ 
+  char mode[2][8] = {"reading", "writing"};
+  byte a = mpu->registers->a;
+  byte x = mpu->registers->x;
+  byte y = mpu->registers->y;
+  byte p = mpu->registers->p;
+  word yx = y << 8 | x;
+  byte cs = (p & 1);
+  if (debug) fprintf(stderr, "executing ext memory command '%c' with options %02x,%02x,%02x\n", a, y, x, p);
+  switch(a) {
+    case 'A': //Get/Set Address - YX = address, CC = get, CS = set
+      if (cs) { 
+        xmemaddr = yx; 
+        if (debug) fprintf(stderr, "set extended memory address to $%04x\n", xmemaddr);
+      } else {
+        if (debug) fprintf(stderr, "returning extended memory address $%04x\n", xmemaddr);
+        y = xmemaddr >> 8; x = xmemaddr & 0xFF;
+      }
+      break;
+    case 'B': //Get/Set Bank - X/A = bank, CC = get, CS = set
+      if (cs) {
+        xmembank = x & 0x0F; 
+        if (debug) fprintf(stderr, "set extended memory bank to $%02x\n", xmembank);
+      } else {
+        if (debug) fprintf(stderr, "returning extended memory bank $%02x\n", xmembank);
+        a = xmembank;
+      }
+      break;
+    case 'C': //Read/Write Byte w/o Increment - X/A = Byte, CC = Read, CS = Write
+      if (cs) writexmem(x,0); else a = readxmem(0);
+      break;
+    case 'M': //Read/Write Bytes to RAM - YX = Byte Count, CC = Read, CS = Write 
+      if (debug) fprintf(stderr, "%s %d bytes: %02x-%04x <-> %04x\n{", mode[cs], yx, xmembank, xmemaddr, smemaddr);
+      for (int i=0; i<yx; i++) {
+        if (cs) writexmem(mpu->memory[smemaddr], -1);
+        else mpu->memory[smemaddr] = readxmem(-1);
+        if (debug) {if (i) putc(',', stderr); fprintf(stderr, "%d", mpu->memory[smemaddr]);}
+        smemaddr++; if (smemaddr > 0xFFFF) smemaddr = 0;
+      }
+      if (debug) fprintf(stderr, "}\n");
+      a = xmembank; y = xmemaddr >> 8; x = xmemaddr & 0xFF;
+      break;
+    case 'N': //Read/Write Next Byte - X/A = Byte, CC = Read, CS = Write
+      if (cs) writexmem(x,-1); else a = readxmem(-1);
+      break;
+    case 'S': //Set System RAM Address - YX = address
+      smemaddr = yx; 
+      if (debug) fprintf(stderr, "set system memory address to $%04x\n", smemaddr);
+      break;
+    case 'W': //Read/Write Next Word  - YX = Word, CC = Read, CS = Write
+      if (cs) {writexmem(x,-1); writexmem(y,-1);}
+      else {x = readxmem(-1); y = readxmem(-1);}
+      break;
+    case 'X': //Read/Write Bytes to RAM - YX = Byte Count, CC = Read, CS = Write 
+      if (debug) fprintf(stderr, "swapping %d bytes: %02x-%04x <-> %04x\n{", yx, xmembank, xmemaddr, smemaddr);
+      for (int i=0; i<yx; i++) {
+        byte temp = mpu->memory[smemaddr];
+        mpu->memory[smemaddr] = readxmem(-1);
+        writexmem(temp, -1);
+        smemaddr++; if (smemaddr > 0xFFFF) smemaddr = 0;
+      }
+      a = xmembank; y = xmemaddr >> 8; x = xmemaddr & 0xFF;
+      break;
+    default:
+      if (debug) fprintf(stderr, "invalid command '%x'\n", a);
   }
   if (debug) fprintf(stderr, "returning values %02x, %02x, %02x, %02x\n", a, y, x, p);
   mpu->registers->a = a;

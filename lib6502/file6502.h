@@ -7,7 +7,6 @@ typedef uint16_t word;
 
 extern void setdebug(int dbg);
 
-
 /**********************************************************************************************
  * Process File Command                                                                       *
  * Command passed in A and parameters in X, Y, and Carry                                      *
@@ -97,9 +96,41 @@ extern int filecmd(M6502 *mpu, word addr, byte data);
  **********************************************************************************************/
 extern int syscmd(M6502 *mpu, word addr, byte data);
 
+/* Initialize Extended RAM */
+extern void initxmem(void);
+
+/**********************************************************************************************
+ * Process Extended Memory Command                                                            *
+ * Extended Memory consists of 16 banks of 64KiB of memory, for a total of 1 MB of memory     *
+ *  not directly addressable by the 6502.                                                     *
+ * Memory is read and written a byte or word at a time to an 16 bit address within a bank.    *
+ * After each read or write, the address is incremented, and at the end of a bank, the        *
+ *  address reset to zero and the next bank selected, wrapping around to bank 0 at the end.   *                                             * 
+ * Command passed in A and parameters in X, Y, and Carry                                      *
+ *  16-Bit values are passed with the MSB in Y and the LSB in X                               *
+ * Results returned in A, X, and Y                                                            *
+ *                                                                                            *
+ * A=Command  Description                     Parameters          Returns                     *
+ * A GETADDR  Get Address (Carry Clear)                           Y,X=Address                 *
+ *   SETADDR  Set Address (Carry Set)         Y,X=Address                                     *
+ * B GETBANK  Get Bank (Carry Clear)                              A=Bank                      *
+ *   SETBANK  Set Bank (Carry Set)            X=Bank                                          *
+ * C GETCHAR  Read Byte (Carry Clear)                             A=Byte                      *
+ *   PUTCHAR  Write Byte (Carry Set)          X=Byte                                          *
+ * M GETMBLK  Get Memory Block (Carry Clear)  Y,X=Byte Count      A,Y,X=Extended Address      *
+ *   SETMBLK  Set Memory Block (Carry Set)    Y,X=Byte Count      A,Y,X=Extended Address      *
+ * N GETNEXT  Read Next Byte (Carry Clear)                        A=Byte                      *
+ *   PUTNEXT  Write Next Byte (Carry Set)     X=Byte                                          *
+ * S SYSADDR  Set System RAM Address          Y,X=Address                                     *
+ * W GETWORD  Read Next Word (Carry Clear)                        Y,X=Word                    *
+ *   PUTWORD  Write Next Word (Carry Set)     Y,X=Word                                        *
+ * X SWPMBLK  Swap Memory Block               Y,X=Byte Count      A,Y,X=Extended Address      *
+ **********************************************************************************************/
+extern int xmemcmd(M6502 *mpu, word addr, byte data);
+
 /**********************************************************************************************
  * Read Key Directly from Console                                                             *
- * Bypasses getc() from stdin, eliminating input buffering                                  *
+ * Bypasses getc() from stdin, eliminating input buffering                                    *
  * Returns ASCII key value in A, extended Key Code in Y and X                                 *
  *   Cursor Control Keys produce an ASCII value with the high bit set                         *
  **********************************************************************************************/
