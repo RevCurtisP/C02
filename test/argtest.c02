@@ -1,0 +1,47 @@
+/*******************************************
+ * ARGS - Test/Demo Command Line Arguments *
+ *******************************************/
+ 
+//Specify System Header using -H option
+#include <screen.h02>
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <intlib.h02>
+#include <args.h02>
+#include <ctype.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <string.h02>
+#include <stringl.h02>
+#include <stringm.h02>
+
+char c,n,r;
+char arg[128];
+int p;
+
+void prtbfr() {
+  for (n=0; n<#SYSBFL; n++) {
+    c = sysbfr[n];  
+    select (c) {
+      case 0: putc('@');
+      default: if (c < ' ') putc('.'); 
+               else putc(c);}
+  }
+  newlin();
+}
+
+main:
+  r,p = setarg();
+  if (r) {putln("NO ARGS"); goto exit;}
+
+  putln("ARGS");
+  n = 0; 
+  while () {
+    setsrc(p); p = strget(arg);
+    if (arg[0] == 0) break;
+    setdst(arg); printf(n, "%d %s%n");
+    n++;
+  }
+  
+goto exit;
+
