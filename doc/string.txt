@@ -1,4 +1,4 @@
-Common String Manipulation Functions for C02
+Common String Handling Functions for C02
 
 Strings are zero-terminated arrays of type char with a maximum length
 of 128 characters. 
@@ -14,7 +14,8 @@ Due to the limitations of parameter passing in C02, the argument lists of
 most of these functions do not match those in standard C and C++. 
 
 For functions that operate on two string, one of the strings is specified 
-using the setdst() function from the stddef module.
+using the setdst() function from module stddef. Unless otherwise noted,
+none of the functions change dstptr.
 
 Usage: at the beginning of the program use the directives
 
@@ -25,29 +26,26 @@ The following functions are defined:
 
   n = strlen(s);      Returns length of string.
   
-                      Note: Leaves address of s in srcptr.
+                      Note: Sets srcptr to &s.
                                          
-  p = strchr(c, s);   Searches string s for character c. 
+  n = strchr(c, s);   Searches string s for character c. 
                       
                       Returns position of first occurance of character 
                       in string, or 255 if character was not found.
                       
-                      Note: Leaves address of s in srcptr.
+                      Note: Sets srcptr to &s.
                       
-  p = strrch(c, s);   Searches end of string s for character c. 
-                      
-                      Returns position of last occurance of character 
+  n = strrch(c, s);   Returns position of last occurance of character 
                       in string, or 255 if character was not found.
                       
-                      Note: Leaves address of s in srcptr.
+                      Note: Sets srcptr to &s.
                       
   n = strcat(s);      Concatenates source string s onto the end of
                       destination string set by prior setdst() call.
                        
                       Returns total length of concatenated string.
 
-                      Note: leaves the address of destination string
-                      in dstptr.
+                      Note: Sets srcptr to &s.
                   
   c = strcmp(s);      Compares source string s against destination 
                       string set by prior setdst() call.
@@ -58,63 +56,36 @@ The following functions are defined:
                       These results can be evaluated using the C02 
                       unary comparator ! or the test-operators :+ or :-.
                   
-                      Note: leaves the address of s in srcptr and 
-                      the address of the destination string in dstptr.
+                      Note: Sets srcptr to &s.
                                     
   n = strcpy(s);      Copies wource string s into destination string set
                       by prior setdst() call, replacing previous contents.
                       
                       Returns number of characters copied.
                       
-                      Note: leaves the address of s in srcptr and 
-                      the address of the destination string in dstptr.
-
                       To copy the first n characters from string s to
                       string d, the following code can be used: 
                       
                       setdst(&d); strcpy(s); s[n]=0;
-                        
-  p = strstr(s);      Searches for destination string s in source string 
-                      set by prior setdst() call.
+
+                      Note: Sets srcptr to &s.
+
+  n = strstr(s);      Searches for string s in destination string set.
                       
                       Returns position of source string in destination
                       string, or 255 if character was not found.
                       
-                      Note: calls strcmp(), leaving the address of s
-                      in srcptr and the position of the source string in 
-                      the destination string (or the end of the destination 
-                      string if the source string was not found) in dstptr.
+                      Note: calls strcmp(), leaving srcptr pointing to
+                      the matched string in the destination string 
+                      (or the end if not found).
 
 These functions are not part of the standard C and C++ string libraries. 
 They are included because they are more efficient than equivalent C02 code.
 
-  p = strapd(c, s);   Append character c to string s. 
-                      
-                      Returns length of appended string.
-                      
-                      If the string length exceeds 127 prior to the
-                      append, no action is taken and the existing
-                      length is returned.
-                      
-                      Note: calls strlen(), leaving the address of
-                      s in srcptr.
-                      
-  strppd(c, s);       Prepend character c to string s. 
-                      
-                      Returns length of prepended string.
-                      
-                      If the string length exceeds 127 prior to the
-                      prepend, no action is taken and the existing
-                      length is returned.
-
-                      Note: calls strlen(), leaving the address of
-                      s in srcptr.
-                      
   strcpb(s)           Copies string s to the system buffer (sysbfr).
   
-                      Note: calls strcpy(), leaving the address of s
-                      in srcptr and the address of the system buffer
-                      in dstptr.
+                      Note: sets srcptr to &s and dstptr to &sysbfr,
+                      then calls strcpy().
                       
   n = strcut(n, s);   Copies from source string s, starting at position n,
                       into destination string set by prior setdst() call, 
@@ -128,9 +99,8 @@ They are included because they are more efficient than equivalent C02 code.
                       
                       setdst(&d); strcut(s, n); s[i] = 0;
                       
-                      Note: calls routine strcat(), leaving the address 
-                      of the destination string in dstptr and address of
-                      position n in the source string in srcptr.
+                      Note: Sets srcptr to the address of position n 
+                      in s and calls strcpy().
 
 Note: This library expects the following functions to be defined
 
