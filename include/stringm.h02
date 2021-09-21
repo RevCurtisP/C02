@@ -1,0 +1,31 @@
+/**************************************************
+ * stringm - String Modification Routines for C02 *
+ **************************************************/
+
+/* Append Character to String    *
+ * Args: c - Character to append *
+ *       s - String to append to *
+ * Returns: New length of string */
+char strapd();
+
+/* Convert String to Lowercase *
+ * Args: int &s - String       *
+ * Returns: char l - Length    */
+char strlwr();
+
+/* Pad or Truncate String    *
+ * Args: char n - New Length *
+ *       int &s - string     *
+ * Returns: char l - Length  */
+char strpad();
+
+/* Prepend Character to String    *
+ * Args: c - Character to prepend *
+ *       s - String to prepend to *
+ * Returns: New length of string  */
+char strppd();
+
+/* Convert String to Uppercase *
+ * Args: int &s - String       *
+ * Returns: char l - Length    */
+char strupr();

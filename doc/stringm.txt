@@ -1,0 +1,72 @@
+String Manipulation Module for C02
+
+These functions are not part of the standard C and C++ string libraries. 
+They are included because they are more efficient than equivalent C02 code.
+
+
+  #include <stddef.h02>
+  #include <ctype.h02>
+  #include <string.h02>
+  
+The following functions are defined:
+
+  n = strapd(c, s);   Appends character c to string s.
+  
+                      Returns the new length of the string.
+                      
+                      Note: Calls strlen(), then writes c into the end
+                      position and a 0 byte into the following position.
+
+  n = straps(s);      Appends a space to string s.
+                      
+                      Returns the new length of the string.
+                      
+                      Note: Executes strspd with arguments ' ' and s.
+                     
+  n = strppd(c, s);   Prepends character c to string s.
+  
+                      Returns the new length of the string.
+                      
+                      Note: Calls strlen(), shifts the entire string one
+                      character to the right and writes c to position 0.
+
+  n = strpps(s);      Prepends a space to string s.
+                      
+                      Returns the new length of the string.
+                      
+                      Note: Executes strppd with arguments ' ' and s.
+                     
+  n = strpad(v,s);    Right pads string s with spaces to length v.
+                      
+                      If v is less than the current length of the
+                      string. the string is not changed.
+                      
+                      Returns the new length of the string.
+                      
+                      Note: Calls strlen(), and if the result is less
+                      than v, appends the appropriate number of spaces.
+                                           
+  n = strlwr(s);      Converts letters in string s to lowercase.
+                      
+                      Returns the length of the string.
+                      
+                      Note: Sets srcptr to &s, then iterates through 
+                      the string, calling tolowr() on each character,
+                      
+  n = strupr(s);      Converts letters in string s to uppercase.
+                      
+                      Returns the length of the string.
+                      
+                      Note: Sets srcptr to &s, then iterates through 
+                      the string, calling touppr() on each character,
+
+Note: This module expects the following functions to be defined
+
+  setdst(s);         Set destination pointer
+  setsrc(s);         Set source pointer and initialize index
+
+along with the zero page variable pairs
+  
+  srcptr              Source String Pointer 
+  dstptr              Destination String Pointer
+

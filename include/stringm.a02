@@ -1,0 +1,114 @@
+; C02 module stringm.h02 assembly language subroutines
+; Requires external routines SETSRC, TOLOWR, and TOUPPR
+; Requires the following RAM locations be defined
+; external zero page word SRCPTR 
+; and external bytes TEMP0 and TEMP1
+
+        SUBROUTINE STRINGM
+
+;straps(c, s) - Append space to string s
+;Args: A = Character to be appended
+;      X,Y = Pointer to string
+;Affects N,Z
+;Returns A,Y = New String Length
+STRAPS: LDA ' '         ;Set Append Character to Space
+
+;strapd(c, s) - Append character c to string s
+;Args: A = Character to be appended
+;      X,Y = Pointer to string
+;Affects N,Z
+;Returns A,Y = New String Length
+STRAPD: STA TEMP0       ;Save Character to Append
+        JSR STRLEN      ;Get Length of String
+        BMI .ERROR      ;Return 255 if > 127
+        LDA TEMP0       ;Restore Character to Append
+.APDLOP STA (SRCPTR),Y  ;Store at End of String
+        BEQ .RETLEN     ;Exit if NUL
+        INY             ;Increment Past New Character
+        LDA #0          ;Terminate String
+        STA (SRCPTR),Y
+        BEQ .RETLEN     ;and Append to String
+
+;strpps(c, s) - Prepend space to string s
+;Args: A = Character to be appended
+;      X,Y = Pointer to string
+;Affects N,Z
+;Returns A,Y = New String Length
+STRPPS: LDA ' '         ;Set Append Character to Space
+
+;strppd(c, s) - Prepend Character to String
+;Args: A = Character to be appended
+;      X,Y = Pointer to string
+;Sets: N,Z
+;Returns A = New String Length
+STRPPD: STA TEMP0       ;Save Character to Append
+        JSR STRLEN      ;Get Length of String
+        BMI .ERROR      ;Return 255 if > 127
+        INY             ;Bump up string length              
+        TYA             ;Push string length onto stack
+        PHA
+.PPDLOP DEY             ;Copy Preceding Character
+        LDA (SRCPTR),Y  
+        INY             ;into Current Position
+        STA (SRCPTR),Y  
+        DEY             ;Move to Preceding Position
+        BNE .PPDLOP     ;and Loop  
+        LDA TEMP0       ;Retrieve Character
+        STA (SRCPTR),Y  ;and Store in Position 0
+        PLA             ;Retrieve new string length
+        RTS
+.ERROR  LDA #$FF        ;Return Error Code FALSE
+        RTS
+ 
+;STRPAD(n, &s) - Pad or Truncate String 
+;Args: A - New Length of String
+;      X,Y - Pointer to string
+;Sets: SRCPTR = Pointer to source string
+;Returns: A,Y = Length of string
+;         N,Z based on A
+STRPAD: STA TEMP0       ;Save New Length
+        JSR STRLEN      ;Get Current Length of String
+        CMP TEMP0
+        BCS .PDONE      ;If Shorter than New Length
+        LDA #' '        
+.PLOOP  STA (SRCPTR),Y   ;  Fill with Spaces
+        INY
+        BMI .PDONE      ;  Until 128 or
+        CPY TEMP0       ;  New Length is Reached
+        BNE .PLOOP
+.PDONE  LDA #0          ;Terminate String
+        STA (SRCPTR),Y   
+        TYA             ;and Return Length
+        RTS
+
+;STRLWR(&s) - Convert String to Lower Case
+;Args: X,Y - Pointer to string
+;Sets: SRCPTR = Pointer to source string
+;Returns: A,Y = Length of string
+;         N,Z based on A
+STRLWR: JSR SETSRC      ;Initialize Source String
+.LLOOP  LDA (SRCPTR),Y  ;Get Next Character
+        BEQ .RETLEN      ;If <> NUL 
+        JSR TOLOWR      ;  Convert to Lower Case
+        STA (SRCPTR),Y  ;  and Replace in String
+        INY             ;  Increment Index
+        BPL .LLOOP      ;  and Loop if < 128
+        TYA             ;Transfer Index to Accumulator
+        RTS             ;and Return
+
+;STRUPR(&s) - Convert String to Lower Case
+;Args: X,Y - Pointer to string
+;Sets: SRCPTR = Pointer to source string
+;Returns: A,Y = Length of string
+;         N,Z based on A
+STRUPR: JSR SETSRC      ;Initialize Source String
+.ULOOP  LDA (SRCPTR),Y  ;Get Next Character
+        BEQ .RETLEN     ;If <> NUL 
+        JSR TOUPPR      ;  Convert to Lower Case
+        STA (SRCPTR),Y  ;  and Replace in String
+        INY             ;  Increment Index
+        BPL .ULOOP      ;  and Loop if < 128
+.RETLEN TYA             ;Transfer Index to Accumulator
+        RTS             ;and Return
+
+        ENDSUBROUTINE
