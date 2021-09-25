@@ -382,25 +382,7 @@ static int doSave(int argc, char **argv, M6502 *mpu)	/* -l addr size file */
   return 3;
 }
 
-
-
-static int doArgs(int argc, char **argv, M6502 *mpu)	/* -a addr */
-{
-  int addr = htol(argv[1]);
-  int size = strlen(argv[2]);
-  int quoted = 0;
-  char *s = malloc(size);
-  strcpy(s, argv[2]);
-  for(int i=0; i<size; i++) {
-    if (s[i] == '\'') quoted = !quoted;
-    else if (!quoted && s[i]==' ') s[i] = 0;
-  }
-  write(mpu, addr, size, s);
-  return 2;
-  return 1;
-}
-
-static int doWrite(int argc, char **argv, M6502 *mpu)	/* -a addr "string" */
+static int doWrite(int argc, char **argv, M6502 *mpu)	/* -w addr "string" */
 {
   int addr = htol(argv[1]);
   int size = strlen(argv[2]);
@@ -608,8 +590,7 @@ int main(int argc, char **argv)
     while (++argv, --argc > 0)
     {
       int n= 0;
-      if      (!strcmp(*argv, "-a"))  n= doArgs(argc, argv, mpu);
-      else if (!strcmp(*argv, "-B"))  bTraps= 1;
+      if      (!strcmp(*argv, "-B"))  bTraps= 1;
       else if (!strcmp(*argv, "-d"))	n= doDisassemble(argc, argv, mpu);
       else if (!strcmp(*argv, "-C"))	n= doCtrap(argc, argv, mpu);
       else if (!strcmp(*argv, "-D"))	n= doDebug(argc, argv, mpu);
