@@ -3,6 +3,7 @@
 
 #include <stddef.h02>
 #include <stdlib.h02>
+#include <args.h02>
 #include <intlib.h02>
 #include <ctype.h02>
 #include <stdio.h02>
@@ -353,10 +354,26 @@ void prttbl() {
   }
 }
 
+/* Read Command Line Arguments and Open Files */
+void doargs() {
+  if (debug) {setdst(sysbfr); printf("PARSING ARGUMENTS \"%s\"%n");}
+  aa = argset(); if (aa) xerror("NO ARGUMENTS SPECIFIED");
+  
+  aa = argget(inpnam); if(!aa) xerror("INPUT FILE NOT SPECIFIED");
+  if (debug) printf("  PARSED INPNAM \"%s\"%n");
+
+  aa = argget(outnam); //if(!aa) xerror("OUTPUT FILE NOT SPECIFIED");
+  if (debug) printf("  PARSED OUTNAM \"%s\"%n");
+
+  aa = argget(lstnam);
+  if (debug) printf("  PARSED LSTNAM \"%s\"%n");
+
+}
+
 main:
   symbgn = &$8000; symend = &$A000; symptr = symbgn; //Set up Symbol Table
   symblk($FF); blkset(0); //Initialize Symbol Table
-  setdst(inpnam); strcpy("opcodes.a02");
+  doargs(); //Read File Names and Options from Command Line Arguments
   inpfil = opnfil(0,inpnam);
   asmfil(0);
   fclose(inpfil);
