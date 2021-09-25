@@ -382,8 +382,21 @@ static int doSave(int argc, char **argv, M6502 *mpu)	/* -l addr size file */
   return 3;
 }
 
+
+
 static int doArgs(int argc, char **argv, M6502 *mpu)	/* -a addr */
 {
+  int addr = htol(argv[1]);
+  int size = strlen(argv[2]);
+  int quoted = 0;
+  char *s = malloc(size);
+  strcpy(s, argv[2]);
+  for(int i=0; i<size; i++) {
+    if (s[i] == '\'') quoted = !quoted;
+    else if (!quoted && s[i]==' ') s[i] = 0;
+  }
+  write(mpu, addr, size, s);
+  return 2;
   return 1;
 }
 
@@ -391,9 +404,9 @@ static int doWrite(int argc, char **argv, M6502 *mpu)	/* -a addr "string" */
 {
   int addr = htol(argv[1]);
   int size = strlen(argv[2]);
-  char *args = malloc(size);
-  strcpy(args, argv[1]);
-  write(mpu, addr, size, args);
+  char *s = malloc(size);
+  strcpy(s, argv[2]);
+  write(mpu, addr, size, s);
   return 2;
 }
 
@@ -593,49 +606,49 @@ int main(int argc, char **argv)
     }
   else
     while (++argv, --argc > 0)
-      {
-	int n= 0;
-	if      (!strcmp(*argv, "-a"))  n= doArgs(argc, argv, mpu);
-	else if (!strcmp(*argv, "-B"))  bTraps= 1;
-	else if (!strcmp(*argv, "-d"))	n= doDisassemble(argc, argv, mpu);
-	else if (!strcmp(*argv, "-C"))	n= doCtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-D"))	n= doDebug(argc, argv, mpu);
-	else if (!strcmp(*argv, "-E"))	n= doEtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-F"))	n= doFtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-G"))	n= doGtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-h"))	n= doHelp(argc, argv, mpu);
-	else if (!strcmp(*argv, "-i"))	n= doLoadInterpreter(argc, argv, mpu);
-	else if (!strcmp(*argv, "-I"))	n= doIRQ(argc, argv, mpu);
-	else if (!strcmp(*argv, "-K"))	n= doKtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-l"))	n= doLoad(argc, argv, mpu);
-	else if (!strcmp(*argv, "-m"))	n= doDump(argc, argv, mpu);
-	else if (!strcmp(*argv, "-M"))	n= doMtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-N"))	n= doNMI(argc, argv, mpu);
-	else if (!strcmp(*argv, "-P"))	n= doPtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-R"))	n= doRST(argc, argv, mpu);
-	else if (!strcmp(*argv, "-S"))	n= doStrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-s"))	n= doSave(argc, argv, mpu);
-	else if (!strcmp(*argv, "-v"))	n= doVersion(argc, argv, mpu);
-	else if (!strcmp(*argv, "-w"))	n= doWrite(argc, argv, mpu);
-	else if (!strcmp(*argv, "-X"))	n= doXtrap(argc, argv, mpu);
-	else if (!strcmp(*argv, "-x"))	exit(0);
-	else if ('-' == **argv)		usage(1);
-	else
-	  {
-	    /* doBtraps() left 0x8000+0x4000 in bank 0, so load */
-	    /* additional images starting at 15 and work down */
-	    static int bankSel= 0x0F;
-	    if (!bTraps)			usage(1);
-	    if (bankSel < 0)			fail("too many images");
-	    if (!load(mpu, 0x8000, argv[0]))	pfail(argv[0]);
-	    memcpy(bank[bankSel--],
-		   0x8000 + mpu->memory,
-		   0x4000);
-	    n= 1;
-	  }
-	argc -= n;
-	argv += n;
-      }
+    {
+      int n= 0;
+      if      (!strcmp(*argv, "-a"))  n= doArgs(argc, argv, mpu);
+      else if (!strcmp(*argv, "-B"))  bTraps= 1;
+      else if (!strcmp(*argv, "-d"))	n= doDisassemble(argc, argv, mpu);
+      else if (!strcmp(*argv, "-C"))	n= doCtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-D"))	n= doDebug(argc, argv, mpu);
+      else if (!strcmp(*argv, "-E"))	n= doEtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-F"))	n= doFtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-G"))	n= doGtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-h"))	n= doHelp(argc, argv, mpu);
+      else if (!strcmp(*argv, "-i"))	n= doLoadInterpreter(argc, argv, mpu);
+      else if (!strcmp(*argv, "-I"))	n= doIRQ(argc, argv, mpu);
+      else if (!strcmp(*argv, "-K"))	n= doKtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-l"))	n= doLoad(argc, argv, mpu);
+      else if (!strcmp(*argv, "-m"))	n= doDump(argc, argv, mpu);
+      else if (!strcmp(*argv, "-M"))	n= doMtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-N"))	n= doNMI(argc, argv, mpu);
+      else if (!strcmp(*argv, "-P"))	n= doPtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-R"))	n= doRST(argc, argv, mpu);
+      else if (!strcmp(*argv, "-S"))	n= doStrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-s"))	n= doSave(argc, argv, mpu);
+      else if (!strcmp(*argv, "-v"))	n= doVersion(argc, argv, mpu);
+      else if (!strcmp(*argv, "-w"))	n= doWrite(argc, argv, mpu);
+      else if (!strcmp(*argv, "-X"))	n= doXtrap(argc, argv, mpu);
+      else if (!strcmp(*argv, "-x"))	exit(0);
+      else if ('-' == **argv)		usage(1);
+      else
+        {
+          /* doBtraps() left 0x8000+0x4000 in bank 0, so load */
+          /* additional images starting at 15 and work down */
+          static int bankSel= 0x0F;
+          if (!bTraps)			usage(1);
+          if (bankSel < 0)			fail("too many images");
+          if (!load(mpu, 0x8000, argv[0]))	pfail(argv[0]);
+          memcpy(bank[bankSel--],
+          0x8000 + mpu->memory,
+          0x4000);
+          n= 1;
+        }
+      argc -= n;
+      argv += n;
+    }
 
   if (bTraps)
     doBtraps(0, 0, mpu);
