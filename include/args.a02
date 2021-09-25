@@ -1,0 +1,26 @@
+;Module arg,h02 Assembly Language Routines
+;Command Line Arguments Not Supported
+
+        SUBROUTINE ARGS
+
+;Argument Parser Constants
+ARGFLG  EQU $FF   ;Command Arguments Not Supported
+ARGDLM  EQU $00   ;Argument Separator (NUL)
+ARGTRM  EQU $00   ;Argument Terminator (NUL)
+       
+;argset() - Set Up Argument List
+;Returns: A = $FF - No Arguments Found
+ARGSET: LDA #$FF      ;Return No Arguments Found
+        
+;argget(s) - Read Next Argument
+;Args: X,Y - Pointer to String
+;Sets: DSTPTR - Destination Pointer
+;      (DSTPTR) to Empty String
+;Returns: A = 0 - No More Arguments
+ARGGET: JSR SETDST      ;Set Destination Pointer0[
+        LDY #0          ;Set String Length to Zero
+        TAY             ;
+        STA (DSTPTR),Y  ;Make String Empty
+        RTS             ;and Return Length Zero
+
+        ENDSUBROUTINE

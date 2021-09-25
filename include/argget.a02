@@ -1,0 +1,37 @@
+;Module ARGS generic ARGGET routinr
+
+;argget(s) - Read Next Argument into String s
+;Args: X,Y - Address of String
+;Uses: SYSBFR - System Buffer
+;      SYSBFL - System Buffer Length
+;Sets: DSTPTR - Address of String
+;Updates: SYSBFP - System Buffer Position
+;Returns: A,Y = Argument Length
+;         X = New System Buffer Position
+ARGGET: JSR SETDST      ;Set Destination Pointer
+        LDY #0          ;Initialize Destination Index
+        LDX SYSBFP      ;Get System Buffer Position
+.GLOOP: LDA SYSBFR,X    ;Get Next Character
+        BEQ .GDONE      ;If String Terminator
+        CMP #ARGTRM     ;or Argument Terminator
+        BEQ .GDONE      ;  Terminate String and Return
+        CMP #ARGDLM     ;Else If Argument Delimiter
+        BNE .GSKIP      ;  
+        INX             ;  Bump Buffer Index Past Delimiter
+        CPY #0          ;  If Leading Space
+        BEQ .GLOOP      ;    Check Next Character
+        BNE .GDONE      ;  Terminate String and Returns
+.GSKIP  LDA SYSBFR,X    ;Else Get Character from Buffer
+        AND #ARGMSK     ;  Apply Bit Mask 
+        STA (DSTPTR),Y  ;  Copy to Destination String
+        INY             ;  Increment Destination Index
+        BMI .GDONE      ;  If > 128, Return as Length
+        INX             ;  Increment Buffer Index
+        CPX #SYSBFL     ;  If Less Than Buffer Length
+        BCC .GLOOP      ;  Loop
+.GDONE  LDA #0          ;
+        STA (DSTPTR),Y  ;Terminate Destination String
+.GRTRN  STX SYSBFP      ;Set System Buffer Position
+        TYA             ;Return Argument Length
+        RTS
+

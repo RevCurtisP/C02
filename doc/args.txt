@@ -1,0 +1,60 @@
+Command Line Argument parsing module  for C02 Programs
+
+This is module provides functions for parsing command line arguments
+passed into a program.
+
+Although 6502 based computers rarely use a shell interface, this module
+allows arguments to be specified when executing a program on several
+popular systems.
+
+On the Apple I, the syntax is
+
+  0300R arg1 arg2 arg3 ...
+  
+and on Commodore computers, the syntax is
+
+  RUN:"arg1 arg2 arg3 ...
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <args.h02>
+
+The following functions are defined:
+
+  r = argset();         Sets up argument list for parsing. This function
+                        must be called only once and before any calls to 
+                        the argget() function.
+
+                        Returns 0 if successful, or 255 if no argument
+                        list was specified or argument parsing is not
+                        supported. 
+                        
+                        A result of success does not necessarily mean that
+                        any arguments were passed, only that the program
+                        was executed using the appropriate syntax.
+                       
+  n = argget(&s);       Reads the next argument into string s. 
+
+                        Returns the length of the argument. After the 
+                        last argument, sets s to an empty string and 
+                        returns 0.
+
+                        Note: Sets dstptr to the address of s.
+
+Note: This library expects the following functions to be defined:
+
+  setdst();             Set destination pointer.
+
+along with the zero page variable
+  
+  dstptr                Destination pointer.
+
+the variables
+  
+  sysbfr                System buffer              
+  sysbfp                System buffer position.
+
+and the constant
+  
+  #SYSBFL               System buffer length.

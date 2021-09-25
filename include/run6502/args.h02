@@ -1,0 +1,20 @@
+/************************************* 
+ * Command Line Parameters Processor *
+ *************************************/
+
+#define ARGFLG $00 //Argument Parser Flag
+#define ARGSEP $20 //Argument Delimiter
+#define ARGEND $00 //Argument Terminator
+#define ARGMSK $FF //Argument Mask
+
+/* Set up Argument List        *
+ * Returns: char $00 = Success *
+ *               $FF = No Args */
+void argset();
+
+/* Get Next Argument                 *
+ * Setup: argset() Before First Call *
+ * Args: &s - String to Populate     *
+ * Returns: char Length of String    *
+ *               0 = End of List     */
+void argget();

@@ -1,0 +1,43 @@
+;Module arg,h02 common functions for Commodore 8-bit computers
+
+;Command Line Arguments are specified in the form:
+;  RUN:"arg1 arg2 arg3..
+;The colon terminates the RUN statement 
+;The quote ensures that the arguments are not tokenized
+;The list may optionally be terminated with a quote
+
+        SUBROUTINE ARGS
+        
+;Argument Parser Constants
+ARGFLG  EQU $00     ;Command Arguments Supported
+ARGDLM  EQU $20     ;Argument Separator (Space)
+ARGTRM  EQU $22     ;Argument Terminator (Quotes)
+ARGMSK  EQU $FF     ;Mask: No Change
+
+;argset() - Set Up Argument List for argget() calls
+;Uses: SYSBFR - System Buffer
+;      SYSBFP - System Buffer Position
+;Sets: SYSBFP - New Buffer Position
+;Affects: X,C
+;Returns: A = $00 - Success
+;             $FF - No Arguments Specified
+ARGSET: LDX SYSBFP      ;Set Index to System Buffer Position
+        LDA SYSBFR,X    ;
+        CMP #':'        ;If First Character is a Colon
+        BNE .NOARGS     ; 
+        INX             ;
+        LDA SYSBFR,X    ;
+        CMP #$22        ;and Second Character is a Quote
+        BNE .NOARGS     ;
+        INX             ;  Increment Index Past Quote
+        LDA #$FF        ;  and Return Success
+        BNE .SDONE      ;Else 
+.NOARGS LDA #0          ;  Terminate Argument List 
+        STA SYSBFR,X    ;  Set Buffer Position
+.SDONE  STX SYSBFP      ;  and Return Failure
+        EOR #$FF        ;Invert Result
+        RTS             ;
+
+        INCLUDE "argget.a02"  ;Generic ARGGET Routine
+
+        ENDSUBROUTINE

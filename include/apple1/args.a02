@@ -1,0 +1,18 @@
+;Module arg,h02 Assembly Language Routines for Apple 1 Computer
+
+;Command Line Arguments are specified in the form:
+;  0300R arg1 arg2 arg3...
+;Arguments are separated by one or more spaces
+
+        SUBROUTINE ARGS
+
+;Argument Parser Constants
+ARGFLG  EQU $00   ;Command Arguments Supported
+ARGDLM  EQU $A0   ;Argument Separator (Sapce)
+ARGTRM  EQU $8D   ;Argument Terminator (C/R)
+ARGMSK  EQU $7F   ;Mask: Strip High Bit
+
+        INCLUDE "argset.a02"  ;Generic ARGSET Routine
+        INCLUDE "argget.a02"  ;Generic ARGGET Routine
+
+        ENDSUBROUTINE

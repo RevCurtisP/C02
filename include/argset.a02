@@ -1,0 +1,12 @@
+;Module ARGS generic ARGGET routinr
+
+;argset() - Set Up Argument List
+;Skips Spaces Between 'R' and First Argument
+;Returns: A = $FF - No Arguments Found
+ARGSET: LDX SYSBFP      ;Get Buffer Position
+        LDA SYSBFR,X    ;Get Character At Position
+        BEQ .SNOPE      ;If Not NUL 
+        LDA #$FF        ;  Return Success
+.SNOPE  EOR #$FF        ;Else Return No Arguments
+        RTS
+
