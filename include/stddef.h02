@@ -3,8 +3,9 @@
  * functions used in libraries.     */ 
 
 /* Constant Definitions */
-#define TRUE  $FF
-#define FALSE $00 
+#define STRSIZ 128
+#define TRUE   $FF
+#define FALSE  $00 
 
 /* Add to Destination Pointer *
  * Args: &n - amount to add   */

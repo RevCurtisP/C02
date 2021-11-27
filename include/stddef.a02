@@ -62,6 +62,11 @@ SETSRC: STX SRCPTR    ;Store Source Pointer
         LDY #$00      ;Initialize Index Into String
         RTS
 
+;Set List Pointer
+SETLST: STX LSTPTR
+        STY LSTPTR+1
+        RTS
+
 ;Retrieve System Buffer Address
 GETBFR: LDX #<SYSBFR
         LDY #>SYSBFR
@@ -80,6 +85,16 @@ GETSRC: LDX SRCPTR
         CLV           ;Clear Overflow Flag for BVC
         RTS
 
+;Retrieve String List Pointer
+GETLST: LDX LSTPTR
+        LDY LSTPTR+1
+        RTS
+
+;Add Byte A to Word YX
+ADDAYX: JSR SAVRXY;   ;Store X,Y in TEMP1, TEMP2
+        TAX           ;Set Y,X to 0,A
+        LDY #0        ;and Execute ADDTXY
+        
 ;Add TEMP1,TEMP2 to X,Y
 ADDTXY: TXA         
         CLC
@@ -90,6 +105,11 @@ ADDTXY: TXA
         TAY
         RTS
 
+;Add Byte A to Word YX
+SUBAYX: STA TEMP1     ;Set LSB to A
+        LDA #0        ;    MSB to 0
+        STA TEMP2     ;and Execute SUBTXY
+          
 ;Subtract TEMP1,TEMP2 from X,Y
 SUBTXY: TXA         
         SEC
@@ -99,6 +119,20 @@ SUBTXY: TXA
         SBC TEMP2
         TAY
         RTS
+
+
+;Subtract X,Y from TEMP1, TEMP2
+;NOT CURRENTLY USED ANYWHERE
+;SUBXYT: LDA TEMP1       ;Get TEMP1
+;        STX TEMP1       ;
+;        SEC             ;
+;        SBC TEMP1       ;Subtract X 
+;        TAX             ;and Store in X
+;        LDA TEMP2       ;Get TEMP2
+;        STY TEMP2
+;        SBC TEMP2       ;Subtract Y
+;        TAY             ;and Store in Y
+;        RTS
 
 ;Decrement X,Y Register Pair
 DECRXY: CPY #0
@@ -132,6 +166,12 @@ SETSBP: LDA SYSBFP    ;Load Position in Buffer
         BMI .RETURN   ;If Greater than 127, Return
         JSR SETSRB    ;Set Source Pointer to Buffer Address
 
+;Add Accumulator to Zero Page Word
+;Args: A = Bytre to Add
+;      X = Address of Zero Page Word
+ADDZPA: LDY #0        ;Set MSB to 0
+        BEQ .ADDZPX   ;and add Accumulator
+
 ;Add Accumulator to Source Address
 ADDSRA: TAX             ;Move Accumulator to Argument LSB
         LDY #0          ;Clear Argument MSB
@@ -144,12 +184,12 @@ ADDSRC: LDA #SRCPTR       ;Set Index and Drop into ADDZPW
 ;Add to Zero Page Word
 ;Args: A = Address of Zero Page Word
 ;      Y,X = MSB,LSB of Integer to Add
-;Affects: A
-ADDZPW: STA TEMP3       ;Save Zero Page Address
+;Affects: A,X,C,N,Z
+ADDZPW: CLC             ;Clear Carry
+ADCZPW: STA TEMP3       ;Save Zero Page Address
         TXA             ;Move Argument LSB to Accumulator
         LDX TEMP3       ;Set Index to Zero Page Address
-        CLC             ;Clear Carry
-        ADC 0,X         ;Add Argument LSB to Target LSB
+.ADDZPX ADC 0,X         ;Add Argument LSB to Target LSB
         STA 0,X         ;and Save Result
         TYA             ;Move Argument MSB to Accumulator
         ADC 1,X         ;Add Argument MSB to Target MSB
