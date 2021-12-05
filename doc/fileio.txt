@@ -1,0 +1,139 @@
+File I/O functions for C02
+
+This module provides functions for creating, accessing, reading from,
+and writing to data files. Depending on the system, the files may
+reside cassette tape, floppy disk, or both.
+
+At the beginning of the program use the directives
+
+  #include <fileio.h02>
+
+The following constants are defined:
+
+  DRIVES    Number of Disk Drives 
+  DRIVE#    Drive Identifier, where # is 0 through DRIVES-1  
+  
+  DISKS     Number of Disks per Drive
+  DISK#     Disk Identifier, where # is 0 through DISKS-1  
+  
+  MABSLT    Load Absolute (Use File Header Address)
+  MRELCT    Load Relocate (Use Specified Address)
+
+  MREAD     Open File for Reading
+  MWRITE    Open File for Writing
+  MAPPND    Open File for Append
+  
+  MBINRY    Treat File as Binary instead of Text
+
+The following functions are defined:
+
+  fsinit();                 Initialize file system. This should be called
+                            before any other file functions.
+
+  fsname(&n);               Set filename to n.
+
+                            Call this before fload() or fsave() to set the 
+                            filename.
+
+  fsaddr(&a);               Set load, save, read, or write address to a.
+
+                            Call this before fload() or fsave() to set the
+                            load or start address, and before fread() or
+                            fwrite() to set the array address.
+
+  e,i = fload(d);           Load file into memory using options d, returning 
+                            error code e, and ending address i.
+
+                            Use fsname(&name) and fsaddr(addr) to set the
+                            filename and load address before calling.
+
+                            The options byte d consists of the device number,
+                            drive numbet, and mode combined ny the | operator.
+
+                            Mode MABSLT loads the data from the file 
+                            into memory starting at the address contained  
+                            in the file header. 
+                            
+                            Mode MRELCT ignores the starting address in the 
+                            file and loads the data into memory starting
+                            at an address specified using setdst() .
+                            
+  e,i = fsave(d,a);         Save memory into file using options and ending
+                            address a.
+                            
+                            Use fsname(&name) and fsaddr(addr) to set the
+                            filename and start address before calling.
+                            
+                            The options byte d consists of the device number
+                            combined with option and/or mode values by use of 
+                            the | operator.
+
+   f,e = fopen(d,&n);       Open file with name n using options d, returning
+                            channel number f and error code e.
+
+                            The options byte d consists of the device number,
+                            drive numbet, and mode combined ny the | operator.
+
+                            If the return channel number is 0, the file was
+                            not opened.
+                            
+   e = fclose(f);           Close file on channel f, returning error code e.
+                            
+   e = feof(f);             Return End of File condition for file opened on
+                            channel f.
+                            
+                            A return value of 255 means the End of File was
+                            reached, 0 means it was not reached, while any 
+                            other value is an error code.
+                            
+   e = ferror(f);           Return last error on channel f in e.
+
+                            Note: Not yet implemented.
+                            
+   e = fflush(f);           Flush output buffer for channel f to file, 
+                            returning error code e.
+                            
+   e = fseek(f, i);         Move to position i in file f, returning error
+                            code in e. The specified position is always
+                            relative to the beginning of the file and
+                            specifying $FFFF moves to the end of the file.
+                            
+   e = rewind(f);           Move to beginning file to p, returning error
+                            code in e.
+                            
+   i,e = ftell(f);          Return position in file f in i, and error code
+                            in e.
+                            
+   c,e = fgetc(f);          Read character from channel f, returning the
+                            character in c and error code in e. 
+
+                            
+   e = fputc(c,f);          Write character c to channel f, returning error
+                            code in e. 
+                            
+   n,e = fgets(f,&s);       Read line of up to 128 characters from channel f
+                            into string s, returning the number of characters
+                            read in n and error code in e. 
+                            
+   n,e = fputs(f,&s);       Write up to 128 characters of string s to channel 
+                            f, returning the number of characters written 
+                            in n and error code in e. 
+                            
+   n,e = fputln(f,&s);      Write up to 128 characters of string s, followed
+                            by a newline, to channel f, returning the number 
+                            of characters written in n and error code in e. 
+                            
+   r,e = read(f,n);         Read up to n bytes from channel f into an array,
+                            returning the number of bytes read in rn and error 
+                            code in e. 
+
+                            Use fsaddr(&array) to set the address of the 
+                            array before calling.
+                            
+   w,e = read(f,n);         Write n bytes of array to channel f, returning 
+                            the number of bytes written in w and error code 
+                            in e. 
+
+                            Use fsaddr(&array) to set the address of the 
+                            array before calling.
+                            

@@ -1,0 +1,50 @@
+This module provides functions for reading file directories from
+disks, disk like devices, and possihly tapes.
+
+At the beginning of the program use the directives
+
+  #include <fileio.h02>
+  #include <dirent.h02>
+
+The following structures are defined:
+  
+  struct dirhdr dh;     Directory Header. At a minumum this will contain
+                        the member name[128], which is the directory
+                        name or disk label.
+
+  struct dirent de;     Directory Entry. At a minumum this will contain
+                        the member name[128], which is the filename.
+
+The following functions are defined:
+
+   f,e = opndir(d,&n);  Open directory named n with options d, returning
+                        channel number f and error code e.
+                        
+                        The options byte d consists of the device number
+                        and drive numbet combined ny the | operator.
+                        
+                        If the return channel number is 0, the directory
+                        was not opened.
+
+   e = clsdir(f);       Close directory opened on channel f, returning 
+                        error code e.
+                        
+   n,e = rdhdr(f,&dh);  Read directory header into dirhdr structure dh,
+                        returning the length of the header in n and error 
+                        code in e. If the header length is 0, then the
+                        directory does not have a header, or there was
+                        and error during the read.
+                            
+                        This should be called after opndir() and before 
+                        the first rddir()
+   
+   n,e = rddir(f,&de);  Read directory entry into dirent structure de,
+                        returning the length of the entry in n and error 
+                        code in e. If the entry length is 0, then the
+                        end of the directory was reached or there was
+                        an error during the read.
+
+Note: This library expects the following functions to be defined:
+
+  fsaddr();                 Set File Address
+  fsname();                 Set Filename

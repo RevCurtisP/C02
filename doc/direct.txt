@@ -1,0 +1,70 @@
+This module provides functions for manipulating the current directory on
+disks, and disk like devices. It is based on the Windows direct.h header.
+
+At the beginning of the program use the directives
+
+  #include <fileio.h02>
+  #include <direct.h02>
+
+The following functions are defined:
+
+   n,e = getcwd(d,&s);  Read the current directory on device d into 
+                        string s, returning the length of the directory 
+                        name in n and error code e.
+                        
+                        The device specifier d consists of the drive number
+                        and disk number combined by the | operator.
+                        
+                        If the length of the name is 0, there is no current
+                        directory or there was an error.
+
+   r,e = chdir(d,&n);   Change the current directory on device d to the
+                        directory name n, returning result code r and 
+                        error code e.
+                        
+                        The device specifier d consists of the drive number
+                        and disk number combined by the | operator.
+                        
+                        A result code of 0 indicates success, while any 
+                        other value indicates failure.
+
+   r,e = mkdir(d,&n);   Create directory with name n on device d, returning 
+                        result code r and error code e.
+                        
+                        The device specifier d consists of the drive number
+                        and disk number combined by the | operator.
+                        
+                        A result code of 0 indicates success, while any 
+                        other value indicates failure.
+
+   r,e = rmdir(d,&n);   Remove directory with name n from device d, 
+                        returning result code r and error code e.
+                        
+                        The device specifier d consists of the drive number
+                        and disk number combined by the | operator.
+                        
+                        A result code of 0 indicates success, while any 
+                        other value indicates failure.
+
+   d,e = getdrv();      Returns the current drive/disk identifier in d 
+                        error code e. 
+                        
+                        The disk/drive identifier d consists of the drive 
+                        number and disk number combined by the | operator. 
+                        
+                        If the returned identifier is 0, an error occured.
+                        
+   r,e = chgdrv(d);     Returns the current drive/disk to d, returning
+                        result code r and error code e. 
+                        
+                        The disk/drive identifier d consists of the drive 
+                        number and disk number combined by the | operator. 
+                        
+                        A result code of 0 indicates success, while any 
+                        other value indicates failure.
+
+   n,e = drvnam(d);     Return single character drive name r for disk/drive
+                        identifier d and error code e. 
+                        
+                        The disk/drive identifier d consists of the drive 
+                        number and disk number combined by the | operator. 

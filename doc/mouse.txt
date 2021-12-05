@@ -1,0 +1,109 @@
+Mouse Functions for C02 Programs
+
+This module provides functions to control and read the status of the
+mouse on systems that support it.
+
+At the beginning of the program use the directives
+
+  #include <template.h02>
+
+The following mouse constants are defined:
+
+  #MHIDE    Hide mouse
+  #MSHOW    Show mouse with default cursor
+  #MCSTM    Show mouse with custom cursor
+
+  #MBLEFT   Bitmask - Left Mouse Button
+  #MBMIDL   Bitmask - Middle Mouse Button
+  #MBRGHT   Bitmask - Right Mouse Button
+
+along with the following variables:
+
+  int  mousex;    Mouse X Position
+  int  mousey;    Mouse Y Position
+  char mouseb;    Mouse Button Status
+
+
+and the following functions:
+
+  r = mcnfg(m);   Configures the mouse to mode m. Valid modes are:
+
+                  #MHIDE - Hide the mouse cursor and disable the mouse.
+                  
+                  #MSHOW - Display the mouse cursor, enable the mouse,
+                           and set the cursor to the default image.
+                  
+                  #MCSTM - Display the mouse cursor and enable the mouse,
+                           but do not set the cursor image. This mode is 
+                           not supported on all systems.
+                           
+                  Returns 0 if the mouse was successfully enabled, or
+                  $FF if the mode is invalid, the mouse is not connected,
+                  or the system lacks mouse support.
+
+  r = mread();    Reads the mouse and sets the following values:
+
+                  mousex - Horizontal position of the mouse, relative
+                           to the screen pixel positions.
+                  
+                  mousey - Vertical position of the mouse, relative
+                           to the screen positions.
+                  
+                  mouseb - Status of the mouse buttons. The status of a
+                           button can be determined using the expression
+                           mouseb & m, where m is the constant #MBLEFT,
+                           #MBRGHT, or #MBMIDL. This will evaluate to m
+                           if the button is pressed, or 0 if it is not.
+                  
+                  Returns 0 if the mouse was successfully read, or $FF if
+                  the mouse dis1abled or the system lacks mouse support.
+
+                  If the read is unsuccesful, then the mousex, mousey, and
+                  mouseb variables will contain unpredictable values.
+
+Note: This module has no external requirements. Implementation varies by
+system.
+
+Commander X16 
+
+  Uses the Kernal functions mouse_config and mouse_get. Two additional
+  functions are defined.
+
+  r = mcnfgs(m, f);   Configures the mouse and sets the screen scale.
+
+                      Valid values for f are the additional constants:
+                      #MSNONE - Do not change the scale.
+                      #MSLOW  - Set scale to 320x240.
+                      #MSHIGH - Set scale to 640x480.
+                      
+                      Valid values for m and return values are the same as
+                      for mcnfg().
+           
+                      The function mcnfg() sets the scale to 320x480, which
+                      is the screen size set by the x16.h02 system module.
+
+  mscan();            Queries the mouse and retrieves the values for a 
+                      subsequent mread().
+                      
+                      This is called by the default interrupt service routine,
+                      so it does not need to be called unless that routine is
+                      entirely replaced. 
+
+  The mousex, mousey, and mouseb variables are aliased to the ABI registers
+  r0, r1, and r2l, respectively. Calling any functions that use the ABI
+  registers may overwrite these variables.
+  
+Apple II - Not Implemented
+
+  mcnfg() and mread() will use the routines SetMouse and ReadMouse, respectively.
+  
+Vic 20 - Not Implemented
+
+  Since the screen resolution is less than 255x255, the easiest way to handle this
+  is to assume a mouse that emulates paddles and reuse the paddle code.
+  
+Commodore 64 and 128 - Not Implementated
+
+  A machine language driver program is needed to read a mouse in proportional mode.
+  This could be either external to the module or included in it.
+  

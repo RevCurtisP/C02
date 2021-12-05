@@ -1,0 +1,51 @@
+//C02 Color Functions
+//Prototype - Subject to Change
+
+  txtclr(c);          Sets text color to system color c. 
+            
+                      Note: May call system routine or may print color change
+                      sequence.
+
+  bkgclr(c);          Sets background color to system color c.
+                      
+                      Note: May call system routine or may print color change
+                      sequence.
+
+
+Assembly Constants (Defined in System Header file)
+
+  BLACK             Code for color Black
+  BLUE              Code for color Blue
+  GREEN             Code for color Green
+  CYAN              Code for color Cyan
+  RED               Code for color Red
+  MAGNTA            Code for color Magenta
+  YELLOW            Code for color Yellow
+  WHITE             Code for color White
+   
+  BREAK             ASCII code for Break/Stop Key
+  BCKSPC            ASCII code for Backspace key
+  CLEAR             ASCII code for Clear Key
+  DELETE            ASCII code for Delete key
+  DOWN              ASCII code for Cursor Down Key
+  ENTER             ASCII code for Return/Enter key (usually CR)
+  ESCAPE            ASCII code for Escape/Abort key (usually ESC)
+  FNx               ASCII code for Function Key x
+  HOME              ASCII code for Home Key
+  INSERT            ASCII code for Insert Key
+  LEFT              ASCII code for Cursor Left Key
+  RIGHT             ASCII code for Cursor Left Key
+  TAB               ASCII code for Tab Key  
+  UP                ASCII code for Cursor Up Key
+
+  BTMLFT            ASCII code for Box Drawing Bottom Left Corner
+  BTMRGT            ASCII code for Box Drawing Bottom Right Corner
+  BTMTEE            ASCII code for Box Drawing Bottom to Cetter Tee
+  CTRCRS            ASCII code for Box Drawing Center Cross
+  HRZLIN            ASCII code for Box Drawing Horizontal Line
+  LFTTEE            ASCII code for Box Drawing Left To Center T
+  RGHTEE            ASCII code for Box Drawing Right To Center T
+  TOPLFT            ASCII code for Box Drawing Top Left Corner
+  TOPRGT            ASCII code for Box Drawing Top Right Corner
+  TOPTEE            ASCII code for Box Drawing Top to Center T
+  VRTLIN            ASCII code for Box Drawing Verical Line

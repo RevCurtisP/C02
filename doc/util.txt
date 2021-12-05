@@ -1,0 +1,44 @@
+Utility Functions for C02 Library Functions
+
+This module contains miscellaneous functions that aren't suited for
+inclusion in any of the existing modules.
+
+The contents of this module are subject to change, as any of the 
+functions may be deprecated or moved to other modules in the future.
+
+At the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <util.h02>
+
+The following functions are defined:
+
+  addzpw(z,&n);         Adds the 16 bit value &n to the zero page word 
+                        with address z.
+
+                        Note: Stores the zero page address in temp3.
+
+  adddst(&n);           Adds the 16 bit value &n to the destination 
+                        pointer.
+  
+                        Note: Calls the addzpw function, passing dstlo
+                        as the first argument.
+
+  addsrc(&n);           Adds the 16 bit value &n to the source pointer.
+  
+                        Note: Calls the addzpw function, passing srclo
+                        as the first argument.
+
+Note: This library expects the following to be defined:
+
+the zero page variables
+
+  srclo,srchi:          Source pointer
+  dstlo,dsthi:          Destination pointer
+
+and the transient variables
+  
+  temp0                 Temporary storage (Accumulator)
+  temp1                 Temporary storage (X-Index/LSB)
+  temp2                 Temporary storage (Y-Index/MSB)
+  temp3                 Temporary storage (Zero Page Address)

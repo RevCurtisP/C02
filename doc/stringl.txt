@@ -1,0 +1,72 @@
+String List Manipulation Module for C02
+
+
+A string list is a contiguous set of mixed length zero-terminated 
+strings followed by a zero byte (empty string). For example:
+
+  char list = {"one","two","three",0};
+
+A string list can be any length. but each entry must be no more than 
+the maximum string length of 128 characters long.
+
+The string list functions all make use of the zero-page integer 
+variable lstptr. Multiple lists can be accessed by saving and restoring
+it's value.
+
+Usage: at the beginning of the program use the directives
+
+  #include <stddef.h02>
+  #include <string.h02>
+  
+The following functions are defined:
+
+  setlst(t);          Sets the list pointer to the beginning of the string
+                      list t.
+                      
+                      This must be called at least once before calling any 
+                      of the following functions.
+
+                      Note: Stores &t in lstptr.
+
+  w = strlln(r);      Returns the number of entries in string list r as
+                      an integer.
+                      
+                      Note: Calls strlen() and addsra() for each entry in
+                      the list, accumulating the count in temp1 and temp2.
+
+  n, p = strget(s);   Reads the next entry from a string list set by a
+                      prior setlst() call into string s.
+                      
+                      Returns length of the entry and the new position
+                      in the string list. When the end of the list is 
+                      reached, s is set to an empty string and any further
+                      calls to strget() will also return an empty string.
+                                        
+                      Note: Calls setdst(), getlst(), and strcpy(). If n 
+                      is not not zero, calls addsra() and updates lstptr.
+                      
+  n, p = strput(s);   Writes string s to a string list set by a prior 
+                      setlst() call and terminates the string list.
+                      
+                      Returns length of the entry and the new position in
+                      the string list. 
+                      
+                      Note: Calls setsrc(), getlst(), setdst() and 
+                      strcpy(). If n is not zero, calls addsra() and 
+                      updates lstptr.
+                      
+
+Note: This module expects the following functions to be defined
+
+  addsra(n);          Add accumulator to sorce pointer.
+  getlst();           Get list pointer
+  setdst(s);          Set destination pointer
+  setlst();           Set list pointrt
+  setsrc(s);          Set source pointer and initialize index
+  strcpy(s);          String copy alternate entry point.
+
+along with the zero page variable pairs
+  
+  dstptr              Destination String Pointer
+  lstprt              List Pointer
+  srcptr              Source String Pointer 
