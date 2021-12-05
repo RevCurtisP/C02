@@ -1,19 +1,19 @@
 Block Memory Functions
 
-This library contains functions for accessing data in blocks of memory. 
-A block consists of up to 65,535 contiguous bytes. This allows for the
-storage, retrieval, and manipulation of data exceeding the maximum
-array length of 255.
+This library contains functions and variables for accessing data in 
+blocks of memory. A block consists of up to 65,535 contiguous bytes. 
+This allows for the storage, retrieval, and manipulation of data 
+exceeding the maximum array length of 255.
 
 These functions assume that a block is divided into equally sized segments
 of up to 255 bytes in length. Data in the block is accessed by copying
 data into and out of arrays with the same length as the segment size.
 
-A segment consists of a string field, which is used as a key, followed 
-by a number of individual bytes. For example, the segments in a variable
-table might be 9 bytes long, consisting of a 7 byte variable name string
-(6 characters plus a terminator), the variable type (at index 7) and 
-the variable length (at index 8).
+A segment typically consists of a string field, which is used as a key, 
+followed by a number of mixed type fields. For example, the segments in a 
+variable table might be 9 bytes long, consisting of a 7 byte variable name
+string (6 characters plus a terminator), the variable type (at index 7) 
+and the variable length (at index 8).
 
 Usage: at the beginning of the program use the directives
 
@@ -22,67 +22,56 @@ Usage: at the beginning of the program use the directives
   #include <string.h02>
   #include <block.h02>
 
+The following application variables are defined:
+
+  int blkbgn;         Start address of the block.
+  int blkend;         End address of the block.
+  int blklen:         Size of Segments in the block.
+  
+                      These variables must be assigned before calling
+                      any of the functions in this module. They may be
+                      reassigned at any time, allowing the program to
+                      access different blocks.
+                      
+                      Note: Although a block usually begins and ends 
+                      on a 256 byte boundary, this is not required.
+                       
+  int blkptr;         Pointer to the next segment. This can be reset
+                      to blkbgn using the blkrst() function.
+                      
+                      To preserve the segment position, this value must
+                      be saved before reassigning to another block, then r
+                      estored when reassigning back to the original block. 
+                      
 The following application functions are defined:
 
-  blkbgn(&b);         Block Begin: Set beginning of block to address b. 
-
-                      The beginning of a block is the first byte of memory 
-                      in the block.
-
-                      Although a block usually begins on a 256 byte
-                      boundary, this is not required.
                       
-                      Note: Sets variables blkslo and blkshi.
-
-  blkend(&e);         Block End: Set end of block to address b. The end of 
-                      a block is the byte after the last byte of memory in 
-                      the block.
-
-                      Although a block usually ends on a 256 byte
-                      boundary, this is not required.
-                      
-                      Note: Sets variables blkelo and blkehi.
-
-  blkseg(n);          Block Segment: Set block segment size to n.
-
-                      Required before calls any calls that manipulate
-                      block segments.
-                      
-                      Note: Sets blklen to n.
-
   blkset(c);          Block Set: Fills entire block with character c,
                       leaving block pointer at end of block.
   
                       Should be called with an argument of 0, to initialize
                       a block before use.
 
-  blkrst();           Block Reset: Sets block segment pointer to block 
-                      begin address.
+  blkrst();           Block Reset: Sets block pointer to first segment. 
   
                       This routine is called before populating a block with
                       calls to the blkput function.
 
-  blkptr(&d);         Block Pointer: Sets the block pointer to the address 
-                      of b. 
-
-                      Does not validate that the address is within the
-                      beginning and ending address of the block.
-                      
-                      Note: Sets variables blkslo and blkshi.
-                      
-  blknxt();           Block Next: Moves block pointer forward by the segment
-                      length set by a prior blkseg call.
+  blknxt();           Block Next: Moves the block pointer to the bext 
+                      segment.
 
                       If the block pointer is moved past the end of the
-                      block, or the segmebt length is set to 0, a value of 
+                      block, or the segment length is set to 0, a value of 
                       #TRUE is returned. Otherwise, a value of #FALSE is 
                       returned.
+                      
+                      
                       
   blkprv();           Block Previous: Moves block pointer backward by the 
                       segment length set by a prior blkseg call.
 
                       If the block pointer is moved past the beginning of 
-                      the block, or the segmebt length is set to 0, a value  
+                      the block, or the segment length is set to 0, a value  
                       of #TRUE is returned. Otherwise, a value of #FALSE is 
                       returned.
                       

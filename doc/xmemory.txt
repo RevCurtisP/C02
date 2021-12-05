@@ -104,16 +104,17 @@ The following functions are defined:
 
 Note: This library expects the following functions to be defined:
 
-  ext();                External function description
+  getdst();             Get Destination Pointer
+  getsrc();             Get Source Pointer
+  resrxy();             Restore X and Y Registers
+  savrxy();             Save X and Y Registers
 
 along with the zero page variables
   
-  zpage0,zpage1:        Zero page variable pair
+  dstptr,srcptr:        Destination and Source Pointer
 
-the external variables
+and the external variables
   
-  exvar0,exvar1:        External variable pair
+  xmaddr,xmbank;        Extended Memory Address and Bank
+  temp1,temp2:          Temporary storage
 
-and the constants
-  
-  #CNSTNAME             Constant description

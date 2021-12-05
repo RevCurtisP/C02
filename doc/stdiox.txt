@@ -202,17 +202,21 @@ The following functions are defined:
                         %% - output a single % character
                         %N - generate a newline
 
-                        Four additional formatting tags operate on the 
+                        Additional formatting tags operate on the 
                         destination pointer:
-                        %S - output the destination string
-                        %I - output the destination address as a 
-                             as a one to five digit decimal number
-                        %J - output the destination address as a 
-                             right justified decimal number
-                        %Q - output the destination address as a 
-                             as a three-digit hexadecimal number
-                        %W - output the destination address as a 
-                             as a four-digit hexadecimal number
+                        %S - output destination string
+                        %P - output destination string padded with
+                             spaces to length b
+                        %I - output destination address as one to
+                             five digit decimal number
+                        %J - output destination address as right 
+                              justified decimal number
+                        %Q - output destination address as 
+                             three-digit hexadecimal number
+                        %W - output destination address as 
+                             four-digit hexadecimal number
+                        %E - output b and destination address as
+                             six-digit hexadecimal number
 
                         The destination string and/or address is set using 
                         the setdst or strdst function (from the "string" 
