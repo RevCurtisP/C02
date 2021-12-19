@@ -29,7 +29,7 @@ void poptrm(void) {
   trmidx--;                     //Decrement Stack Pointer
   strcpy(term, trmstk[trmidx]); //Restore Current Term from Stack
   oper = oprstk[trmidx];        //Restore Current Operator from Stack
-  DEBUG("expr.pshtrm: Popped term %s ", term)
+  DEBUG("expr.poptrm: Popped term %s ", term)
   DETAIL("and operator '%c' off stack\n", oper)
 }
 
@@ -42,6 +42,7 @@ void prsval(int alwreg, int alwcon) {
   DEBUG("expr.prsval: Parsing value\n", 0)
   skpspc();
   if      (islpre()) prslit();               //Parse Literal
+  else if (islpre()) prslit(TRUE);           //Parse Literal
   else if (isalph()) prsvar(alwreg, alwcon); //Parse Variable
   else if (isbtop()) prsbop();				 //Parse Byte Operator
   else               expctd("literal or variable");
@@ -308,6 +309,7 @@ void prsfnc(char trmntr) {
   skpchr(); //skip open paren
   CCMNT('(');
   prsfpr(')'); //Parse Function Parameters
+  DEBUG("expr.prsfnc: Checking for terminator #%d\n", trmntr)
   expect(trmntr);
   poptrm(); //Pop Function Name off Term Stack
   asmlin("JSR", term);
@@ -326,6 +328,8 @@ void prcvri(void) {
  * Args: alwint = Allow Integer-Like Variable            *
  * Returns: Integer-Like Variable Processed - TRUE/FALSE */
 int prcivr(int alwint) {
+    DEBUG("expr.prcivr: Processing Integer Variiable %s", word)
+    DETAIL(" of type %d\n", vartyp)
     switch (vartyp) {
       case VTINT:
         if (!alwint) ERROR("Illegal Use of Integer Variable %s\n", word, EXIT_FAILURE)
@@ -432,7 +436,7 @@ void prsxpi(char trmntr, int asmxpr) {
   DEBUG("expr.prsxpi: Parsing integer expression\n", 0)
   if (!chkadr(TRUE, FALSE)) {
     if (isnpre()) {
-    DEBUG("expr.prsxpi: Parsing Integer Literal\n", 0) 
+      DEBUG("expr.prsxpi: Parsing Integer Literal\n", 0) 
       int number = prsnum(0xFFFF); //Parse Number into value
       if (asmxpr) {
         sprintf(value, "#%d", number & 0xFF); asmlin("LDX", value);
@@ -441,6 +445,7 @@ void prsxpi(char trmntr, int asmxpr) {
     } else if (isalph()) {
       prsvar(FALSE, TRUE);
       if (valtyp == FUNCTION) {
+        DEBUG("stmnt.prrsxpi: Parsing function %s\n", value)
         strcpy(term, value);
         DEBUG("expr.prsxpi: Set term to %s\n", term)
         prsfnc(0); //Parse Expression Function
@@ -456,5 +461,6 @@ void prsxpi(char trmntr, int asmxpr) {
       ERROR("Expected Integer Value or Function\n", 0, EXIT_FAILURE);
     }
   }
+  DEBUG("expr.prsxpi: Checking for terminater #%d\n", trmntr)
   expect(trmntr);
 }

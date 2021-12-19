@@ -51,7 +51,7 @@ void addfnc(void) {
   expect(')');
   if (look(';')) return;    //Forward Definition
   infunc = TRUE;          //Set Inside Function Definition Flag
-  DEBUG("Set infunc to %d\n", infunc)
+  DEBUG("dclrtn.addfnc: Set infunc to %d\n", infunc)
   setlbl(fncnam);         //Set Function Entry Point
   asmlin(LOCOP, "");      //Set Local Variables Boundary
   if (prmtra[0]) asmlin("STA", prmtra); //Store First Parameter
@@ -72,7 +72,7 @@ void addcon(int numval) {
     if (alcvar) setlbl(defnam); //Set label Assembler Line
     conval[concnt++] = numval; //Get Value
     if (alcvar) asmlin(EQUOP, value); //Write Definition
-    DEBUG("Defined constant '%s'", defnam)
+    DEBUG("dclrtn.addcon: Defined constant '%s'", defnam)
     DETAIL(" as '%s'\n", value)
     if (!alcvar) SCMNT(""); //Clear Comment
 }
@@ -81,17 +81,17 @@ void addcon(int numval) {
 */
 void penum(int m, int bitmsk) {
   int enmval = (bitmsk) ? 1 : 0;
-  DEBUG("Processing Enum Declarations with BITMSK %d\n", bitmsk)
+  DEBUG("dclrtn.enum: Processing Enum Declarations with BITMSK %d\n", bitmsk)
   if (m != MTNONE) ERROR("Illegal Modifier %d in Enum Definition", m, EXIT_FAILURE)
   expect('{');
   do {
     if (enmval > 0xFF) ERROR("Maximum ENUM or BITMASK value exceeded\n", 0, EXIT_FAILURE)
     if (look('.')) 
-      DEBUG("Skipping sequence %d\n", enmval)
+      DEBUG("dclrtn.penum: Skipping sequence %d\n", enmval)
 	else {
       getwrd(); //get defined identifier
-      DEBUG("Enumerating '%s'", word)
-      DEBUG(" as %d\n", enmval);
+      DEBUG("dclrtn.penum: Enumerating '%s'", word)
+      DEBUG("dclrtn.penum:  as %d\n", enmval);
       strncpy(defnam, word, VARLEN);
       sprintf(value, "%d", enmval);
       addcon(enmval);
@@ -101,12 +101,12 @@ void penum(int m, int bitmsk) {
   } while (look(','));
   expect('}');
   expect(';');
-  DEBUG("Enum Declaration Completed\n", 0)
+  DEBUG("dclrtn.penum: Enum Declaration Completed\n", 0)
 }
 
 /* Parse Enum Declaration*/
 void pstrct(int m) {
-  DEBUG("Processing Struct Declarations\n", 0)
+  DEBUG("dclrtn.pstrct: Processing Struct Declarations\n", 0)
   getwrd(); //Parse Structure Name
   if (look('{')) defstc();  //Parse Struct Definition
   else           addstc();  //Parse and Compile Struct Declaration
@@ -115,18 +115,18 @@ void pstrct(int m) {
 
 /* Parse Variable/Function Declaration*/
 void pdecl(int m, int t) {
-  DEBUG("Processing declaration(s) of type %d\n", t)
+  DEBUG("dclrtn.pdegl: Processing declaration(s) of type %d\n", t)
   do {
     getwrd();
     if (match('(')) {
-      if (m > MTNONE) ERROR("Illegal Modifier %d in Function Definition\n", m, EXIT_FAILURE)
+      if (m > MTNONE) ERROR("dclrtn.pdegl: Illegal Modifier %d in Function Definition\n", m, EXIT_FAILURE)
       addfnc();  //Add Function Call
       return;
     }
     addvar(m, t);
   } while (look(','));
   expect(';');
-  DEBUG("Declaration completed\n", 0)
+  DEBUG("dclrtn.pdegl: Declaration completed\n", 0)
   cmtlin();    //Write out declaration comment
 }
 
@@ -162,13 +162,13 @@ int ptype(int m) {
 int pmtype(int m) {
   getwrd();
   if (m == MTALGN && wordis("CONST")) {m = m | MTCONST; getwrd();}
-  DEBUG("Parsing type %s\n", word)
+  DEBUG("dclrtn.pmtype: Parsing type %s\n", word)
   return ptype(m);
 }
 
 /* Check for and Parse Modifier */
 int pmodfr(void) {
-  DEBUG("Parsing modifier '%s'\n", word)
+  DEBUG("dclrtn.pmodfr: Parsing modifier '%s'\n", word)
   int result = TRUE;
   if      (wordis("ALIAS"))    { pmtype(MTALS); }
   else if (wordis("ALIGNED"))  { pmtype(MTALGN); }

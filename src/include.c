@@ -21,7 +21,7 @@
 /* Read next include file name from Source File  *
  * Sets: incnam - the include file name         */
 void pincnm(void) {
-  DEBUG("Parsing include file name", 0)
+  DEBUG("include.pincnm: Parsing include file name", 0)
   char dlmtr;
   int inclen = 0;
   int sublen[SUBMAX];
@@ -54,11 +54,11 @@ void pincnm(void) {
   }
   skpchr(); //skip end dlmtr
   incnam[inclen] = 0;
-  DEBUG("Set INCNAM to '%s'\n", incnam);
+  DEBUG("include.pincnm: Set INCNAM to '%s'\n", incnam);
   for (int subidx = 0; subidx < subcnt; subidx++) {
     subnam[subidx][sublen[subidx]] = 0;
-    DEBUG("Set SUBNAM[%d] ", subidx)
-    DEBUG("to '%s'\n", subnam[subidx]);
+    DEBUG("include.pincnm: Set SUBNAM[%d] ", subidx)
+    DETAIL("to '%s'\n", subnam[subidx]);
   }
 }
 
@@ -70,7 +70,7 @@ void incasm(int chksub) {
   addcmt(" =======");
   cmtlin();
   while (fgets(line, sizeof line, incfil) != NULL) {
-    DEBUG("Writing line: %s", line)
+    DEBUG("include.incasm: Writing line: %s", line)
     fputs(line, outfil);
   }
   setcmt("==========================================");
@@ -80,7 +80,7 @@ void incasm(int chksub) {
 
 /* Process define directive */
 void pdefin(void) {
-  DEBUG("Processing DEFINE directive\n", 0)
+  DEBUG("include.pdefin: Processing DEFINE directive\n", 0)
   getwrd();     //Get constant name
   strncpy(defnam, word, CONLEN);
   addcon(prsbyt()); //Get Value and Add Constant
@@ -89,7 +89,7 @@ void pdefin(void) {
 /* Parse ASCII Subdirective */
 void pascii(void) {
   getwrd(); //Get Subdirective Argument
-  DEBUG("Parsing subdirective '%s'\n", word)
+  DEBUG("include.pascii: Parsing subdirective '%s'\n", word)
   if (wordis("INVERT"))
     invasc = TRUE;
   else if (wordis("HIGH"))
@@ -102,26 +102,26 @@ void pascii(void) {
 void porign(void) {
   prsnum(0xFFFF); //Get Origin Address
   asmlin(ORGOP, value); //Emit Origin Instruction
-  DEBUG("Set origin to %s\n", value)
+  DEBUG("include.poirgn: Set origin to %s\n", value)
 }
 
 /* Parse Padding Subdirective */
 void ppddng(void) {
   padcnt = prsnum(0xFF); //Get Number of Padding Bytes
-  DEBUG("Set padding to %d\n", padcnt)
+  DEBUG("include.ppddng: Set padding to %d\n", padcnt)
 }
 
 /* Parse RamBase Subdirective */
 void prambs(void) {
   rambas = prsnum(0xFFFF); //Set Ram Base Address to Literal
-  DEBUG("Set ram base address to %d\n", rambas)
+  DEBUG("include.prambs: Set ram base address to %d\n", rambas)
 }
 
 /* Parse WriteBase Subdirective */
 void pwrtbs(void) {
   if (!rambas) ERROR("RAM Base must be set prior to Write Base\n", 0, EXIT_FAILURE);
   wrtbas = prsnum(0xFFFF); //Set Ram Base Address to Literal
-  DEBUG("Set write base address to %d ", wrtbas)
+  DEBUG("include.pwrtbs: Set write base address to %d ", wrtbas)
   if (rambas && wrtbas) sprintf(wrtofs, "%+d", wrtbas - rambas);
   else wrtofs[0] = 0;
   DETAIL("and write offset to '%s'\n", wrtofs)
@@ -132,7 +132,7 @@ void pzropg(void) {
   zpgbgn = prsnum(0xFF); //Set Zero Page Address to Literal
   zpgend = prsnum(0xFF); //Set Zero Page Address to Literal
   zpaddr = zpgbgn;
-  DEBUG("Set free zero page to %d ", zpgbgn)
+  DEBUG("include.pzropg: Set free zero page to %d ", zpgbgn)
   DETAIL("through %d ", zpgend)
   DETAIL("and zero page address to %d\n", zpaddr)
 }
@@ -146,7 +146,7 @@ void pvrtbl(void) {
 /* Parse Pragma Directive */
 void pprgma(void) {
   getwrd(); //Get Pragma Subdirective
-  DEBUG("Parsing pragma directive '%s'\n", word)
+  DEBUG("include.pprgma: Parsing pragma directive '%s'\n", word)
   if (wordis("ASCII"))
     pascii(); //Parse Ascii
   else if (wordis("ORIGIN"))
@@ -170,7 +170,7 @@ void pprgma(void) {
 void pincdr(void) {
   skpchr();            //skip '#'
   getwrd();            //read directive into word
-  DEBUG("Processing include file directive '%s'\n", word)
+  DEBUG("include.pincdr: Processing include file directive '%s'\n", word)
   if (wordis("DEFINE")) 
     pdefin();
   else if (wordis("PRAGMA")) 
@@ -236,7 +236,7 @@ void inchdr(int chksub) {
   {
     skpspc();
     if (match(EOF)) break;
-    DEBUG("Checking next character '%c'\n", nxtchr)
+    DEBUG("include.inchdr: Checking next character '%c'\n", nxtchr)
     if (match('#'))
       pincdr();
     else if (match('/')) 
@@ -255,7 +255,7 @@ void inchdr(int chksub) {
 /* Process Header File specified on Command Line */
 void phdrfl(void) {
   if (hdrnam[0] == 0) return;
-  DEBUG("Processing Header '%s'\n", hdrnam)
+  DEBUG("include.phdrfl: Processing Header '%s'\n", hdrnam)
   setinm(".h02");
   inchdr(TRUE);
   setinm(".a02");
@@ -265,7 +265,7 @@ void phdrfl(void) {
 /* Process include file                    */
 void pincfl(void) {
   pincnm(); //Parse Include File Name
-  DEBUG("Processing include file '%s'\n", incnam)
+  DEBUG("include.pincfl: Processing include file '%s'\n", incnam)
   char *dot = strrchr(incnam, '.'); //find extension
   if (dot == NULL) {
     ERROR("Invalid include file name '%sn", incnam, EXIT_FAILURE)
@@ -278,7 +278,7 @@ void pincfl(void) {
     inchdr(TRUE);  //Process Header File
     dot = strrchr(incnam, '.'); //find extension
     strcpy(dot, ".a02");
-    DEBUG("INCNAM set to '%s'\n", incnam)
+    DEBUG("include.pincfl: INCNAM set to '%s'\n", incnam)
     incasm(FALSE);  //Process Assembly File with Same Name
   }
   else {

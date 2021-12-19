@@ -294,8 +294,9 @@ void pdowhl(void) {
 
 /* parse and compile for statement */
 void pfor(void) {
-  DEBUG("stmnt.pfor: Parsing FOR statement '%c'\n", nxtchr);
+  DEBUG("stmnt.pfor: Parsing FOR statement'\n", 0);
   expect('(');
+  DEBUG("stmnt.pfor: Parsing Initial Assignment\n", 0);
   prsasn(';');            //Process Initial Assignment     
   newlbl(forlbl);         //Create For Loop Conditional Label
   setlbl(forlbl);         //and Set to Emit on Next Line
@@ -304,9 +305,11 @@ void pfor(void) {
   newlbl(loplbl);         //Create Loop Label
   pshlbl(LTLOOP, loplbl); //and Push onto Stack
   newlbl(cndlbl);         //Create Conditional Label
+  DEBUG("stmnt.pfor: Parsing Loop Conditional\n", 0);
   prscnd(';', TRUE);      //Parse Conditional Expession
   asmlin("JMP", endlbl);  //Jump over Increment
   setlbl(loplbl);         //Set to Emit on Next Line
+  DEBUG("stmnt.pfor: Parsing Increment Assignment\n", 0);
   prsasn(')');            //Parse Increment Assignment
   asmlin("JMP", forlbl);  //Jump to Conditional
   setlbl(cndlbl);         //Emit Label at Start of Loop  
@@ -383,7 +386,7 @@ void pinlne(void) {
       asmlin(BYTEOP, value);
     }
     else {
-      prslit(0xFF);  //Parse Literal
+      prslit();  //Parse Literal
       sprintf(word, "$%hhX", litval); //not needed?
       asmlin(BYTEOP, value);
     }
