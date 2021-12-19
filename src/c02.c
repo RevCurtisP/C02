@@ -140,7 +140,7 @@ int popt(int arg, int argc, char *argv[]) {
   strncpy (argstr, argv[arg], 31);
   if (strlen(argstr) != 2) ERROR("malformed option %s\n", argstr, EXIT_FAILURE)
   opt = toupper(argstr[1]);
-  if (strchr("CHS", opt)) {
+  if (strchr("CHIS", opt)) {
     if (++arg >= argc) ERROR("Option -%c requires an argument\n", opt, EXIT_FAILURE)
     strncpy(optarg, argv[arg], 31);
   }
@@ -157,6 +157,11 @@ int popt(int arg, int argc, char *argv[]) {
     case 'H':
       strcpy(hdrnam, optarg);
       DEBUG("c02.popt: Header Name set to '%s'\n", hdrnam)
+      break;
+    case 'I':
+      strcpy(incdir, optarg);
+      strcat(incdir, "/");
+      DEBUG("c02.popt: Include Directory set to '%s'\n", incdir)
       break;
     case 'S':
       strcpy(subdir[subcnt], optarg);
