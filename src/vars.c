@@ -144,7 +144,7 @@ void reqvar(int alwary) {
  * Returns: variable size (as integer       */
 int pidxof(void) { 
   expect('?');   //Check for and Skip SizeOf Operator
-  DEBUG("vars.pidxof: Parsing IndexOf operator", 0);
+  DEBUG("vars.pidxof: Parsing IndexOf operator\n", 0);
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
   if (mbridx > -1) {
@@ -160,7 +160,7 @@ int pidxof(void) {
  * Returns: variable size (as integer       */
 int psizof(void) { 
   expect('@');   //Check for and Skip SizeOf Operator
-  DEBUG("vars.pdizof: Parsing SizeOf operator", 0);
+  DEBUG("vars.psizof: Parsing SizeOf operator\n", 0);
   mbridx = -1; //Set Member Index to None
   reqvar(FALSE); //Parse Variable Name to get Size Of
   if (mbridx > -1) {
@@ -310,7 +310,8 @@ void addvar(int m, int t) {
       skpchr();
       if (alcvar) {
         DEBUG("vars.addvar: Parsing array size\n", 0)
-        sprintf(value, "%d", prsnum(0xFF) + 1);
+        prslit();
+        sprintf(value, "%d", litval + 1);
       }
       expect(']');
     }
@@ -400,12 +401,12 @@ void addstc(void) {
 /* Parse Struct Definition  *
  * Uses: word - Struct Name */
 void defstc(void) {
-  DEBUG("Parsing struct definition\n", 0)
+  DEBUG("vars.defstc: Parsing struct definition\n", 0)
   if (fndstc(word)) ERROR("Duplicate Declaration of Struct '%s\n", word,EXIT_FAILURE)
   int type;
   int prnidx = stcidx;
   strncpy(strct.name, word, STCLEN);
-  DEBUG("Set struct name to '%s'\n", word);
+  DEBUG("vars.defstc: Set struct name to '%s'\n", word);
   strct.size = 0; //Initialize Struct Length
   while (look('/')) skpcmt(FALSE); //Skip Comments
   do {
@@ -434,10 +435,10 @@ void defstc(void) {
       default:
         ERROR("Invalid Type %s in Struct Definition\n", word, EXIT_FAILURE)
     }
-	DEBUG("Parsing members of type %s\n", word)
+	DEBUG("vars.defstc: Parsing members of type %s\n", word)
     do {
       getwrd(); //Get Member Name
-      DEBUG("Parsing member %s\n", word)
+      DEBUG("vars.defstc: Parsing member %s\n", word)
       if (fndmbr(stccnt, word)) ERROR("Duplicate Declaration of Struct Member '%s\n", word,EXIT_FAILURE)
       if (strlen(word) > STMLEN) ERROR("Member Name %s too long\n", word, EXIT_FAILURE)
       strcpy(membr.name, word);  //Set Member Name
@@ -447,18 +448,19 @@ void defstc(void) {
       membr.offset = strct.size; //Set Offset into Struct
       membr.size   = mbrsiz;     //Set Member Size
       if (membr.vartyp == VTCHAR) {
-      DEBUG("Checking member for array definition\n", 0)
+      DEBUG("vars.defstc: Checking member for array definition\n", 0)
         if (match('[')) {
           CCMNT('[');
           skpchr();
           membr.vartyp = VTARRAY;
-          DEBUG("Parsing member array size\n", 0)
-          membr.size = prsnum(0xFF) + 1;
+          DEBUG("vars.defstc: Parsing member array size\n", 0)
+          prslit();
+          membr.size = litval + 1;
           expect(']');
         }
       }
-      DEBUG("Set member type to %d", membr.vartyp) DETAIL(" and size to %d\n", membr.size);
-      DEBUG("Adding member at index %d\n", mbrcnt);
+      DEBUG("vars.defstc: Set member type to %d", membr.vartyp) DETAIL(" and size to %d\n", membr.size);
+      DEBUG("vars.defstc: Adding member at index %d\n", mbrcnt);
       membrs[mbrcnt++] = membr;
       strct.size += membr.size;
     } while (look(','));
@@ -467,7 +469,7 @@ void defstc(void) {
   } while (!look('}'));
   expect(';');
   if (strct.size > 256) ERROR("Structure Size %d Exceeds Limit of 256 bytes.\n", strct.size, EXIT_FAILURE);  
-  DEBUG("Adding struct with size %d", strct.size) DETAIL("at index %d\n", stccnt);
+  DEBUG("vars.defstc: Adding struct with size %d", strct.size) DETAIL("at index %d\n", stccnt);
   strcts[stccnt++] = strct;
 }
 
