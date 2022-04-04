@@ -4,15 +4,18 @@
 #define MAXLBL 8    //Maximum Symbol Length
 #define MAXSYM 1024  //Maximum Number of Labels
 
+//#define NULL &0
+
 #define FALSE 0
 #define TRUE -1
 
 /* Address Mode Bit Masks */
+#define RGSTR 0x0000  //Register (Sweet 16)
 #define ACMLT 0x0001  //Accumulator [$xA]
 #define IMMDT 0x0002  //*Immediate [w/Acc]
 #define ZPAGE 0x0004  //Zero Page
 #define ZPAGX 0x0008  //*Zero Page,X
-//#define ZPAGY 0x0010  //*Zero Page,Y [By OpCodes]
+#define RGIND 0x0010  //Register or Imderect (Sweet 16)
 #define ABSLT 0x0020  //Absolute
 #define ABSLX 0x0040  //*Absolute,X [fixops()]
 #define ABSLY 0x0080  //Absolute,Y 
@@ -24,13 +27,15 @@
 
 char zpgabs[][9] = {"Absolute", "ZeroPage"};
 
+/* Address Mode Descriptions */
 struct amd {int amode; char desc[12];};
 struct amd amdesc[] = {
-  {ACMLT, "Accumulator"}, 
+  {ACMLT, "Accumulator"},
   {IMMDT, "Immediate"}, 
   {ZPAGE, "Zero Page"}, 
   {ZPAGX, "Zero Page,X"}, 
   {ABSLT, "Absolute"}, 
+  {RGSTR, "Register"}, 
   {ABSLX, "Absolute,X"}, 
   {ABSLY, "Absolute,Y"}, 
   {IMPLD, "Implied"}, 
@@ -45,7 +50,8 @@ struct opc {char name[5], token; int amode;};
 struct opc psolst[] = {
   {"BYTE", 'B', 0}, {"HEX", 'H'}, {"WORD", 'W', 0}, {"EQU", '=', 0}, {"FILL", 'F', 0}, 
   {"INCL", 'I', 0}, {"SUBR", 'S', 0}, {"DC", 'B', 0}, {"DS", 'F', 0}, {"ALIG", 'A', 0},
-  {"ORG", '*', 0}, {"PROC", 'P', 0}, {"END", 'E', 0}, {"ENDS", 'M', 0}, {"", 0, 0}
+  {"ORG", '*', 0}, {"PROC", 'P', 0}, {"END", 'E', 0}, {"ENDS", 'M', 0}, {"EXEC", 'X', 0},
+  {"DW", 'W', 0}, {"", 0, 0}
 };
 
 struct opc opclst[] = {
@@ -73,7 +79,7 @@ struct opc opclst[] = {
   {"RMB4", 0x47, 0x0004}, {"RMB5", 0x57, 0x0004}, {"RMB6", 0x67, 0x0004}, {"RMB7", 0x77, 0x0004}, 
   {"SMB0", 0x87, 0x0004}, {"SMB1", 0x97, 0x0004}, {"SMB2", 0xA7, 0x0004}, {"SMB3", 0xB7, 0x0004}, 
   {"SMB4", 0xC7, 0x0004}, {"SMB5", 0xD7, 0x0004}, {"SMB6", 0xE7, 0x0004}, {"SMB7", 0xF7, 0x0004}, 
-  {"RMB", 0x07, 0x0004}, {"SMB", 0x87, 0x0004},
+  {"RMB",  0x07, 0x0004}, {"SMB", 0x87, 0x0004},
 
   {"BBR0", 0x0F, 0x1004}, {"BBR1", 0x1F, 0x1004}, {"BBR2", 0x2F, 0x1004}, {"BBR3", 0x3F, 0x1004}, 
   {"BBR4", 0x4F, 0x1004}, {"BBR5", 0x5F, 0x1004}, {"BBR6", 0x6F, 0x1004}, {"BBR7", 0x7F, 0x1004}, 
@@ -113,3 +119,22 @@ struct opf opfix[] = {
   {0,0,0}
 };
 
+/* Sweet 16 Address Modes
+  IMPLD - Implied (No Argument)
+  RGSTR - Register
+  INDCT - Register Indirect
+  ABSLT - Register Absolute
+  RKLTV - Relative (Branch)
+  RGIND - Register or Indirect
+*/
+
+/* Sweet 16 OpCodes */
+struct opc swolst[] = {
+  {"RTN",  0x00, IMPLD}, {"BR",   0x01, RELTV}, {"BNC", 0x02, RELTV}, {"BC",   0x03, RELTV}, 
+  {"BP",   0x04, RELTV}, {"BM",   0x05, RELTV}, {"BZ",  0x06, RELTV}, {"BNZ",  0x07, RELTV}, 
+  {"BM1",  0x08, RELTV}, {"BNM1", 0x09, RELTV}, {"BK",  0x0A, IMPLD}, {"RS",   0x0B, IMPLD}, 
+  {"BS",   0x0C, RELTV}, {"SET",  0x10, ABSLT}, {"LD",  0x20, RGIND}, {"ST",   0x30, RGIND}, 
+  {"LD",   0x40, INDCT}, {"ST",   0x50, INDCT}, {"LDD", 0x60, INDCT}, {"STD",  0x70, INDCT}, 
+  {"POP",  0x80, INDCT}, {"STP",  0x90, INDCT}, {"ADD", 0xA0, RGSTR}, {"SUB",  0xB0, RGSTR}, 
+  {"POPD", 0xC0, INDCT}, {"CPR",  0xD0, RGSTR}, {"INR", 0xE0, RGSTR}, {"DCR",  0xF0, RGSTR}
+};

@@ -1,11 +1,32 @@
 ; C02 module intlib.h02 assembly language subroutines
-; Requires 
-; external zero page words DSTPTR and SRCPTR 
-; and external locations TEMP0, TEMP1, TEMP2, and TEMP3 
+; Requires external zero page words DSTPTR, SRCPTR, 
+; external bytes TEMP0, TEMP1, TEMP2, and TEMP3, and
+; external words INTACC, INTARG, and INTOVR.
+
 
         SUBROUTINE INTLIB
 
-;iabs(n) - Get Integer ABSolute Value
+;iacc(i) - Set Integer Accumulator to i
+;Args: Y,X = Argument
+;Sets: INTACC = Y,X
+IACC:   STX INTACC
+        STY INTACC+1
+        RTS
+
+;Set Integer Argument
+.SETARG STX INTARG
+        STY INTARG+1
+        RTS
+
+;Clear Integer Overflow 
+;Sets: INTOVR = 0
+;Returns A = 0
+.CLROVR LDA #0
+        STA INTOVR
+        STA INTOVR+1
+        RTS
+
+;iabs(i) - Get Integer ABSolute Value
 ;Args: Y,X = Integer to get Absolute Value Of
 ;Sets: TEMP1, TEMP2
 ;Affects: C, N, Z
@@ -23,188 +44,248 @@ IABS:   CPY #$80        ;If Negative (High Bit Set)
 
 ;imax(i) - Get MAXimum of Two Integers
 ;Args: Y,X = Second Integer
-;Uses: SRCPTR = First Integer
+;Uses: INTACC = First Integer
 ;Affects: N,Z,C
 ;Returns: Y,X = Larger of the Two Arguments
-IMAX:   CPY SRCPTR+1    ;If Y < SRCPTR MSB
-        BCC .GETSRC     ;  Return SRCPTR
-        CPX SRCPTR       ;IF X >= SRCPTR LSB
-        BCS .RETURN     ;  Return Argument
-.GETSRC JMP GETSRC      ;Return Integer in SRCPTR
+IMAX:   CPY INTACC+1    ;If Y < INTACC MSB
+        BCC .GETACC     ;  Return INTACC
+        CPX INTACC      ;IF X >= INTACC LSB
+        BCS .IMSET      ;  Set INTACC to and Return Argument
+.GETACC LDX INTACC        ;Return Integer Accumulator
+        LDY INTACC+1
+        RTS
 
 ;imin(i) - Get MINimum of Two Integers
 ;Args: Y,X = Second Integer
-;Uses: SRCPTR = First Integer
+;Uses: INTACC = First Integer
+;Sets: IINTACC = Result
 ;Affects: N,Z,C
 ;Returns: Y,X = Larger of the Two Arguments
-IMIN:   CPY SRCPTR+1       ;If Y < SRCPTR+1
+IMIN:   CPY INTACC+1      ;If Y < INTACC+1
         BCC .RETURN     ;  Return Argument
-        BNE .GETSRC     ;If Y > SRCPTR+1 Return SRCPTR
-        CPX SRCPTR       ;If X >= SRCPTR
-        BCS .GETSRC     ; Return SRCPTR 
-        RTS             ;Return Argument
+        BNE .GETACC     ;If Y > INTACC+1 
+        CPX INTACC        ;or X >= INTACC
+        BCS .GETACC     ;  Return INTACC 
+.IMSET  JMP IACC        ;Else Set INTACC to and Return Argument
 
-;iaddc(c,i) - Add Byte c to Integer i
-IADDC:  JSR SETSRC      ;Save Integer and Clear Y
+;iaddc(c,i) - Integer ADD Char c to int i
+IADDC:  JSR IACC       ;Store Integer in Accumulator
+        LDY #0          ;Set Argument MSB to 0
         TAX             ;Copy Byte to LSB and drop into IADD
 
-;iadd(d) - ADD Integer d to from Integer g
+;iand(d) - Integer ADD g + d
 ;Args: Y,X = Addend
-;Requires: setsrc(g) - Augend
-;Sets: TEMP1,TEMP2 = Addend
-;Affects: Z,C
-;Returns: A = Carry
+;Requires: IACC(g) - Augend
+;Sets: INTACC = Result
+;Affects: Z
+;Returns: Y,X = Sum
+;IAND:   TXA         ;AND Argument LSB 
+;        AND IACC    ;with Accumulator LSB
+;        TAX
+;        TYA         ;AND Argument MSB
+;        AND IACC+1  ;with Accumulator MSB
+;        TAY
+;        JMP IACC    ;Set INTACC to And Return Result
+
+;iadd(d) - Integer ADD g + d
+;Args: Y,X = Addend
+;Requires: IACC(g) - Augend
+;Sets: INTACC = Sum
+;Affects: Z
+;Returns: A,C = Carry
 ;         Y,X = Sum
 ;         N = Sign of Result
-IADD:   CLC         ;Clear Carry for Addition
-        TXA         ;Add Addend LSB
-        ADC SRCPTR   ;to Augend LSB
-        TAX         ;and Copy to X
-        TYA         ;Add Addend MSB
-        ADC SRCPTR+1   ;to Augebd MSB
-        TAY         ;and Copy to Y
-        LDA #0      ;Set Overflow to 0
-        ROL         ;  Rotate Carry (Same as Adding it)
-        RTS         ;  and Return
+IADD:   CLC             ;Clear Carry for Addition
+        TXA             ;Add Addend LSB
+        ADC INTACC        ;to Augend LSB
+        TAX             ;and Copy to X
+        TYA             ;Add Addend MSB
+        ADC INTACC+1      ;to Augebd MSB
+        TAY             ;and Copy to Y
+        PHP             ;Save Result Flags
+        LDA #0          ;Clear CHR Result to 0
+        STA INTOVR+1     ;  and Clear Overflow MSB
+        ROL             ;Rotate Carry Flag into CHR Result
+        STA INTOVR       ;  and store in INTOVR
+        PLP             ;Restore Result Flags
+        JMP IACC        ;Set INTACC to And Return Result
 
-;isub(s) - SUBtract Integer s from Integer m 
+;ineg(i) - Integer NEGate int i
+;Args: Y,X = Integer to Negate
+;Sets: INTACC = Result
+;      INTARG = Argument
+;Returns: Y,X = Negated Integer 
+;         N = Sign of Result
+INEG:   LDA #0           ;Set Minuend to Zero
+        STA INTACC        
+        STA INTACC+1
+        
+;isub(s) - Integer SUBtract m - s 
 ;Args: Y,X = Subtrahend
-;Requires: setsrc(m) - Minuend
-;Sets: TEMP1,TEMP2 = Subtrahend
-;Affects: Z,C
-;Returns: A = Carry
+;Requires: IACC(m) - Minuend
+;Sets: INTACC = Difference
+;      INTARG = Subtrahend
+;Affects: Z
+;Returns: A,C = Carry
 ;         Y,X = Difference 
 ;         N = Sign of Result
-ISUB:   JSR SAVRXY  ;Store Subtrahend in TEMP1,TEMP2
-        SEC         ;Set Carry for Subtraction
-        LDA SRCPTR   ;Load Minuend LSB 
-        SBC TEMP1   ;Subtract Subtrahend LSB
-        TAX         ;Copy Difference LSB to X
-        LDA SRCPTR+1   ;Load Minuend MSB 
-        SBC TEMP2   ;Subtract Subtrahend MSB
-        TAY         ;Copy Difference MSB to Y
-        LDA #0      ;Set Overflow Byte to 0
-        SBC #0      ;  Subtract Carry
-        RTS         ;  and Return
+ISUB:   JSR .SETARG   ;Store Subtrahend in INTARG
+        SEC           ;Set Carry for Subtraction
+        LDA INTACC      ;Load Minuend LSB 
+        SBC INTARG      ;Subtract Subtrahend LSB
+        TAX           ;Copy Difference LSB to X
+        LDA INTACC+1    ;Load Minuend MSB 
+        SBC INTARG+1    ;Subtract Subtrahend MSB
+        TAY           ;Copy Difference MSB to Y
+        PHP           ;Save Result Flags
+        LDA #0        ;Set Overflow Byte to 0
+        SBC #0        ;and Subtract Carry
+        PLP           ;Restore Result Flags
+        JMP IACC      ;Set INTACC to And Return Result
+  
+;imultc(c,m) - Multiply Int m by Char c
+;Args: A - Multiplicand
+;      Y,X - Multiplier
+;Sets: INTACC - Product MSB, LSB
+IMULTC: STA INTACC      ;Set Integer Accumulator to int(A)
+        LDA #0
+        STA INTACC+1    ;and execute IMULT
 
-;imult(m) - MULTiply Two Integers
-;Args: Y,X - Multiplier
-;Requires: DSTPTR = Multiplicand
-;Sets: TEMP0-TEMP3 = 32 Bit Product
-;Destroys: SRCPTR
-;Affects: A,C,Z,N
+;imult(m) = MULTiply Integer n * Integer m
+;Args: Y,X = Multiplier
+;Uses: INTACC = Multiplicand
+;Sets: INTACC = Product MSB, LSB
+;Sets: INTOVR = Product MSB, LSB
+;Destroys: TEMP0,TEMP1,TEMP2,TEMP3
+;Affects: C,Z,N
 ;Returns: A,Y,X = 24 Bit Product
-IMULT:  JSR SETSRC      ;Save Multiplier
-        STY TEMP0+2     ;Clear Upper Bits of Product
-        STY TEMP0+3 
+IMULT:  JSR .SETARG     ;Save Multiplier
+        LDY #0
+        STY INTOVR      ;Clear Upper Bits of Product
+        STY INTOVR+1
         LDX #16         ;Rotate Through 16 Bits
-.MSHFTR LSR SRCPTR+1     ;Divide Multiplier by 2 
-        ROR SRCPTR
+.MSHFTR LSR INTARG+1      ;Divide Multiplier by 2 
+        ROR INTARG
         BCC .MROTR      ;If Shifted out Bit is 1
-        LDA TEMP0+2     ;  Add Multiplicand
+        LDA INTACC      ;  Add Multiplicand
         CLC             ;  to Upper Half of Product
-        ADC DSTPTR
-        STA TEMP0+2
-        LDA TEMP0+3
-        ADC DSTPTR+1
-        STA TEMP0+3 
-.MROTR  ROR TEMP0+3 
-        ROR TEMP0+2
-        ROR TEMP0+1 
+        ADC INTOVR
+        STA INTOVR
+        LDA INTOVR+1
+        ADC INTACC+1
+        STA INTOVR+1 
+.MROTR  ROR INTOVR+1
+        ROR INTOVR
+        ROR TEMP1 
         ROR TEMP0 
         DEX             ;Decrement Counter
         BNE .MSHFTR     ;and Process Next Bit
-        LDX TEMP0       
-        LDY TEMP1       ;Return Low 24 Bits of 
-        LDA TEMP2       ;Product in A, Y, and X
-        RTS
+        LDA INTOVR      ;Get Bits 16-24 of Result
+        LDY TEMP1       ;Get Bits 8-15 of Result
+        LDX TEMP0       ;Get Bits 0-7 of Result
+        JMP IACC        ;Store Y,X in INTACC and Return in Y,X
 
-;idiv(d) - Integer DIVide
+;imod(d) - Integer MODulus d % s
 ;Args: Y,X - Divisor
-;Requires: DSTPTR = Dividend
-;Sets: SRCPTR = Divisor
-;      DSTPTR = Quotient
-;      TEMP1,TEMP2 = Remainder
+;Requires: IACC(d) = Dividend
+;Sets: INTARG = Divisor
+;      INTACC, INTOVR = Modulus
+;Affects: A,C,Z,N
+;Returns: Y,X = 16 Bit Modulus
+IMOD:   JSR IDIV       ;Do Division 
+        LDX INTOVR       ;get Remainder
+        LDY INTOVR+1     l
+        JMP IACC        ;Store in INTACC and Return in Y,X        
+
+;idiv(s) - Integer DIVide d / s
+;Args: Y,X - Divisor
+;Requires: IACC(d) = Dividend
+;Sets: INTARG = Divisor
+;      INTACC = Quotient
+;      INTOVR = Remainder
 ;Affects: A,C,Z,N
 ;Returns: Y,X = 16 Bit Quotient
-IDIV:   JSR .IDIV       ;Do Division and
-        JMP GETDST      ;Return Quotient
-
-;imod(d) - Integer MODulus
-;Args: Y,X - Divisor
-;Requires: DSTPTR = Dividend
-;Sets: SRCPTR = Divisor
-;      DSTPTR = Quotient
-;      TEMP1,TEMP2 = Remainder
-;Affects: A,C,Z,N
-;Returns: Y,X = 16 Bit Remainder
-IMOD:   JSR .IDIV       ;Do Division and
-        JMP RESRXY      ;Return Remainder
-
-.IDIV   JSR SETSRC      ;Save Divisor
-        STY TEMP1
-        STY TEMP1+1
+IDIV:   JSR .SETARG     ;Save Divisor
+        LDY #0
+        STY INTOVR
+        STY INTOVR+1
         LDX #16	        ;repeat for each bit: ...
-.IDLOOP	ASL DSTPTR      ;dividend lb & hb*2, msb -> Carry
-        ROL DSTPTR+1      
-        ROL TEMP1       ;remainder lb & hb * 2 + msb from carry
-        ROL TEMP1+1       
-        LDA TEMP1       
+.IDLOOP	ASL INTACC        ;dividend lb & hb*2, msb -> Carry
+        ROL INTACC+1      
+        ROL INTOVR       ;remainder lb & hb * 2 + msb from carry
+        ROL INTOVR+1       
+        LDA INTOVR       
         SEC
-        SBC SRCPTR      ;subtract divisor to see if it fits in
+        SBC INTARG        ;subtract divisor to see if it fits in
         TAY	            ;lb result -> Y, for we may need it later
-        LDA TEMP1+1       
-        SBC SRCPTR+1       
+        LDA INTOVR+1       
+        SBC INTARG+1       
         BCC .IDSKIP     ;if carry=0 then divisor didn't fit in yet
-        STA TEMP1+1     ;else save substraction result as new remainder,
-        STY TEMP1       
-        INC DSTPTR      ;and INCrement result cause divisor fit in 1 times
+        STA INTOVR+1     ;else save substraction result as new remainder,
+        STY INTOVR       
+        INC INTACC        ;and INCrement result cause divisor fit in 1 times
 .IDSKIP DEX
         BNE .IDLOOP
-        RTS
+        JMP .GETACC       ;Return Integer Accumulator
 
 ;ishftl(n,i) - Shift Integer i to the Left n Bits
-;Sets: TEMP1, TEMP2 = LSB, MSB of Result
-;Affects: A,Y,N,Z,C
-;Returns: A = Bits Shifted out of Integer
+;Args: A = Number of Bits to Shift
+;      Y,X = Integer Value to Shift
+;Sets: INTACC = Bits 0 to 15 of Result
+;      INTOVR = Bits 16 to 31 of Result
+;Sets: INTACC = Shifted Intger
+;Affects: N,Z,C
+;Returns: A = LSB of Underflow
 ;         Y,X = Shifted Integer
-ISHFTL: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
-        TAY             ;Set Counter to Number of Bits
-        BEQ .RESRXY     ;If Zero, Return
-        LDA #0          ;Clear Overflow
-.LSLOOP ASL TEMP1       ;Shift LSB to Left
-        ROL TEMP2       ;Rotate MSB to Left
-        ROL             ;Rotate Carry into A
-        DEY             ;Decrement Counter
+ISHFTL: JSR IACC        ;Save Argument in INTACC
+        LDX #0          ;Clear Overflow
+        STX INTOVR
+        STX INTOVR
+        TAX             ;Set Counter to Number of Bits
+        BEQ .LSDONE     ;If Zero, Return 0
+.LSLOOP ASL INTACC        ;Shift Bits 0-7 to Left
+        ROL INTACC+1      ;Rotate Bits 8-15 to Left
+        ROL INTOVR       ;Rotate Bits 16-23 to Left
+        ROL INTOVR+1     ;Rotate Bits 24-31 to Left
+        DEX             ;Decrement Counter
         BNE .LSLOOP     ;  and Loop if Not 0
-        BEQ .RESRXY     ;Return Shifted Integer
+        LDA INTOVR      ;Return Bits 16-23 in A 
+.LSDONE JMP .GETACC    ;and Bits 0-15 in Y,X
 
 ;ishftr(n,i) - Shift Integer i to the Right n Bits
-;Sets: TEMP1, TEMP2 = LSB, MSB of Result
-;Affects: A,Y,N,Z,C
-;Returns: A = Bits Shifted out of Integer
-;         Y,X = Shifted Integer
-ISHFTR: JSR SAVRXY      ;Save X,Y in TEMP1,TEMP2
-        TAY             ;Set Counter to Number of Bits
-        BEQ .RESRXY     ;If Zero, Return
-        LDA #0          ;Clear Overflow
-.RSLOOP LSR TEMP2       ;Shift MSB to Right
-        ROR TEMP1       ;Rotate LSB to Right
-        ROR             ;Rotate Carry into A
-        DEY             ;Decrement Counter
+;Args: A = Number of Bits to Shift
+;      Y,X = Integer Value to Shift
+;Sets: INTACC = Bits 0 to 15 of Result
+;      INTOVR = Bits -1 to -16 of Result
+;Sets: INTACC = Shifted Intger
+;Affects: N,Z,C
+;Returns: A = MSB of Underflow
+;         Y,X = Shifted Result
+ISHFTR: JSR IACC        ;Save Argument in INTACC
+        LDX #0          ;Clear Overflow
+        STX INTOVR
+        STX INTOVR
+        TAX             ;Set Counter to Number of Bits
+        BEQ .RSDONE     ;If Zero, Return Argument
+.RSLOOP LSR INTACC+1    ;Shift MSB to Right
+        ROR INTACC      ;Rotate LSB to Right
+        ROR INTOVR+1    ;Rotate Underflow MSB
+        ROR INTOVR      ;Rotate Underflow LSB
+        DEX             ;Decrement Counter
         BNE .RSLOOP     ;  and Loop if Not 0
-        BEQ .RESRXY     ;Load Shifted Integer and Return
+        LDA INTOVR+1    ;Return Underflow MSB in A 
+.RSDONE JMP .GETACC     ;and Result in Y,X
 
 ;atoi(&s) - ASCII string TO Integer
 ;Args: Y,X = Address of String to Convert
-;Sets: TEMP1, TEMP2 = Integer Value
-;Affects: TEMP0 
+;Sets: INTACC = Integer Value
+;Affects: TEMP0,TEMP1,TEMP2
 ;Returns: A = Number of Digits 
 ;         Y,X = Integer Value
 ATOI:   JSR SETSRC      ;Initialize Source String
         STY TEMP1       ;Initialize Result
         STY TEMP2
-.AILOOP LDA (SRCPTR),Y   ;Get Next Character
+.AILOOP LDA (SRCPTR),Y  ;Get Next Character
         CMP #$30        ;If Less Than '0'
         BCC .AIDONE     ;  Exit
         CMP #$3A        ;If Greater Than '9'
@@ -235,14 +316,18 @@ ATOI:   JSR SETSRC      ;Initialize Source String
         INY             ;Increment Index
         BPL .AILOOP     ;  and Loop
 .AIDONE TYA             ;Return Number of Digits
-.RESRXY JMP RESRXY      ;and Integer Value
+.RESRXY JSR RESRXY      ;and Integer Value
+        JMP IACC   
 
-;itoa(n) - Integer TO ASCII string
-;Args: Y,X = Integer Value to Convert
+;itoa(&d) - Integer TO ASCII string
+;Args: Y,X = Address of  Destination String
+;Uses: INTACC = Integer to Convert
 ;Uses: DSTPTR = Destination String
 ;Affects: X
 ;Returns: A,Y = Length of String
-ITOA:   JSR CVIBCD      ;Convert Integer to Packed BCD
+ITOA:   JSR SETDST      ;Store String Pointer Agrumenr
+        JSR .GETACC     ;Load INTACC
+        JSR CVIBCD      ;Convert Integer to Packed BCD
         LDY #0          ;Initialize Index into String
         STY TEMP3
 .ITOAA  LDY #4          ;Set Initial Digit Number
@@ -250,24 +335,25 @@ ITOA:   JSR CVIBCD      ;Convert Integer to Packed BCD
         BNE .IASKIP     ;If Zero
         DEY             ;  Decrement Digit Number
         BNE .IAZERO     ;  If Not Zero Loop
-        BEQ .IASKIP     ;  Else .IDSKIP Unpack 
+        BEQ .IASKIP     ;  Else Branch into .IALOOP 
 .IALOOP JSR UPBCDI      ;Unpack Digit #Y
 .IASKIP TAX             ;Save Digit in X
-        TYA             ;Push Digit Number into Stack
+        TYA             ;Push Unpack Index into Stack
         PHA
         TXA             ;and Restore Digit
-        LDY TEMP3       ;Get Index into String
         ORA #$30        ;Convert Digit to ASCII
+        LDY TEMP3       ;Get Index into String
         STA (DSTPTR),Y  ;and Store in String
         INC TEMP3       ;Increment Index into String
         PLA             ;Pull Digit Number off Stack
         TAY
         DEY             ;Decrement Digit Number
-        BPL .IALOOP       ;Loop if >= Zero
+        BPL .IALOOP     ;Loop if >= Zero
         LDA #0          ;Terminate String
         STA (DSTPTR),Y
         TYA             ;Return String Length
-        RTS
+        JMP .GETACC     ;and INTACC
+
 
 ;upbcdi() - UnPack digits from BCD Integer
 ;  Assumes that TEMP0, TEMP1, and TEMP2
@@ -298,21 +384,17 @@ UPBCDI: PHP
 ;      TEMP1 = Thousands and Hundreds Digit
 ;      TEMP2 = Ten-Thousands Digit
 ;Affects: A
-CVIBCD: LDA #0      ;Clear BCD Bytes
+CVIBCD: JSR IACC    ;Store Argument
+        LDA #0      ;Clear BCD Bytes
         STA TEMP0
         STA TEMP1
         STA TEMP2
         PHP         ;Save Status Register
         SEI         ;Disable Interrupts
         SED         ;Set Decimal Mode
-        TYA         ;Push MSB onto Stack
-        PHA
-        TXA         ;Push LSB onto Stack
-        PHA
-        TSX         ;Copy Stack Pointer to X
         LDY #16     ;Process 16 bits of Binary
-.CVLOOP ASL $101,X  ;Shift High Bit Into Carry
-        ROL $102,X
+.CVLOOP ASL INTACC    ;Shift High Bit Into Carry
+        ROL INTACC+1
         LDA TEMP0   ;Add 6 Digit BCD Number Itself 
         ADC TEMP0   ;  Effectively Multiplying It by 2
         STA TEMP0   ;  and Adding in the Shifted Out Bit
@@ -324,9 +406,27 @@ CVIBCD: LDA #0      ;Clear BCD Bytes
         STA TEMP2
         DEY         ;Decrement Counter and
         BNE .CVLOOP ;  Process Next Bit
-        PLA         ;Restore X and Y Registers
-        PLA
         PLP         ;Restore Status Register
         RTS 
+
+;icmp(j) - Compare Int i to Int j 
+;Requires: IACC(i) - int to compare against
+;Args: X,Y = int to compare
+;      N based on return value of A
+;Returns A=$01 and C=1 if INTACC > Arg  
+;        A=$00 and Z=1, C=1 if INTACC = Arg  
+;        A=$FF and C=0 if INTACC < Arg
+ICMP:   CPY INTACC+1  ;Compare MSBs
+        BCC .GT       ;INTACC < Y,X
+        BNE .LT       ;INTACC > Y,X
+        CPX INTACC    ;Compare LSBs
+        BCC .GT       ;INTACC < Y,X
+        BNE .LT       ;INTACC > Y,X
+        LDA #0        
+        RTS           ;Return INTACC = YX
+.LT     LDA #$FF
+        RTS           ;Return INTACC < YX
+.GT     LDA #1
+        RTS           ;Return INTACC > YX
 
         ENDSUBROUTINE

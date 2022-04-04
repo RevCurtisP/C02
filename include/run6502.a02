@@ -5,48 +5,70 @@ DELKEY  EQU $08     ;Delete/Backspace Key (Backspace)
 ESCKEY  EQU $1B     ;Escape/Stop Key      (Escape)
 RTNKEY  EQU $0D     ;Return/Enter Key     (Carriage Return)
 
-;Zero Page Locations
-SRCPTR  EQU $30     ;Source String Pointer 
-DSTPTR  EQU $32     ;Destination String Pointer 
-BLKPTR  EQU $34     ;Block Segment Pointer
-STKPTR  EQU $36     ;Stack Pointer
-USRPTR  EQU $38     ;User Pointer
+;Zero Page Variables
+;       $00-$06     ;Reserved
 
-XMADDR  EQU $3A     ;Extended Memory Address
-XMBANK  EQU $3C     ;Extended Memory Bank
-;           $3D     ;Unused
+XMBANK  EQU $07     ;Extended Memory Bank
+XMADDR  EQU $08     ;Extended Memory Address
 
-RDSEED  EQU $3E     ;Pseudo-RANDOM Seed
-RANDOM  EQU $3F     ;Pseudo-RANDOM Number Storage
+SRCPTR  EQU $10     ;Source Pointer
+DSTPTR  EQU $12     ;Destination Pointer
 
-TEMP0   EQU $40     ;Temporary Storage
-TEMP1   EQU $41
-TEMP2   EQU $42
-TEMP3   EQU $43
-TMPPTR  EQU $44     ;Temporary Pointer
+TEMP0   EQU $14     ;Temporary Storage
+TEMP1   EQU $15
+TEMP2   EQU $16
+TEMP3   EQU $17
+TMPPTR  EQU $18     ;Temporary Pointer
 
-BLKBGN  EQU $46
-BLKEND  EQU $48
-BLKLEN  EQU $4A     ;Block Segment Length     
-SYSBFP  EQU $4B     ;Position in System Buffer
-STKBGN  EQU $4C     ;Stack Start Address
-STKEND  EQU $4E     ;Stack End Address
-;       $50-$FF     ;Free Zero Page for Applications
+LSTPTR  EQU $1A     ;List Pointer
+USRPTR  EQU $1C     ;User Pointer
+;           $1E     ;Reserved
+
+BLKLEN  EQU $1F     ;Block Segment Length
+BLKPTR  EQU $20     ;Block Segment Pointer
+BLKBGN  EQU $22     ;Block Start Address
+BLKEND  EQU $24     ;Block End Address
+
+STKPTR  EQU $26     ;Stack Pointer
+STKBGN  EQU $28     ;Stack Start Addres
+STKEND  EQU $2A     ;Stack End Address
+
+RDSEED  EQU $2C     ;Pseudo-RANDOM Seed
+RANDOM  EQU $2D     ;Pseudo-RANDOM Number Storage
+
+SYSBFP  EQU $2E     ;Position in System Buffer
+.STKSAV EQU $2F     ;Stack Pointer Storage
+
+INTACC  EQU $30     ;Integer Accumulator
+INTOVR  EQU $32     ;Integer Overflow
+INTARG  EQU $34     ;Integer Argument
+
+;       $34-$3F     ;Reserved
+;       $40-$FF     ;Free Zero Page for Applications
 
 SYSBFL  EQU 128     ;System Buffer Size (Max String Size)
 SYSBFR  EQU $0200   ;System Buffer
 ;     $0281-$03FF   ;Unused
 
-;Memory Mapped I/O 
-_KBHIT  EQU $FFF0   ;Is a Key Pressed
-_GETCH  EQU $FFF1   ;Read Keyboard (Blocking)
+;Emulated BIOS System Calls
+.GETCH  EQU $FFE0   ;-K  Read Keyboard
+.PUTCH  EQU $FFE3   ;-C  Write to Screen
+FSCMD   EQU $FFE6   ;-F  filecmd() - File I/O Command Processor
+SYSCMD  EQU $FFE9   ;-S  syscmd()  - System Command Processor
+XMCMD   EQU $FFEC   ;-E  Extended Memory 
+.STDIO  EQU $FFEF   ;-M  Memory Mapped stdio
+EXIT    EQU $FFF0   ;-X  Exit Emulator
 
+;           $0000   ;-N  NMI Vector
+
+ARGV    EQU $0300   ;Command Line Arguments Bu
+        
         ORG $0400   ;START at RAM midpoint
 
 START:  JMP MAIN    ;Execute Program
 
 ;Read Character from Console
-GETKEY  EQU $FFE0   ;Emulator _GETCH Routine
+GETKEY  EQU .GETCH  ;Emulator _GETCH Routine
 
 ;Poll Character from Keyboard
 POLKEY: BRK         ;Exit Emulator
@@ -58,7 +80,7 @@ GETCHR: JSR GETKEY  ;Get Key from Console
         RTS
 
 ;Read Character from stdin
-RDCHAR: LDA $FFEA   ;Read Character from STDIN
+RDCHAR: LDA .STDIO  ;Read Character from STDIN
         CMP #$FF    ;If EOF
         BNE RDCHAX
         LDA #0      ;  Set to ASCII NUL
@@ -80,15 +102,11 @@ NEWLIN: LDA #$0D    ;Load Carriage Return into Accumulator
         JMP PUTCHR  ;  and Print it
 
 ;Print Character to Console
-PUTCHR  EQU $FFE3   ;Emulator CHROUT Routine
+PUTCHR  EQU .PUTCH ;Emulator CHROUT Routine
 
 ;Write Character to stdout
-PRCHAR: STA $FFEA   ;Read Character from STDIN
+PRCHAR: STA .STDIO  ;Read Character from STDIN
         RTS
-
-EXIT    EQU $FFEC   ;Emulator SHUTDN Routine
-
-FSCMD   EQU $FFE6   ;run6502 File System Command Routine
 
         INCLUDE "prbyte.a02" ;PRBYTE and PRHEX routines
         INCLUDE "putstr.a02" ;PUTSTR routine

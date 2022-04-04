@@ -2,77 +2,115 @@
  * intlib - Standard Library Routines for Integer Values *
  *********************************************************/
 
-/* Integer Absolute Value              *
- * Args: int w - Integer to test       *
- * Returns: int v -Absolute value of w */
+/* Set Integer Accumlator      *
+ * Args: int w - Integer value *
+ * Sets: iacc = Argument       *
+ * Returns: int w - Argument   */
+char iacc();
+
+/* Integer Absolute Value               *
+ * Args: int w - Integer value          *
+ * Sets: iacc = Result                  *
+ * Returns: int v - Absolute value of w */
 char iabs();
 
-/* Integer Add               *
- * Setup: setsrc(g) - Augend *
- * Args: int d - Addend      *
- * Returns: char c - Carry   *
- *          int r - Sum      */
+/* Integer Add: g + d         *
+ * Setup: iset(g) - Augend    *
+ * Args: int d - Addend       *
+ * Sets: iacc, iover = Result *
+ * Returns: char c - Carry    *
+ *          int r - Sum       */
 char iadd();
+ 
+/* Integer Add Char: c + d    *
+ * Args: char c - Augend      *
+ *       int d - Addend       *
+ * Sets: iacc, iover = result *
+ * Returns: char c - Carry    *
+ *          int r - Sum       */
+char iaddc();
  
 /* ASCII to Integer                           *
  *   Convert ASCII string to Unsigned Integer *
  * Args: &s - String to Convert               *
+ * Sets: iacc = Result                        *
  * Returns: char n - Number of digits parsed  *
  *          int v - Numeric value of string   */
 char atoi();
 
-/* Integer to ASCII                       *
- *   Convert Unsigned Integer to String   *
- * Setup: setdst(s) - Destination String  *
- * Args: int w  - Unsigned Int to Convert *
- * Returns: char n - Length of string     */
+/* Integer to ASCII                         *
+ *   Convert Unsigned Integer to String     *
+ * Setup: iset(i) - Unsigned Int to Convert *
+ * Args: &s  - Destination String           *
+ * Sets: iacc = Argument                    *
+ * Returns: char n - Length of string       */
 void itoa();
 
-/* Integer Divide               *
- *   Divide Unsigned Integers   *
- * Aetup: setdst(n) - Numerator *
- * Args: int d - Denominator    *
- * Returns: int q - Quotient    */
+/* Integer unsigned Divide     *
+ * Aetup: iset (n) - Numerator *
+ * Args: int d - Denominator   *
+ * Sets: iacc = Quotient       *
+ * Returns: int q - Quotient   */
 char idiv();
  
-/* Integer Maximum                     *
+/* Integer unsigned Maximum            *
  *   Return Largest of Two Integers    *
- * Requires: setsrc(i) - First Integer *
+ * Setup: iset(i) - First Integer      *
  * Args: int j - Second Integer        *
+ * Sets: iacc = Result                 *
  * Returns: int m - Greater of the Two */
 char imax();
 
-/* Integer Minimum                     *
- *   Return smallest of Two Integers   *
- * Requires: setsrc(i) - First Integer *
- * Args: int j - Second Integer        *
- * Returns: int m - Lesser of the Two  */
+/* Integer unsigned Minimum           *
+ *   Return smallest of Two Integers  *
+ * Setup: setsrc(i) - First Integer   *
+ * Args: int j - Second Integer       *
+ * Sets: iacc = Result                *
+ * Returns: int m - Lesser of the Two */
 char imin();
 
-/* Integer Multiply                  *
- *  Multiply Unsigned Integers       *
- * Requires: setdst(m) - Muliplicand *
- * Args: int r - Multiplier          *
- * Returns: long p - Product         */
+/* Integer unsigned Modulo    *
+ * Aetup: iset(n) - Numerator *
+ * Args: int d - Denominator  *
+ * Sets: iacc = Result        *
+ * Returns: int q - Modulus   */
+char idiv();
+ 
+/* Integer unsigned Multiply: m * r   *
+ * Setup: iset(m) - Muliplicand       *
+ * Args: int r - Multiplier           *
+ * Sets: iacc, iover = 32 bit Product *
+ * Returns: long p - 24 bit Product   */
 char imult();
 
-/* Integer Left Shift               *
- * Args: char n - Number of Bits    *
- *       int w - Value to Shift     *  
- * Returns: char v - Overflow Bits  *
-            int r - Shifted Integer */
+/* Integer Multiply Char: c * r       *
+ * Args: int c - Multplicand
+ *       int r - Multiplier           *
+ * Sets: iacc, iover = 32 bit Product *
+ * Returns: long p - 24 bit Product   */
+char imult();
+
+/* Integer Shift Left              *
+ * Args: char n - Number of Bits   *
+ *       int w - Value to Shift    *  
+ * Sets: iacc = Integer result     *
+ *       iover = Integer Overflow  *
+ * Returns: long p - 24 bit Result */
 char ishftl();
 
-/* Integer Shift Right                  *
+/* Integer Shift Right              *
  * Args: char n - Number of Bits    *
  *       int w - Value to Shift     *  
- * Returns: char v - Overflow Bits  *
+ * Sets: iacc = Integer result      *
+ *       iover = Integer Underflow  *
+ * Returns: char u - Underflow Bits *
             int r - Shifted Integer */
 char ishftr();
 
-/* Integer Subtract               *
- * Requires: setsrc(m) - Minuend  *
- * Args: int s - Subtrahend       *
- * Returns: char c - Carry        *
- *          int d - Difference    */
+/* Integer Subtract: m - s      *
+ * Setup: iaet(m) - Minuend  *
+ * Args: int s - Subtrahend     *
+ * Sets: iacc, iover = result   *
+ * Returns: char c - Carry      *
+ *          int d - Difference  */
 char isub();

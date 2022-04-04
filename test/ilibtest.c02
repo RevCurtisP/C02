@@ -16,44 +16,70 @@ char s[128]; //Test String
 
 char cval,cnum,ctot;  //Character Function Variables
 int ivar,ival;        //Integer Variables
-int icmp,itot,ires;   //Function Variables
+int ichk,itot,ires;   //Function Variables
 int less, more;       //Test Values for imin() and imax()
-
 int yx, dd; //Function Arguments and Variables
 
-void cpival(icmp) {
-  if (>ival <> >icmp or <ival <> <icmp) {
-    putwrd(ival); puts("<>"); putwrd(icmp);
+void cpcval(cnum) {
+  if (cval <> cnum) {
+    puthex(cval); puts("<>"); puthex(cnum);
     failln();
     goto exit;
   }
 }
 
-/* Test imin() and imax() */
-void minmax() {
+void cpival(ichk) {
+  if (>ival <> >ichk or <ival <> <ichk) {
+    prword(ival); puts("<>"); prword(ichk);
+    failln();
+    goto exit;
+  }
+}
+
+/* Test imin() and imax() and icmp() */
+void minmax(ctot) {
   newlin();
-  puts("LESS=$"); putwrd(less); puts(",MORE=$"); putwrd(more); newlin();
-  puts(" IMIN()=$"); setsrc(less); 
-  ival = imin(more); putwrd(ival); newlin();
+  puts("IMIN(IACC($"); prword(less); puts("),$"); prword(more); puts(")=$");
+  ival = imin(iacc(less),more); prword(ival); newlin();
   cpival(less);
-  puts(" IMAX()=$"); setsrc(less); 
-  ival = imax(more); putwrd(ival); newlin();
+
+  puts("IMIN(IACC($"); prword(more); puts("),$"); prword(less); puts(")=$");
+  ival = imin(iacc(more),less); prword(ival); newlin();
+  cpival(less);
+
+  puts("IMAX(IACC($"); prword(less); puts("),$"); prword(more); puts(")=$");
+  iacc(less); ival = imax(more); prword(ival); newlin();
   cpival(more);
+
+  puts("IMIN(IACC($"); prword(more); puts("),$"); prword(less); puts(")=$");
+  iacc(more); ival = imax(less); prword(ival); newlin();
+  cpival(more);
+
+  puts("ICMP(IACC($"); prword(less); puts("),$"); prword(more); puts(")=$");
+  cval = icmp(iacc(less),more); puthex(cval); newlin();
+  cpcval(-ctot);
+
+  puts("ICMP(IACC($"); prword(more); puts("),$"); prword(less); puts(")=$");
+  cval = icmp(iacc(more),less); puthex(cval); newlin();
+  cpcval(ctot);
+
 }
 
 /* Test cvibcd() and upbcdi() */
 void intbcd(ival) {
-  newlin(); puts("CVIBCD($"); putwrd(ival); puts(")=$"); 
+  newlin(); puts("CVIBCD($"); prword(ival); puts(")=$"); 
   cvibcd(ival); puthex(temp2); puthex(temp1); puthex(temp0);
+  newlin(); puts("UPBCDI()=");
+  for (cnum=4; cnum:+; cnum--) {if(cnum<4) {putc(',');} putnyb(upbcdi(0,cnum));}
 }
 
 /* Test itoa() and atoi() */
 void itaati(ivar) {
-  newlin();
-  puts("ITOA($"); putwrd(ivar); puts(")=\"");
-  setdst(s); size = itoa(ivar); puts(s); putln("\"");
+  //intbcd(ivar); newlin();
+  puts("ITOA(IACC($"); prword(ivar); puts(",S); ");
+  iacc(ivar); size = itoa(s); puts("  S=\""); puts(s); putln("\"");
   puts("ATOI(\""); puts(s); puts("\")=$");
-  ival = atoi(s); putwrd(ival); newlin();
+  ival = atoi(s); prword(ival); newlin();
   cpival(ivar);
 }
 
@@ -62,11 +88,11 @@ void itaati(ivar) {
 void addsub(ivar) {
   newlin();
   putint(ival); putc('+'); putint(ivar); putc('=');
-  setsrc(ival); ctot, itot = iadd(ivar); 
-  putint(itot); puts(" carry=$"); puthex(ctot); newlin();
+  iacc(ival); ctot, itot = iadd(ivar); 
+  putint(itot); puts(", carry="); prhex(ctot); newlin();
   putint(itot); putc('-'); putint(ivar); putc('=');
-  setsrc(itot); ires = isub(ivar);
-  putint(itot); puts(" carry=$"); puthex(ctot); newlin();
+  iacc(itot); ires = isub(ivar);
+  putint(itot); puts(", carry="); prhex(ctot); newlin();
   cpival(ires);
 }
 
@@ -74,15 +100,15 @@ void addsub(ivar) {
 void mltdiv(ivar) {
   newlin();
   putint(ival); putc('*'); putint(ivar); putc('=');
-  setdst(ival); cval,itot = imult(ivar); putint(itot); 
+  iacc(ival); cval,itot = imult(ivar); putint(itot); 
   if (cval) puts(" OVERFLOW!"); newlin();
   putint(itot); putc('/'); putint(ivar); putc('=');
-  setdst(itot); ires = idiv(ivar); putint(ires); newlin();
+  iacc(itot); ires = idiv(ivar); putint(ires); newlin();
   cpival(ires);
-  ival>>; setsrc(ival); cval,itot = iadd(itot); 
+  ival>>; iacc(ival); cval,itot = iadd(itot); 
   if (cval) return; //Number to Large to Modulo
   putint(itot); putc('%'); putint(ivar); putc('=');
-  setdst(itot); ires = imod(ivar); putint(ires); newlin();
+  iacc(itot); ires = imod(ivar); putint(ires); newlin();
   cpival(ires);
 }
 
@@ -110,50 +136,55 @@ void shftlr(cval, ivar) {
   cpival(itot);
 }
 
-
 main:
 
-less = $009A; more = $00DE; minmax();
-less = $789A; more = $78DE; minmax();
-less = $7800; more = $BC00; minmax();
-less = $789A; more = $BCDE; minmax();
-less = $F18F; more = $F18F; minmax();
+less = $009A; more = $00DE; minmax(1);
+less = $789A; more = $78DE; minmax(1);
+anykey();
+less = $7800; more = $BC00; minmax(1);
+less = $789A; more = $BCDE; minmax(1);
+less = $F18F; more = $F18F; minmax(0);
 anykey();
 
-itaati(&0);
-itaati(&234);
-itaati(&256);
-itaati(&456);
-itaati(&23456);
-itaati(&$FFFF);
-anykey();
+doasc:
+  //itaati(&0);
+  itaati(&234);
+  itaati(&256);
+  itaati(&456);
+  itaati(&23456);
+  itaati(&$FFFF);
+  anykey();
 
-ival = &23; addsub(&34);
-ival = &1234; addsub(&5678); 
-ival = &23456; addsub(&34567); 
-ival = &$7700; addsub(&$6600); 
-ival = &$7FFF; addsub(&$8000); 
-ival = &$FDEC; addsub(&$CDEF); 
-anykey();
+doadd:
+  ival = &23; addsub(&34);
+  ival = &1234; addsub(&5678); 
+  ival = &23456; addsub(&34567); 
+  ival = &$7700; addsub(&$6600); 
+  ival = &$7FFF; addsub(&$8000); 
+  ival = &$FDEC; addsub(&$CDEF); 
+  anykey();
+  
+domlt:
+  ival = &23; mltdiv(&34);
+  ival = &123; mltdiv(&234);
+  ival = &255; mltdiv(&257); 
+  anykey();
 
-ival = &23; mltdiv(&34);
-ival = &123; mltdiv(&234);
-ival = &255; mltdiv(&257); 
-anykey();
+doshft:
+  shftlr(0,&$AA55);
+  shftlr(1,&$A55A);
+  shftlr(2,&$F00F);
+  shftlr(3,&$0FF0);
+  shftlr(4,&$AA55);
+  shftlr(7,&$A55A);
+  anykey();
 
-shftlr(0,&$AA55);
-shftlr(1,&$A55A);
-shftlr(2,&$F00F);
-shftlr(3,&$0FF0);
-shftlr(4,&$AA55);
-shftlr(7,&$A55A);
-anykey();
-shftlr(8,&$AA55);
-shftlr(9,&$A55A);
-shftlr(11,&$0FF0);
-shftlr(12,&$AA55);
-shftlr(15,&$A55A);
-shftlr(16,&$F00F);
-
+  shftlr(8,&$AA55);
+  shftlr(9,&$A55A);
+  shftlr(11,&$0FF0);
+  shftlr(12,&$AA55);
+  shftlr(15,&$A55A);
+  shftlr(16,&$F00F);
+  anykey();
 
 goto exit;
