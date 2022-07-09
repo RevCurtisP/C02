@@ -1,103 +1,738 @@
-/* C02 Assembler */
+/* Simple 6502 Assembler   *
+ * for C02 Compiler        *
+ * Uses DASM Syntax but    *
+ * supports 65C02 Op Codes */
 
-/* Address Modes */
-enum {ABS, //Absolute
-      ABX, //Absolute,X
-      ABY, //Absolute,Y
-      ACC, //Accumulator
-      IDX, //(Indirect,X)
-      IIY, //(Indirect),Y
-      IMD, //Immediate
-      IMP, //Implied
-      IND, //Indirect
-      REL, //Relative
-      ZPG, //Zero Page
-      ZPX, //Zero Page,X
-      ZPY, //Zero Page,X
+#define DEBUG %00000100  //Print Debug Information
+
+//#include "a02lib.h02" - This will replace all the defs below
+#include <stddef.h02>
+#include <stdlib.h02>
+#include <stdio.h02>
+#include <stdiox.h02>
+#include <ctype.h02>
+#include <intlib.h02>
+#include <memory.h02>
+#include <string.h02>
+
+alias char lcltbl = $E000;  //Local Symbol Table
+alias char symtbl = $E100;  //Global Symbol Table
+
+/* Address Mode Constants, Bit Masks, and Descriptions */
+enum {ACMLT, IMMDT, ZPAGE, ZPAGX, ABSLT, ABSLX, ABSLY, IMPLD, INDCT, INDCX, INDCY, RELTV};
+const char amodlo = {$01, $02, $04, $08, $20, $40, $80, $00, $00, $00, $00, $00};
+const char amodhi = {$00, $00, $00, $00, $00, $00, $00, $01, $02, $04, $08, $10};
+const char amdesc = {"Accumulator", "Immediate", "Zero Page", "Zero Page,X", 
+                    "Absolute", "Absolute,X", "Absolute,Y", "Implied", 
+                    "(Indirect)", "(Indirect,X)", "(Indirect),Y", "Relative", 0};
+
+/* Pseudo-Op Lookup Table */
+struct pso {char token, name[5];};
+const char psolst = {'B', "BYTE", 'H', "HEX",  'W',  "WORD", '=', "EQU", 'F', "FILL", 
+                     'I', "INCL", 'S', "SUBR", 'B',  "DC",   'F', "DS",  'A', "ALIG", 
+                     '*', "ORG",  'P', "PROC", 'E', "END",    $FF};
+
+/* Op Code Lookup Table */
+struct opc {int amode; char token, name[5];};
+const char opcalo = {$00, $00, $FE, $7D, $04, $04, $24, $26, $A6, $6E, $6C, $20, $20, $6E, $2C};
+const char opcahi = {$01, $10, $0E, $00, $00, $10, $00, $00, $00, $00, $00, $06, $00, $00, $00};
+const char opclst = {
+  $00, 0, "BRK", $EA, 0, "NOP", $DB, 0, "STP", $CB, 0, "WAI", $CA, 0, "DEX",  
+  $88, 0, "DEY", $E8, 0, "INX", $C8, 0, "INY", $48, 0, "PHA", $08, 0, "PHP", 
+  $DA, 0, "PHX", $5A, 0, "PHY", $68, 0, "PLA", $28, 0, "PLP", $FA, 0, "PLX", 
+  $7A, 0, "PLY", $18, 0, "CLC", $D8, 0, "CLD", $58, 0, "CLI", $B8, 0, "CLV", 
+  $38, 0, "SEC", $F8, 0, "SED", $78, 0, "SEI", $AA, 0, "TAX", $A8, 0, "TAY", 
+  $BA, 0, "TSX", $8A, 0, "TXA", $98, 0, "TYA", $9A, 0, "TXS", $40, 0, "RTI", 
+  $60, 0, "RTS", $B0, 1, "BCS", $F0, 1, "BEQ", $30, 1, "BMI", $70, 1, "BVS", 
+  $90, 1, "BCC", $D0, 1, "BNE", $10, 1, "BPL", $50, 1, "BVC", $80, 1, "BRA",
+  $A1, 2, "LDA", $61, 2, "ADC", $21, 2, "AND", $C1, 2, "CMP", $81, 2, "STA", 
+  $E1, 2, "SBC", $01, 2, "ORA", $41, 2, "EOR", $02, 3, "ASL", $22, 3, "ROL", 
+  $E2, 3, "INC", $42, 3, "LSR", $62, 3, "ROR", $C2, 3, "DEC", $07, 4, "RMB", 
+  $87, 4, "SMB", $0F, 5, "BBR", $8F, 5, "BBS", $10, 6, "TRB", $00, 6, "TSB", 
+  $E0, 7, "CPX", $C0, 7, "CPY", $A2, 8, "LDX", $82, 8, "STX", $20, 9, "BIT", 
+  $60, 10,"STZ", $4C, 11,"JMP", $14, 12,"JSR", $A0, 13,"LDY", $80, 14,"STY",
+  $FF
+};
+
+/* Op-Code Fixup Table */
+struct opf {char token, opmod, opcode;};
+const char opfix = {
+  $20, $08, $89,  $E0, $08, $E0,  $C0, $08, $C0,  $A0, $08, $A0,  $A2, $08, $A2,  
+  $C2, $08, $3A,  $E2, $08, $1A,  $60, $0C, $9C,  $60, $1C, $9E,  $A2, $18, $BE,
+  $82, $18, $BC,  $4C, $0C, $4C,  $4C, $11, $6C,  $4C, $00, $7C,  0
+};
+
+/* Temporary and Index Variables */
+char b, c, f, i, j, m, n, o, t, u;
+int v, w;
+
+/* Function Variables */
+char found, match, opcode, opdfnd;  //lookup(), asmpso(), asmopc()
+int addr;   //fndsym()
+int opdval; //evlopd() values
+char hilo, opdrqd, prns, reqbyt, result; //evlopd() flags
+int addend; //adrslt()
+char digit; //evlhex()
+int term;   //evltrm()
+
+/* Symbol Table Entries */
+struct sym {char name[8], bytes; int value;};
+struct sym symbol;  //Current Symbol
+struct sym varble;  //Symbol to Lookup
+char symcnt, lclcnt; //Number of Global, Local Symbols
+int symptr, lclptr;  //Pointer to Next Table Entry
+char symflg, symlcl; //Valid Symbol Value, Local Symbol
+
+/* Input Variables */
+char inplin[128];   //Input Buffer 
+char inpidx;        //Index into Input Buffer
+char eoinp;         //End of Input
+int  lineno;        //Input File Line Number
+
+
+/* Assembly Variables */
+char label[8];      //Assembly Line Label
+char mcode[8];      //Generated Machine Code
+char mnmnc[12];     //Opcode Mnemonic
+char oprnd[128];    //Opcode Mnemonic
+char cmmnt[128];    //Assembly Line Comment
+char strng[128];    //Parsed String
+
+char word[128];     //Parsed Word
+char wrdlen;        //Length of Parsed Word
+
+int  mcdadr;        //Machine Code Address
+char mcdidx;        //Index into mcode[]
+char opridx;        //Index into oprnd[]
+
+char endasm;        //End Assembly
+char local,dot;     //Local Symbol, Dot Prefix Flags
+char colon;         //Colon after Label
+char token, opmod;  //OpCode Token, Modifier
+char amflg, amidx;  //Flag and Index - amodlo[], amodhi[]
+char amdlo, amdhi;  //Addressing Modes
+char opvlo, opvhi;  //Operand Value
+char zpflg;         //ZeroPage Flag
+
+char hexadr[6];     //Current Address in Hexadecimal
+char bytstr[5];     //String Representation of Byte
+
+char orgset;        //Origin Address Set
+int  orgadr;        //Origin Address
+int  curadr;        //Current Address
+int  lstadr;        //List Address
+
+/* Print Error Message and Exit        *
+ * Args: Y,X = Address of Eror Message */
+void error() {
+  putstr(); putstr(" ERROR"); newlin();
+  goto exit;
 }
 
-/* Op Code Indexes */
-enum {ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC, 
-      CLD, CLI, CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR, INC, INX, INY, JMP, 
-      JSR, LDA, LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI, 
-      RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA};
-
-/* Op Code Mnemonic Lists */
-const char mnelst = {"ADC AND ASL CMP CPX CPY DEC EOR INC JMP JSR LDA LDX LDY LSR ORA ROL ROR SBC STA STX STY "};
-
-const char implst = {"BRK CLC CLD CLI CLV DEX DEYINX INY NOP PHA PHP PLA PLP RTI RTSSEC SED SEI TAX TAY TSX TXA TXS TYA "};
-
-const char rellst = {"BCC BCS BEQ BMI BNE BPL BVC BVS "};
-
-/* Op Code Lookup Tables */
-const char ocilst = {//x0    x1    x2    x3    x4    x5    x6    x7    x8    x9   xA     xB    xC    xD    xE    xF
-                     #BRK, #ORA,  255,  255,  255, #ORA, #ASL,  255, #PHP, #ORA, #ASL,  255,  255, #ORA, #ASL,  255,  //0x
-                     #BPL, #ORA,  255,  255,  255, #ORA, #ASL,  255, #CLC, #ORA,  255,  255,  255, #ORA, #ASL,  255,  //1x
-                     #JSR, #AND,  255,  255, #BIT, #AND, #ROL,  255, #PLP, #AND, #ROL,  255, #BIT, #AND, #ROL,  255,  //2x
-                     #BMI, #AND,  255,  255,  255, #AND, #ROL,  255, #SEC, #AND,  255,  255,  255, #AND, #ROL,  255,  //3x
-                     #RTI, #EOR,  255,  255,  255, #EOR, #LSR,  255, #PHA, #EOR, #LSR,  255, #JMP, #EOR, #LSR,  255,  //4x
-                     #BVC, #EOR,  255,  255,  255, #EOR, #LSR,  255, #CLI, #EOR,  255,  255,  255, #EOR, #LSR,  255,  //5x
-                     #RTS, #ADC,  255,  255,  255, #ADC, #ROR,  255, #PLA, #ADC, #ROR,  255, #JMP, #ADC, #ROR,  255,  //6x
-                     #BVS, #ADC,  255,  255,  255, #ADC, #ROR,  255, #SEI, #ADC,  255,  255,  255, #ADC, #ROR,  255,  //7x
-                      255, #STA,  255,  255, #STY, #STA, #STX,  255, #DEY,  255, #TXA,  255, #STY, #STA, #STX,  255,  //8x
-                     #BCC, #STA,  255,  255, #STY, #STA, #STX,  255, #TYA, #STA, #TXS,  255,  255, #STA,  255,  255,  //9x
-                     #LDY, #LDA, #LDX,  255, #LDY, #LDA, #LDX,  255, #TAY, #LDA, #TAX,  255, #LDY, #LDA, #LDX,  255,  //Ax
-                     #BCS, #LDA,  255,  255, #LDY, #LDA, #LDX,  255, #CLV, #LDA, #TSX,  255, #LDY, #LDA, #LDX,  255,  //Bx
-                     #CPY, #CMP,  255,  255, #CPY, #CMP, #DEC,  255, #INY, #CMP, #DEX,  255, #CPY, #CMP, #DEC,  255,  //Cx
-                     #BNE, #CMP,  255,  255,  255, #CMP, #DEC,  255, #CLD, #CMP,  255,  255,  255, #CMP, #DEC,  255,  //Dx
-                     #CPX, #SBC,  255,  255, #CPX, #SBC, #INC,  255, #INX, #SBC, #NOP,  255, #CPX, #SBC, #INC,  255,  //Ex
-                     #BEQ, #SBC,  255,  255,  255, #SBC, #INC,  255, #SED, #SBC,  255,  255,  255, #SBC, #INC,  255   //Fx
-}
-
-const char admlst = {//x0    x1    x2    x3    x4    x5    x6    x7    x8    x9   xA     xB    xC    xD    xE    xF
-                     #IMP, #IDX,  255,  255,  255, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255,  255, #ABS, #ABS,  255,  //0x
-                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //1x
-                     #IMP, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255, #ABS, #ABS, #ABS,  255,  //2x
-                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //3x
-                     #IMP, #IDX,  255,  255,  255, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255, #ABS, #ABS, #ABS,  255,  //4x
-                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //5x
-                     #IMP, #IDX,  255,  255,  255, #ZPG, #ZPG,  255, #IMP, #IMD, #ACC,  255, #IND, #ABS, #ABS,  255,  //6x
-                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //7x
-                      255, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP,  255, #IMP,  255, #ABS, #ABS, #ABS,  255,  //8x
-                     #IMP, #IIY,  255,  255, #ZPX, #ZPX, #ZPY,  255, #IMP, #ABY, #IMP,  255,  255, #ABX,  255,  255,  //9x
-                     #IMD, #IDX, #IMD,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #IMP,  255, #ABS, #ABS, #ABS,  255,  //Ax
-                     #IMP, #IIY,  255,  255, #ZPX, #ZPX, #ZPY,  255, #IMP, #ABY, #IMP,  255, #ABX, #ABX, #ABY,  255,  //Bx
-                     #IMD, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #IMP,  255, #ABS, #ABS, #ABS,  255,  //Cx
-                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255,  //Dx
-                     #IMD, #IDX,  255,  255, #ZPG, #ZPG, #ZPG,  255, #IMP, #IMD, #IMP,  255, #ABS, #ABS, #ABS,  255,  //Ex
-                     #IMP, #IIY,  255,  255,  255, #ZPX, #ZPX,  255, #IMP, #ABY,  255,  255,  255, #ABX, #ABX,  255   //Fx
-}
-
-char aa,ii,xx,yy; //Function Variables
-char ss[4];
-int  yx;
-
-/* Lookup Op Code Index Mnemonic *
- * Args: int Address of String   *
- *       char Address Mode       *
- * Rets: char Op Code Index      *
- *         $FF = Not Found       */
-char lkupmi(yx) {
-  aa = strlen(yx);   //Get Length of Mnemonic
-  if (ii <> 3)       //If Not 3 
-    return $FF;      //  Return Not Found
-  setdst(ss);        //Copy Mnemonic
-  strcpy(yx);        //to SS
-  strapd(' ');       //and Append a Space
-  setdst(mnelst);    //Return Position of
-  return strstr(ss); //ss[] in mnelst[]
-}
-
-/* Lookup Op Code *
- * Args: char Opcode Index *
- *       char Address Mode *
- * Rets: char Op Code      *
- *         $FF = Not Found */
-char lkupoc(aa, yx) {
-  ii = 0;
+/* Read Line of Input from Console     *
+ * Populates: inplin[] - Line of Input *
+ * Sets: inpidx - Length of Line       *
+ * Destroys: c - Input Character       *
+ * Returns: True if End of Input       */
+char readln() {
+  inpidx = 0;
   do {
-    if (ocilst[ii] == aa and admlst[ii] == yy) return ii;
-    ii++;
-  } while (ii);
-  return $FF; //Opcode Not Found
+    c = getchr();
+    select (c) {
+      case #RTNKEY: c = 0;
+      case #ESCKEY: if (inpidx) c = 0; else return #TRUE;
+      default:
+    }
+    inplin[inpidx] = c;
+    inpidx++;
+    if (inpidx:-) error("!INPUT OVERFLOW");
+  } while (c);
+  return #FALSE;
 }
+
+void prtchr(c) {if (c) putchr(c);} //Print Non-Null Character
+void prtlin() {putstr(); newlin();} //Print String plus New Lin
+void prtbyt() {prbyte(); putchr(' ');} //Print Hexadecimal Word
+void echoln() {putchr('<'); putwrd(lineno); prtlin(inplin);}
+
+void init() {
+  if (#DEBUG&2) prtlin("#STARTING ASSEMBLY");
+  lineno = 1;       //Initialize Input File Line Number
+  orgset = #FALSE;  //Origin Not Set
+  endasm = #FALSE;  //End Assembly Fl
+  symptr = &symtbl;
+  lclptr = &lcltbl;
+}
+
+/* Parse Word from Input Line       *
+ * Populates: word[]                *
+ * Sets: wrdlen                     *
+ * Updates: inpidx                  *
+ * Returns: Word Found (TRUE/FALSE) */
+char pword() {
+  wrdlen = 0;
+  while () {
+    if (#DEBUG:-) putchr(inplin[inpidx]);
+    c = touppr(inplin[inpidx]);
+    if (c < 'A' or c > 'Z' and c <> '_') break;
+    word[wrdlen] = c; wrdlen++;
+    inpidx++;
+  }
+  word[wrdlen] = 0; //Terminate String
+  if (wrdlen) return #TRUE; else return #FALSE;
+}
+
+/* Skip Character in Input Line     *
+ * Args: c - Character to Skip      *
+ * Updates: inpidx                  *
+ * Returns: c if found, else #FALSE */
+int skpchr(c) {
+  if (inplin[inpidx] == c) {inpidx++; return c;}
+  else return #FALSE;
+}
+
+/* Skip Spaces in Input Line *
+ * Updates: inpidx           */
+void skpspc() {
+  i = 0;
+  while (inplin[inpidx]) {
+    if (A > ' ') break;
+    inpidx++;
+  }
+} 
+
+/* Copy Character from Input Line to Operand *
+ * Args: c = character to copy (0 = any)     *
+ * Updates: inpidx                           *
+ * Returns: character matched                */
+char cpychr(c) {
+  o = touppr(inplin[inpidx]);
+  if (c and o <> c) return #FALSE;
+  if (opridx:+) {oprnd[opridx] = o; opridx++; }
+  inpidx++;
+  return #TRUE;
+}
+
+/* Check Origin Address */
+void chkorg() {
+  if (!orgset) error("ORIGIN NOT SET");
+}
+
+/* Write Line of Machine Language Bytes */
+void wrtmcd() {
+  putwrd(mcdadr);
+  for (i=0; i<mcdidx; i++) puthex(mcode[i]);
+  mcdidx = 0;
+}
+
+/* Output Machine Language Character */
+void outchr(b) {
+  chkorg(); 
+  if (mcdidx > 7) {wrtmcd(); newlin();}
+  if (!mcdidx) mcdadr = curadr;
+  if (#DEBUG&64) {putstr("#OUT "); putwrd(curadr); prtbyt(b); newlin();}
+  mcode[mcdidx] = b;
+  mcdidx++;
+  curadr++;
+}
+
+/* Output Machine Language Byte */
+void outbyt() {
+  outchr(X);
+}
+
+/* Write Word to Output File */
+void outwrd(w) {
+  outbyt(w);  
+  c = >w; outchr(c);  
+}
+
+/* Print Symbol Table */
+void prtsym(n, dstptr) {
+  prtlin("SYMBOLS");
+  for (i=0; i<n; i++) {
+    for (j=0; j<@varble; j++) {varble[j] = *dstptr; dstptr++;}
+    putstr("|"); putwrd(varble.value); prtbyt(varble.bytes); prtlin(varble.name);
+  }
+}
+
+void prtlcl() {
+  if (lclcnt) {
+    putstr("LOCAL ");
+    prtsym(lclcnt, &lcltbl);
+  }
+}
+
+/* Find Symbol in Table                 *
+ * Args: n = Number of Symbols in Table *
+ *       s = Address of Table           *
+ * Uses: word = Symbol Name             *
+ * Sets: srcptr = Address of Entry      *
+ *       varble = Contents of Entry     *
+ * Destroys: dstptr                     *
+ * Returns: TRUE if Symbol was Found    */
+char fndsym(n, addr) {
+  if (#DEBUG&4) {putstr("#SYMBOL "); putstr(word);}
+  setdst(word); setsrc(addr);
+  for (i=0; i<n; i++) {
+    if (strcms(word)) {addsra(@varble); continue;}
+    setdst(varble); memcpy(@varble);
+    if (#DEBUG&4) prtlin(" FOUND ");
+    return #TRUE;
+  }
+  if (#DEBUG&4) prtlin(" NOT FOUND ");
+  return #FALSE;
+}
+
+/* Set Symbol Value and Size */
+void setsym(b, v) {
+  symbol.value = v;
+  if (!b) b = (>symbol.value) ? 2 : 1;
+  symbol.bytes = b;
+}
+
+/* Parse Label from Input Line 
+ * Sets: label[] = Label Name
+ *       local = '.' if Local else 0.
+ ^       symbol.name =  Label Name
+ *       symbol.value = Current Address
+ *       symbol.bytes = Size of Symbol Value 
+ * Updates: c */
+void plabel() {
+  local = (skpchr('.')) ? '.' : 0; //Check for Local Label  
+  if (pword()) {
+    if (wrdlen>8) error("!SYMBOL TOO LONG"); 
+    setdst(label); strcpy(word);
+    if (#DEBUG&2) {putstr("#FOUND "); if (local) putstr("LOCAL "); putstr("LABEL "); prtlin(label);}
+    setdst(symbol.name);strcpy(label); 
+    setsym(0, curadr); symflg = orgset;
+  } else {
+    label[0] = 0;
+    if (#DEBUG&2) prtlin("#NO LABEL FOUND");
+  }
+  colon = skpchr(':'); //Optional Colon after Label
+}
+
+/* Parse Mnemonic from Input Line     *
+ * Sets: mnmnc                        *
+ * Updates: inpidx                    *
+ * Returns: Opcode Found (TRUE/FALSE) */
+char pmnmnc() {
+  skpspc(); //Skip Leading Spaces
+  dot = skpchr('.'); //Optional Dot before Pseudo-Op
+  if (pword()) {
+    if (wrdlen>12) error("!MNEMONIC TOO LONG"); 
+    for (i=0; i<=wrdlen; i++) mnmnc[i] = word[i];
+    if (#DEBUG&2) {putstr("#FOUND MNEMONIC "); prtlin(mnmnc);}
+  } else {
+    mnmnc[0] = 0;
+    if (#DEBUG&2) prtlin("#NO MNEMONIC FOUND");
+  }
+}
+
+/* Look Up List Entry                *
+ * Args: amflg = get address modes   * 
+ *       srcptr = address of list    *
+ * Uses: mnmnc = mnemonic            *
+ * Sets: token = op code token       *
+ *       amidx = address mode index *
+ * Destroys: match                   *
+ * Returns: TRUE if found            */
+char lookup(amflg, srcptr) {
+  if (#DEBUG:-) printf(setdst(amflg,srcptr), "LOOKUP(%x,%w)");
+  while () { //Search Pseudo-Op List
+    if (#DEBUG:-) printf(setdst(srcptr),"  SRCPTR=%w");  
+    token = *srcptr; srcptr++; if (#DEBUG:-) printf(token, ", TOKEN=%d");
+    if (token == $FF) break;
+    if (amflg) {amidx = *srcptr; srcptr++; if (#DEBUG:-) printf(amidx, ", AMDIDX=%d");}
+    match = #TRUE; if (#DEBUG:-) newlin();
+    i = 0; //Offset into mnmnc
+    while (*srcptr) {
+      if (#DEBUG:-) {
+        printf(setdst(*srcptr,srcptr),"  (%w)=%d ");
+        printf(i,", MNMNC[%d]="); putchr(mnmnc[i]); newlin();
+      }
+      if (*srcptr <> mnmnc[i]) match = #FALSE;
+      if (#DEBUG:-) prtbyt(match);
+      i++; srcptr++;
+    }
+    if (match) return #TRUE;
+    srcptr++;
+  }
+  return #FALSE;
+}
+
+/* Evaluate Binary Number */
+void evlbin() {
+  term = 0;
+  cpychr('%');  
+  while (isbdgt(inplin[inpidx])) {
+    term<<; if (inplin[inpidx] & 1) term++;
+    cpychr(0); 
+  }
+}
+
+/* Evaluate Character Constant */
+void evlchr() {
+  cpychr('\'');  
+  term = int(inplin[inpidx]);
+  cpychr(0); 
+  cpychr('\''); 
+}
+
+/* Evaluate Decimal Number */
+int evldec() {
+  term = 0;
+  while (isdigt(inplin[inpidx])) {
+    term = imultc(10, term); 
+    term = iaddc(inplin[inpidx] - '0', term);
+    cpychr(0); 
+  }
+}
+
+/* Evaluate Hexadecimal Number */
+int evlhex() {
+  term = 0;
+  cpychr('$'); 
+  while (ishdgt(inplin[inpidx])) {
+    digit = inplin[inpidx] - '0';
+    if (digit > 9) digit = digit - 7;
+    term<<; term<<; term<<; term<<; 
+    term = iaddc(digit, term);
+    cpychr(0); 
+  }
+}
+
+/* Evaluate Term in Operand *
+ * Updates: inpidx 
+ * Sets: term 
+ * Returns: #TRUE if a term was found */
+char evltrm() {
+  skpspc();
+  if (isalph(inplin[inpidx]) or inplin[inpidx] == '.') {
+    if (evlsym()) term = symbol.value; else term = &$0100;
+  }
+  else if (isdigt(inplin[inpidx])) 
+    evldec();
+  else select(inplin[inpidx]) {
+    case '$': evlhex(); break;
+    case '%': evlbin(); break;
+    case '\'': evlchr(); break;
+    default: return #FALSE;
+  }
+  skpspc();
+  if (#DEBUG&2) {putstr("#TERM=$"); putwrd(term); newlin();}
+  return #TRUE;
+}
+
+char evlsym() {
+  symlcl = cpychr('.'); //Check for Local Symbol
+  if (!pword()) {if (symlcl) error("INVALID SYMBOL"); else return;}
+  for (i=0; i<wrdlen; i++) {
+    if (opridx:+) {oprnd[opridx] = word[i]; opridx++;}
+  }
+  if (symlcl) found = fndsym(lclcnt, &lcltbl); 
+  else found = fndsym(symcnt, &symtbl);
+  if (found) opdval = symbol.value;
+  else error("UNDEFINED SYMBOL");
+}
+
+/* Evaluate Operand                 *
+ * Args: maxsiz = maximum size *
+ * Returns: Operand Value           */
+char evlopd(opdrqd, reqbyt) {
+  hilo = 0; //Return LSB (1) or MSB ($FF)
+  prns = 0; //Optional Parenthesis after Hi/Low Operator
+  skpspc();
+  if (cpychr('<')) hilo = 1; else if (cpychr('>')) hilo = $FF;
+  if (hilo) prns = cpychr('(');
+  result = evltrm();
+  if (result) {
+    opdval = term;    
+    while (cpychr('+')) {
+      if (!evltrm()) break;
+      opdval = iadd(setdst(opdval),term);
+    }
+  }
+  if (hilo) {
+    if (!result) error("!ILLEGAL OPERAND");  
+    if (prns) cpychr(')'); //Skip End Parenthesis
+    if (hilo:-) opdval = int(>opdval); //Copy MSB to LSB
+    opdval = int(<opdval); //Return LSB
+  }
+  if (result) {
+    if (#DEBUG&2) printf(setdst(opdval), "#OPERAND VALUE=%i%n");
+    if (reqbyt & >opdval) error("!VALUE TOO LARGE");
+  } else {
+    if (#DEBUG&2) putln("#NO OPERAND");
+    if (opdrqd) error("!OPERAND REQUIRED");    
+  }
+  return result;
+}
+
+/* Assemble EQU Pseudo-Op */
+void asmequ() {
+  if (!label[0]) error("!LABEL REQUIRED");
+  evlopd(#TRUE, #FALSE);
+  setsym(0,opdval); symflg = #TRUE;
+}
+
+/* Assemble ORG Pseudo-Op */
+void asmorg() {
+  if (evlopd(#TRUE, #FALSE)) orgadr = opdval;
+  if (symbol.name[0]) {
+    symbol.value = orgadr;
+    symbol.bytes = 2;
+  }
+  curadr = orgadr;
+  lstadr = orgadr;
+  orgset = #TRUE;
+  symflg = #TRUE;
+}
+
+/* Assemble BYTE Pseudo-Op */
+void asmbyt() {
+  do {
+    if (cpychr('"')) { //String Operand
+      while (!cpychr('"')) {outchr(inplin[inpidx]); cpychr(0); }
+      skpspc();
+    } else {
+      if (evlopd(#TRUE, #TRUE)) outbyt(opdval); //Evaluate Operand
+    }
+  } while (cpychr(','));
+}
+
+/* Assemble HEX Pseudo-Op */
+void asmhex() {
+  do {
+    evlhex(); outbyt(term); 
+  } while (cpychr(','));
+}
+
+/* Assemble SUBROUTINE Pseudo-Op */
+void asmsub() {
+  prtlcl();
+  lclptr = &lcltbl; lclcnt = 0;
+}
+
+/* Assemble WORD Pseudo-Op */
+void asmwrd() {
+  do {
+    evlopd(#TRUE, #FALSE); outwrd(opdval);
+  } while (cpychr(','));
+}
+
+/* Assemble ALIGN Pseudo-Op */
+void asmaln() {
+  w = evlopd(#TRUE, #FALSE);
+  opdval = 0;
+  while(icmp(iacc(opdval),curadr):+) opdval = iadd(setdst(opdval),w);
+}
+
+
+/* Assemble Pseudo-Op */
+char asmpso() {
+  found = lookup(#FALSE, psolst); //Lookup Pseudo-Op
+  if (!found) {if (dot) error("ILLEGAL PSEUDO-OP"); else return #FALSE;}
+  if (#DEBUG&2) prtlin("ASSEMBLING PSEUDO-OP");
+  skpspc();
+  select (token) {
+    case '=': asmequ(); break;  //EQU
+    case '*': asmorg(); //ORG
+    case 'B': asmbyt(); //BYTE
+    case 'H': asmhex(); //HEX
+    case 'W': asmwrd(); //WORD
+    //case 'F': asmfll(); //FILL
+    case 'S': asmsub(); //SUBRoutine
+    //case 'I': asminf(); //INCLude
+    //case '*': asmorg(); //ORG
+    //case 'P': asmprc(); //PROCessor
+    case 'A': asmaln(); //ALIGn
+    case 'E': endasm = #TRUE; //END
+    default: error("!UNIMPLEMENTED");
+  }
+  return #TRUE;
+}
+
+/* Check for Valid Addressing Mode */
+int chkmod(m, f) {
+  if (amodlo[m] & amdlo and amodhi[m] & amdhi) return #TRUE;
+  if (f) error("ILLEGAL ADDRESS MODE");
+  return #FALSE;
+}
+
+
+/* Assemble Implied/Accumulator/Absolute/ZeroPage Mode Instruction */
+void asmiaz() {
+  opdfnd = evlopd(#FALSE, #FALSE);
+  if (!opdfnd) {
+    if (amidx and chkmod(#ACMLT, #TRUE)) opmod = $08;  //Accumulator
+    return;
+  }
+  if (>opdval) zpflg = #FALSE; else zpflg = #TRUE;
+  if (zpflg and chkmod(#ZPAGE, #FALSE)) opmod = $04;  //ZeroPage
+  else {if (chkmod(#ABSLT, #TRUE)) opmod = $0C;} //Absolute
+}
+
+/* Fix Opcode (if needed) */
+char fixopc() {
+  //for (int i=0; opfix[i].token; i++)
+  //  if (opfix[i].token == token && opfix[i].opmod == opmod) 
+  //    return opfix[i].opcode;
+  return token + opmod;
+}
+
+
+/* Assemble Opcode */
+void asmopc() {
+  opmod = 0;
+  found = lookup(#TRUE, opclst); //Lookup OpCode
+  if (!found) error("!ILLEGAL MNEMONIC");
+  if (#DEBUG&2) {putstr("OPCODE: "); prtbyt(token); prtbyt(amidx);}
+  amdlo = opcalo[amidx]; amdhi = opcahi[amidx];
+  if (#DEBUG&2) {prbyte(amdhi); prbyte(amdlo); newlin();}
+  
+  asmiaz(); //Assemble Implied/Accumulator/Absolute/ZeroPage Instruction  
+  opcode = fixopc(); //Fixup Opcode
+  outchr(opcode);                         
+  if (opdfnd) {if (zpflg) outbyt(opdval); else outwrd(opdval);}
+}
+
+/* Parse Comment from Input Line
+ * Sets: cmmnt[] 
+ * Updates: inpidx */
+void pcmmnt() {
+  skpspc();
+  i = 0;
+  while (inplin[inpidx] >= ' ') {
+    cmmnt[i] = inplin[inpidx];
+    i++; inpidx++;
+  }
+  cmmnt[i] = 0; //Terminate Comment
+  if (#DEBUG&2) {if (i) {putstr("#COMMENT: "); prtlin(cmmnt);} else prtlin("No Comment Found");}
+}
+
+/* Copy Symbol Struct to Destination */
+void cpysym() {
+  for (i=0; i<@symbol; i++) {
+    *dstptr = symbol[i]; 
+    dstptr++;
+  }
+}
+
+/* Add Label to Symbol Table */
+void addlcl() {
+  dstptr = lclptr; cpysym(); lclptr = dstptr;
+  lclcnt++;
+}
+
+/* Add Label to Symbol Table */
+void addsym() {
+  dstptr = symptr; cpysym(); symptr = dstptr;
+  symcnt++;
+}
+
+/* Print Listing Line */
+void prlist() {
+  prtchr('|');
+  prtchr(local); putstr(label); prtchr(colon); putchr(' ');
+  prtchr(dot); putstr(mnmnc); putchr(' ');
+  if (opridx) putstr(oprnd);
+  prtlin(cmmnt);
+}
+
+void asmlin() {
+  lstadr = curadr;  //Set List Address
+  opridx = 0; //Clear Operand String
+  mcdidx = 0; //Clear Macbine Code
+  inpidx = 0; //Initialize Line Buffer Index
+  plabel(); //Parse Label
+  pmnmnc(); //Parse Mnemonic
+  if (mnmnc[0]) {
+    if (!asmpso()) asmopc(); //Assemble Pseudo-Op or Op-Code  
+    oprnd[opridx] = 0; //Set oprnd to ""
+  }
+  pcmmnt(); //Parse Comment
+  if (label[0]) {
+    if (!symflg) error("INVALID ADDRESS");
+    if (local) addlcl(); else addsym(); //Add Label to Table
+  }
+  if (mcdidx) wrtmcd(); //Write Machine Code 
+  prlist();
+}
+
+
+main:
+  init();   //Initialize Assembly Variables
+  goto tests;
+  while (!readln()) {
+    if (#DEBUG&1) echoln();
+    asmlin(); if (endasm) break;
+    lineno++;
+  }
+  prtlcl(); prtsym(symcnt, &symtbl);
+goto exit;
+
+/*======================================================*/
+/* Everything below here is tests for various functions */
+
+//Copy Arg String to inplin
+void setln(w) {
+  inpidx = 0;
+  setdst(inplin);
+  strcpy(w);
+  putln(inplin); 
+}
+
+//Test function plabel
+void tlabel() {
+  setln(); 
+  plabel(); 
+  if (label[0]) {
+    setdst(label); printf(local,"  LABEL=\"%s\", LOCAL=%d%n");
+    setdst(symbol.name); printf("  SYMBOL.NAME=\"%s\", ");
+    setdst(symbol.value); printf(symbol.bytes,"BYTES=%d, VALUE=%i%n");
+  }
+  else putln("NO LABEL FOUND");
+  curadr++;
+}
+
+//Test function evltrm
+void tevtrm() {
+  setln();
+  if (evltrm()) printf(setdst(term),"  TERM=%i%n");
+  else putln("NO TERM FOUND");  
+}
+
+void tmnmnc() {
+  setln();
+  pmnmnc();
+  //print results
+}
+
+tests:
+  orgadr = &$0300; orgset = #TRUE;
+  curadr = orgadr;
+  tlabel("FEE   "); tlabel(".FI   "); tlabel("FOE:  "); tlabel(".FUM: "); 
+  tevtrm(" 12345"); tevtrm("%10101"); tevtrm("$1001 ");
+goto exit;
+
+void dolkup() {
+  found = lookup(#FALSE, psolst); if (#DEBUG:-) {prtbyt(found); newlin();}
+  if (!found) {
+    found = lookup(#TRUE, opclst); if (#DEBUG:-) {prtbyt(found); newlin();}
+  }
+  if (found) {prtbyt(token); prtbyt(amidx);} else putstr("*NOF* ");
+  prtlin(mnmnc);
+}
+
+tstlkp:
+  setdst(mnmnc); strcpy("BYTE"); dolkup();
+  setdst(mnmnc); strcpy("ORG"); dolkup();
+  setdst(mnmnc); strcpy("SUBROUTINE"); dolkup();
+  setdst(mnmnc); strcpy("BRK"); dolkup();
+  setdst(mnmnc); strcpy("BEQ"); dolkup();
+  setdst(mnmnc); strcpy("STY"); dolkup();
+  setdst(mnmnc); strcpy("XXX"); dolkup();
+  setdst(mnmnc); strcpy("INVALID"); dolkup();
+  goto exit;
