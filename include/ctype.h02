@@ -20,6 +20,12 @@ char isalnu();
  * Returns: TRUE or FALSE           */
 char isalph();
 
+/* Check for Alphanumundot Character *
+ *   (Alpha, Digit, '.', or '_')     *
+ * Args: c - Character to Check      *
+ * Returns: TRUE or FALSE            */
+char isalud();
+
 /* Checks for Control Character     *
  *   (Less than Space or Delete)    *
  * Args: c - Character to Check     *

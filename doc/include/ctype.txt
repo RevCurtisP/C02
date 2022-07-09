@@ -12,6 +12,13 @@ passed a high ASCII character (127 - 255).
   
 The following functions are defined:
 
+  b = isalph(c);      Returns TRUE if c is alphabetic, otherwise FALSE.
+                      
+                      An alphabetic character is a letter (A-Z or a-z). 
+                     
+                      Note: Call internal routine isalp, which in turn
+                      calls internal routines isupr and islwr.
+  
   b = isalnm(c);      Returns TRUE if c is alphanumeric, otherwise FALSE.
                       
                       An alphanumeric character is a letter (A-Z or a-z), 
@@ -28,13 +35,14 @@ The following functions are defined:
                       Note: Calls internal routine isalu, which in turn
                       calls internal routines isdgt and isalp.
                       
-  b = isalph(c);      Returns TRUE if c is alphabetic, otherwise FALSE.
+  b = isalud(c);      Returns TRUE if c is an alphanumundOT, otherwise FALSE.
                       
-                      An alphabetic character is a letter (A-Z or a-z). 
+                      An alphanumundot character is a letter (A-Z or a-z), 
+                      a digit (0-9), an underline (_), or a dot (.). 
                      
-                      Note: Call internal routine isalp, which in turn
-                      calls internal routines isupr and islwr.
-  
+                      Note: Calls internal routine isalu, which in turn
+                      calls internal routines isdgt and isalp.
+                      
   b = isbdgt(c);      Returns TRUE if c is a binary digit, otherwise FALSE.
                       
                       A binary digit is a character in the range 0 through 1.

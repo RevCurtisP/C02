@@ -22,6 +22,7 @@ head:
   putchr('A'); //Alphabetic
   putchr('N'); //Alphanumeric
   putchr('M'); //Alphanumunder
+  putchr('T'); //Alphanumundots
   putchr('G'); //Graphic
   putchr('R'); //Printable
   putchr('B'); //Binary
@@ -45,6 +46,7 @@ loop:
   c = isalph(i) & $0A | $20; putchr(c);
   c = isalnm(i) & $0A | $20; putchr(c);
   c = isalnu(i) & $0A | $20; putchr(c);
+  c = isalud(i) & $0A | $20; putchr(c);
   c = isgrph(i) & $0A | $20; putchr(c);
   c = isprnt(i) & $0A | $20; putchr(c);
   c = isbdgt(i) & $0A | $20; putchr(c);

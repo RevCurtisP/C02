@@ -19,6 +19,7 @@ blkstr   block    Block String          Search block for segment beginning with 
 blkswp   block    Block Swap            Swap bytes of array with the current segment.
 blksrt   block    Block Sort            Sort segments in block by initial string.
 button   paddle   Button                Read paddle button controller status.
+char     stdlib   Char from integer     Convert Integer to Character 
 chdir    direct   Change Directory      Change to specified directory
 chdrv    direct   Change Drive          Change to specified drive
 ctoa     stdlib   Character to ASCII    Convert byte to numeric string.
@@ -44,18 +45,30 @@ fsinit   fileio   File System Init      Initialize file system.
 fsname   fileio   File Set Name         Set filename for fopen, fsave, or fload.
 fwrite   fileio   File Write            Write bytes to file.
 getc     stdio    Get Character         Read character from keyboard.
+getcpr   stdiox   Get Char Prompt       Display prompt and wait for keypress.
 getcwd   direct   Get CWD               Return current working directory
 getdrv   direct   Get Drive             Return current drive identifier
 getdst   stddef   Get Destination       Get address in Destination Pointer.
-getprc   stdiox   Get Prompt Character  Display prompt and wait for key press.
 gets     stdio    Get String            Read string from keyboard.
 getsrc   stddef   Get Source            Get address in Source Pointer.
 iabs     intlib   Integer Absolute      Return absolute value of integer.
+iacc     intlib   Integer Accumulator   Set integer accumulator.
+iadd     intlib   Integer Add           Add two integer values.
+iaddc    intlib   Integer Add Character Add character and integer value.
+icmp     intlib   Integer Compare       Compare two integer values.
+idiv     intlib   Integer Divide        Divide integer values by integer value.
 imax     intlib   Integer Maximum       Return greater of two integers.
 imin     intlib   Integer Minimum       Return lesser of two integers.
+imod     intlib   Integer Modulo        Return modulus of two integer values.
+imult    intlib   Integer Multiply      Multiply two integer values.
+imultc   intlib   Integer Multiply Char Multiply character and integer value.
+ineg     intlib   Integer Negate        Return Negative of integer value.
+int      stdlib   Int from character    Convert Character to Integer
+intay    stdlib   Int from A,Y          Convert Character Pair to Integer
 isalnm   ctype    Is Alphanumeric       Return TRUE if character is A-Z, a-z, or 0-9.
 isalnu   ctype    Is Alphanumunder      Return TRUE if character is A-Z, a-z, 0-9, or _.
 isalph   ctype    Is Alphabetic         Return TRUE if character is A-Z or a-z.
+isalud   ctype    Is Alphanumundot      Return TRUE if character is A-Z, a-z, 0-9, ., or _.
 isbdgt   ctype    Is Binary Digit       Return TRUE if character is 0 or 1.
 isctrl   ctype    is Control            Return TRUE if ASCII code is 0-31 or 127.
 isdigt   ctype    Is Digit              Return TRUE if character is 0-9.
@@ -67,6 +80,7 @@ islowr   ctype    Is Lowercase          Return TRUE if character is a-z.
 ispnct   ctype    Is Punctuation        Return TRUE if Graphical and not Alphanumeric.
 isprnt   ctype    Is Printable          Return TRUE if ASCII code is 32-126.
 isspce   ctype    Is white Space        Return TRUE if ASCII code is 9-13 or 32.
+isub     intlib   Integer Subtract      Subtract two integer values.
 isuppr   ctype    Is Uppercase          Return TRUE if character is A-Z.
 itoa     intlib   Integer to ASCII      Convert Integer to String.
 joystk   joystk   Joystick              Read Atari style joystick controller status.
@@ -77,7 +91,7 @@ mclose   memio    Memory Close          Close memory file.
 memdst   memory   Memory Destination    Set destination array for subsequent functions.
 memset   memory   Memory Set            File bytes in array with byte.
 memchr   memory   Memory Character      Search for byte in array.
-memclr   memory   Memory Cllear         File bytes in array with $00.
+memclr   memory   Memory Clear          File bytes in array with $00.
 memcmp   memory   Memory Compare        Compare bytes in array against destination array.
 memcpy   memory   Memory Copy           Copy bytes from array to destination array.
 memswp   memory   Memory Swap           Swap bytes in array with destination array.
@@ -110,17 +124,27 @@ ptrsav   pointer  Pointer Save          Save pointer into two-byte array.
 ptrrst   pointer  Pointer Restore       Restore pointer from two-byte array.
 printf   stdiox   Print Formatted       Write formatted byte and/or string/address to screen.
 putadr   test     Put Address           Write "address=" and hexadecimal address to screen.
+putbin   stdiox   Put Binary            Write byte to screen as binary number.
 putc     stdio    Put Character         Write character to screen.
 putdec   stdiox   Put Decimal           Write byte to screen as decimal number.
+putdeh   stdiox   Put Decimal Hundred   Write byte mod 100, zero-filled to screen.
 putdel   stdiox   Put Decimal Left      Write byte to screen as left-justified decimal.
 putder   stdiox   Put Decimal Right     Write byte to screen as right-justified decimal.
-putdst   stdios   Put Destination       Write destination string to screen.
+putdez   stdiox   Put Decimal Zero```   Write byte zero-filled to screen.
+putdst   stdiox   Put Destination       Write destination string to screen.
+putexh   stdiox   Put Extended Hex      Write 24 bit number to screen as hexadecimal number.
 puthex   stdiox   Put Hexadecimal       Write byte to screen as hexadecimal number.
+putinr   stdiox   Put Integer Right     Write integer to screen as right justified decimal number.
+putint   stdiox   Put Integer           Write integer to screen as decimal number.
 putln    stdio    Put Line              Write string plus newline to screen. 
+putnyb   stdiox   Put Nybble            Write low nybble to screen as hexadecimal digit.
 puts     stdio    Put String            Write string to screen.
+putmsk   stdiox   Put Mask              Write bit masked byte to screen as binary number.
+putrpc   stdiox   Put Repeated Char     Write character multiple times to screen.
+putrps   stdiox   Put Repeated Spaces   Write multiple spaces to screen.
 putspc   stdiox   Put Space             Write space character to screen.
 putsub   stdio    Put Substring         Write substring to screen.
-putwrd   stdiox   Put Word              Write address to screen as hexadecimal number.
+putwrd   stdiox   Put Word              Write integer to screen as hexadecimal number.
 rand     stdlib   Random                Generate pseudorandom number.
 rands    stdlib   Random Seed           Seed random number generator.
 rddir    dirent   Read Directory        Read Directory Entry
@@ -158,15 +182,23 @@ strapd   string   String Append         Append character to string.
 strcat   string   String Concatenate    Concatenate string to destination string.
 strchr   string   String Character      Search for character in string.
 strcmp   string   String Compare        Compare string contents against destination string.
+strcms   string   String Compare Source Compare source string against destination string.
+strcps   string   String Copy Source    Copy source string to destination string.
 strcpy   string   String Copy           Copy string contents to destination string.
 strcsp   stringx  String Char Span      Return length of span in destination not in string.
 strcut   string   String Cut            Copy substring to destination string.
+strget   stringl  String Get            Read entry from string list.
 strlen   string   String Length         Calculate length of string.
+strlln   stringl  String List Length    Calculate number of entries in string list
+strlwr   stringm  String Lower          Convert string to lowercase.
 strpbk   stringx  String Pointer Break  Find first character in destination found in string.
+strpad   stringm  String Pad            Pad or truncate string.
 strppd   string   String Prepend        Prepend character to string.
+strput   stringl  String Put            Write entry to string list.
 strrch   string   String Reverse Char   Search for character from end of string.
 strspn   stringx  String Span           Return length of span in destination found in string.
 strstr   string   String String         Search for string in destination string.
+strupr   stringm  String Upper          Convert string to uppercase.
 swap     bitlib   Swap nybbles          Swaps left and right nybbles in byte.
 tolowr   ctype    To Lowercase          Convert character to lowercase.
 touppr   ctype    To Uppercase          Convert character to uppercase.
