@@ -15,8 +15,7 @@
 #include <memory.h02>
 #include <string.h02>
 
-alias char lcltbl = $E000;  //Local Symbol Table
-alias char symtbl = $E100;  //Global Symbol Table
+alias char symtbl = $E000;  //Global Symbol Table
 
 /* Address Mode Constants, Bit Masks, and Descriptions */
 enum {ACMLT, IMMDT, ZPAGE, ZPAGX, ABSLT, ABSLX, ABSLY, IMPLD, INDCT, INDCX, INDCY, RELTV};
@@ -76,12 +75,14 @@ char digit; //evlhex()
 int term;   //evltrm()
 
 /* Symbol Table Entries */
-struct sym {char name[8], bytes; int value;};
+struct sym {char block, name[8], bytes; int value;};
 struct sym symbol;  //Current Symbol
 struct sym varble;  //Symbol to Lookup
-char symcnt, lclcnt; //Number of Global, Local Symbols
-int symptr, lclptr;  //Pointer to Next Table Entry
-char symflg, symlcl; //Valid Symbol Value, Local Symbol
+int  symcnt; //Number of Symbols
+int  symptr; //Pointer to Next Table Entry
+char symflg; //Valid Symbol Value
+char blkcnt; //Number of Block Labels Generated
+char blknum; //Local Label Block Number (0 = Global)
 
 /* Input Variables */
 char inplin[128];   //Input Buffer 
@@ -125,7 +126,7 @@ int  lstadr;        //List Address
 /* Print Error Message and Exit        *
  * Args: Y,X = Address of Eror Message */
 void error() {
-  putstr(); putstr(" ERROR"); newlin();
+  putstr(); putln(" ERROR");
   goto exit;
 }
 
@@ -161,7 +162,8 @@ void init() {
   orgset = #FALSE;  //Origin Not Set
   endasm = #FALSE;  //End Assembly Fl
   symptr = &symtbl;
-  lclptr = &lcltbl;
+  blkcnt = 1;       //Top level locals are Block 1
+  blknum = blkcnt;  //because Block 0 is a global
 }
 
 /* Parse Word from Input Line       *
@@ -248,20 +250,22 @@ void outwrd(w) {
 }
 
 /* Print Symbol Table */
-void prtsym(n, dstptr) {
-  prtlin("SYMBOLS");
-  for (i=0; i<n; i++) {
-    for (j=0; j<@varble; j++) {varble[j] = *dstptr; dstptr++;}
-    putstr("|"); putwrd(varble.value); prtbyt(varble.bytes); prtlin(varble.name);
+void prtsym() {
+  printf("%nSYMBOLS%nBLK SZ VALUE NAME%n");
+  usrptr = &symtbl;
+  iacc(symptr); //end of symbol table for icmp()
+  puts(">PRTSYM: LISTING FROM $");putwrd(usrptr);
+  puts(" TO $"); putwrd(intacc); newlin();
+  //for (j=0; j<9; j++) {
+  while (icmp(iacc(usrptr),symptr):-) {
+    //iacc(usrptr); putdec(icmp(symptr));newlin();
+    for (i=0; i<@symbol; i++) {symbol[i] = *usrptr; usrptr++;}
+    putder(symbol.block); 
+    setdst(symbol.value); printf(symbol.bytes,"  %d %J ");
+    putln(symbol.name);
   }
 }
 
-void prtlcl() {
-  if (lclcnt) {
-    putstr("LOCAL ");
-    prtsym(lclcnt, &lcltbl);
-  }
-}
 
 /* Find Symbol in Table                 *
  * Args: n = Number of Symbols in Table *
@@ -304,6 +308,7 @@ void plabel() {
     if (wrdlen>8) error("!SYMBOL TOO LONG"); 
     setdst(label); strcpy(word);
     if (#DEBUG&2) {putstr("#FOUND "); if (local) putstr("LOCAL "); putstr("LABEL "); prtlin(label);}
+    symbol.block = (local) ? blknum : 0; 
     setdst(symbol.name);strcpy(label); 
     setsym(0, curadr); symflg = orgset;
   } else {
@@ -426,13 +431,12 @@ char evltrm() {
 }
 
 char evlsym() {
-  symlcl = cpychr('.'); //Check for Local Symbol
-  if (!pword()) {if (symlcl) error("INVALID SYMBOL"); else return;}
+  local = cpychr('.'); //Check for Local Symbol
+  if (!pword()) {if (local) error("INVALID SYMBOL"); else return;}
   for (i=0; i<wrdlen; i++) {
     if (opridx:+) {oprnd[opridx] = word[i]; opridx++;}
   }
-  if (symlcl) found = fndsym(lclcnt, &lcltbl); 
-  else found = fndsym(symcnt, &symtbl);
+  else found = fndsym(&symtbl);
   if (found) opdval = symbol.value;
   else error("UNDEFINED SYMBOL");
 }
@@ -511,8 +515,7 @@ void asmhex() {
 
 /* Assemble SUBROUTINE Pseudo-Op */
 void asmsub() {
-  prtlcl();
-  lclptr = &lcltbl; lclcnt = 0;
+
 }
 
 /* Assemble WORD Pseudo-Op */
@@ -612,24 +615,20 @@ void pcmmnt() {
   if (#DEBUG&2) {if (i) {putstr("#COMMENT: "); prtlin(cmmnt);} else prtlin("No Comment Found");}
 }
 
-/* Copy Symbol Struct to Destination */
-void cpysym() {
+/* Append Symbol` to Symbol Table *
+ * Uses: symbol                   *
+ * Sets: i = @symbol              *
+ *       dstptr = End of Table    *
+ * Updates: symptr = End of Table *
+ * Returns: End of Table Address  */
+void addsym() {
+  if (!<symbol.value|>symbol.value) error("ORIGIN NOT SET");
+  dstptr = symptr;
   for (i=0; i<@symbol; i++) {
     *dstptr = symbol[i]; 
     dstptr++;
   }
-}
-
-/* Add Label to Symbol Table */
-void addlcl() {
-  dstptr = lclptr; cpysym(); lclptr = dstptr;
-  lclcnt++;
-}
-
-/* Add Label to Symbol Table */
-void addsym() {
-  dstptr = symptr; cpysym(); symptr = dstptr;
-  symcnt++;
+  symptr = dstptr;
 }
 
 /* Print Listing Line */
@@ -655,7 +654,7 @@ void asmlin() {
   pcmmnt(); //Parse Comment
   if (label[0]) {
     if (!symflg) error("INVALID ADDRESS");
-    if (local) addlcl(); else addsym(); //Add Label to Table
+    addsym(); //Add Label to Table
   }
   if (mcdidx) wrtmcd(); //Write Machine Code 
   prlist();
@@ -670,7 +669,7 @@ main:
     asmlin(); if (endasm) break;
     lineno++;
   }
-  prtlcl(); prtsym(symcnt, &symtbl);
+  prtsym(&symtbl);
 goto exit;
 
 /*======================================================*/
@@ -690,8 +689,9 @@ void tlabel() {
   plabel(); 
   if (label[0]) {
     setdst(label); printf(local,"  LABEL=\"%s\", LOCAL=%d%n");
-    setdst(symbol.name); printf("  SYMBOL.NAME=\"%s\", ");
+    setdst(symbol.name); printf(symbol.block, "  SYMBOL.BLOCK=%d, NAME=\"%s\", ");
     setdst(symbol.value); printf(symbol.bytes,"BYTES=%d, VALUE=%i%n");
+    addsym(); printf("  ADDED TO TABLE, SYMPTR=$%w%n"); //dstptr set by setsym()
   }
   else putln("NO LABEL FOUND");
   curadr++;
@@ -715,6 +715,7 @@ tests:
   curadr = orgadr;
   tlabel("FEE   "); tlabel(".FI   "); tlabel("FOE:  "); tlabel(".FUM: "); 
   tevtrm(" 12345"); tevtrm("%10101"); tevtrm("$1001 ");
+  prtsym();
 goto exit;
 
 void dolkup() {
