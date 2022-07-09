@@ -67,8 +67,7 @@ int v, w;
 
 /* Function Variables */
 char found, match, opcode, opdfnd;  //lookup(), asmpso(), asmopc()
-int addr;   //fndsym()
-int opdval; //evlopd() values
+int  opdval; //evlopd() values
 char hilo, opdrqd, prns, reqbyt, result; //evlopd() flags
 int addend; //adrslt()
 char digit; //evlhex()
@@ -126,7 +125,7 @@ int  lstadr;        //List Address
 /* Print Error Message and Exit        *
  * Args: Y,X = Address of Eror Message */
 void error() {
-  putstr(); putln(" ERROR");
+  putc('!'); putstr(); putln(" ERROR");
   goto exit;
 }
 
@@ -254,37 +253,36 @@ void prtsym() {
   printf("%nSYMBOLS%nBLK SZ VALUE NAME%n");
   usrptr = &symtbl;
   iacc(symptr); //end of symbol table for icmp()
-  puts(">PRTSYM: LISTING FROM $");putwrd(usrptr);
-  puts(" TO $"); putwrd(intacc); newlin();
-  //for (j=0; j<9; j++) {
   while (icmp(iacc(usrptr),symptr):-) {
-    //iacc(usrptr); putdec(icmp(symptr));newlin();
     for (i=0; i<@symbol; i++) {symbol[i] = *usrptr; usrptr++;}
-    putder(symbol.block); 
-    setdst(symbol.value); printf(symbol.bytes,"  %d %J ");
-    putln(symbol.name);
+    putder(symbol.block); setdst(symbol.value); printf(symbol.bytes,"  %d %J ");
+    if (symbol.block) putchr('.'); putln(symbol.name);
   }
 }
 
 
 /* Find Symbol in Table                 *
- * Args: n = Number of Symbols in Table *
- *       s = Address of Table           *
  * Uses: word = Symbol Name             *
- * Sets: srcptr = Address of Entry      *
- *       varble = Contents of Entry     *
- * Destroys: dstptr                     *
+ *       local = Local Symbol Flag      *
+ *       blknum = Subroutine Block #    *
+ * Sets: varble = Contents of Entry     *
+ * Destroys: b, dstptr                  *
  * Returns: TRUE if Symbol was Found    */
-char fndsym(n, addr) {
-  if (#DEBUG&4) {putstr("#SYMBOL "); putstr(word);}
-  setdst(word); setsrc(addr);
-  for (i=0; i<n; i++) {
-    if (strcms(word)) {addsra(@varble); continue;}
-    setdst(varble); memcpy(@varble);
-    if (#DEBUG&4) prtlin(" FOUND ");
+char fndsym() {
+  if (#DEBUG&4) printf(setdst(local,word),"FNDSYM: WORD=\"%S\", LOCAL=%d - ");
+  b = (local) ? blknum : 0; //Block level to match 
+  setdst(word); //For strcmp
+  usrptr = &symtbl;
+  iacc(symptr); //end of symbol table for icmp()
+  while (icmp(iacc(usrptr),symptr):-) {  
+    varble.block = *usrptr;
+    if (varble.block <> b) {usrptr = iaddc(@varble,usrptr); continue;}
+    usrptr++; if (strcmp(usrptr)) {usrptr = iaddc(@varble-1,usrptr); continue;}
+    for (i=1; i<@varble; i++) {varble[i] = *usrptr; usrptr++;}
+    if (#DEBUG&4) putln("FOUND");
     return #TRUE;
   }
-  if (#DEBUG&4) prtlin(" NOT FOUND ");
+  if (#DEBUG&4) putln("NOT FOUND");
   return #FALSE;
 }
 
@@ -414,7 +412,7 @@ int evlhex() {
  * Returns: #TRUE if a term was found */
 char evltrm() {
   skpspc();
-  if (isalph(inplin[inpidx]) or inplin[inpidx] == '.') {
+  if (isalud(inplin[inpidx])) {
     if (evlsym()) term = symbol.value; else term = &$0100;
   }
   else if (isdigt(inplin[inpidx])) 
@@ -436,7 +434,7 @@ char evlsym() {
   for (i=0; i<wrdlen; i++) {
     if (opridx:+) {oprnd[opridx] = word[i]; opridx++;}
   }
-  else found = fndsym(&symtbl);
+  else found = fndsym();
   if (found) opdval = symbol.value;
   else error("UNDEFINED SYMBOL");
 }
@@ -698,10 +696,20 @@ void tlabel() {
 }
 
 //Test function evltrm
-void tevtrm() {
+void tterm() {
   setln();
   if (evltrm()) printf(setdst(term),"  TERM=%i%n");
   else putln("NO TERM FOUND");  
+}
+
+//Test find symbol
+void tfind(local, tmpptr) {
+  setdst(word); strcpy(tmpptr);
+  //found = fndsym(); putdel(found);
+  if (fndsym()) {
+    setdst(varble.name); printf(varble.block, "  VARBLE.BLOCK=%d, NAME=\"%s\", ");
+    setdst(varble.value); printf(varble.bytes,"BYTES=%d, VALUE=%i%n");
+  } 
 }
 
 void tmnmnc() {
@@ -713,8 +721,11 @@ void tmnmnc() {
 tests:
   orgadr = &$0300; orgset = #TRUE;
   curadr = orgadr;
-  tlabel("FEE   "); tlabel(".FI   "); tlabel("FOE:  "); tlabel(".FUM: "); 
-  tevtrm(" 12345"); tevtrm("%10101"); tevtrm("$1001 ");
+  tlabel("GLOBAL"); tlabel(".LOCAL"); tlabel("GLOBC:"); tlabel(".LOCC:"); 
+  tterm(" 123");   tterm("  $FF "); tterm("%10101010");
+  tterm(" 4567");  tterm("$1001 "); tterm("%1010101001010101");
+  tfind(0,"LOCAL"); tfind('.',"GLOBAL"); tfind(0,"LOCC"); tfind('.',"GLOBC");
+  tterm("GLOBAL"); tterm(".LOCAL"); tterm(" GLOBC"); tterm(" .LOCC");
   prtsym();
 goto exit;
 
