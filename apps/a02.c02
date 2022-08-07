@@ -10,9 +10,10 @@
  * $08 - Individual Mnemonic Assembly    *
  * $10 - Term Evaluation Details         *
  ^ $20 - IF and SWITCH details           *
- * $40 - Show Binary Output              * 
+ * $40 - Show Binary Output              * `
+ * $80 - Parse Word and Lookup Details   * `
  */
-#define DEBUG $07  //Print Debug Information
+#define DEBUG $00  //Print Debug Information
 
 //#include "a02lib.h02" - This will replace all the defs below
 #include <stddef.h02>
@@ -27,12 +28,16 @@
 alias char symtbl = $E000;  //Global Symbol Table
 
 /* Address Mode Constants, Bit Masks, and Descriptions */
+//      0      1      2      3      4      5      6      7      8      9     10     11
 enum {ACMLT, IMMDT, ZPAGE, ZPAGX, ABSLT, ABSLX, ABSLY, IMPLD, INDCT, INDCX, INDCY, RELTV};
+//                    0    1    2    3    4    5    6    7    8    9    10   11
 const char amodlo = {$01, $02, $04, $08, $20, $40, $80, $00, $00, $00, $00, $00};
 const char amodhi = {$00, $00, $00, $00, $00, $00, $00, $01, $02, $04, $08, $10};
 const char amdesc = {"Accumulator", "Immediate", "Zero Page", "Zero Page,X", 
                     "Absolute", "Absolute,X", "Absolute,Y", "Implied", 
                     "(Indirect)", "(Indirect,X)", "(Indirect),Y", "Relative", 0};
+const char amdess = {"ACC","IMM","ZPG","ZPX","ABS","ABX","ABY","IMP",
+                     "IND","INX","INY","REL"};
 
 /* Pseudo-Op Lookup Table */
 struct pso {char token, name[5];};
@@ -99,8 +104,8 @@ char eoinp;         //End of Input
 int  lineno;        //Input File Line Number
 
 /* Output Variables */
-char outlin[128];   //Input Buffer 
-char outidx;        //Index into Input Buffer
+char outlin[128];   //Output Buffer 
+char outidx;        //Index into Output Buffer
 
 
 /* Assembly Variables */
@@ -509,7 +514,7 @@ char evlopd(opdrqd, reqbyt) {
     if (#DEBUG&16) printf(setdst(hilo,opdval),"#HILO $%x, OPDVAL SET TO %i%n");
   }
   if (result) {
-    if (#DEBUG&2) printf(setdst(opdval), "#OPERAND VALUE=%i%n");
+    if (#DEBUG&2) printf(setdst(opdval), "#OPDVAL SET TO %i%n");
     if (reqbyt & >opdval) error("VALUE TOO LARGE");
   } else {
     if (#DEBUG&2) putln("#NO OPERAND");
@@ -642,11 +647,30 @@ char asmpso() {
 
 /* Check for Valid Addressing Mode */
 int chkmod(m, f) {
-  if (amodlo[m] & amdlo and amodhi[m] & amdhi) return #TRUE;
+  if (#DEBUG&2) {
+    i = m; i<<; i<<;
+    puts("#CHECKING ADDR MODE %"); putbin(amodhi[m]); putbin(amodlo[m]); 
+    putspc(); putsub(i,amdess); newlin();
+  }
+  if (amodlo[m] & amdlo or amodhi[m] & amdhi) return #TRUE;
   if (f) error("ILLEGAL ADDRESS MODE");
   return #FALSE;
 }
 
+/* Assemble Absolute/ZeroPage Indexed */
+void asmidx() {
+  if (cpychr('X')) {
+    if (zpflg and chkmod(#ZPAGX)) {opmod = $14; return;} //ZeroPage,X
+    if (chkmod(#ABSLX)) {opmod = $1C; return;}           //Absolute,X
+  }
+  if (cpychr('Y')) {
+    if (zpflg) {
+      if (token == $82 or token == $A2) {opmod = $14; return;} //ZeroPage,Y
+    }
+    zpflg = #FALSE; opmod = $18; return; //Absolute,Y
+  }
+  chkmod(0);  //Illegal Addressing Mode
+}
 
 /* Assemble Implied/Accumulator/Absolute/ZeroPage Mode Instruction */
 void asmiaz() {
@@ -656,32 +680,94 @@ void asmiaz() {
     return;
   }
   if (>opdval) zpflg = #FALSE; else zpflg = #TRUE;
-  if (zpflg and chkmod(#ZPAGE, #FALSE)) opmod = $04;  //ZeroPage
-  else {if (chkmod(#ABSLT, #TRUE)) opmod = $0C;} //Absolute
+  if (#DEBUG&2) printf(zpflg,"#ZPFLG SET TO $%x%n");  
+  if (zpflg and chkmod(#ZPAGE, #FALSE)) {opmod = $04; return;} //ZeroPage
+  if (chkmod(#ABSLT, #TRUE)) {opmod = $0C; zpflg = #FALSE;} //Absolute
+  if (cpychr(',')) asmidx(); //Indexed
+}
+
+/* Assemble Immediate Mode Instruction */
+void asmimd() {
+  if (#DEBUG&2) putln("#IMMEDIATE MODE");
+  evlopd(#TRUE, #TRUE);
+  zpflg = #TRUE;
+  opmod = $08;  //Immediate
+}
+
+/* Assemble Indirect Mode Instruction */
+void asmind() {
+  if (#DEBUG&2) putln("#INDIRECT MODE");
+  zpflg = #TRUE; opdval = evlopd(#TRUE,#FALSE);
+  if (cpychr(',') and cpychr('X') and chkmod(#INDCX)) {cpychr(')'); return;}
+  if (!cpychr(')')) chkmod(0); //If no end paren - Illegal Addressing Mode
+  if (cpychr(',') and cpychr('Y') and chkmod(#INDCY)) {opmod = $10; return;}
+  if (chkmod(#INDCT)) opmod = $11; //(Indirect)
+  if (token == $4C) {zpflg = #FALSE;} //JMP (Indirect Absolute)
+}
+
+/* Calculate Branch Offset */
+void asmbro() {
+  if (#DEBUG&2) putln("#CALCULATING BRANCH OFFSET");
+  skpspc();
+  if (inplin[inpidx]=='.' or isalph(A)) {
+    if (#DEBUG&4) putln("#PARSING LABEL");
+    if (evlsym()) w = isub(isub(iacc(varble.value),curadr),v);
+    return;
+  }
+  if (cpychr('+')) {w = evlopd(#TRUE,#FALSE); return;}
+  if (cpychr('-')) {w = ineg(evlopd(#TRUE,#FALSE)); return;}
+  if (#DEBUG&4) putln("#PARSING ADDRESS");
+  w = isub(isub(iacc(evlopd(#TRUE,#FALSE)),curadr),v);
+}
+
+/* Assemble Branch Opcode */
+void asmbrn(zpflg) {
+  if (#DEBUG&2) putln("#RELATIVE MODE");
+  w = 0; //Offset
+  if (zpflg) v = 2; else v = 3; //Offset Adjustment
+  asmbro();
+  if (#DEBUG&2) printf(setdst(w),"#BRANCH OFFSET IS $%w%n");
+  if (>w and A <> $FF) error("BRANCH OUT OF RANGE");
+  opdval = int(<w);
 }
 
 /* Fix Opcode (if needed) */
 char fixopc() {
-  //for (int i=0; opfix[i].token; i++)
-  //  if (opfix[i].token == token && opfix[i].opmod == opmod) 
-  //    return opfix[i].opcode;
+  i = 0;
+  while(opfix[i]) {
+    t = opfix[i]; i++; m = opfix[i]; i++; o = opfix[i]; i++;  
+    if (t == token and m == opmod) return o;
+  }
   return token + opmod;
 }
 
-
+/* Assemble Token */
+void asmtok() {
+  skpspc();
+  if (amidx == 1) {asmbrn(#TRUE); return;} //Branch (Relative) Instruction
+  if (cpychr('#')) {asmimd(); return;}  //Assemble Immediate Instruction
+  if (cpychr('(')) {asmind(); return;}  //Assemble Indirect Instruction
+  asmiaz(); //Assemble Implied/Accumulator/Absolute/ZeroPage Instruction  
+}
 /* Assemble Opcode */
 void asmopc() {
   opmod = 0;
   found = lookup(#TRUE, opclst); //Lookup OpCode
   if (!found) error("ILLEGAL MNEMONIC");
-  if (#DEBUG&2) {putstr("#OPCODE: "); prtbyt(token); prtbyt(amidx);}
+  if (#DEBUG&2) printf(token, "#TOKEN SET TO $%x%n");
   amdlo = opcalo[amidx]; amdhi = opcahi[amidx];
-  if (#DEBUG&2) {prbyte(amdhi); prbyte(amdlo); newlin();}
+  if (#DEBUG&2) {
+    puts("#ADDRESS MODE MASK: %"); putbin(amdhi); putbin(amdlo); newlin();
+    //prtbyt(amidx);
+  }
+  asmtok();
+  if (zpflg and >opdval ) error("OPERAND TOO LARGSE");
   
-  asmiaz(); //Assemble Implied/Accumulator/Absolute/ZeroPage Instruction  
   opcode = fixopc(); //Fixup Opcode
+  if (#DEBUG&2) printf(opcode, "#WRITING OPCODE $%x%n");
   outchr(opcode);                         
-  if (opdfnd) {if (zpflg) outbyt(opdval); else outwrd(opdval);}
+  if (#DEBUG&2 and opdfnd) printf(setdst(opdval), "#WRITING OPDVAL %i%n");
+  if (opdfnd) {if (zpflg) outbyt(<opdval); else outwrd(opdval);}
 }
 
 /* Parse Comment from Input Line
@@ -727,6 +813,7 @@ void prlist() {
 void asmlin() {
   lstadr = curadr;  //Set List Address
   opridx = 0; //Clear Operand String
+  outidx = 0; //Clear Output Buffer
   mcdidx = 0; //Clear Macbine Code
   inpidx = 0; //Initialize Line Buffer Index
   plabel(); //Parse Label
@@ -767,60 +854,7 @@ void setln(w) {
   putstr(">>"); putln(inplin); 
 }
 
-//Print Operand
-void poprnd() {
-  oprnd[opridx] = 0;
-  printf(setdst(oprnd),"  OPRND=\"%s\"%n"); 
-}
-
 void slabel() {setln(); plabel();}
-
-//Test function plabel
-void tlabel() {
-  slabel(); 
-  if (label[0]) {
-    setdst(label); printf(local,"  LABEL=\"%s\", LOCAL=%d%n");
-    setdst(symbol.name); printf(symbol.block, "  SYMBOL.BLOCK=%d, NAME=\"%s\", ");
-    setdst(symbol.value); printf(symbol.bytes,"BYTES=%d, VALUE=%i%n");
-    addsym(); printf("  ADDED TO TABLE, SYMPTR=$%w%n"); //dstptr set by setsym()
-  }
-  else putln("NO LABEL FOUND");
-  curadr++;
-}
-
-//Test function evltrm
-void tterm() {
-  opridx = 0; 
-  setln();
-  if (evltrm()) printf(setdst(term),"  TERM=%i%n");
-  else putln("NO TERM FOUND");  
-  poprnd();
-}
-
-//Test evltopd()
-void topd() {
-  opridx = 0; 
-  setln();
-  if (evlopd(#FALSE,#FALSE)) printf(setdst(opdval),"  OPERAND=%i%n");
-  else putln("  NO OPERAND FOUND");  
-  poprnd();
-}
-
-//Test find symbol
-void tfind(local, tmpptr) {
-  setdst(word); strcpy(tmpptr);
-  //found = fndsym(); putdel(found);
-  if (fndsym()) {
-    setdst(varble.name); printf(varble.block, "  VARBLE.BLOCK=%d, NAME=\"%s\", ");
-    setdst(varble.value); printf(varble.bytes,"BYTES=%d, VALUE=%i%n");
-  } 
-}
-
-void tmnmnc() {
-  setln();
-  pmnmnc();
-  printf(setdst(mnmnc),"  MNEMONIC=\"%s\"%n");
-}
 
 void pout() {
   puts("  OUTLIN: ");
@@ -830,7 +864,6 @@ void pout() {
 
 void tpso() {
   opridx = 0; outidx = 0;
-  opridx = 0; opridx = 0;
   setln();
   pmnmnc();
   asmpso();
@@ -846,51 +879,61 @@ void tasm() {
 }
 
 tests:
-  tpso("ORG $0300"); printf(setdst(orgset, orgadr),"  ORGSET=$%x, ORGADR=$%w%n");
-  curadr = orgadr;
-  //tlabel("GLOBAL"); tlabel(".LOCAL"); tlabel("GLOBC:"); tlabel(".LOCC:"); 
-  //topd(" 123");  topd("  $FF "); topd("%10101010");
-  //topd(" 4567"); topd("$1001 "); topd("%1010101001010101");
-  //topd("GLOBAL"); topd(".LOCAL"); topd(" GLOBC"); topd(" .LOCC");
-  slabel("ONE:"); tpso("EQU 1"); addsym();
-  slabel("CEE:"); tpso("EQU 'C'"); addsym();
-  slabel("BIG:"); tpso("EQU $ABCD"); addsym();
-  slabel("TOP:"); tpso("EQU $FFFF"); addsym();
-  tpso("BYTE 0, ONE ,%10 ,$3,'4',CEE");
-  tpso(".DC <BIG, >BIG, \"STRING\" ");
-  tpso("HEX 0 1  2  F 10 F0 FEEF ");
-  tpso("WORD 1, 1001, %11111, $F00F, TOP"); 
-  tpso("FILL 300"); 
-  tpso("ALIGN 256"); 
-  tpso("DS 20");
-  tpso("SUBR MYLIB");
-  tpso("SUBROUTINE");
-  tpso("ENDSUB");
-  tpso("END");
+  tasm("        ORG $0300"); 
+  tasm("ONE:    EQU 1"); 
+  tasm("CEE:    EQU 'C'"); 
+  tasm("BIG:    EQU $ABCD"); 
+  tasm("TOP:    EQU $FFFF"); 
+  tasm(".YOKEL  BYTE 1,1,1,1");
+  tasm("        BYTE 0, ONE ,%10 ,$3,'4',CEE");
+  tasm("        .DC <BIG, >BIG, \"STRING\" ");
+  tasm("        HEX 0 1  2  F 10 F0 FEEF ");
+  tasm("        WORD 1, 1001, %11111, $F00F, TOP"); 
+  tasm("        FILL 300"); 
+  tasm("        ALIGN 256"); 
+  tasm("        DS 20");
+  tasm("        SUBR MYLIB");
+  tasm(".YOKEL  BYTE 2,2,2,2");
+  tasm("        SUBROUTINE");
+  tasm(".YOKEL  BYTE 3,3,3,3");
+  tasm("        ENDSUB");
+  tasm("        END");
+  tasm("        BRK         ;$00");
+  tasm("        RTS         ;$60");
+  tasm("        NOP         ;$EA");
+  tasm("        JMP $C4     ;$4C $C4 $00");
+  tasm("        JMP $C44C   ;$4C $C4 $4C");
+  tasm("        JMP ($C6)   ;$6C $C6 $00");
+  tasm("        JMP ($C66C) ;$6C $C6 $6C");
+  tasm("        LDA $01     ;$A5 $01");
+  tasm("        LDA $0400   ;$AD $00 $04");
+  tasm("        LDA #89     ;$A9 $59");
+  tasm("        LDA ($1A,X) ;$A1 $1A");
+  tasm("        LDA ($1B),Y ;$B1 $1B");
+  tasm("        LDA $5B,X   ;$B5 $5B");
+  tasm("        LDA $B99B,Y ;$B9 $9B $B9");
+  tasm("        LDA $BDDB,X ;$BD $DB $BD");
+  tasm("BRANCH:");
+  tasm("        BCS BRANCH  ;$B0 $FE");
+  tasm("        BCC BRANCH  ;$90 $FB");
+  tasm("        BEQ -128    ;$F0 $80");
+  tasm("        BNE +127    ;$D9 $7F");
+  tasm("        BPL $0500   ;$10 $??");
+  tasm("        LSR         ;$4A");
+  tasm("        LSR $64     ;$46 $64");
 
-  //tmnmnc("RTS"); tmnmnc("SUBROUTINE"); tmnmnc("      "); tmnmnc("9");tmnmnc(";");
+
   prtsym();
 goto exit;
 
+//  $A1, 2, "LDA", $61, 2, "ADC", $21, 2, "AND", $C1, 2, "CMP", $81, 2, "STA", 
+//  $E1, 2, "SBC", $01, 2, "ORA", $41, 2, "EOR", $02, 3, "ASL", $22, 3, "ROL", 
+//  $E2, 3, "INC", $42, 3, "LSR", $62, 3, "ROR", $C2, 3, "DEC", $07, 4, "RMB", 
+//  $87, 4, "SMB", $0F, 5, "BBR", $8F, 5, "BBS", $10, 6, "TRB", $00, 6, "TSB", 
+//  $E0, 7, "CPX", $C0, 7, "CPY", $A2, 8, "LDX", $82, 8, "STX", $20, 9, "BIT", 
+//  $60, 10,"STZ", $4C, 11,"JMP", $14, 12,"JSR", $A0, 13,"LDY", $80, 14,"STY",
+
+
+
 //  'I', "INCL", 'S', 'F', "DS",  'P', "PROC", 
 
-
-void dolkup() {
-  found = lookup(#FALSE, psolst); if (#DEBUG:-) {prtbyt(found); newlin();}
-  if (!found) {
-    found = lookup(#TRUE, opclst); if (#DEBUG:-) {prtbyt(found); newlin();}
-  }
-  if (found) {prtbyt(token); prtbyt(amidx);} else putstr("*NOF* ");
-  putln(mnmnc);
-}
-
-tstlkp:
-  setdst(mnmnc); strcpy("BYTE"); dolkup();
-  setdst(mnmnc); strcpy("ORG"); dolkup();
-  setdst(mnmnc); strcpy("SUBROUTINE"); dolkup();
-  setdst(mnmnc); strcpy("BRK"); dolkup();
-  setdst(mnmnc); strcpy("BEQ"); dolkup();
-  setdst(mnmnc); strcpy("STY"); dolkup();
-  setdst(mnmnc); strcpy("XXX"); dolkup();
-  setdst(mnmnc); strcpy("INVALID"); dolkup();
-  goto exit;
